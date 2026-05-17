@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Badge } from 'antd';
-import { 
+import {
   BellOutlined,
   DownOutlined
 } from '@ant-design/icons';
+import { useRouterState, useNavigate } from '@tanstack/react-router';
 import * as S from './Sidebar.styled';
 
 interface SidebarProps {
@@ -11,125 +12,178 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+  const navigate = useNavigate();
+
+  const [collapsed, setCollapsed] = useState(false);
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
-    doc: true,
-    nghe: true,
-    noi: false,
-    viet: false
+    doc: currentPath.startsWith('/reading'),
+    nghe: currentPath.startsWith('/listening'),
+    noi: currentPath.startsWith('/speaking'),
+    viet: currentPath.startsWith('/writing')
   });
 
   const toggleMenu = (key: string) => {
+    if (collapsed) setCollapsed(false);
     setOpenMenus(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const renderArrow = (isOpen: boolean) => (
-    <DownOutlined 
-      className="arrow-icon" 
-      style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} 
+    <DownOutlined
+      className="arrow-icon"
+      style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
     />
   );
 
+  const handleHomeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate({ to: '/' });
+    if (onClose) onClose();
+  };
+
+  const handleSkillClick = (skill: 'reading' | 'listening' | 'speaking' | 'grammar' | 'writing') => {
+    navigate({ to: `/${skill}` });
+    if (onClose) onClose();
+  };
+
   return (
-    <S.SidebarContainer onClick={(e) => e.stopPropagation()}>
-      <S.LogoWrapper>
+    <S.SidebarContainer onClick={(e) => e.stopPropagation()} $collapsed={collapsed}>
+      <S.LogoWrapper onClick={handleHomeClick} style={{ cursor: 'pointer' }} $collapsed={collapsed}>
         <img alt="Icon" src="/image.png" />
         <span>Aptis Test</span>
+        <button 
+          className="collapse-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            setCollapsed(!collapsed);
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+            {collapsed ? 'chevron_right' : 'chevron_left'}
+          </span>
+        </button>
       </S.LogoWrapper>
 
-      <nav className="flex-1 overflow-y-auto">
+      <nav className="flex-1 overflow-y-auto mt-2">
         <S.NavSection>
-          <S.SectionTitle>Luyện tập</S.SectionTitle>
+          <S.SectionTitle $collapsed={collapsed}>
+            <span className="text">Luyện tập</span>
+            <div className="line" />
+          </S.SectionTitle>
           <div className="space-y-1">
-            <S.NavLink href="#" $active onClick={onClose}>
+            <S.NavLink as="div" $active={currentPath === '/'} onClick={handleHomeClick} $collapsed={collapsed}>
               <span className="material-symbols-outlined">dashboard</span>
-              <span>Bảng điều khiển</span>
+              <span className="nav-text">Bảng điều khiển</span>
             </S.NavLink>
-            
-            <S.NavLink href="#" onClick={onClose}>
+
+            <S.NavLink as="div" $active={currentPath === '/grammar'} onClick={() => handleSkillClick('grammar')} $collapsed={collapsed}>
               <span className="material-symbols-outlined">spellcheck</span>
-              <span>Ngữ pháp & Từ vựng</span>
+              <span className="nav-text">Ngữ pháp & Từ vựng</span>
             </S.NavLink>
 
             {/* Mục Đọc */}
             <S.NavItemWrapper>
-              <S.NavLink as="div" onClick={() => toggleMenu('doc')}>
+              <S.NavLink as="div" onClick={() => toggleMenu('doc')} $collapsed={collapsed} $active={currentPath.startsWith('/reading')}>
                 <span className="material-symbols-outlined">auto_stories</span>
-                <span>Đọc</span>
+                <span className="nav-text">Đọc</span>
                 {renderArrow(openMenus.doc)}
               </S.NavLink>
-              <S.SubMenuWrapper $isOpen={openMenus.doc}>
-                <S.NavLink href="#" $isSub onClick={onClose}>Bài tập theo phần</S.NavLink>
-                <S.NavLink href="#" $isSub onClick={onClose}>Mẹo làm bài</S.NavLink>
+              <S.SubMenuWrapper $isOpen={openMenus.doc} $collapsed={collapsed}>
+                <S.NavLink as="div" $isSub $active={currentPath.startsWith('/reading')} onClick={() => handleSkillClick('reading')} $collapsed={collapsed}>
+                  <span className="nav-text">Bài tập theo phần</span>
+                </S.NavLink>
+                <S.NavLink as="div" $isSub onClick={onClose} $collapsed={collapsed}>
+                  <span className="nav-text">Mẹo làm bài</span>
+                </S.NavLink>
               </S.SubMenuWrapper>
             </S.NavItemWrapper>
 
             {/* Mục Nghe */}
             <S.NavItemWrapper>
-              <S.NavLink as="div" onClick={() => toggleMenu('nghe')}>
+              <S.NavLink as="div" onClick={() => toggleMenu('nghe')} $collapsed={collapsed} $active={currentPath.startsWith('/listening')}>
                 <span className="material-symbols-outlined">headphones</span>
-                <span>Nghe</span>
+                <span className="nav-text">Nghe</span>
                 {renderArrow(openMenus.nghe)}
               </S.NavLink>
-              <S.SubMenuWrapper $isOpen={openMenus.nghe}>
-                <S.NavLink href="#" $isSub onClick={onClose}>Luyện nghe hội thoại</S.NavLink>
-                <S.NavLink href="#" $isSub onClick={onClose}>Luyện nghe thông báo</S.NavLink>
+              <S.SubMenuWrapper $isOpen={openMenus.nghe} $collapsed={collapsed}>
+                <S.NavLink as="div" $isSub $active={currentPath.startsWith('/listening')} onClick={() => handleSkillClick('listening')} $collapsed={collapsed}>
+                  <span className="nav-text">Luyện nghe hội thoại</span>
+                </S.NavLink>
+                <S.NavLink as="div" $isSub onClick={onClose} $collapsed={collapsed}>
+                  <span className="nav-text">Luyện nghe thông báo</span>
+                </S.NavLink>
               </S.SubMenuWrapper>
             </S.NavItemWrapper>
 
             {/* Mục Nói */}
             <S.NavItemWrapper>
-              <S.NavLink as="div" onClick={() => toggleMenu('noi')}>
+              <S.NavLink as="div" onClick={() => toggleMenu('noi')} $collapsed={collapsed} $active={currentPath.startsWith('/speaking')}>
                 <span className="material-symbols-outlined">mic</span>
-                <span>Nói</span>
+                <span className="nav-text">Nói</span>
                 {renderArrow(openMenus.noi)}
               </S.NavLink>
-              <S.SubMenuWrapper $isOpen={openMenus.noi}>
-                <S.NavLink href="#" $isSub onClick={onClose}>Luyện theo câu hỏi</S.NavLink>
-                <S.NavLink href="#" $isSub onClick={onClose}>Mẹo học hay</S.NavLink>
+              <S.SubMenuWrapper $isOpen={openMenus.noi} $collapsed={collapsed}>
+                <S.NavLink as="div" $isSub $active={currentPath.startsWith('/speaking')} onClick={() => handleSkillClick('speaking')} $collapsed={collapsed}>
+                  <span className="nav-text">Luyện theo câu hỏi</span>
+                </S.NavLink>
+                <S.NavLink as="div" $isSub onClick={onClose} $collapsed={collapsed}>
+                  <span className="nav-text">Mẹo học hay</span>
+                </S.NavLink>
               </S.SubMenuWrapper>
             </S.NavItemWrapper>
 
             {/* Mục Viết */}
             <S.NavItemWrapper>
-              <S.NavLink as="div" onClick={() => toggleMenu('viet')}>
+              <S.NavLink as="div" onClick={() => toggleMenu('viet')} $collapsed={collapsed} $active={currentPath.startsWith('/writing')}>
                 <span className="material-symbols-outlined">edit_document</span>
-                <span>Viết</span>
+                <span className="nav-text">Viết</span>
                 {renderArrow(openMenus.viet)}
               </S.NavLink>
-              <S.SubMenuWrapper $isOpen={openMenus.viet}>
-                <S.NavLink href="#" $isSub onClick={onClose}>Mẫu câu Speaking & Writing</S.NavLink>
-                <S.NavLink href="#" $isSub onClick={onClose}>Luyện viết thư</S.NavLink>
+              <S.SubMenuWrapper $isOpen={openMenus.viet} $collapsed={collapsed}>
+                <S.NavLink as="div" $isSub $active={currentPath.startsWith('/writing')} onClick={() => handleSkillClick('writing')} $collapsed={collapsed}>
+                  <span className="nav-text">Bài viết theo phần</span>
+                </S.NavLink>
+                <S.NavLink as="div" $isSub onClick={onClose} $collapsed={collapsed}>
+                  <span className="nav-text">Mẫu câu Speaking & Writing</span>
+                </S.NavLink>
+                <S.NavLink as="div" $isSub onClick={onClose} $collapsed={collapsed}>
+                  <span className="nav-text">Luyện viết thư</span>
+                </S.NavLink>
               </S.SubMenuWrapper>
             </S.NavItemWrapper>
           </div>
         </S.NavSection>
 
         <S.NavSection>
-          <S.SectionTitle>Tài liệu & Tiện ích</S.SectionTitle>
+          <S.SectionTitle $collapsed={collapsed}>
+            <span className="text">Tài liệu & Tiện ích</span>
+            <div className="line" />
+          </S.SectionTitle>
           <div className="space-y-1">
-            <S.ProLink href="#" onClick={onClose}>
+            <S.ProLink as="div" onClick={onClose} $collapsed={collapsed}>
               <span className="material-symbols-outlined">stars</span>
-              <span>Thi thử</span>
+              <span className="nav-text">Thi thử</span>
               <Badge status="warning" className="ml-auto" />
             </S.ProLink>
-            <S.NavLink href="#" onClick={onClose}>
+            <S.NavLink as="div" onClick={onClose} $collapsed={collapsed}>
               <span className="material-symbols-outlined">library_books</span>
-              <span>Tài liệu học tập</span>
+              <span className="nav-text">Tài liệu học tập</span>
             </S.NavLink>
-            <S.NavLink href="#" onClick={onClose}>
+            <S.NavLink as="div" onClick={onClose} $collapsed={collapsed}>
               <span className="material-symbols-outlined">forum</span>
-              <span>Góc giải đáp (Q&A)</span>
+              <span className="nav-text">Góc giải đáp (Q&A)</span>
             </S.NavLink>
           </div>
         </S.NavSection>
       </nav>
 
-      <S.OnlineBadge>
+      <S.OnlineBadge $collapsed={collapsed}>
         <div className="dot" />
-        <span>1.245 học viên trực tuyến</span>
+        <span className="badge-text">1.245 học viên trực tuyến</span>
       </S.OnlineBadge>
 
-      <S.UserProfileCard>
+      <S.UserProfileCard $collapsed={collapsed}>
         <div className="avatar">T</div>
         <div className="user-info">
           <div className="name">Thí sinh</div>

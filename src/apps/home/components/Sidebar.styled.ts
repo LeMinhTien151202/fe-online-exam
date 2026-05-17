@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
-export const SidebarContainer = styled.aside`
-  width: 17.5rem;
+export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
+  width: ${props => props.$collapsed ? '5.5rem' : '17.5rem'};
   background: #001A41;
   color: white;
   display: flex;
@@ -11,18 +11,22 @@ export const SidebarContainer = styled.aside`
   top: 0;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   z-index: 100;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
   @media (max-width: 1024px) {
     display: none;
   }
 `;
 
-export const LogoWrapper = styled.div`
-  padding: 2rem 1.5rem;
+export const LogoWrapper = styled.div<{ $collapsed?: boolean }>`
+  padding: 1.5rem ${props => props.$collapsed ? '1rem' : '1.5rem'};
   display: flex;
   align-items: center;
   gap: 0.75rem;
   background: #001A41;
+  transition: all 0.3s;
+  justify-content: ${props => props.$collapsed ? 'center' : 'flex-start'};
+  position: relative;
 
   img {
     height: 2rem;
@@ -31,6 +35,7 @@ export const LogoWrapper = styled.div`
     background: white;
     padding: 0.25rem;
     border-radius: 0.25rem;
+    flex-shrink: 0;
   }
 
   span {
@@ -38,6 +43,31 @@ export const LogoWrapper = styled.div`
     font-weight: 800;
     letter-spacing: -0.02em;
     color: white;
+    opacity: ${props => props.$collapsed ? '0' : '1'};
+    display: ${props => props.$collapsed ? 'none' : 'block'};
+    white-space: nowrap;
+  }
+  
+  .collapse-btn {
+    position: absolute;
+    right: -14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #001A41;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    
+    &:hover {
+      background: #1e3a8a;
+    }
   }
 `;
 
@@ -46,7 +76,7 @@ export const NavSection = styled.div`
   margin-bottom: 1.5rem;
 `;
 
-export const SectionTitle = styled.h3`
+export const SectionTitle = styled.h3<{ $collapsed?: boolean }>`
   padding: 0 1rem;
   margin-bottom: 0.75rem;
   font-size: 0.6875rem;
@@ -54,17 +84,33 @@ export const SectionTitle = styled.h3`
   letter-spacing: 0.15em;
   color: rgba(255, 255, 255, 0.3);
   font-weight: 700;
+  text-align: ${props => props.$collapsed ? 'center' : 'left'};
+  
+  .text {
+    display: ${props => props.$collapsed ? 'none' : 'inline'};
+  }
+  .line {
+    display: ${props => props.$collapsed ? 'block' : 'none'};
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0.5rem auto;
+    width: 2rem;
+  }
 `;
 
 export const NavItemWrapper = styled.div`
   margin-bottom: 0.25rem;
 `;
 
-export const NavLink = styled.a<{ $active?: boolean; $isSub?: boolean }>`
+export const NavLink = styled.a<{ $active?: boolean; $isSub?: boolean; $collapsed?: boolean }>`
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: ${props => props.$isSub ? '0.5rem 1rem 0.5rem 3.25rem' : '0.75rem 1rem'};
+  gap: ${props => props.$collapsed ? '0' : '0.75rem'};
+  padding: ${props => {
+    if (props.$collapsed) return '0.75rem 0';
+    return props.$isSub ? '0.5rem 1rem 0.5rem 3.25rem' : '0.75rem 1rem';
+  }};
+  justify-content: ${props => props.$collapsed ? 'center' : 'flex-start'};
   border-radius: 0.75rem;
   color: ${props => {
     if (props.$active) return 'white';
@@ -77,6 +123,8 @@ export const NavLink = styled.a<{ $active?: boolean; $isSub?: boolean }>`
   transition: all 0.2s ease;
   text-decoration: none;
   cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
 
   &:hover {
     background: rgba(255, 255, 255, 0.05);
@@ -87,6 +135,11 @@ export const NavLink = styled.a<{ $active?: boolean; $isSub?: boolean }>`
     font-size: 1.5rem;
     width: 1.5rem;
     flex-shrink: 0;
+    text-align: center;
+  }
+  
+  .nav-text {
+    display: ${props => props.$collapsed ? 'none' : 'block'};
   }
 
   .arrow-icon {
@@ -94,12 +147,13 @@ export const NavLink = styled.a<{ $active?: boolean; $isSub?: boolean }>`
     font-size: 0.625rem;
     color: rgba(255, 255, 255, 0.3);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: ${props => props.$collapsed ? 'none' : 'block'};
   }
 `;
 
-export const SubMenuWrapper = styled.div<{ $isOpen: boolean }>`
-  max-height: ${props => props.$isOpen ? '18.75rem' : '0'};
-  opacity: ${props => props.$isOpen ? '1' : '0'};
+export const SubMenuWrapper = styled.div<{ $isOpen: boolean; $collapsed?: boolean }>`
+  max-height: ${props => (props.$isOpen && !props.$collapsed) ? '18.75rem' : '0'};
+  opacity: ${props => (props.$isOpen && !props.$collapsed) ? '1' : '0'};
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
@@ -118,18 +172,24 @@ export const ProLink = styled(NavLink)`
   &:hover {
     background: rgba(251, 191, 36, 0.1);
   }
+  
+  .ant-badge {
+    display: ${props => props.$collapsed ? 'none' : 'block'};
+  }
 `;
 
-export const OnlineBadge = styled.div`
-  display: inline-flex;
+export const OnlineBadge = styled.div<{ $collapsed?: boolean }>`
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: ${props => props.$collapsed ? 'center' : 'flex-start'};
+  gap: ${props => props.$collapsed ? '0' : '0.5rem'};
   background: rgba(255, 255, 255, 0.05);
-  padding: 0.5rem 1rem;
-  border-radius: 6.25rem;
+  padding: ${props => props.$collapsed ? '0.75rem 0' : '0.5rem 1rem'};
+  border-radius: ${props => props.$collapsed ? '0.75rem' : '6.25rem'};
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.8);
   margin: 0 1rem 1rem;
+  white-space: nowrap;
 
   .dot {
     width: 0.375rem;
@@ -137,13 +197,19 @@ export const OnlineBadge = styled.div`
     background: #22c55e;
     border-radius: 50%;
     box-shadow: 0 0 8px #22c55e;
+    flex-shrink: 0;
+  }
+  
+  .badge-text {
+    display: ${props => props.$collapsed ? 'none' : 'block'};
   }
 `;
 
-export const UserProfileCard = styled.div`
+export const UserProfileCard = styled.div<{ $collapsed?: boolean }>`
   padding: 1rem;
   display: flex;
   align-items: center;
+  justify-content: ${props => props.$collapsed ? 'center' : 'flex-start'};
   gap: 0.75rem;
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -164,15 +230,19 @@ export const UserProfileCard = styled.div`
 
   .user-info {
     flex: 1;
+    display: ${props => props.$collapsed ? 'none' : 'block'};
+    
     .name {
       font-size: 0.875rem;
       font-weight: 600;
       color: white;
       margin-bottom: 0.125rem;
+      white-space: nowrap;
     }
     .plan {
       font-size: 0.6875rem;
       color: #94a3b8;
+      white-space: nowrap;
     }
   }
 
@@ -183,7 +253,7 @@ export const UserProfileCard = styled.div`
     border: none;
     cursor: pointer;
     padding: 0.25rem;
-    display: flex;
+    display: ${props => props.$collapsed ? 'none' : 'flex'};
     
     &:hover {
       color: white;

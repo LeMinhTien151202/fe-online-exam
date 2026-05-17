@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Typography, Drawer, Button } from 'antd';
 import { InfoCircleOutlined, MessageOutlined, MenuOutlined, BellOutlined } from '@ant-design/icons';
+import { Link } from '@tanstack/react-router';
 
 // Components
 import { Sidebar } from '../components/Sidebar';
@@ -43,13 +44,17 @@ const HomePage: React.FC = () => {
         <Sidebar onClose={() => setIsMobileMenuOpen(false)} />
       </Drawer>
 
-      <div className="flex-1 flex flex-col">
+      <S.RightColumn>
         {/* Mobile Header */}
         <S.MobileHeader>
-          <div className="flex items-center gap-2">
+          <Link 
+            to="/" 
+            className="flex items-center gap-2" 
+            style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+          >
             <S.HeaderLogo src="/image.png" alt="Logo" />
             <S.HeaderTitle>Aptis Prep</S.HeaderTitle>
-          </div>
+          </Link>
           <div className="flex items-center gap-2">
             <Button type="text" icon={<BellOutlined />} />
             <Button 
@@ -87,7 +92,7 @@ const HomePage: React.FC = () => {
                   <Text>
                     Tìm hiểu thêm về cấu trúc bài thi, hệ thống tính điểm và cách tối đa hóa kết quả của bạn.
                   </Text>
-                  <a href="#">
+                  <a href="" onClick={(e) => e.preventDefault()}>
                     Đọc Hướng dẫn →
                   </a>
                 </S.InfoCardContent>
@@ -102,7 +107,7 @@ const HomePage: React.FC = () => {
                   <Text>
                     Kết nối với các thí sinh khác, chia sẻ mẹo học và đặt câu hỏi về quá trình ôn luyện của bạn.
                   </Text>
-                  <a href="#">
+                  <a href="" onClick={(e) => e.preventDefault()}>
                     Tham gia Thảo luận →
                   </a>
                 </S.InfoCardContent>
@@ -115,15 +120,15 @@ const HomePage: React.FC = () => {
                 © 2024 Trung tâm Luyện thi Aptis Prep. Bảo lưu mọi quyền.
               </S.CopyrightText>
               <S.FooterLinks>
-                <a href="#">Chính sách Bảo mật</a>
-                <a href="#">Điều khoản Dịch vụ</a>
-                <a href="#">Trung tâm Trợ giúp</a>
-                <a href="#">Liên hệ</a>
+                <a href="/" onClick={(e) => e.preventDefault()}>Chính sách Bảo mật</a>
+                <a href="/" onClick={(e) => e.preventDefault()}>Điều khoản Dịch vụ</a>
+                <a href="/" onClick={(e) => e.preventDefault()}>Trung tâm Trợ giúp</a>
+                <a href="/" onClick={(e) => e.preventDefault()}>Liên hệ</a>
               </S.FooterLinks>
             </S.Footer>
           </S.Container>
         </S.ContentArea>
-      </div>
+      </S.RightColumn>
     </S.MainLayout>
   );
 };

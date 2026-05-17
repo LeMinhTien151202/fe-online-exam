@@ -3,7 +3,15 @@ import styled from 'styled-components';
 export const MainLayout = styled.div`
   display: flex;
   min-height: 100vh;
+  width: 100%;
   background: #F4F7FE;
+`;
+
+export const RightColumn = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Prevents overflow issues */
 `;
 
 export const MobileHeader = styled.header`
