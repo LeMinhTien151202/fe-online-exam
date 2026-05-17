@@ -99,24 +99,27 @@ export const FixedSentenceCard = styled.div`
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 0.5rem;
-  padding: 1.1rem 1.25rem;
+  padding: 1rem 1.25rem;
   font-size: 0.975rem;
   line-height: 1.5;
   color: #0f172a;
   font-weight: 600;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01);
+  min-height: 56px;
+  display: flex;
+  align-items: center;
 `;
 
 export const EmptySlotDropzone = styled.div<{ $isOver?: boolean }>`
   background: ${props => props.$isOver ? '#f0fdf4' : '#fafafa'};
-  border: 1.5px dashed ${props => props.$isOver ? '#10b981' : '#cbd5e1'};
+  border: 1px dashed ${props => props.$isOver ? '#10b981' : '#cbd5e1'};
   border-radius: 0.5rem;
-  padding: 1rem;
-  font-size: 0.95rem;
+  padding: 1rem 1.25rem;
+  font-size: 0.975rem;
   color: #94a3b8;
-  font-weight: 500;
+  font-weight: 600;
   text-align: center;
-  min-height: 54px;
+  min-height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,17 +134,19 @@ export const EmptySlotDropzone = styled.div<{ $isOver?: boolean }>`
 
 export const PlacedItemCard = styled.div`
   background: #ffffff;
-  border: 1.5px solid #10b981;
+  border: 1px solid #10b981;
   border-radius: 0.5rem;
-  padding: 0.85rem 1.1rem;
+  padding: 1rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   box-shadow: 0 4px 10px rgba(16, 185, 129, 0.02);
+  min-height: 56px;
+  cursor: grab;
 
   .text {
-    font-size: 0.95rem;
+    font-size: 0.975rem;
     color: #1e293b;
     font-weight: 600;
     line-height: 1.5;
@@ -155,11 +160,16 @@ export const PlacedItemCard = styled.div`
     color: #ef4444;
     font-weight: 700;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.1rem;
     padding: 0 0.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: color 0.2s;
+    
+    &:hover {
+      color: #dc2626;
+    }
   }
 `;
 
@@ -175,11 +185,12 @@ export const DraggableCard = styled.div`
   border-radius: 0.5rem;
   padding: 1rem 1.25rem;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.75rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01);
   cursor: grab;
   transition: all 0.2s;
+  min-height: 56px;
 
   &:hover {
     border-color: #cbd5e1;
@@ -200,7 +211,7 @@ export const DragGripHandle = styled.div`
 `;
 
 export const DraggableText = styled.span`
-  font-size: 0.95rem;
+  font-size: 0.975rem;
   color: #334155;
   font-weight: 600;
   line-height: 1.5;
@@ -302,4 +313,35 @@ export const HeaderSelect = styled(Select)`
   .ant-select-arrow {
     color: white !important;
   }
+`;
+
+export const TitleArea = styled.div`
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+
+  h2 {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 6px 0;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+`;
+
+export const TipBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: #b45309;
+  font-weight: 500;
+  font-style: italic;
 `;

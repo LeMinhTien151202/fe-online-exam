@@ -1,5 +1,5 @@
 import React from 'react';
-import { Select, Button, Space, Progress, message } from 'antd';
+import { Select, Button, Space, Progress, Badge, message } from 'antd';
 import { useNavigate } from '@tanstack/react-router';
 import { 
   LeftOutlined, 
@@ -183,6 +183,9 @@ export const Part2Page: React.FC = () => {
 
           <S.MainContent>
             <S.Column>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <Badge status="processing" text={<span style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.95rem' }}>Sắp xếp các đáp án theo đúng thứ tự</span>} />
+              </div>
               <S.ColumnHeader>
                 A new café in town (Version 3)
               </S.ColumnHeader>
@@ -241,9 +244,13 @@ export const Part2Page: React.FC = () => {
             </S.Column>
 
             <S.Column>
-              <S.ColumnSubHeader>
-                ← Kéo câu vào đây
-              </S.ColumnSubHeader>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.95rem' }}>← Kéo hoặc click để chọn câu</span>
+                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>{placedCount}/5 Đã xếp</span>
+              </div>
+              <S.ColumnHeader style={{ visibility: 'hidden', userSelect: 'none' }}>
+                &nbsp;
+              </S.ColumnHeader>
               <S.OptionsPool>
                 {pool.map((item) => (
                   <S.DraggableCard
