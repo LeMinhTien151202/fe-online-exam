@@ -53,25 +53,6 @@ Thiết kế các khối UI tĩnh:
 - Gắn node route mới này vào `routeTree` của hệ thống tại `src/Route.tsx`.
 
 ---
-## Workflow Chuẩn: Quản lý State với Redux Toolkit (RTK)
-
-Khi state cần được chia sẻ giữa nhiều màn hình hoặc có logic phức tạp (VD: Thông tin phiên làm việc, Cache dữ liệu dùng chung, Giỏ hàng):
-
-### ⏳ Bước 1: Tạo Slice
-**Vị trí**: `src/shared/store/slices/[feature]Slice.ts` hoặc `src/apps/[app-name]/store/[feature]Slice.ts`
-- Định nghĩa `initialState` với Type/Interface rõ ràng.
-- Sử dụng `createSlice` để định nghĩa các `reducers` (actions).
-
-### ⏳ Bước 2: Cấu hình Store (Nếu chưa có)
-**Vị trí**: `src/shared/store/index.ts`
-- Sử dụng `configureStore`.
-- Khai báo các typed hooks: `useAppDispatch`, `useAppSelector` để sử dụng trong app.
-
-### ⏳ Bước 3: Sử dụng trong Component/Hook
-- Sử dụng `useAppSelector` để lấy dữ liệu.
-- Sử dụng `useAppDispatch` để trigger action.
-
----
 ## Workflow Chuẩn: Styling Components (Kỷ luật UI)
 
 ### ⏳ Nguyên tắc Cốt lõi

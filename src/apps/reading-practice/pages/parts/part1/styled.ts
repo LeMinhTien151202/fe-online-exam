@@ -7,7 +7,7 @@ export const PageContainer = styled.div`
   flex-direction: column;
   height: 100vh;
   width: 100%;
-  background: #f4f4f5;
+  background: #ffffff;
   overflow: hidden;
   font-family:
     "Outfit",
@@ -22,7 +22,7 @@ export const Header = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
   height: 4.5rem;
   background: #001a41;
   color: white;
@@ -59,22 +59,19 @@ export const TimerWrapper = styled.div`
 export const MainContent = styled.main`
   flex: 1;
   overflow-y: auto;
-  padding: 1.5rem;
+  padding: 2rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   width: 100%;
+  background: #ffffff;
 `;
 
-export const ContentCard = styled(Card)`
-  border-radius: 12px !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02) !important;
+export const ContentCard = styled.div`
   background: white;
-
-  .ant-card-body {
-    padding: 24px 32px !important;
-  }
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 `;
 
 export const TitleArea = styled.div`

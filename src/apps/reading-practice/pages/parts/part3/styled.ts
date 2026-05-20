@@ -7,7 +7,7 @@ export const PageContainer = styled.div`
   flex-direction: column;
   height: 100vh;
   width: 100%;
-  background: #f4f4f5;
+  background: #ffffff;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 `;
@@ -16,7 +16,7 @@ export const Header = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
   height: 4.5rem;
   background: #001a41;
   color: white;
@@ -54,9 +54,10 @@ export const MainContent = styled.main`
   display: grid;
   grid-template-columns: 4fr 6fr;
   gap: 1.5rem;
-  padding: 1.5rem;
+  padding: 2rem 2rem;
   flex: 1;
   overflow: hidden;
+  background: #ffffff;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;

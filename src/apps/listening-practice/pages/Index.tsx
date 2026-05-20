@@ -5,7 +5,7 @@ import { PartCard, IPracticePart } from '../components/PartCard';
 import * as S from './styled';
 import * as HomeS from '../../home/pages/styled';
 import { Drawer, Button } from 'antd';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 
 const listeningParts: IPracticePart[] = [
   {
@@ -51,6 +51,7 @@ const listeningParts: IPracticePart[] = [
 ];
 
 export const ListeningPracticePage: React.FC = () => {
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   return (
@@ -121,7 +122,19 @@ export const ListeningPracticePage: React.FC = () => {
                 <PartCard
                   key={part.id}
                   part={part}
-                  onClick={() => console.log('Chuyển đến màn làm bài', part.id)}
+                  onClick={() => {
+                    if (part.id === 'l1') {
+                      navigate({ to: '/listening/part/1' });
+                    } else if (part.id === 'l2') {
+                      navigate({ to: '/listening/part/2' });
+                    } else if (part.id === 'l3') {
+                      navigate({ to: '/listening/part/3' });
+                    } else if (part.id === 'l4') {
+                      navigate({ to: '/listening/part/4' });
+                    } else {
+                      console.log('Chuyển đến màn làm bài', part.id);
+                    }
+                  }}
                 />
               ))}
             </S.PartsContainer>

@@ -110,7 +110,7 @@ export const Part1Page: React.FC = () => {
             <S.ContentCard>
               {/* Title, Subtitle, and Tip styled via styled-components */}
               <S.TitleArea>
-                <h2>Complete the sentences</h2>
+                <h2>Hoàn thành các câu hỏi dưới đây</h2>
                 <div className="subtitle">
                   Select the correct word from the dropdown to complete each sentence.
                 </div>

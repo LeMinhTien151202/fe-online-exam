@@ -8,7 +8,7 @@ import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { rootRoute } from './shared/router/root';
 import { homeRoute } from './apps/home/routes';
 import { readingRoute, readingPart1Route, readingPart2Route, readingPart3Route, readingPart4Route } from './apps/reading-practice/routes';
-import { listeningRoute } from './apps/listening-practice/routes';
+import { listeningRoute, listeningPart1Route, listeningPart2Route, listeningPart3Route, listeningPart4Route } from './apps/listening-practice/routes';
 import { speakingRoute } from './apps/speaking-practice/routes';
 import { grammarRoute } from './apps/grammar-practice/routes';
 import { writingRoute } from './apps/writing-practice/routes';
@@ -22,6 +22,10 @@ const routeTree = rootRoute.addChildren([
   readingPart3Route,
   readingPart4Route,
   listeningRoute,
+  listeningPart1Route,
+  listeningPart2Route,
+  listeningPart3Route,
+  listeningPart4Route,
   speakingRoute,
   grammarRoute,
   writingRoute
