@@ -12,9 +12,34 @@ export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   z-index: 100;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible; /* Ensure absolute child toggle button is not clipped */
   
   @media (max-width: 1024px) {
     display: none;
+  }
+
+  .collapse-btn {
+    position: absolute;
+    right: -14px;
+    top: 2rem; /* Move it slightly down from the top edge */
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #001A41;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 110;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: #1677ff; /* Nice primary brand hover color */
+      border-color: #1677ff;
+    }
   }
 `;
 
@@ -27,6 +52,7 @@ export const LogoWrapper = styled.div<{ $collapsed?: boolean }>`
   transition: all 0.3s;
   justify-content: ${props => props.$collapsed ? 'center' : 'flex-start'};
   position: relative;
+  flex-shrink: 0;
 
   img {
     height: 2rem;
@@ -47,28 +73,21 @@ export const LogoWrapper = styled.div<{ $collapsed?: boolean }>`
     display: ${props => props.$collapsed ? 'none' : 'block'};
     white-space: nowrap;
   }
-  
-  .collapse-btn {
-    position: absolute;
-    right: -14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: #001A41;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10;
-    
-    &:hover {
-      background: #1e3a8a;
-    }
+`;
+
+export const NavContainer = styled.nav`
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  flex-shrink: 1;
+  min-height: 0;
+
+  /* Hide scrollbar */
+  &::-webkit-scrollbar {
+    display: none;
   }
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 `;
 
 export const NavSection = styled.div`
@@ -102,7 +121,7 @@ export const NavItemWrapper = styled.div`
   margin-bottom: 0.25rem;
 `;
 
-export const NavLink = styled.a<{ $active?: boolean; $isSub?: boolean; $collapsed?: boolean }>`
+export const NavLink = styled.a<{ $active?: boolean; $isSub?: boolean; $collapsed?: boolean; $isOpen?: boolean }>`
   display: flex;
   align-items: center;
   gap: ${props => props.$collapsed ? '0' : '0.75rem'};
@@ -117,7 +136,7 @@ export const NavLink = styled.a<{ $active?: boolean; $isSub?: boolean; $collapse
     if (props.$isSub) return 'rgba(255, 255, 255, 0.5)';
     return 'rgba(255, 255, 255, 0.7)';
   }};
-  background: ${props => props.$active ? 'rgba(255, 255, 255, 0.1)' : 'transparent'};
+  background: ${props => (props.$active && !(props.$isOpen && !props.$isSub)) ? 'rgba(255, 255, 255, 0.1)' : 'transparent'};
   font-size: ${props => props.$isSub ? '0.8125rem' : '0.875rem'};
   font-weight: 500;
   transition: all 0.2s ease;
@@ -190,6 +209,7 @@ export const OnlineBadge = styled.div<{ $collapsed?: boolean }>`
   color: rgba(255, 255, 255, 0.8);
   margin: 0 1rem 1rem;
   white-space: nowrap;
+  flex-shrink: 0;
 
   .dot {
     width: 0.375rem;
@@ -213,6 +233,7 @@ export const UserProfileCard = styled.div<{ $collapsed?: boolean }>`
   gap: 0.75rem;
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
 
   .avatar {
     width: 2.75rem;

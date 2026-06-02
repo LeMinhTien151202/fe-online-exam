@@ -1,10 +1,11 @@
 import { createRoute } from '@tanstack/react-router';
 import { rootRoute } from '../../shared/router/root';
-import ListeningPracticePage from './pages/Index';
-import Part1Page from './pages/parts/part1/Index';
-import Part2Page from './pages/parts/part2/Index';
-import Part3Page from './pages/parts/part3/Index';
-import Part4Page from './pages/parts/part4/Index';
+import ListeningPracticePage from './pages/listening-landing/pages/Index';
+import Part1Page from './pages/listening-part1/pages/Index';
+import Part2Page from './pages/listening-part2/pages/Index';
+import Part3Page from './pages/listening-part3/pages/Index';
+import Part4Page from './pages/listening-part4/pages/Index';
+import { ListeningMockTestPage } from './pages/listening-mock-test/pages/Index';
 
 // Định nghĩa route cho Trang luyện tập Nghe
 export const listeningRoute = createRoute({
@@ -36,3 +37,10 @@ export const listeningPart4Route = createRoute({
   path: '/listening/part/4',
   component: Part4Page,
 });
+
+export const listeningMockTestRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/listening/mock-test/$testId',
+  component: ListeningMockTestPage,
+});
+

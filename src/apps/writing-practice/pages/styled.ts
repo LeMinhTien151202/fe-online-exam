@@ -99,3 +99,117 @@ export const PartsContainer = styled.div`
     grid-template-columns: 1fr;
   }
 `;
+
+export const TabSectionWrapper = styled.div`
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: flex-start;
+  
+  .ant-segmented {
+    padding: 4px;
+    background: #f1f5f9;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    
+    .ant-segmented-item {
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 6px 20px;
+      transition: all 0.2s;
+      color: #475569;
+      
+      &:hover {
+        color: #0f172a;
+      }
+    }
+    
+    .ant-segmented-item-selected {
+      background: #00205B !important;
+      color: white !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 32, 91, 0.2) !important;
+    }
+  }
+`;
+
+export const MockTestGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const MockTestCard = styled.div`
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 32, 91, 0.06);
+    border-color: #cbd5e1;
+  }
+`;
+
+export const MockTestTitle = styled.h3`
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #00205B;
+  margin-bottom: 0.75rem;
+  padding-right: 4.5rem; /* Avoid overlapping badge */
+`;
+
+export const MockTestMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex: 1;
+`;
+
+export const MetaItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+`;
+
+export const MockTestBadge = styled.span<{ $type: 'easy' | 'medium' | 'hard' }>`
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 2rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  
+  background: ${props => {
+    if (props.$type === 'easy') return '#ecfdf5';
+    if (props.$type === 'medium') return '#fffbeb';
+    return '#fef2f2';
+  }};
+  
+  color: ${props => {
+    if (props.$type === 'easy') return '#047857';
+    if (props.$type === 'medium') return '#b45309';
+    return '#b91c1c';
+  }};
+`;

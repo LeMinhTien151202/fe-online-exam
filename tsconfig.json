@@ -16,11 +16,10 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@apps/*": ["src/apps/*"],
-      "@shared/*": ["src/shared/*"]
+      "@/*": ["./src/*"],
+      "@apps/*": ["./src/apps/*"],
+      "@shared/*": ["./src/shared/*"]
     }
   },
   "include": ["src"],

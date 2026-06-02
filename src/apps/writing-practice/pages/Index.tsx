@@ -1,13 +1,25 @@
 import React from 'react';
 import { Sidebar } from '../../home/components/Sidebar';
-import { AlignLeftOutlined, UnorderedListOutlined, MessageOutlined, MailOutlined, EditOutlined, BellOutlined, MenuOutlined } from '@ant-design/icons';
+import { 
+  AlignLeftOutlined, 
+  UnorderedListOutlined, 
+  MessageOutlined, 
+  MailOutlined, 
+  EditOutlined, 
+  BellOutlined, 
+  MenuOutlined,
+  ClockCircleOutlined,
+  QuestionCircleOutlined,
+  TrophyOutlined,
+  ThunderboltOutlined
+} from '@ant-design/icons';
 import { PartCard, IPracticePart } from '../components/PartCard';
 import * as S from './styled';
 import * as HomeS from '../../home/pages/styled';
-import { Drawer, Button } from 'antd';
-import { Link } from '@tanstack/react-router';
+import { Drawer, Button, Segmented, Progress } from 'antd';
+import { Link, useNavigate } from '@tanstack/react-router';
 
-const writingParts: Omit<IPracticePart, 'progress'>[] = [
+const writingPartsData: Omit<IPracticePart, 'progress'>[] = [
   {
     id: 'w1',
     title: 'Part 1: Word-level Writing',
@@ -28,8 +40,8 @@ const writingParts: Omit<IPracticePart, 'progress'>[] = [
   },
   {
     id: 'w3',
-    title: 'Part 3: Three Written Parts of a Text',
-    subTitle: 'Viết tương tác mạng xã hội',
+    title: 'Part 3: Social Network Interaction',
+    subTitle: 'Tương tác mạng xã hội',
     difficulty: 'medium',
     description: 'Bạn sẽ tương tác trong một nhóm chat/diễn đàn. Sẽ có 3 câu hỏi từ các thành viên khác và bạn cần trả lời mỗi câu (khoảng 30-40 từ/câu).',
     icon: <MessageOutlined />,
@@ -37,7 +49,7 @@ const writingParts: Omit<IPracticePart, 'progress'>[] = [
   },
   {
     id: 'w4',
-    title: 'Part 4: Formal and Informal Writing',
+    title: 'Part 4: Formal and Informal Emails',
     subTitle: 'Viết email trang trọng & thân mật',
     difficulty: 'hard',
     description: 'Bạn nhận được một thông báo về một vấn đề nào đó. Bạn phải viết 1 email ngắn gọn, thân mật cho một người bạn (khoảng 50 từ) và 1 email trang trọng gửi cho ban quản lý/công ty (khoảng 120-150 từ).',
@@ -46,34 +58,56 @@ const writingParts: Omit<IPracticePart, 'progress'>[] = [
   }
 ];
 
+const mockTestsData = [
+  { id: 'm1', title: 'Đề Viết số 1', questions: 11, duration: 50, difficulty: 'medium' as const },
+  { id: 'm2', title: 'Đề Viết số 2', questions: 11, duration: 50, difficulty: 'hard' as const },
+  { id: 'm3', title: 'Đề Viết số 3', questions: 11, duration: 50, difficulty: 'easy' as const }
+];
+
 export const WritingPracticePage: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [activeTab, setActiveTab] = React.useState<'parts' | 'mock-tests'>('parts');
+  const navigate = useNavigate();
 
-  // Quản lý trạng thái tiến trình cục bộ bằng React state (không sử dụng Redux)
-  const [progress, setProgress] = React.useState<Record<string, number>>({
-    w1: 0,
-    w2: 0,
-    w3: 0,
-    w4: 0
+  const [writingProgress, setWritingProgress] = React.useState<Record<string, number>>(() => {
+    const saved = localStorage.getItem('aptis_writing_progress');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // ignore
+      }
+    }
+    return { w1: 0, w2: 0, w3: 0, w4: 0 };
   });
 
-  const completedCount = Object.values(progress).filter(prog => prog === 100).length;
+  const [mockProgress, setMockProgress] = React.useState<Record<string, number>>(() => {
+    const saved = localStorage.getItem('aptis_writing_mock_progress');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // ignore
+      }
+    }
+    return { m1: 0, m2: 0, m3: 0 };
+  });
+
+  const parts = writingPartsData.map((part) => ({
+    ...part,
+    progress: writingProgress[part.id] ?? 0,
+  }));
+
+  const completedCount = Object.values(writingProgress).filter((prog) => prog === 100).length;
 
   const handlePartClick = (partId: string) => {
-    setProgress(prev => {
-      const current = prev[partId] ?? 0;
-      const nextVal = current >= 100 ? 0 : current + 25;
-      return {
-        ...prev,
-        [partId]: nextVal
-      };
-    });
+    const num = partId.replace('w', '');
+    navigate({ to: `/writing/part/${num}` });
   };
 
-  const parts = writingParts.map(part => ({
-    ...part,
-    progress: progress[part.id] ?? 0
-  }));
+  const handleMockClick = (mockId: string) => {
+    navigate({ to: `/writing/mock-test/${mockId}` as any });
+  };
 
   return (
     <HomeS.MainLayout>
@@ -117,8 +151,8 @@ export const WritingPracticePage: React.FC = () => {
                 <S.CategoryTag>
                   <EditOutlined /> KỸ NĂNG VIẾT
                 </S.CategoryTag>
-                <S.PageTitle>Thống kê 4 phần thi Aptis Writing</S.PageTitle>
-                <S.SubTitle>Luyện tập 4 phần thi viết của đề thi APTIS chuẩn hóa. Từng phần thi được thiết kế để cải thiện tốc độ và sự mạch lạc trong văn viết.</S.SubTitle>
+                <S.PageTitle>Luyện Tập Viết Tiếng Anh Aptis</S.PageTitle>
+                <S.SubTitle>Mô phỏng chính xác cấu trúc bài thi thực tế. Chọn ôn luyện riêng từng phần hoặc kiểm tra năng lực với bộ đề thi thử đầy đủ.</S.SubTitle>
               </S.HeaderContent>
               <S.StatsContainer>
                 <S.StatPill>
@@ -138,15 +172,96 @@ export const WritingPracticePage: React.FC = () => {
               </S.StatsContainer>
             </S.HeaderSection>
 
-            <S.PartsContainer>
-              {parts.map((part) => (
-                <PartCard
-                  key={part.id}
-                  part={part as any}
-                  onClick={() => handlePartClick(part.id)}
-                />
-              ))}
-            </S.PartsContainer>
+            {/* Tab selector for Parts vs Mock Tests */}
+            <S.TabSectionWrapper>
+              <Segmented
+                value={activeTab}
+                onChange={(value) => setActiveTab(value as any)}
+                options={[
+                  { label: 'Luyện tập theo phần', value: 'parts' },
+                  { label: 'Luyện tập theo bộ đề', value: 'mock-tests' }
+                ]}
+                size="large"
+              />
+            </S.TabSectionWrapper>
+
+            {activeTab === 'parts' ? (
+              <S.PartsContainer>
+                {parts.map((part) => (
+                  <PartCard
+                    key={part.id}
+                    part={part}
+                    onClick={() => handlePartClick(part.id)}
+                  />
+                ))}
+              </S.PartsContainer>
+            ) : (
+              <S.MockTestGrid>
+                {mockTestsData.map((mock) => {
+                  const hasDone = mockProgress[mock.id] === 100;
+                  const difficultyLabel = mock.difficulty === 'easy' ? 'Dễ' : mock.difficulty === 'medium' ? 'Trung bình' : 'Khó';
+                  
+                  return (
+                    <S.MockTestCard key={mock.id}>
+                      <S.MockTestBadge $type={mock.difficulty}>
+                        {difficultyLabel}
+                      </S.MockTestBadge>
+                      <S.MockTestTitle>{mock.title}</S.MockTestTitle>
+                      
+                      <S.MockTestMeta>
+                        <S.MetaItem>
+                          <QuestionCircleOutlined />
+                          <span>Số câu hỏi: {mock.questions} câu viết</span>
+                        </S.MetaItem>
+                        <S.MetaItem>
+                          <ClockCircleOutlined />
+                          <span>Thời gian: {mock.duration} phút</span>
+                        </S.MetaItem>
+                        <S.MetaItem>
+                          <TrophyOutlined />
+                          <span>
+                            Kết quả tốt nhất:{' '}
+                            {hasDone ? (
+                              <strong style={{ color: '#10b981' }}>Đã hoàn thành (100%)</strong>
+                            ) : (
+                              <span style={{ color: '#64748b' }}>Chưa làm</span>
+                            )}
+                          </span>
+                        </S.MetaItem>
+                      </S.MockTestMeta>
+
+                      {hasDone && (
+                        <div style={{ marginBottom: '1rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
+                            <span>Tiến độ</span>
+                            <span>100%</span>
+                          </div>
+                          <Progress percent={100} size="small" strokeColor="#10b981" showInfo={false} />
+                        </div>
+                      )}
+
+                      <Button 
+                        type="primary"
+                        icon={<ThunderboltOutlined />}
+                        style={{ 
+                          width: '100%', 
+                          borderRadius: '8px', 
+                          height: '40px', 
+                          fontWeight: 700,
+                          background: hasDone ? '#eff6ff' : '#00205B',
+                          borderColor: hasDone ? '#bfdbfe' : '#00205B',
+                          color: hasDone ? '#1d4ed8' : '#ffffff',
+                          boxShadow: hasDone ? 'none' : '0 4px 6px -1px rgba(0, 32, 91, 0.15)'
+                        }}
+                        onClick={() => handleMockClick(mock.id)}
+                      >
+                        {hasDone ? 'Làm lại đề thi' : 'Bắt đầu làm đề'}
+                      </Button>
+                    </S.MockTestCard>
+                  );
+                })}
+              </S.MockTestGrid>
+            )}
           </S.Container>
         </HomeS.ContentArea>
       </HomeS.RightColumn>

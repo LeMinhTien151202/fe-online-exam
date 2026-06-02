@@ -26,7 +26,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
   const toggleMenu = (key: string) => {
     if (collapsed) setCollapsed(false);
-    setOpenMenus(prev => ({ ...prev, [key]: !prev[key] }));
+    setOpenMenus(prev => {
+      const next: Record<string, boolean> = {
+        doc: false,
+        nghe: false,
+        noi: false,
+        viet: false
+      };
+      next[key] = !prev[key];
+      return next;
+    });
   };
 
   const renderArrow = (isOpen: boolean) => (
@@ -49,23 +58,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
   return (
     <S.SidebarContainer onClick={(e) => e.stopPropagation()} $collapsed={collapsed}>
+      <button 
+        className="collapse-btn"
+        onClick={(e) => {
+          e.stopPropagation();
+          setCollapsed(!collapsed);
+        }}
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+          {collapsed ? 'chevron_right' : 'chevron_left'}
+        </span>
+      </button>
       <S.LogoWrapper onClick={handleHomeClick} style={{ cursor: 'pointer' }} $collapsed={collapsed}>
         <img alt="Icon" src="/image.png" />
         <span>Aptis Test</span>
-        <button 
-          className="collapse-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            setCollapsed(!collapsed);
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-            {collapsed ? 'chevron_right' : 'chevron_left'}
-          </span>
-        </button>
       </S.LogoWrapper>
 
-      <nav className="flex-1 overflow-y-auto mt-2">
+      <S.NavContainer>
         <S.NavSection>
           <S.SectionTitle $collapsed={collapsed}>
             <span className="text">Luyện tập</span>
@@ -84,14 +93,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
             {/* Mục Đọc */}
             <S.NavItemWrapper>
-              <S.NavLink as="div" onClick={() => toggleMenu('doc')} $collapsed={collapsed} $active={currentPath.startsWith('/reading')}>
+              <S.NavLink as="div" onClick={() => toggleMenu('doc')} $collapsed={collapsed} $active={currentPath.startsWith('/reading')} $isOpen={openMenus.doc}>
                 <span className="material-symbols-outlined">auto_stories</span>
                 <span className="nav-text">Đọc</span>
                 {renderArrow(openMenus.doc)}
               </S.NavLink>
               <S.SubMenuWrapper $isOpen={openMenus.doc} $collapsed={collapsed}>
-                <S.NavLink as="div" $isSub $active={currentPath.startsWith('/reading')} onClick={() => handleSkillClick('reading')} $collapsed={collapsed}>
+                <S.NavLink as="div" $isSub $active={currentPath === '/reading' && !window.location.search.includes('tab=mock-tests')} onClick={() => handleSkillClick('reading')} $collapsed={collapsed}>
                   <span className="nav-text">Bài tập theo phần</span>
+                </S.NavLink>
+                <S.NavLink as="div" $isSub $active={currentPath === '/reading' && window.location.search.includes('tab=mock-tests')} onClick={() => {
+                  navigate({ to: '/reading', search: { tab: 'mock-tests' } as any });
+                  if (onClose) onClose();
+                }} $collapsed={collapsed}>
+                  <span className="nav-text">Luyện theo bộ đề</span>
                 </S.NavLink>
                 <S.NavLink as="div" $isSub onClick={onClose} $collapsed={collapsed}>
                   <span className="nav-text">Mẹo làm bài</span>
@@ -101,7 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
             {/* Mục Nghe */}
             <S.NavItemWrapper>
-              <S.NavLink as="div" onClick={() => toggleMenu('nghe')} $collapsed={collapsed} $active={currentPath.startsWith('/listening')}>
+              <S.NavLink as="div" onClick={() => toggleMenu('nghe')} $collapsed={collapsed} $active={currentPath.startsWith('/listening')} $isOpen={openMenus.nghe}>
                 <span className="material-symbols-outlined">headphones</span>
                 <span className="nav-text">Nghe</span>
                 {renderArrow(openMenus.nghe)}
@@ -118,7 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
             {/* Mục Nói */}
             <S.NavItemWrapper>
-              <S.NavLink as="div" onClick={() => toggleMenu('noi')} $collapsed={collapsed} $active={currentPath.startsWith('/speaking')}>
+              <S.NavLink as="div" onClick={() => toggleMenu('noi')} $collapsed={collapsed} $active={currentPath.startsWith('/speaking')} $isOpen={openMenus.noi}>
                 <span className="material-symbols-outlined">mic</span>
                 <span className="nav-text">Nói</span>
                 {renderArrow(openMenus.noi)}
@@ -135,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
             {/* Mục Viết */}
             <S.NavItemWrapper>
-              <S.NavLink as="div" onClick={() => toggleMenu('viet')} $collapsed={collapsed} $active={currentPath.startsWith('/writing')}>
+              <S.NavLink as="div" onClick={() => toggleMenu('viet')} $collapsed={collapsed} $active={currentPath.startsWith('/writing')} $isOpen={openMenus.viet}>
                 <span className="material-symbols-outlined">edit_document</span>
                 <span className="nav-text">Viết</span>
                 {renderArrow(openMenus.viet)}
@@ -161,7 +176,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             <div className="line" />
           </S.SectionTitle>
           <div className="space-y-1">
-            <S.ProLink as="div" onClick={onClose} $collapsed={collapsed}>
+            <S.ProLink as="div" onClick={() => {
+              navigate({ to: '/reading', search: { tab: 'mock-tests' } as any });
+              if (onClose) onClose();
+            }} $collapsed={collapsed}>
               <span className="material-symbols-outlined">stars</span>
               <span className="nav-text">Thi thử</span>
               <Badge status="warning" className="ml-auto" />
@@ -176,7 +194,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             </S.NavLink>
           </div>
         </S.NavSection>
-      </nav>
+      </S.NavContainer>
 
       <S.OnlineBadge $collapsed={collapsed}>
         <div className="dot" />

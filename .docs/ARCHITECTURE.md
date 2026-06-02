@@ -62,7 +62,3 @@ Kiến trúc quản lý luồng dữ liệu của dự án xoay quanh hệ sinh 
   - `useData.ts`: Nhận `filter`, gọi hooks `useQuery` để fetch data, sau đó `map/transform` data thô từ API thành dữ liệu chuẩn bị cho bảng (Table) hoặc UI.
   - `useAction.ts`: Chứa các hàm xử lý sự kiện người dùng (onClick, onSubmit), quản lý state mở Modal (`useState`), và gọi hooks `useMutation` để Gửi/Cập nhật dữ liệu. Cuối cùng, trigger `refetch()` làm mới danh sách.
 
-### 2.4. Global Client State
-- **Redux Toolkit**: Được sử dụng để quản lý các trạng thái phức tạp, cần chia sẻ giữa nhiều domain hoặc có logic cập nhật lồng chéo (VD: Giỏ hàng, trạng thái xử lý hồ sơ đa bước). Store được cấu hình tập trung tại `src/shared/store`.
-- **React Context API**: Dùng cho các state tĩnh, ít thay đổi hoặc mang tính chất UI/Cấu hình (VD: Quyền người dùng, Đa ngôn ngữ, Theme).
-- Lấy dữ liệu từ Store qua `useSelector` và trigger hành động qua `useDispatch`.
