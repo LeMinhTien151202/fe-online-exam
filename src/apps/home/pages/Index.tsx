@@ -47,9 +47,9 @@ const HomePage: React.FC = () => {
       <S.RightColumn>
         {/* Mobile Header */}
         <S.MobileHeader>
-          <Link 
-            to="/" 
-            className="flex items-center gap-2" 
+          <Link
+            to="/"
+            className="flex items-center gap-2"
             style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
           >
             <S.HeaderLogo src="/image.png" alt="Logo" />
@@ -57,10 +57,10 @@ const HomePage: React.FC = () => {
           </Link>
           <div className="flex items-center gap-2">
             <Button type="text" icon={<BellOutlined />} />
-            <Button 
-              type="text" 
-              icon={<MenuOutlined />} 
-              onClick={() => setIsMobileMenuOpen(true)} 
+            <Button
+              type="text"
+              icon={<MenuOutlined />}
+              onClick={() => setIsMobileMenuOpen(true)}
             />
           </div>
         </S.MobileHeader>

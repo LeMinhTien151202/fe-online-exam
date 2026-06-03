@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Modal, Button, Space, Progress, Statistic, message } from 'antd';
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import {
   ClockCircleOutlined,
   LeftOutlined,
@@ -13,38 +13,21 @@ import {
 
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
-import { mockGrammarQuestions, mockVocabularySets } from '../services/mockExamData';
-import { useExamAction } from '../hook/useExamAction';
+import { mockGrammarQuestions } from '../services/mockExamData';
+import { usePart1Action } from '../hook/usePart1Action';
 import { GrammarSection } from '../components/GrammarSection';
-import { VocabularySection } from '../components/VocabularySection';
 import { QuestionNav } from '../components/QuestionNav';
 import * as S from '../styles/styled';
 
-export const GrammarTestPage: React.FC = () => {
+export const Part1Page: React.FC = () => {
   const navigate = useNavigate();
-  const { partId, testId } = useParams({ strict: false }) as { partId?: string; testId?: string };
-  const isPartMode = !!partId;
-
-  const initialTime = isPartMode ? 12 * 60 + 30 : 25 * 60;
-  const storagePrefix = partId 
-    ? `aptis_grammar_part_${partId}` 
-    : testId 
-      ? `aptis_grammar_mock_${testId}` 
-      : 'aptis_grammar_test';
-  const totalQuestions = isPartMode ? 25 : 50;
+  const totalQuestions = 25;
 
   const [showResultModal, setShowResultModal] = useState(false);
-  const [scoreResult, setScoreResult] = useState<{
-    grammarScore: number;
-    vocabScore: number;
-    total: number;
-  } | null>(null);
+  const [scoreResult, setScoreResult] = useState<number | null>(null);
 
-  // Chấm điểm khi nộp bài
   const handleExamSubmit = (finalAnswers: Record<number, string>) => {
     let grammarScore = 0;
-    let vocabScore = 0;
-
     mockGrammarQuestions.forEach((q) => {
       const answer = finalAnswers[q.questionNumber];
       if (answer && answer.toLowerCase() === q.correctAnswer.toLowerCase()) {
@@ -52,101 +35,46 @@ export const GrammarTestPage: React.FC = () => {
       }
     });
 
-    mockVocabularySets.forEach((set) => {
-      set.subQuestions.forEach((subQ) => {
-        const answer = finalAnswers[subQ.questionNumber];
-        if (answer && answer.toLowerCase() === subQ.correctAnswer.toLowerCase()) {
-          vocabScore++;
-        }
-      });
-    });
+    setScoreResult(grammarScore);
 
-    const totalScore = grammarScore + vocabScore;
-
-    setScoreResult({
-      grammarScore,
-      vocabScore,
-      total: totalScore
-    });
-
-    // Save progress to local storage
-    if (isPartMode) {
-      const saved = localStorage.getItem('aptis_grammar_progress');
-      let progressObj: Record<string, number> = {};
-      if (saved) {
-        try {
-          progressObj = JSON.parse(saved);
-        } catch (e) {}
-      }
-      if (partId === '1') {
-        progressObj['g1'] = 100;
-      } else {
-        progressObj['g2'] = 100;
-      }
-      localStorage.setItem('aptis_grammar_progress', JSON.stringify(progressObj));
-    } else {
-      const activeTestId = testId || 'm1';
-      const saved = localStorage.getItem('aptis_grammar_mock_progress');
-      let progressObj: Record<string, number> = {};
-      if (saved) {
-        try {
-          progressObj = JSON.parse(saved);
-        } catch (e) {}
-      }
-      const currentBest = progressObj[activeTestId] ?? 0;
-      progressObj[activeTestId] = Math.max(currentBest, totalScore);
-      localStorage.setItem('aptis_grammar_mock_progress', JSON.stringify(progressObj));
+    const saved = localStorage.getItem('aptis_grammar_progress');
+    let progressObj: Record<string, number> = {};
+    if (saved) {
+      try {
+        progressObj = JSON.parse(saved);
+      } catch (e) {}
     }
+    progressObj['g1'] = 100;
+    localStorage.setItem('aptis_grammar_progress', JSON.stringify(progressObj));
 
     setShowResultModal(true);
   };
 
   const {
     answers,
-    currentSection,
     currentQuestionIndex,
     timeLeft,
     progressPercent,
-    setCurrentSection,
     setCurrentQuestionIndex,
     selectAnswer,
     submitExamManual,
     resetExam,
     formatTime,
     totalAnswered
-  } = useExamAction(handleExamSubmit, initialTime, storagePrefix, totalQuestions);
+  } = usePart1Action(handleExamSubmit);
 
-  // Set initial section and question based on partId
-  useEffect(() => {
-    if (partId === '2') {
-      setCurrentSection('vocabulary');
-      setCurrentQuestionIndex(26);
-    } else {
-      setCurrentSection('grammar');
-      setCurrentQuestionIndex(1);
-    }
-  }, [partId]);
-
-  // Điều hướng câu hỏi tự động chuyển phân hệ tương ứng
   const handleNavigateQuestion = (qNum: number) => {
     setCurrentQuestionIndex(qNum);
-    if (qNum <= 25) {
-      setCurrentSection('grammar');
-    } else {
-      setCurrentSection('vocabulary');
-    }
   };
 
   const handlePrevQuestion = () => {
-    const limit = isPartMode && partId === '2' ? 26 : 1;
-    if (currentQuestionIndex > limit) {
+    if (currentQuestionIndex > 1) {
       handleNavigateQuestion(currentQuestionIndex - 1);
     }
   };
 
   const handleNextQuestion = () => {
-    const limit = isPartMode && partId === '1' ? 25 : 50;
-    if (currentQuestionIndex < limit) {
+    if (currentQuestionIndex < 25) {
       handleNavigateQuestion(currentQuestionIndex + 1);
     }
   };
@@ -183,13 +111,6 @@ export const GrammarTestPage: React.FC = () => {
     resetExam();
     setShowResultModal(false);
     setScoreResult(null);
-    if (partId === '2') {
-      setCurrentSection('vocabulary');
-      setCurrentQuestionIndex(26);
-    } else {
-      setCurrentSection('grammar');
-      setCurrentQuestionIndex(1);
-    }
     message.success('Đã tải lại đề thi mới. Chúc bạn làm bài tốt!');
   };
 
@@ -208,9 +129,7 @@ export const GrammarTestPage: React.FC = () => {
                 Quay lại
               </S.HeaderBackButton>
               <S.HeaderTitleText>
-                {isPartMode 
-                  ? (partId === '1' ? 'Part 1: Grammar Practice' : 'Part 2: Vocabulary Practice')
-                  : 'Grammar & Vocabulary Test'}
+                Part 1: Grammar Practice
               </S.HeaderTitleText>
             </Space>
 
@@ -237,34 +156,18 @@ export const GrammarTestPage: React.FC = () => {
           <S.MainContent>
             <S.ContentCard>
               <S.TitleArea>
-                <h2>
-                  {currentSection === 'grammar'
-                    ? 'Part 1: Grammar'
-                    : 'Part 2: Vocabulary'}
-                </h2>
+                <h2>Part 1: Grammar</h2>
                 <div className="subtitle">
-                  {currentSection === 'grammar'
-                    ? 'Answer 25 multiple-choice questions. Read each complete sentence carefully before selecting the option that best completes it.'
-                    : 'Complete 25 questions covering definitions, synonyms, usage in context, and common word combinations.'}
+                  Answer 25 multiple-choice questions. Read each complete sentence carefully before selecting the option that best completes it.
                 </div>
               </S.TitleArea>
 
-              {currentSection === 'grammar' ? (
-                <GrammarSection
-                  questions={mockGrammarQuestions}
-                  answers={answers}
-                  currentQuestionIndex={currentQuestionIndex}
-                  onSelectAnswer={selectAnswer}
-                />
-              ) : (
-                <VocabularySection
-                  sets={mockVocabularySets}
-                  answers={answers}
-                  currentQuestionIndex={currentQuestionIndex}
-                  onSelectAnswer={selectAnswer}
-                  onQuestionFocus={setCurrentQuestionIndex}
-                />
-              )}
+              <GrammarSection
+                questions={mockGrammarQuestions}
+                answers={answers}
+                currentQuestionIndex={currentQuestionIndex}
+                onSelectAnswer={selectAnswer}
+              />
             </S.ContentCard>
 
             <QuestionNav
@@ -272,7 +175,7 @@ export const GrammarTestPage: React.FC = () => {
               currentQuestionIndex={currentQuestionIndex}
               totalAnswered={totalAnswered}
               onNavigateQuestion={handleNavigateQuestion}
-              partId={partId}
+              partId="1"
             />
           </S.MainContent>
 
@@ -282,15 +185,13 @@ export const GrammarTestPage: React.FC = () => {
               icon={<ArrowLeftOutlined />}
               size="large"
               onClick={handlePrevQuestion}
-              disabled={currentQuestionIndex === (isPartMode && partId === '2' ? 26 : 1)}
+              disabled={currentQuestionIndex === 1}
             >
               Câu trước
             </S.FooterButton>
 
             <S.FooterProgressText>
-              {isPartMode 
-                ? (partId === '1' ? `Câu ${currentQuestionIndex} trên 25` : `Câu ${currentQuestionIndex - 25} trên 25`)
-                : `Câu ${currentQuestionIndex} trên 50`}
+              Câu {currentQuestionIndex} trên 25
             </S.FooterProgressText>
 
             <Space size="middle">
@@ -306,7 +207,7 @@ export const GrammarTestPage: React.FC = () => {
                 type="primary"
                 size="large"
                 onClick={handleNextQuestion}
-                disabled={currentQuestionIndex === (isPartMode && partId === '1' ? 25 : 50)}
+                disabled={currentQuestionIndex === 25}
               >
                 Tiếp theo <ArrowRightOutlined className="text-[12px]" />
               </S.NextButton>
@@ -325,29 +226,22 @@ export const GrammarTestPage: React.FC = () => {
         centered
         styles={{ body: { padding: '2.5rem 2rem', textAlign: 'center' } }}
       >
-        {scoreResult && (
+        {scoreResult !== null && (
           <div>
             <S.ResultIconWrapper>
               <CheckCircleOutlined />
             </S.ResultIconWrapper>
             <S.ResultTitle>
-              Hoàn thành bài thi!
+              Hoàn thành bài luyện tập!
             </S.ResultTitle>
             <S.ResultDescription>
               Kết quả điểm luyện tập của bạn:
             </S.ResultDescription>
 
-            <S.ResultStatsGrid $isPartMode={isPartMode}>
-              {(!isPartMode || partId === '1') && (
-                <S.StatBlock>
-                  <Statistic title="Ngữ pháp" value={scoreResult.grammarScore} suffix="/ 25" valueStyle={{ color: '#1677ff', fontWeight: 800 }} />
-                </S.StatBlock>
-              )}
-              {(!isPartMode || partId === '2') && (
-                <S.StatBlock>
-                  <Statistic title="Từ vựng" value={scoreResult.vocabScore} suffix="/ 25" valueStyle={{ color: '#52c41a', fontWeight: 800 }} />
-                </S.StatBlock>
-              )}
+            <S.ResultStatsGrid $isPartMode={true}>
+              <S.StatBlock>
+                <Statistic title="Ngữ pháp" value={scoreResult} suffix="/ 25" valueStyle={{ color: '#1677ff', fontWeight: 800 }} />
+              </S.StatBlock>
             </S.ResultStatsGrid>
 
             <S.SummaryBox>
@@ -355,17 +249,10 @@ export const GrammarTestPage: React.FC = () => {
                 Tổng số điểm
               </S.SummaryBoxTitle>
               <S.SummaryBoxScore>
-                {isPartMode 
-                  ? (partId === '1' ? scoreResult.grammarScore : scoreResult.vocabScore) 
-                  : scoreResult.total}{' '}
-                <span>
-                  / {isPartMode ? 25 : 50}
-                </span>
+                {scoreResult} <span>/ 25</span>
               </S.SummaryBoxScore>
               <S.SummaryBoxDesc>
-                {isPartMode 
-                  ? 'Điểm số luyện tập này giúp bạn đánh giá năng lực của từng cấu phần.' 
-                  : 'Điểm số này đóng vai trò quyết định bậc CEFR nếu các kỹ năng khác nằm ở ranh giới.'}
+                Điểm số luyện tập này giúp bạn đánh giá năng lực của phần Ngữ pháp.
               </S.SummaryBoxDesc>
             </S.SummaryBox>
 
@@ -395,4 +282,4 @@ export const GrammarTestPage: React.FC = () => {
   );
 };
 
-export default GrammarTestPage;
+export default Part1Page;

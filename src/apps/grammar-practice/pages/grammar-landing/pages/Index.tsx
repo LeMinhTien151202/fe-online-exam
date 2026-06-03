@@ -1,8 +1,8 @@
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
-import { 
-  BellOutlined, 
-  MenuOutlined, 
+import {
+  BellOutlined,
+  MenuOutlined,
   EditOutlined,
   QuestionCircleOutlined,
   ClockCircleOutlined,
@@ -92,7 +92,7 @@ export const GrammarPracticePage: React.FC = () => {
               </S.StatsContainer>
             </S.HeaderSection>
 
-            {/* Tab selector for Parts vs Mock Tests */}
+            {/* Tab selector for Parts vs Test Sets vs Mock Tests */}
             <S.TabSectionWrapper>
               <Segmented
                 value={activeTab}
@@ -105,7 +105,7 @@ export const GrammarPracticePage: React.FC = () => {
               />
             </S.TabSectionWrapper>
 
-            {activeTab === 'parts' ? (
+            {activeTab === 'parts' && (
               <S.PartsContainer>
                 {parts.map((part) => (
                   <PartCard
@@ -115,19 +115,21 @@ export const GrammarPracticePage: React.FC = () => {
                   />
                 ))}
               </S.PartsContainer>
-            ) : (
+            )}
+
+            {activeTab === 'mock-tests' && (
               <S.MockTestGrid>
                 {mockTestsData.map((mock) => {
                   const score = mockProgress[mock.id] ?? 0;
                   const difficultyLabel = mock.difficulty === 'easy' ? 'Dễ' : mock.difficulty === 'medium' ? 'Trung bình' : 'Khó';
-                  
+
                   return (
                     <S.MockTestCard key={mock.id}>
                       <S.MockTestBadge $type={mock.difficulty}>
                         {difficultyLabel}
                       </S.MockTestBadge>
                       <S.MockTestTitle>{mock.title}</S.MockTestTitle>
-                      
+
                       <S.MockTestMeta>
                         <S.MetaItem>
                           <QuestionCircleOutlined />
@@ -142,7 +144,7 @@ export const GrammarPracticePage: React.FC = () => {
                           <span>
                             Kết quả tốt nhất:{' '}
                             {score > 0 ? (
-                              <S.TrophyScoreText>{score}/50 ({Math.round(score/50*100)}%)</S.TrophyScoreText>
+                              <S.TrophyScoreText>{score}/50 ({Math.round(score / 50 * 100)}%)</S.TrophyScoreText>
                             ) : (
                               <S.TrophyEmptyText>Chưa làm</S.TrophyEmptyText>
                             )}
@@ -154,13 +156,13 @@ export const GrammarPracticePage: React.FC = () => {
                         <S.ScoreProgressWrapper>
                           <S.ScoreProgressHeader>
                             <span>Điểm số</span>
-                            <span>{Math.round(score/50*100)}%</span>
+                            <span>{Math.round(score / 50 * 100)}%</span>
                           </S.ScoreProgressHeader>
-                          <Progress percent={Math.round(score/50*100)} size="small" strokeColor="#10b981" showInfo={false} />
+                          <Progress percent={Math.round(score / 50 * 100)} size="small" strokeColor="#10b981" showInfo={false} />
                         </S.ScoreProgressWrapper>
                       )}
 
-                      <S.MockStartButton 
+                      <S.MockStartButton
                         type="primary"
                         icon={<ThunderboltOutlined />}
                         $hasScore={score > 0}

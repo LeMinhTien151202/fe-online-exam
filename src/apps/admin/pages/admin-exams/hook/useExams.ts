@@ -1,0 +1,38 @@
+import { useState } from 'react';
+import { Modal, message } from 'antd';
+import { useNavigate } from '@tanstack/react-router';
+import { initialPartExams, initialFullExams } from '../services/mockData';
+
+export const useExams = () => {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('partial');
+  const [partExams, setPartExams] = useState(initialPartExams);
+  const [fullExams, setFullExams] = useState(initialFullExams);
+
+  const handleCreateNew = () => {
+    navigate({ to: '/admin/exams/create' });
+  };
+
+  const handleDeletePart = (key: string) => {
+    Modal.confirm({
+      title: 'Bạn có chắc chắn muốn xoá bộ đề này?',
+      content: 'Hành động này không thể hoàn tác.',
+      okText: 'Xoá',
+      okType: 'danger',
+      cancelText: 'Huỷ',
+      onOk: () => {
+        setPartExams(prev => prev.filter(item => item.key !== key));
+        message.success('Đã xoá bộ đề thành công!');
+      },
+    });
+  };
+
+  return {
+    activeTab,
+    setActiveTab,
+    partExams,
+    fullExams,
+    handleCreateNew,
+    handleDeletePart,
+  };
+};

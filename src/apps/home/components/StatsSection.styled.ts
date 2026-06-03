@@ -18,8 +18,8 @@ export const StatCard = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #cbd5e1;
   transition: all 0.3s ease;
 
   &:hover {

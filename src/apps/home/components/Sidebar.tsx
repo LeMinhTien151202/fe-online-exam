@@ -58,7 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
   return (
     <S.SidebarContainer onClick={(e) => e.stopPropagation()} $collapsed={collapsed}>
-      <button 
+      <button
         className="collapse-btn"
         onClick={(e) => {
           e.stopPropagation();

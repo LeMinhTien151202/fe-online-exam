@@ -1,8 +1,8 @@
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
-import { 
-  AudioOutlined, 
-  BellOutlined, 
+import {
+  AudioOutlined,
+  BellOutlined,
   MenuOutlined,
   ClockCircleOutlined,
   QuestionCircleOutlined,
@@ -110,7 +110,7 @@ export const SpeakingPracticePage: React.FC = () => {
               />
             </S.TabSectionWrapper>
 
-            {activeTab === 'parts' ? (
+            {activeTab === 'parts' && (
               <S.PartsContainer>
                 {parts.map((part) => (
                   <PartCard
@@ -120,19 +120,21 @@ export const SpeakingPracticePage: React.FC = () => {
                   />
                 ))}
               </S.PartsContainer>
-            ) : (
+            )}
+
+            {activeTab === 'mock-tests' && (
               <S.MockTestGrid>
                 {mockTestsData.map((mock) => {
                   const hasDone = mockProgress[mock.id] === 100;
                   const difficultyLabel = mock.difficulty === 'easy' ? 'Dễ' : mock.difficulty === 'medium' ? 'Trung bình' : 'Khó';
-                  
+
                   return (
                     <S.MockTestCard key={mock.id}>
                       <S.MockTestBadge $type={mock.difficulty}>
                         {difficultyLabel}
                       </S.MockTestBadge>
                       <S.MockTestTitle>{mock.title}</S.MockTestTitle>
-                      
+
                       <S.MockTestMeta>
                         <S.MetaItem>
                           <QuestionCircleOutlined />
@@ -165,13 +167,13 @@ export const SpeakingPracticePage: React.FC = () => {
                         </div>
                       )}
 
-                      <Button 
+                      <Button
                         type="primary"
                         icon={<ThunderboltOutlined />}
-                        style={{ 
-                          width: '100%', 
-                          borderRadius: '8px', 
-                          height: '40px', 
+                        style={{
+                          width: '100%',
+                          borderRadius: '8px',
+                          height: '40px',
                           fontWeight: 700,
                           background: hasDone ? '#eff6ff' : '#00205B',
                           borderColor: hasDone ? '#bfdbfe' : '#00205B',

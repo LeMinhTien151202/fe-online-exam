@@ -5,11 +5,11 @@ export const CardWrapper = styled.div<{ $borderColor: string }>`
   background: white;
   border-radius: 1rem;
   padding: 1.5rem;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid #cbd5e1;
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   height: 100%;
 
   &:hover {

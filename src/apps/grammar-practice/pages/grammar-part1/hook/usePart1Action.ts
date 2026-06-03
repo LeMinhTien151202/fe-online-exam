@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { message } from 'antd';
 
-export const useExamAction = (
+export const usePart1Action = (
   onSubmit: (finalAnswers: Record<number, string>) => void,
-  initialTime: number = 25 * 60,
-  storagePrefix: string = 'aptis_core',
-  totalQuestions: number = 50
+  initialTime: number = 12 * 60 + 30,
+  storagePrefix: string = 'aptis_grammar_part_1',
+  totalQuestions: number = 25
 ) => {
   const EXAM_ANSWERS_KEY = `${storagePrefix}_answers`;
   const EXAM_TIME_KEY = `${storagePrefix}_time`;
@@ -16,9 +16,8 @@ export const useExamAction = (
     return saved ? JSON.parse(saved) : {};
   });
 
-  // 2. Initialize active question (1 -> 50)
+  // 2. Initialize active question (1 -> 25)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(1);
-  const [currentSection, setCurrentSection] = useState<'grammar' | 'vocabulary'>('grammar');
 
   // 3. Initialize time left
   const [timeLeft, setTimeLeft] = useState<number>(() => {
@@ -81,7 +80,6 @@ export const useExamAction = (
     setAnswers({});
     setTimeLeft(initialTime);
     setCurrentQuestionIndex(1);
-    setCurrentSection('grammar');
     setIsFinished(false);
   };
 
@@ -119,12 +117,10 @@ export const useExamAction = (
 
   return {
     answers,
-    currentSection,
     currentQuestionIndex,
     timeLeft,
     progressPercent,
     isFinished,
-    setCurrentSection,
     setCurrentQuestionIndex,
     selectAnswer,
     submitExamManual,

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
-import { 
-  ReadOutlined, 
-  BellOutlined, 
+import {
+  ReadOutlined,
+  BellOutlined,
   MenuOutlined,
   ClockCircleOutlined,
   QuestionCircleOutlined,
@@ -93,7 +93,7 @@ export const ReadingPracticePage: React.FC = () => {
               </S.StatsContainer>
             </S.HeaderSection>
 
-            {/* Tab selector for Parts vs Mock Tests */}
+            {/* Tab selector for Parts vs Test Sets vs Mock Tests */}
             <S.TabSectionWrapper>
               <Segmented
                 value={activeTab}
@@ -106,7 +106,7 @@ export const ReadingPracticePage: React.FC = () => {
               />
             </S.TabSectionWrapper>
 
-            {activeTab === 'parts' ? (
+            {activeTab === 'parts' && (
               <S.PartsContainer>
                 {parts.map((part) => (
                   <PartCard
@@ -116,19 +116,21 @@ export const ReadingPracticePage: React.FC = () => {
                   />
                 ))}
               </S.PartsContainer>
-            ) : (
+            )}
+
+            {activeTab === 'mock-tests' && (
               <S.MockTestGrid>
                 {mockTestsData.map((mock) => {
                   const score = mockProgress[mock.id] ?? 0;
                   const difficultyLabel = mock.difficulty === 'easy' ? 'Dễ' : mock.difficulty === 'medium' ? 'Trung bình' : 'Khó';
-                  
+
                   return (
                     <S.MockTestCard key={mock.id}>
                       <S.MockTestBadge $type={mock.difficulty}>
                         {difficultyLabel}
                       </S.MockTestBadge>
                       <S.MockTestTitle>{mock.title}</S.MockTestTitle>
-                      
+
                       <S.MockTestMeta>
                         <S.MetaItem>
                           <QuestionCircleOutlined />
@@ -143,7 +145,7 @@ export const ReadingPracticePage: React.FC = () => {
                           <span>
                             Kết quả tốt nhất:{' '}
                             {score > 0 ? (
-                              <strong style={{ color: '#10b981' }}>{score}/24 ({Math.round(score/24*100)}%)</strong>
+                              <strong style={{ color: '#10b981' }}>{score}/24 ({Math.round(score / 24 * 100)}%)</strong>
                             ) : (
                               <span style={{ color: '#64748b' }}>Chưa làm</span>
                             )}
@@ -155,19 +157,19 @@ export const ReadingPracticePage: React.FC = () => {
                         <div style={{ marginBottom: '1rem' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
                             <span>Điểm số</span>
-                            <span>{Math.round(score/24*100)}%</span>
+                            <span>{Math.round(score / 24 * 100)}%</span>
                           </div>
-                          <Progress percent={Math.round(score/24*100)} size="small" strokeColor="#10b981" showInfo={false} />
+                          <Progress percent={Math.round(score / 24 * 100)} size="small" strokeColor="#10b981" showInfo={false} />
                         </div>
                       )}
 
-                      <Button 
+                      <Button
                         type="primary"
                         icon={<ThunderboltOutlined />}
-                        style={{ 
-                          width: '100%', 
-                          borderRadius: '8px', 
-                          height: '40px', 
+                        style={{
+                          width: '100%',
+                          borderRadius: '8px',
+                          height: '40px',
                           fontWeight: 700,
                           background: score > 0 ? '#eff6ff' : '#00205B',
                           borderColor: score > 0 ? '#bfdbfe' : '#00205B',

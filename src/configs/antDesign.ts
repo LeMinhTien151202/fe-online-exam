@@ -33,7 +33,8 @@ export const antThemeConfig: ThemeConfig = {
       headerSortActiveBg: '#f0f0f0',
     },
     Card: {
-      boxShadowTertiary: '0 1px 2px rgba(0,0,0,0.05)',
+      colorBorderSecondary: '#cbd5e1',
+      boxShadowTertiary: '0 4px 20px rgba(0,0,0,0.08)',
     },
   },
 };

@@ -213,3 +213,91 @@ export const MockTestBadge = styled.span<{ $type: 'easy' | 'medium' | 'hard' }>`
     return '#b91c1c';
   }};
 `;
+
+export const TestSetGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const TestSetCard = styled.div`
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 32, 91, 0.06);
+    border-color: #94a3b8;
+  }
+`;
+
+export const TestSetTitle = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #00205B;
+  margin-bottom: 1rem;
+`;
+
+export const TestSetPartsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex: 1;
+`;
+
+export const TestSetPartRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  
+  .part-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .part-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    
+    .part-desc {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+  }
+  
+  .part-action {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #2D447F;
+    cursor: pointer;
+    text-decoration: none;
+    
+    &:hover {
+      color: #1e3a8a;
+      text-decoration: underline;
+    }
+  }
+`;
