@@ -1,11 +1,11 @@
 import styled from 'styled-components';
-import { Card, Select } from 'antd';
+import { Card, Select, Button } from 'antd';
 import { Link } from '@tanstack/react-router';
 
 export const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   width: 100%;
   background: #ffffff;
   overflow: hidden;
@@ -353,4 +353,110 @@ export const TipBox = styled.div`
   color: #b45309;
   font-weight: 500;
   font-style: italic;
+`;
+
+export const HeaderTitle = styled.span`
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  font-weight: 700;
+  color: white;
+`;
+
+export const ProgressText = styled.span`
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: bold;
+`;
+
+export const AlertWrapper = styled.div`
+  width: 100%;
+  max-width: 75rem;
+  margin: 0 auto;
+`;
+
+export const AlertOuterWrapper = styled.div`
+  padding: 1.5rem 2rem 0 2rem;
+`;
+
+export const OptionsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+export const CorrectAnswerRow = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+`;
+
+export const CorrectBadgeNumber = styled.span`
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+`;
+
+export const CorrectAnswerText = styled.span`
+  color: #14532d;
+  font-weight: 600;
+  font-size: 0.95rem;
+`;
+
+export const CompletedMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  border: 1.5px dashed #10b981;
+  border-radius: 0.5rem;
+  background: #f6fdfa;
+  color: #059669;
+  font-weight: 600;
+`;
+
+export const FooterButton = styled(Button)`
+  border-radius: 2rem !important;
+  font-weight: 600 !important;
+  padding: 0 1.5rem !important;
+  color: #64748b !important;
+  border: 1px solid #e2e8f0 !important;
+`;
+
+export const SubmitButton = styled(Button)`
+  border-radius: 2rem !important;
+  font-weight: 600 !important;
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+  padding: 0 2rem !important;
+  color: white !important;
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important;
+  
+  &:hover {
+    background: #059669 !important;
+    border-color: #059669 !important;
+  }
+`;
+
+export const RetryButton = styled(Button)`
+  border-radius: 2rem !important;
+  font-weight: 600 !important;
+  background: #6366f1 !important;
+  border-color: #6366f1 !important;
+  padding: 0 2rem !important;
+  color: white !important;
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2) !important;
+  
+  &:hover {
+    background: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+  }
 `;

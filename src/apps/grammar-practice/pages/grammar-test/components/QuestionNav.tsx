@@ -71,9 +71,9 @@ export const QuestionNav: React.FC<QuestionNavProps> = ({
   const showGrammar = !isPartMode || partId === '1';
   const showVocab = !isPartMode || partId === '2';
 
-  const displayTotalAnswered = isPartMode 
-    ? (partId === '1' 
-        ? Object.keys(answers).map(Number).filter(k => k >= 1 && k <= 25).length 
+  const displayTotalAnswered = isPartMode
+    ? (partId === '1'
+        ? Object.keys(answers).map(Number).filter(k => k >= 1 && k <= 25).length
         : Object.keys(answers).map(Number).filter(k => k >= 26 && k <= 50).length)
     : totalAnswered;
 
@@ -101,23 +101,23 @@ export const QuestionNav: React.FC<QuestionNavProps> = ({
 
       <S.Legend>
         <S.LegendItem>
-          <div className="color-dot" style={{ background: '#f1f5f9' }} />
+          <S.LegendColorDot $type="unanswered" />
           <span>Chưa trả lời</span>
         </S.LegendItem>
         <S.LegendItem>
-          <div className="color-dot" style={{ background: '#e6f4ff', border: '1px solid rgba(22, 119, 255, 0.3)' }} />
+          <S.LegendColorDot $type="answered" />
           <span>Đã trả lời</span>
         </S.LegendItem>
         <S.LegendItem>
-          <div className="color-dot" style={{ background: 'white', border: '1.5px solid #1677ff' }} />
+          <S.LegendColorDot $type="active" />
           <span>Đang chọn</span>
         </S.LegendItem>
       </S.Legend>
 
-      <div style={{ marginTop: '1.5rem', fontSize: '0.85rem', fontWeight: 700, color: '#475569', display: 'flex', justifyContent: 'space-between' }}>
+      <S.NavProgressRow>
         <span>Tiến độ:</span>
         <span>{displayTotalAnswered}/{totalQuestionsLimit} câu</span>
-      </div>
+      </S.NavProgressRow>
     </S.NavPanel>
   );
 };

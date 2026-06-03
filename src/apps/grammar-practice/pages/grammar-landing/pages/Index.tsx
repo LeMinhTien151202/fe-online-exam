@@ -47,14 +47,13 @@ export const GrammarPracticePage: React.FC = () => {
 
       <HomeS.RightColumn>
         <HomeS.MobileHeader>
-          <Link
+          <S.MobileHeaderLink
             to="/"
-            className="flex items-center gap-2"
-            style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+            className="gap-2"
           >
             <HomeS.HeaderLogo src="/image.png" alt="Logo" />
             <HomeS.HeaderTitle>Aptis Prep</HomeS.HeaderTitle>
-          </Link>
+          </S.MobileHeaderLink>
           <div className="flex items-center gap-2">
             <Button type="text" icon={<BellOutlined />} />
             <Button
@@ -77,14 +76,14 @@ export const GrammarPracticePage: React.FC = () => {
               </S.HeaderContent>
               <S.StatsContainer>
                 <S.StatPill>
-                  <div className="icon" style={{ color: '#ea580c' }}>🔥</div>
+                  <S.StatPillIcon $color="#ea580c">🔥</S.StatPillIcon>
                   <div className="info">
                     <span>Chuỗi ngày</span>
                     <span>5 Ngày</span>
                   </div>
                 </S.StatPill>
                 <S.StatPill>
-                  <div className="icon" style={{ color: '#16a34a' }}>✅</div>
+                  <S.StatPillIcon $color="#16a34a">✅</S.StatPillIcon>
                   <div className="info">
                     <span>Đã hoàn thành</span>
                     <span>{completedCount}/2 Phần</span>
@@ -143,41 +142,32 @@ export const GrammarPracticePage: React.FC = () => {
                           <span>
                             Kết quả tốt nhất:{' '}
                             {score > 0 ? (
-                              <strong style={{ color: '#10b981' }}>{score}/50 ({Math.round(score/50*100)}%)</strong>
+                              <S.TrophyScoreText>{score}/50 ({Math.round(score/50*100)}%)</S.TrophyScoreText>
                             ) : (
-                              <span style={{ color: '#64748b' }}>Chưa làm</span>
+                              <S.TrophyEmptyText>Chưa làm</S.TrophyEmptyText>
                             )}
                           </span>
                         </S.MetaItem>
                       </S.MockTestMeta>
 
                       {score > 0 && (
-                        <div style={{ marginBottom: '1rem' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
+                        <S.ScoreProgressWrapper>
+                          <S.ScoreProgressHeader>
                             <span>Điểm số</span>
                             <span>{Math.round(score/50*100)}%</span>
-                          </div>
+                          </S.ScoreProgressHeader>
                           <Progress percent={Math.round(score/50*100)} size="small" strokeColor="#10b981" showInfo={false} />
-                        </div>
+                        </S.ScoreProgressWrapper>
                       )}
 
-                      <Button 
+                      <S.MockStartButton 
                         type="primary"
                         icon={<ThunderboltOutlined />}
-                        style={{ 
-                          width: '100%', 
-                          borderRadius: '8px', 
-                          height: '40px', 
-                          fontWeight: 700,
-                          background: score > 0 ? '#eff6ff' : '#00205B',
-                          borderColor: score > 0 ? '#bfdbfe' : '#00205B',
-                          color: score > 0 ? '#1d4ed8' : '#ffffff',
-                          boxShadow: score > 0 ? 'none' : '0 4px 6px -1px rgba(0, 32, 91, 0.15)'
-                        }}
+                        $hasScore={score > 0}
                         onClick={() => handleMockClick(mock.id)}
                       >
                         {score > 0 ? 'Làm lại đề thi' : 'Bắt đầu làm đề'}
-                      </Button>
+                      </S.MockStartButton>
                     </S.MockTestCard>
                   );
                 })}

@@ -35,66 +35,67 @@ export const Part3Page: React.FC = () => {
               <S.BackLink to="/reading">
                 <LeftOutlined /> Quay lại danh sách
               </S.BackLink>
-              <Title level={4} style={{ color: 'white', margin: 0 }}>Part 3: Opinion Matching</Title>
+              <S.HeaderTitle>Part 3: Opinion Matching</S.HeaderTitle>
             </Space>
             
-            <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
+            <Space size="large" className="flex items-center">
               <Progress 
                 type="circle" 
                 percent={progressPercent} 
                 size={40} 
                 strokeColor="#10b981" 
                 trailColor="rgba(255,255,255,0.2)"
-                format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{answeredCount}/7</span>}
+                format={() => <S.ProgressText>{answeredCount}/7</S.ProgressText>}
               />
               <S.TimerWrapper>
-                <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
+                <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
                 {formatTime(timeLeft)}
               </S.TimerWrapper>
             </Space>
           </S.Header>
 
           {isSubmitted && (
-            <div style={{ padding: '1.5rem 2rem 0 2rem' }}>
-              <Alert
-                message={
-                  <span style={{ fontWeight: 600 }}>
-                    Kết quả làm bài: {correctCount}/7 câu đúng ({Math.round(correctCount / 7 * 100)}%)
-                  </span>
-                }
-                description="Các câu trả lời đúng có nền xanh lá. Các câu trả lời sai có nền đỏ kèm đáp án đúng."
-                type={correctCount >= 5 ? "success" : "warning"}
-                showIcon
-                closable
-                style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}
-              />
-            </div>
+            <S.AlertOuterWrapper>
+              <S.AlertWrapper>
+                <Alert
+                  message={
+                    <span className="font-semibold">
+                      Kết quả làm bài: {correctCount}/7 câu đúng ({Math.round(correctCount / 7 * 100)}%)
+                    </span>
+                  }
+                  description="Các câu trả lời đúng có nền xanh lá. Các câu trả lời sai có nền đỏ kèm đáp án đúng."
+                  type={correctCount >= 5 ? "success" : "warning"}
+                  showIcon
+                  closable
+                />
+              </S.AlertWrapper>
+            </S.AlertOuterWrapper>
           )}
 
           <S.MainContent>
             <S.Column>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                <Badge status="processing" text={<Text strong style={{ color: '#0f172a' }}>Ý KIẾN CỦA 4 NGƯỜI (A, B, C, D)</Text>} />
-              </div>
+              <S.SectionHeader>
+                <Badge status="processing" text={<S.SectionTitle>Ý KIẾN CỦA 4 NGƯỜI (A, B, C, D)</S.SectionTitle>} />
+              </S.SectionHeader>
 
               {opinions.map(person => (
                 <S.PersonCard key={person.id}>
                   <S.PersonHeader>
                     <S.PersonAvatar $color={person.color}>{person.id}</S.PersonAvatar>
-                    <Text strong style={{ fontSize: '1.05rem', color: '#1e293b' }}>{person.name}</Text>
+                    <S.PersonName>{person.name}</S.PersonName>
                   </S.PersonHeader>
-                  <Paragraph style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.6, color: '#475569' }}>
+                  <S.PersonText>
                     {person.text}
-                  </Paragraph>
+                  </S.PersonText>
                 </S.PersonCard>
               ))}
             </S.Column>
 
             <S.Column>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                <Text strong style={{ color: '#0f172a' }}>CÁC PHÁT BIỂU ĐƯỢC ĐƯA RA (7 CÂU)</Text>
-                <Text type="secondary" style={{ fontSize: '12px' }}>{answeredCount}/7 Đã chọn</Text>
-              </div>
+              <S.QuestionHeader>
+                <S.SectionTitle>CÁC PHÁT BIỂU ĐƯỢC ĐƯA RA (7 CÂU)</S.SectionTitle>
+                <S.SectionSubtitle>{answeredCount}/7 Đã chọn</S.SectionSubtitle>
+              </S.QuestionHeader>
 
               {questions.map((q, idx) => {
                 const isAnswered = !!answers[q.id];
@@ -105,7 +106,7 @@ export const Part3Page: React.FC = () => {
                     $isAnswered={isAnswered}
                     $status={isSubmitted ? (isCorrect ? 'success' : 'error') : 'default'}
                   >
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                    <S.QuestionRowLayout>
                       <Badge 
                         count={idx + 1} 
                         style={{ 
@@ -116,10 +117,10 @@ export const Part3Page: React.FC = () => {
                           fontWeight: 'bold' 
                         }} 
                       />
-                      <div style={{ flex: 1 }}>
-                        <Text strong style={{ fontSize: '1rem', color: '#1e293b', display: 'block', marginBottom: '0.5rem' }}>
+                      <S.QuestionBody>
+                        <S.QuestionText>
                           {q.text}
-                        </Text>
+                        </S.QuestionText>
                         <S.StyledRadioGroup 
                           optionType="button" 
                           buttonStyle="solid"
@@ -134,12 +135,12 @@ export const Part3Page: React.FC = () => {
                         </S.StyledRadioGroup>
 
                         {isSubmitted && !isCorrect && (
-                          <div style={{ marginTop: '0.5rem', color: '#10b981', fontWeight: 600, fontSize: '0.9rem' }}>
+                          <S.CorrectAnswerText>
                             Đáp án đúng: {correctAnswers[q.id]} ({opinions.find(o => o.id === correctAnswers[q.id])?.name})
-                          </div>
+                          </S.CorrectAnswerText>
                         )}
-                      </div>
-                    </div>
+                      </S.QuestionBody>
+                    </S.QuestionRowLayout>
                   </S.StatementCard>
                 );
               })}
@@ -147,51 +148,34 @@ export const Part3Page: React.FC = () => {
           </S.MainContent>
 
           <S.Footer>
-            <Button 
+            <S.FooterButton 
               type="default" 
               icon={<LeftOutlined />} 
               size="large"
-              style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', border: '1px solid #e2e8f0', color: '#64748b' }}
               onClick={() => navigate({ to: '/reading' })}
             >
               Quay lại danh sách
-            </Button>
+            </S.FooterButton>
 
             <Space size="middle">
               {isSubmitted ? (
-                <Button
+                <S.RetryButton
                   type="primary"
                   icon={<RollbackOutlined />}
                   size="large"
-                  style={{
-                    borderRadius: '2rem',
-                    fontWeight: 600,
-                    background: '#6366f1',
-                    borderColor: '#6366f1',
-                    padding: '0 2rem',
-                    boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.2)'
-                  }}
                   onClick={handleRetry}
                 >
                   Làm lại
-                </Button>
+                </S.RetryButton>
               ) : (
-                <Button 
+                <S.SubmitButton 
                   type="primary" 
                   icon={<CheckCircleOutlined />} 
                   size="large"
-                  style={{ 
-                    borderRadius: '2rem', 
-                    fontWeight: 600, 
-                    background: '#10b981', 
-                    borderColor: '#10b981',
-                    padding: '0 2rem',
-                    boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
-                  }}
                   onClick={handleSubmit}
                 >
                   Nộp bài
-                </Button>
+                </S.SubmitButton>
               )}
             </Space>
           </S.Footer>

@@ -27,47 +27,47 @@ export const Part3Page: React.FC = () => {
     {
       label: "Gợi ý đáp án mẫu 1",
       content: (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <S.SampleModalList>
           {messages.map((m: IPart3Message) => (
-            <div key={m.id} style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
-              <div style={{ fontWeight: 700, color: '#475569', fontSize: '0.85rem' }}>
+            <S.SampleModalItem key={m.id}>
+              <S.SampleModalHeader>
                 TRẢ LỜI CHO {m.sender.toUpperCase()}
-              </div>
-              <div style={{ color: '#0f172a', fontWeight: 600, fontSize: '0.9rem', margin: '4px 0' }}>
+              </S.SampleModalHeader>
+              <S.SampleModalQuestionText>
                 &ldquo;{m.messageText}&rdquo;
-              </div>
-              <div style={{ color: '#9333ea', fontStyle: 'italic', marginTop: '6px' }}>
+              </S.SampleModalQuestionText>
+              <S.SampleModalAnswerText>
                 &rarr; {m.sampleAnswers[0]}
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>
+              </S.SampleModalAnswerText>
+              <S.SampleModalWordCount>
                 Số từ: {getWordCount(m.sampleAnswers[0])} từ
-              </div>
-            </div>
+              </S.SampleModalWordCount>
+            </S.SampleModalItem>
           ))}
-        </div>
+        </S.SampleModalList>
       )
     },
     {
       label: "Gợi ý đáp án mẫu 2",
       content: (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <S.SampleModalList>
           {messages.map((m: IPart3Message) => (
-            <div key={m.id} style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
-              <div style={{ fontWeight: 700, color: '#475569', fontSize: '0.85rem' }}>
+            <S.SampleModalItem key={m.id}>
+              <S.SampleModalHeader>
                 TRẢ LỜI CHO {m.sender.toUpperCase()}
-              </div>
-              <div style={{ color: '#0f172a', fontWeight: 600, fontSize: '0.9rem', margin: '4px 0' }}>
+              </S.SampleModalHeader>
+              <S.SampleModalQuestionText>
                 &ldquo;{m.messageText}&rdquo;
-              </div>
-              <div style={{ color: '#7c3aed', fontStyle: 'italic', marginTop: '6px' }}>
+              </S.SampleModalQuestionText>
+              <S.SampleModalAnswerText2>
                 &rarr; {m.sampleAnswers[1]}
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>
+              </S.SampleModalAnswerText2>
+              <S.SampleModalWordCount>
                 Số từ: {getWordCount(m.sampleAnswers[1])} từ
-              </div>
-            </div>
+              </S.SampleModalWordCount>
+            </S.SampleModalItem>
           ))}
-        </div>
+        </S.SampleModalList>
       )
     }
   ];
@@ -82,40 +82,39 @@ export const Part3Page: React.FC = () => {
               <S.BackLink to="/writing/part/2">
                 <LeftOutlined /> Quay lại Part 2
               </S.BackLink>
-              <span style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white' }}>
+              <S.HeaderTitle>
                 Part 3: Social Network Interaction
-              </span>
+              </S.HeaderTitle>
             </Space>
 
             <S.TimerWrapper>
-              <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
+              <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
               {timer.formatTime()}
             </S.TimerWrapper>
           </S.Header>
 
           <S.MainContent>
-            <S.CenteredContainer style={{ maxWidth: '900px' }}>
-              <S.ContentCard style={{ padding: '0.5rem 0' }}>
-                <S.TitleArea style={{ marginBottom: '1.25rem' }}>
+            <S.CenteredContainer className="max-w-[900px]">
+              <S.ContentCard className="py-2">
+                <S.TitleArea className="mb-5">
                   <div>
                     <h2>Tương tác trong nhóm chat/diễn đàn câu lạc bộ</h2>
                     <div className="subtitle">Writing Part 3 • Chat with other members (30 - 40 words per answer)</div>
                   </div>
-                  <Button
+                  <S.ViewSampleButton
                     type="dashed"
                     icon={<BulbOutlined />}
                     onClick={() => setShowSampleModal(true)}
-                    style={{ borderRadius: '1.5rem', color: '#9333ea', borderColor: '#d8b4fe', fontWeight: 600 }}
                   >
                     Xem đáp án mẫu
-                  </Button>
+                  </S.ViewSampleButton>
                 </S.TitleArea>
 
-                <div style={{ fontSize: '0.92rem', color: '#475569', fontWeight: 600, marginBottom: '1.25rem', lineHeight: 1.5 }}>
+                <S.InstructionText>
                   You are speaking to fellow members of the Art club in a group chat. Respond to them in full sentences (30-40 words per answer).
-                </div>
+                </S.InstructionText>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div className="flex flex-col gap-6">
                   {messages.map((m: IPart3Message) => {
                     const textVal = answers[m.id] || '';
                     const wordCount = getWordCount(textVal);
@@ -123,17 +122,17 @@ export const Part3Page: React.FC = () => {
                     const avatarColor = m.sender === 'Sam' ? '#3b82f6' : m.sender === 'Jenny' ? '#ec4899' : '#f59e0b';
 
                     return (
-                      <div key={m.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <div key={m.id} className="flex flex-col gap-2">
                         <S.ChatHeader>
                           <S.AvatarBadge $bgColor={avatarColor}>
                             {m.avatar}
                           </S.AvatarBadge>
-                          <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1e293b' }}>
+                          <S.SenderName>
                             {m.sender}
-                          </span>
+                          </S.SenderName>
                         </S.ChatHeader>
                         
-                        <S.ChatMessageText style={{ alignSelf: 'flex-start', maxWidth: '85%' }}>
+                        <S.ChatMessageText className="self-start max-w-[85%]">
                           {m.messageText}
                         </S.ChatMessageText>
 
@@ -146,10 +145,10 @@ export const Part3Page: React.FC = () => {
                           $hasText={!!textVal}
                         />
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '1.5rem' }}>
-                          <div style={{ flex: 1 }}>
+                        <div className="flex justify-between items-center min-h-[1.5rem]">
+                          <div className="flex-1">
                             {textVal && !isValid && (
-                              <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 600 }}>
+                              <span className="text-[0.75rem] color-[#ef4444] font-semibold">
                                 {wordCount < 30 ? `Cần thêm ${30 - wordCount} từ` : `Cần bớt ${wordCount - 40} từ`}
                               </span>
                             )}
@@ -167,32 +166,24 @@ export const Part3Page: React.FC = () => {
           </S.MainContent>
 
           <S.Footer>
-            <Button
+            <S.FooterButton
               type="default"
               icon={<LeftOutlined />}
               size="large"
-              style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', color: '#64748b' }}
               onClick={handleBack}
             >
               Quay lại Part 2
-            </Button>
+            </S.FooterButton>
 
             <Space size="middle">
-              <Button
+              <S.SubmitButton
                 type="primary"
                 icon={<CheckSquareOutlined />}
                 size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#10b981',
-                  borderColor: '#10b981',
-                  padding: '0 2rem',
-                }}
                 onClick={handleSubmit}
               >
                 Tiếp tục (Part 4)
-              </Button>
+              </S.SubmitButton>
             </Space>
           </S.Footer>
         </S.PageContainer>

@@ -154,7 +154,7 @@ export const GrammarTestPage: React.FC = () => {
   const handleBackToLanding = () => {
     Modal.confirm({
       title: 'Xác nhận thoát khỏi phòng thi?',
-      icon: <InfoCircleOutlined style={{ color: '#faad14' }} />,
+      icon: <InfoCircleOutlined className="text-[#faad14]" />,
       content: 'Hệ thống vẫn sẽ lưu kết quả tạm thời của bạn, tuy nhiên đồng hồ đếm ngược vẫn sẽ chạy tiếp nếu bạn quay lại sau.',
       okText: 'Rời phòng thi',
       cancelText: 'Tiếp tục làm bài',
@@ -169,7 +169,7 @@ export const GrammarTestPage: React.FC = () => {
 
     Modal.confirm({
       title: 'Xác nhận nộp bài thi?',
-      icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />,
+      icon: <CheckCircleOutlined className="text-[#52c41a]" />,
       content: hasUnanswered
         ? `Bạn còn ${unansweredCount} câu hỏi chưa trả lời. Bạn có thực sự muốn nộp bài thi ngay bây giờ không?`
         : `Bạn đã hoàn thành toàn bộ ${totalQuestions} câu hỏi. Bạn có chắc chắn muốn nộp bài thi để chấm điểm không?`,
@@ -200,22 +200,21 @@ export const GrammarTestPage: React.FC = () => {
         <S.PageContainer>
           <S.Header>
             <Space size="large">
-              <Button
+              <S.HeaderBackButton
                 type="text"
                 icon={<LeftOutlined />}
                 onClick={handleBackToLanding}
-                style={{ color: '#cbd5e1', fontWeight: 'bold' }}
               >
                 Quay lại
-              </Button>
-              <span style={{ fontSize: '1.15rem', fontWeight: 800 }}>
+              </S.HeaderBackButton>
+              <S.HeaderTitleText>
                 {isPartMode 
                   ? (partId === '1' ? 'Part 1: Grammar Practice' : 'Part 2: Vocabulary Practice')
                   : 'Grammar & Vocabulary Test'}
-              </span>
+              </S.HeaderTitleText>
             </Space>
 
-            <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
+            <S.HeaderSpace size="large">
               <Progress
                 type="circle"
                 percent={progressPercent}
@@ -223,16 +222,16 @@ export const GrammarTestPage: React.FC = () => {
                 strokeColor="#10b981"
                 trailColor="rgba(255,255,255,0.2)"
                 format={() => (
-                  <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>
+                  <S.ProgressText>
                     {totalAnswered}/{totalQuestions}
-                  </span>
+                  </S.ProgressText>
                 )}
               />
               <S.TimerWrapper>
-                <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
+                <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
                 {formatTime(timeLeft)}
               </S.TimerWrapper>
-            </Space>
+            </S.HeaderSpace>
           </S.Header>
 
           <S.MainContent>
@@ -278,56 +277,39 @@ export const GrammarTestPage: React.FC = () => {
           </S.MainContent>
 
           <S.Footer>
-            <Button
+            <S.FooterButton
               type="default"
               icon={<ArrowLeftOutlined />}
               size="large"
-              style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', border: '1px solid #e2e8f0', color: '#64748b' }}
               onClick={handlePrevQuestion}
               disabled={currentQuestionIndex === (isPartMode && partId === '2' ? 26 : 1)}
             >
               Câu trước
-            </Button>
+            </S.FooterButton>
 
-            <span style={{ fontWeight: 700, color: '#475569', fontSize: '0.95rem' }}>
+            <S.FooterProgressText>
               {isPartMode 
                 ? (partId === '1' ? `Câu ${currentQuestionIndex} trên 25` : `Câu ${currentQuestionIndex - 25} trên 25`)
                 : `Câu ${currentQuestionIndex} trên 50`}
-            </span>
+            </S.FooterProgressText>
 
             <Space size="middle">
-              <Button
+              <S.SubmitButton
                 type="primary"
                 icon={<CheckCircleOutlined />}
                 size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#10b981',
-                  borderColor: '#10b981',
-                  padding: '0 2rem',
-                  boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
-                }}
                 onClick={handleSubmitClick}
               >
                 Nộp bài
-              </Button>
-              <Button
+              </S.SubmitButton>
+              <S.NextButton
                 type="primary"
                 size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#2563eb',
-                  borderColor: '#2563eb',
-                  padding: '0 1.5rem',
-                  boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
-                }}
                 onClick={handleNextQuestion}
                 disabled={currentQuestionIndex === (isPartMode && partId === '1' ? 25 : 50)}
               >
-                Tiếp theo <ArrowRightOutlined style={{ fontSize: '12px' }} />
-              </Button>
+                Tiếp theo <ArrowRightOutlined className="text-[12px]" />
+              </S.NextButton>
             </Space>
           </S.Footer>
         </S.PageContainer>
@@ -345,68 +327,52 @@ export const GrammarTestPage: React.FC = () => {
       >
         {scoreResult && (
           <div>
-            <div style={{ fontSize: '4.5rem', color: '#52c41a', marginBottom: '1rem' }}>
+            <S.ResultIconWrapper>
               <CheckCircleOutlined />
-            </div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.5rem' }}>
+            </S.ResultIconWrapper>
+            <S.ResultTitle>
               Hoàn thành bài thi!
-            </h2>
-            <p style={{ color: '#64748b', fontSize: '1rem', marginBottom: '2rem' }}>
+            </S.ResultTitle>
+            <S.ResultDescription>
               Kết quả điểm luyện tập của bạn:
-            </p>
+            </S.ResultDescription>
 
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isPartMode ? '1fr' : 'repeat(2, 1fr)',
-                gap: '1rem',
-                marginBottom: '2rem'
-              }}
-            >
+            <S.ResultStatsGrid $isPartMode={isPartMode}>
               {(!isPartMode || partId === '1') && (
-                <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '0.75rem' }}>
+                <S.StatBlock>
                   <Statistic title="Ngữ pháp" value={scoreResult.grammarScore} suffix="/ 25" valueStyle={{ color: '#1677ff', fontWeight: 800 }} />
-                </div>
+                </S.StatBlock>
               )}
               {(!isPartMode || partId === '2') && (
-                <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '0.75rem' }}>
+                <S.StatBlock>
                   <Statistic title="Từ vựng" value={scoreResult.vocabScore} suffix="/ 25" valueStyle={{ color: '#52c41a', fontWeight: 800 }} />
-                </div>
+                </S.StatBlock>
               )}
-            </div>
+            </S.ResultStatsGrid>
 
-            <div
-              style={{
-                background: '#e6f4ff',
-                padding: '1.25rem',
-                borderRadius: '0.75rem',
-                marginBottom: '2.5rem',
-                border: '1px solid rgba(22, 119, 255, 0.2)'
-              }}
-            >
-              <div style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <S.SummaryBox>
+              <S.SummaryBoxTitle>
                 Tổng số điểm
-              </div>
-              <div style={{ fontSize: '2.25rem', fontWeight: 900, color: '#1e3a8a' }}>
+              </S.SummaryBoxTitle>
+              <S.SummaryBoxScore>
                 {isPartMode 
                   ? (partId === '1' ? scoreResult.grammarScore : scoreResult.vocabScore) 
                   : scoreResult.total}{' '}
-                <span style={{ fontSize: '1.25rem', color: '#64748b', fontWeight: 500 }}>
+                <span>
                   / {isPartMode ? 25 : 50}
                 </span>
-              </div>
-              <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.5rem', marginBottom: 0, fontStyle: 'italic' }}>
+              </S.SummaryBoxScore>
+              <S.SummaryBoxDesc>
                 {isPartMode 
                   ? 'Điểm số luyện tập này giúp bạn đánh giá năng lực của từng cấu phần.' 
                   : 'Điểm số này đóng vai trò quyết định bậc CEFR nếu các kỹ năng khác nằm ở ranh giới.'}
-              </p>
-            </div>
+              </S.SummaryBoxDesc>
+            </S.SummaryBox>
 
-            <Space size="middle" style={{ width: '100%', justifyContent: 'center' }}>
+            <S.ModalActionButtons size="middle">
               <Button
                 icon={<UndoOutlined />}
                 size="large"
-                style={{ borderRadius: '0.5rem', fontWeight: 600 }}
                 onClick={handleRestartExam}
               >
                 Làm lại đề
@@ -414,7 +380,6 @@ export const GrammarTestPage: React.FC = () => {
               <Button
                 type="primary"
                 size="large"
-                style={{ borderRadius: '0.5rem', fontWeight: 600 }}
                 onClick={() => {
                   setShowResultModal(false);
                   navigate({ to: '/grammar' });
@@ -422,7 +387,7 @@ export const GrammarTestPage: React.FC = () => {
               >
                 Quay về trang chính
               </Button>
-            </Space>
+            </S.ModalActionButtons>
           </div>
         )}
       </Modal>

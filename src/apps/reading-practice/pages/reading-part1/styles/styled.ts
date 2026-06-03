@@ -1,11 +1,11 @@
 import styled from "styled-components";
-import { Card, Select } from "antd";
+import { Card, Select, Button } from "antd";
 import { Link } from "@tanstack/react-router";
 
 export const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   width: 100%;
   background: #ffffff;
   overflow: hidden;
@@ -70,7 +70,7 @@ export const MainContent = styled.main`
 export const ContentCard = styled.div`
   background: white;
   width: 100%;
-  max-width: 1200px;
+  max-width: 75rem;
   margin: 0 auto;
 `;
 
@@ -126,20 +126,20 @@ export const EmailContentArea = styled.div`
 `;
 
 export const InlineSentenceSelect = styled(Select)<{ $hasValue?: boolean; $status?: 'success' | 'error' | 'default' }>`
-  width: 160px !important;
+  width: clamp(8rem, 15vw, 12rem) !important;
   margin: 0 0.4rem;
   display: inline-block;
   vertical-align: middle;
   position: relative !important;
 
   .ant-select-selector {
-    border-radius: 6px !important;
-    height: 36px !important;
+    border-radius: 0.375rem !important;
+    height: 2.25rem !important;
     display: flex !important;
     align-items: center !important;
     flex-direction: row !important;
-    padding-left: 12px !important;
-    padding-right: 28px !important;
+    padding-left: 0.75rem !important;
+    padding-right: 1.75rem !important;
     transition: all 0.2s !important;
     
     border-color: ${props => {
@@ -186,7 +186,7 @@ export const InlineSentenceSelect = styled(Select)<{ $hasValue?: boolean; $statu
     position: absolute !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
-    right: 10px !important;
+    right: 0.625rem !important;
     margin: 0 !important;
     color: ${props => {
       if (props.$status === 'success') return '#059669';
@@ -233,6 +233,7 @@ export const AdminExperienceCard = styled.div`
   border: 1px solid #e2e8f0;
   background: white;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+  margin-top: 0.5rem;
 
   .info-left {
     display: flex;
@@ -321,8 +322,8 @@ export const QuestionCard = styled.div`
 `;
 
 export const BadgeNumber = styled.div`
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
   border-radius: 50%;
   background: #eff6ff;
   border: 1px solid #dbeafe;
@@ -333,4 +334,67 @@ export const BadgeNumber = styled.div`
   font-weight: 700;
   font-size: 0.95rem;
   flex-shrink: 0;
+`;
+
+export const HeaderTitle = styled.span`
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  font-weight: 700;
+  color: white;
+`;
+
+export const ProgressText = styled.span`
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: bold;
+`;
+
+export const AlertWrapper = styled.div`
+  width: 100%;
+  max-width: 75rem;
+  margin: 0 auto;
+`;
+
+export const CorrectAnswerText = styled.span`
+  color: #10b981;
+  margin-left: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+`;
+
+export const FooterButton = styled(Button)`
+  border-radius: 2rem !important;
+  font-weight: 600 !important;
+  padding: 0 1.5rem !important;
+  color: #64748b !important;
+  border: 1px solid #e2e8f0 !important;
+`;
+
+export const SubmitButton = styled(Button)`
+  border-radius: 2rem !important;
+  font-weight: 600 !important;
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+  padding: 0 2rem !important;
+  color: white !important;
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important;
+  
+  &:hover {
+    background: #059669 !important;
+    border-color: #059669 !important;
+  }
+`;
+
+export const RetryButton = styled(Button)`
+  border-radius: 2rem !important;
+  font-weight: 600 !important;
+  background: #6366f1 !important;
+  border-color: #6366f1 !important;
+  padding: 0 2rem !important;
+  color: white !important;
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2) !important;
+  
+  &:hover {
+    background: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+  }
 `;

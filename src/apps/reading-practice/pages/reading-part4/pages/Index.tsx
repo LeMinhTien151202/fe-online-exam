@@ -35,63 +35,64 @@ export const Part4Page: React.FC = () => {
               <S.BackLink to="/reading">
                 <LeftOutlined /> Quay lại danh sách
               </S.BackLink>
-              <Title level={4} style={{ color: 'white', margin: 0 }}>Part 4: Long Text Comprehension</Title>
+              <S.HeaderTitle>Part 4: Long Text Comprehension</S.HeaderTitle>
             </Space>
             
-            <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
+            <Space size="large" className="flex items-center">
               <Progress 
                 type="circle" 
                 percent={progressPercent} 
                 size={40} 
                 strokeColor="#10b981" 
                 trailColor="rgba(255,255,255,0.2)"
-                format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{answeredCount}/7</span>}
+                format={() => <S.ProgressText>{answeredCount}/7</S.ProgressText>}
               />
               <S.TimerWrapper>
-                <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
+                <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
                 {formatTime(timeLeft)}
               </S.TimerWrapper>
             </Space>
           </S.Header>
 
           {isSubmitted && (
-            <div style={{ padding: '1.5rem 2rem 0 2rem' }}>
-              <Alert
-                message={
-                  <span style={{ fontWeight: 600 }}>
-                    Kết quả làm bài: {correctCount}/7 câu đúng ({Math.round(correctCount / 7 * 100)}%)
-                  </span>
-                }
-                description="Các tiêu đề đúng có viền xanh lá. Các tiêu đề sai có viền đỏ kèm đáp án đúng."
-                type={correctCount >= 5 ? "success" : "warning"}
-                showIcon
-                closable
-                style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}
-              />
-            </div>
+            <S.AlertOuterWrapper>
+              <S.AlertWrapper>
+                <Alert
+                  message={
+                    <span className="font-semibold">
+                      Kết quả làm bài: {correctCount}/7 câu đúng ({Math.round(correctCount / 7 * 100)}%)
+                    </span>
+                  }
+                  description="Các tiêu đề đúng có viền xanh lá. Các tiêu đề sai có viền đỏ kèm đáp án đúng."
+                  type={correctCount >= 5 ? "success" : "warning"}
+                  showIcon
+                  closable
+                />
+              </S.AlertWrapper>
+            </S.AlertOuterWrapper>
           )}
 
           <S.MainContent>
             <S.ScrollableColumn>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                <Badge status="processing" text={<Text strong style={{ color: '#0f172a' }}>VĂN BẢN ĐỌC HIỂU (7 ĐOẠN VĂN)</Text>} />
-              </div>
+              <S.SectionHeader>
+                <Badge status="processing" text={<S.SectionTitle>VĂN BẢN ĐỌC HIỂU (7 ĐOẠN VĂN)</S.SectionTitle>} />
+              </S.SectionHeader>
 
               {paragraphs.map(p => (
                 <S.ParagraphWrapper key={p.num}>
                   <S.ParagraphNumber>{p.num}</S.ParagraphNumber>
-                  <Paragraph style={{ margin: 0, fontSize: '0.975rem', lineHeight: 1.7, color: '#334155' }}>
+                  <S.ParagraphText>
                     {p.text}
-                  </Paragraph>
+                  </S.ParagraphText>
                 </S.ParagraphWrapper>
               ))}
             </S.ScrollableColumn>
 
             <S.ScrollableColumn>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0.5rem 0 0.25rem 0' }}>
-                <Text strong style={{ color: '#0f172a' }}>GÁN TIÊU ĐỀ CHO TỪNG ĐOẠN VĂN</Text>
-                <Text type="secondary" style={{ fontSize: '12px' }}>{answeredCount}/7 Đã gán</Text>
-              </div>
+              <S.QuestionHeader>
+                <S.SectionTitle>GÁN TIÊU ĐỀ CHO TỪNG ĐOẠN VĂN</S.SectionTitle>
+                <S.SectionSubtitle>{answeredCount}/7 Đã gán</S.SectionSubtitle>
+              </S.QuestionHeader>
 
               {[1, 2, 3, 4, 5, 6, 7].map((num) => {
                 const isAnswered = !!answers[num];
@@ -102,13 +103,13 @@ export const Part4Page: React.FC = () => {
                     $isAnswered={isAnswered}
                     $status={isSubmitted ? (isCorrect ? 'success' : 'error') : 'default'}
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <Text strong style={{ color: '#334155', fontSize: '0.95rem' }}>
+                    <div className="flex flex-col gap-2">
+                      <S.QuestionLabel>
                         Đoạn văn {num}:
-                      </Text>
+                      </S.QuestionLabel>
                       <Select
                         placeholder="Chọn tiêu đề phù hợp từ Heading Bank..."
-                        style={{ width: '100%' }}
+                        className="w-full"
                         value={answers[num]}
                         onChange={(val) => handleSelectChange(num, val as string)}
                         size="large"
@@ -123,9 +124,9 @@ export const Part4Page: React.FC = () => {
                       </Select>
 
                       {isSubmitted && !isCorrect && (
-                        <div style={{ marginTop: '0.25rem', color: '#10b981', fontWeight: 600, fontSize: '0.9rem' }}>
+                        <S.CorrectAnswerText>
                           Đáp án đúng: {headings.find(h => h.value === correctAnswers[num])?.label}
-                        </div>
+                        </S.CorrectAnswerText>
                       )}
                     </div>
                   </S.QuestionSlot>
@@ -135,51 +136,34 @@ export const Part4Page: React.FC = () => {
           </S.MainContent>
 
           <S.Footer>
-            <Button 
+            <S.FooterButton 
               type="default" 
               icon={<LeftOutlined />} 
               size="large"
-              style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', border: '1px solid #e2e8f0', color: '#64748b' }}
               onClick={() => navigate({ to: '/reading' })}
             >
               Quay lại danh sách
-            </Button>
+            </S.FooterButton>
 
             <Space size="middle">
               {isSubmitted ? (
-                <Button
+                <S.RetryButton
                   type="primary"
                   icon={<RollbackOutlined />}
                   size="large"
-                  style={{
-                    borderRadius: '2rem',
-                    fontWeight: 600,
-                    background: '#6366f1',
-                    borderColor: '#6366f1',
-                    padding: '0 2rem',
-                    boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.2)'
-                  }}
                   onClick={handleRetry}
                 >
                   Làm lại
-                </Button>
+                </S.RetryButton>
               ) : (
-                <Button 
+                <S.SubmitButton 
                   type="primary" 
                   icon={<CheckCircleOutlined />} 
                   size="large"
-                  style={{ 
-                    borderRadius: '2rem', 
-                    fontWeight: 600, 
-                    background: '#10b981', 
-                    borderColor: '#10b981',
-                    padding: '0 2rem',
-                    boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
-                  }}
                   onClick={handleSubmit}
                 >
                   Nộp bài
-                </Button>
+                </S.SubmitButton>
               )}
             </Space>
           </S.Footer>

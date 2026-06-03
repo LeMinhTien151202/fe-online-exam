@@ -1,4 +1,6 @@
 import styled from 'styled-components';
+import { Button } from 'antd';
+import { Link } from '@tanstack/react-router';
 
 export const Container = styled.div`
   width: 100%;
@@ -213,3 +215,53 @@ export const MockTestBadge = styled.span<{ $type: 'easy' | 'medium' | 'hard' }>`
     return '#b91c1c';
   }};
 `;
+
+export const StatPillIcon = styled.div<{ $color: string }>`
+  font-size: 1.25rem;
+  color: ${props => props.$color};
+`;
+
+export const TrophyScoreText = styled.strong`
+  color: #10b981;
+  font-weight: 700;
+`;
+
+export const TrophyEmptyText = styled.span`
+  color: #64748b;
+`;
+
+export const ScoreProgressWrapper = styled.div`
+  margin-bottom: 1rem;
+`;
+
+export const ScoreProgressHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 4px;
+  font-weight: 600;
+`;
+
+export const MockStartButton = styled(Button)<{ $hasScore: boolean }>`
+  width: 100% !important;
+  border-radius: 8px !important;
+  height: 40px !important;
+  font-weight: 700 !important;
+  background: ${props => props.$hasScore ? '#eff6ff' : '#00205B'} !important;
+  border-color: ${props => props.$hasScore ? '#bfdbfe' : '#00205B'} !important;
+  color: ${props => props.$hasScore ? '#1d4ed8' : '#ffffff'} !important;
+  box-shadow: ${props => props.$hasScore ? 'none' : '0 4px 6px -1px rgba(0, 32, 91, 0.15)'} !important;
+  
+  &:hover {
+    background: ${props => props.$hasScore ? '#dbeafe' : '#001A41'} !important;
+    border-color: ${props => props.$hasScore ? '#93c5fd' : '#001A41'} !important;
+  }
+`;
+
+export const MobileHeaderLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+`;
+

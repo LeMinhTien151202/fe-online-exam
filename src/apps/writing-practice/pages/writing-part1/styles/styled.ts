@@ -1,10 +1,11 @@
 import styled from "styled-components";
 import { Link } from "@tanstack/react-router";
+import { Button } from "antd";
 
 export const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   width: 100%;
   background: #ffffff;
   overflow: hidden;
@@ -379,5 +380,276 @@ export const ChatMessageText = styled.div`
   border: 1px solid #f1f5f9;
   font-weight: 500;
 `;
+
+export const HeaderTitle = styled.span`
+  font-size: clamp(1rem, 3vw, 1.15rem);
+  font-weight: 700;
+  color: white;
+`;
+
+export const SampleAnswersList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+export const SampleAnswerItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+export const SampleAnswerTitle = styled.div`
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.92rem;
+`;
+
+export const SampleAnswerText1 = styled.div`
+  color: #0284c7;
+  font-style: italic;
+  font-weight: 500;
+`;
+
+export const SampleAnswerText2 = styled.div`
+  color: #4f46e5;
+  font-style: italic;
+  font-weight: 500;
+`;
+
+export const SampleAnswerText3 = styled.div`
+  color: #ea580c;
+  font-style: italic;
+  font-weight: 500;
+`;
+
+export const FooterButton = styled(Button)`
+  border-radius: 2rem !important;
+  font-weight: 600 !important;
+  padding: 0 1.5rem !important;
+  color: #64748b !important;
+`;
+
+export const SubmitButton = styled(Button)`
+  border-radius: 2rem !important;
+  font-weight: 600 !important;
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+  padding: 0 2rem !important;
+  color: white !important;
+  
+  &:hover {
+    background: #059669 !important;
+    border-color: #059669 !important;
+  }
+`;
+
+export const ViewSampleButton = styled(Button)`
+  border-radius: 1.5rem !important;
+  color: #9333ea !important;
+  border-color: #d8b4fe !important;
+  font-weight: 600 !important;
+`;
+
+export const QuestionsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+`;
+
+export const ErrorText = styled.span`
+  font-size: 0.7rem;
+  color: #ef4444;
+  font-weight: 600;
+`;
+
+export const SampleAnswerContainer = styled.div`
+  color: #1e293b;
+  font-size: 1rem;
+  font-style: italic;
+`;
+
+export const SampleAnswerWordCount = styled.div`
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+`;
+
+export const SampleModalList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+export const SampleModalItem = styled.div`
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 12px;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+export const SampleModalHeader = styled.div`
+  font-weight: 700;
+  color: #475569;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+`;
+
+export const SampleModalQuestionText = styled.div`
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 4px 0;
+`;
+
+export const SampleModalAnswerText = styled.div`
+  color: #9333ea;
+  font-style: italic;
+  margin-top: 6px;
+  font-weight: 500;
+`;
+
+export const SampleModalAnswerText2 = styled.div`
+  color: #7c3aed;
+  font-style: italic;
+  margin-top: 6px;
+  font-weight: 500;
+`;
+
+export const SampleModalWordCount = styled.div`
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 4px;
+`;
+
+export const InstructionText = styled.div`
+  font-size: 0.92rem;
+  color: #475569;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+`;
+
+export const SenderName = styled.span`
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+`;
+
+export const SampleModalListLarge = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+export const SampleModalSubHeader = styled.div`
+  font-weight: 800;
+  color: #4f46e5;
+  font-size: 1rem;
+  border-bottom: 2px solid #e0e7ff;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+`;
+
+export const SampleModalSubHeader2 = styled.div`
+  font-weight: 800;
+  color: #9333ea;
+  font-size: 1rem;
+  border-bottom: 2px solid #f3e8ff;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+`;
+
+export const SampleModalTextCard = styled.div`
+  white-space: pre-line;
+  font-style: italic;
+  color: #1e293b;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 6px;
+`;
+
+export const Subtitle = styled.div`
+  font-size: 0.92rem;
+  color: #475569;
+  font-weight: 600;
+  margin-top: 4px;
+`;
+
+export const SituationTitle = styled.div`
+  font-weight: 800;
+  color: #1d4ed8;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+`;
+
+export const SituationBody = styled.div`
+  white-space: pre-line;
+  font-weight: 500;
+  line-height: 1.45;
+`;
+
+export const EmailSectionWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+export const EmailGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+`;
+
+export const EmailHeaderLabel = styled.div`
+  font-weight: 800;
+  color: #4f46e5;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+`;
+
+export const EmailHeaderLabel2 = styled.div`
+  font-weight: 800;
+  color: #9333ea;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+`;
+
+export const EmailPromptText = styled.div`
+  font-size: 0.95rem;
+  color: #334155;
+  font-weight: 600;
+  line-height: 1.45;
+`;
+
+export const SubmitButtonPurple = styled(Button)`
+  border-radius: 2rem !important;
+  font-weight: 600 !important;
+  background: #9333ea !important;
+  border-color: #9333ea !important;
+  padding: 0 2.5rem !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3) !important;
+  
+  &:hover {
+    background: #7c3aed !important;
+    border-color: #7c3aed !important;
+  }
+`;
+
+
+
+
 
 

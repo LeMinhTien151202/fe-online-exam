@@ -34,31 +34,31 @@ export const Part4Page: React.FC = () => {
   const sampleAnswersForModal = scenario.sampleAnswers.map((set) => ({
     label: set.label,
     content: (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <S.SampleModalListLarge>
         <div>
-          <div style={{ fontWeight: 800, color: '#4f46e5', fontSize: '1rem', borderBottom: '2px solid #e0e7ff', paddingBottom: '4px', marginBottom: '8px' }}>
+          <S.SampleModalSubHeader>
             1. EMAIL THÂN MẬT (INFORMAL EMAIL) - ~50 words
-          </div>
-          <div style={{ whiteSpace: 'pre-line', fontStyle: 'italic', color: '#1e293b', background: '#f8fafc', padding: '12px', borderRadius: '6px' }}>
+          </S.SampleModalSubHeader>
+          <S.SampleModalTextCard>
             {set.informal}
-          </div>
-          <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>
+          </S.SampleModalTextCard>
+          <S.SampleModalWordCount>
             Số từ: {getWordCount(set.informal)} từ
-          </div>
+          </S.SampleModalWordCount>
         </div>
 
         <div>
-          <div style={{ fontWeight: 800, color: '#9333ea', fontSize: '1rem', borderBottom: '2px solid #f3e8ff', paddingBottom: '4px', marginBottom: '8px' }}>
+          <S.SampleModalSubHeader2>
             2. EMAIL TRANG TRỌNG (FORMAL EMAIL) - 120-150 words
-          </div>
-          <div style={{ whiteSpace: 'pre-line', fontStyle: 'italic', color: '#1e293b', background: '#f8fafc', padding: '12px', borderRadius: '6px' }}>
+          </S.SampleModalSubHeader2>
+          <S.SampleModalTextCard>
             {set.formal}
-          </div>
-          <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>
+          </S.SampleModalTextCard>
+          <S.SampleModalWordCount>
             Số từ: {getWordCount(set.formal)} từ
-          </div>
+          </S.SampleModalWordCount>
         </div>
-      </div>
+      </S.SampleModalListLarge>
     )
   }));
 
@@ -72,57 +72,56 @@ export const Part4Page: React.FC = () => {
               <S.BackLink to="/writing/part/3">
                 <LeftOutlined /> Quay lại Part 3
               </S.BackLink>
-              <span style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white' }}>
+              <S.HeaderTitle>
                 Part 4: Formal and Informal Emails
-              </span>
+              </S.HeaderTitle>
             </Space>
 
             <S.TimerWrapper>
-              <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
+              <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
               {timer.formatTime()}
             </S.TimerWrapper>
           </S.Header>
 
           <S.MainContent>
-            <S.CenteredContainer style={{ maxWidth: '900px' }}>
-              <S.ContentCard style={{ padding: '0.5rem 0' }}>
-                <S.TitleArea style={{ marginBottom: '1.25rem' }}>
+            <S.CenteredContainer className="max-w-[900px]">
+              <S.ContentCard className="py-2">
+                <S.TitleArea className="mb-5">
                   <div>
                     <h2>Question 4 of 4 - Email Writing</h2>
-                    <div className="subtitle" style={{ fontSize: '0.92rem', color: '#475569', fontWeight: 600, marginTop: '4px' }}>
+                    <S.Subtitle>
                       Write a short email (about 50 words) to your friend, and a longer email (120-150 words) to the president of the club.
-                    </div>
+                    </S.Subtitle>
                   </div>
-                  <Button
+                  <S.ViewSampleButton
                     type="dashed"
                     icon={<BulbOutlined />}
                     onClick={() => setShowSampleModal(true)}
-                    style={{ borderRadius: '1.5rem', color: '#9333ea', borderColor: '#d8b4fe', fontWeight: 600 }}
                   >
                     Xem đáp án mẫu
-                  </Button>
+                  </S.ViewSampleButton>
                 </S.TitleArea>
 
                 {/* THÔNG BÁO / TÌNH HUỐNG (CHỈ HIỂN THỊ 1 LẦN Ở TRÊN CÙNG) */}
-                <S.InstructionBox $borderColor="#3b82f6" style={{ marginBottom: '1.5rem', padding: '0.85rem 1.25rem', fontSize: '0.9rem', background: '#eff6ff', color: '#1e40af' }}>
-                  <div style={{ fontWeight: 800, color: '#1d4ed8', marginBottom: '0.25rem', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>
+                <S.InstructionBox $borderColor="#3b82f6" className="mb-6 p-4 text-[0.9rem] bg-[#eff6ff] text-[#1e40af]">
+                  <S.SituationTitle>
                     Tình huống giả định (Club Notification)
-                  </div>
-                  <div style={{ whiteSpace: 'pre-line', fontWeight: 500, lineHeight: 1.45 }}>
+                  </S.SituationTitle>
+                  <S.SituationBody>
                     {scenario.situation}
-                  </div>
+                  </S.SituationBody>
                 </S.InstructionBox>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                <S.EmailSectionWrapper>
                   {/* EMAIL THÂN MẬT */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                  <S.EmailGroup>
                     <div>
-                      <div style={{ fontWeight: 800, color: '#4f46e5', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                      <S.EmailHeaderLabel>
                         1. Thư thân mật (Informal Email)
-                      </div>
-                      <div style={{ fontSize: '0.95rem', color: '#334155', fontWeight: 600, lineHeight: 1.45 }}>
+                      </S.EmailHeaderLabel>
+                      <S.EmailPromptText>
                         {scenario.informalPrompt}
-                      </div>
+                      </S.EmailPromptText>
                     </div>
 
                     <S.ModernTextArea
@@ -134,10 +133,10 @@ export const Part4Page: React.FC = () => {
                       $hasText={!!informalEmail}
                     />
                     
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '1.5rem' }}>
-                      <div style={{ flex: 1 }}>
+                    <div className="flex justify-between items-center min-h-[1.5rem]">
+                      <div className="flex-1">
                         {informalEmail && !isInfValid && (
-                          <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 600 }}>
+                          <span className="text-[0.75rem] color-[#ef4444] font-semibold">
                             {informalWc < 40 ? `Cần thêm ${40 - informalWc} từ` : informalWc > 60 ? `Cần bớt ${informalWc - 60} từ` : 'Yêu cầu khoảng 50 từ'}
                           </span>
                         )}
@@ -146,17 +145,17 @@ export const Part4Page: React.FC = () => {
                         {informalWc} / 40-60 từ
                       </S.ModernWordBadge>
                     </div>
-                  </div>
+                  </S.EmailGroup>
 
                   {/* EMAIL TRANG TRỌNG */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                  <S.EmailGroup>
                     <div>
-                      <div style={{ fontWeight: 800, color: '#9333ea', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                      <S.EmailHeaderLabel2>
                         2. Thư trang trọng (Formal Email)
-                      </div>
-                      <div style={{ fontSize: '0.95rem', color: '#334155', fontWeight: 600, lineHeight: 1.45 }}>
+                      </S.EmailHeaderLabel2>
+                      <S.EmailPromptText>
                         {scenario.formalPrompt}
-                      </div>
+                      </S.EmailPromptText>
                     </div>
 
                     <S.ModernTextArea
@@ -168,10 +167,10 @@ export const Part4Page: React.FC = () => {
                       $hasText={!!formalEmail}
                     />
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '1.5rem' }}>
-                      <div style={{ flex: 1 }}>
+                    <div className="flex justify-between items-center min-h-[1.5rem]">
+                      <div className="flex-1">
                         {formalEmail && !isFormValid && (
-                          <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 600 }}>
+                          <span className="text-[0.75rem] color-[#ef4444] font-semibold">
                             {formalWc < 120 ? `Cần thêm ${120 - formalWc} từ` : formalWc > 150 ? `Cần bớt ${formalWc - 150} từ` : 'Yêu cầu 120 - 150 từ'}
                           </span>
                         )}
@@ -180,40 +179,31 @@ export const Part4Page: React.FC = () => {
                         {formalWc} / 120-150 từ
                       </S.ModernWordBadge>
                     </div>
-                  </div>
-                </div>
+                  </S.EmailGroup>
+                </S.EmailSectionWrapper>
               </S.ContentCard>
             </S.CenteredContainer>
           </S.MainContent>
 
           <S.Footer>
-            <Button
+            <S.FooterButton
               type="default"
               icon={<LeftOutlined />}
               size="large"
-              style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', color: '#64748b' }}
               onClick={handleBack}
             >
               Quay lại Part 3
-            </Button>
+            </S.FooterButton>
 
             <Space size="middle">
-              <Button
+              <S.SubmitButtonPurple
                 type="primary"
                 icon={<CheckSquareOutlined />}
                 size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#9333ea',
-                  borderColor: '#9333ea',
-                  padding: '0 2.5rem',
-                  boxShadow: '0 4px 12px rgba(147, 51, 234, 0.3)'
-                }}
                 onClick={handleSubmit}
               >
                 Nộp toàn bộ bài thi
-              </Button>
+              </S.SubmitButtonPurple>
             </Space>
           </S.Footer>
         </S.PageContainer>

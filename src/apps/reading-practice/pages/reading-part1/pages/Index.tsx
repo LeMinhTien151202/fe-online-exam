@@ -39,22 +39,22 @@ export const Part1Page: React.FC = () => {
               <S.BackLink to="/reading">
                 <LeftOutlined /> Quay lại danh sách
               </S.BackLink>
-              <span style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white' }}>
+              <S.HeaderTitle>
                 Part 1: Sentence Comprehension
-              </span>
+              </S.HeaderTitle>
             </Space>
 
-            <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
+            <Space size="large" className="flex items-center">
               <Progress
                 type="circle"
                 percent={progressPercent}
                 size={40}
                 strokeColor="#10b981"
                 trailColor="rgba(255,255,255,0.2)"
-                format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{answeredCount}/5</span>}
+                format={() => <S.ProgressText>{answeredCount}/5</S.ProgressText>}
               />
               <S.TimerWrapper>
-                <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
+                <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
                 {formatTime(timeLeft)}
               </S.TimerWrapper>
             </Space>
@@ -62,18 +62,19 @@ export const Part1Page: React.FC = () => {
 
           <S.MainContent>
             {isSubmitted && (
-              <Alert
-                message={
-                  <span style={{ fontWeight: 600 }}>
-                    Kết quả làm bài: {correctCount}/5 câu đúng ({Math.round(correctCount / 5 * 100)}%)
-                  </span>
-                }
-                description="Bạn có thể kiểm tra lại các câu trả lời đúng (màu xanh lá) và sai (màu đỏ) bên dưới."
-                type={correctCount >= 4 ? "success" : "warning"}
-                showIcon
-                closable
-                style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}
-              />
+              <S.AlertWrapper>
+                <Alert
+                  message={
+                    <span className="font-semibold">
+                      Kết quả làm bài: {correctCount}/5 câu đúng ({Math.round(correctCount / 5 * 100)}%)
+                    </span>
+                  }
+                  description="Bạn có thể kiểm tra lại các câu trả lời đúng (màu xanh lá) và sai (màu đỏ) bên dưới."
+                  type={correctCount >= 4 ? "success" : "warning"}
+                  showIcon
+                  closable
+                />
+              </S.AlertWrapper>
             )}
 
             <S.ContentCard>
@@ -87,7 +88,7 @@ export const Part1Page: React.FC = () => {
                 </S.TipBox>
               </S.TitleArea>
 
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div className="flex flex-col">
                 <S.QuestionRow>
                   <S.BadgeNumber>1</S.BadgeNumber>
                   <S.QuestionText>
@@ -113,9 +114,9 @@ export const Part1Page: React.FC = () => {
                     </S.InlineSentenceSelect>{' '}
                     starting next semester.
                     {isSubmitted && answers[1] !== correctAnswers[1] && (
-                      <span style={{ color: '#10b981', marginLeft: '12px', fontSize: '0.95rem', fontWeight: 600 }}>
+                      <S.CorrectAnswerText>
                         (Đáp án đúng: <strong>{correctAnswers[1]}</strong>)
-                      </span>
+                      </S.CorrectAnswerText>
                     )}
                   </S.QuestionText>
                 </S.QuestionRow>
@@ -145,9 +146,9 @@ export const Part1Page: React.FC = () => {
                     </S.InlineSentenceSelect>{' '}
                     of ten books at a time.
                     {isSubmitted && answers[2] !== correctAnswers[2] && (
-                      <span style={{ color: '#10b981', marginLeft: '12px', fontSize: '0.95rem', fontWeight: 600 }}>
+                      <S.CorrectAnswerText>
                         (Đáp án đúng: <strong>{correctAnswers[2]}</strong>)
-                      </span>
+                      </S.CorrectAnswerText>
                     )}
                   </S.QuestionText>
                 </S.QuestionRow>
@@ -177,9 +178,9 @@ export const Part1Page: React.FC = () => {
                     </S.InlineSentenceSelect>{' '}
                     to three weeks.
                     {isSubmitted && answers[3] !== correctAnswers[3] && (
-                      <span style={{ color: '#10b981', marginLeft: '12px', fontSize: '0.95rem', fontWeight: 600 }}>
+                      <S.CorrectAnswerText>
                         (Đáp án đúng: <strong>{correctAnswers[3]}</strong>)
-                      </span>
+                      </S.CorrectAnswerText>
                     )}
                   </S.QuestionText>
                 </S.QuestionRow>
@@ -209,9 +210,9 @@ export const Part1Page: React.FC = () => {
                     </S.InlineSentenceSelect>{' '}
                     for returning books late.
                     {isSubmitted && answers[4] !== correctAnswers[4] && (
-                      <span style={{ color: '#10b981', marginLeft: '12px', fontSize: '0.95rem', fontWeight: 600 }}>
+                      <S.CorrectAnswerText>
                         (Đáp án đúng: <strong>{correctAnswers[4]}</strong>)
-                      </span>
+                      </S.CorrectAnswerText>
                     )}
                   </S.QuestionText>
                 </S.QuestionRow>
@@ -241,16 +242,16 @@ export const Part1Page: React.FC = () => {
                     </S.InlineSentenceSelect>{' '}
                     their items online.
                     {isSubmitted && answers[5] !== correctAnswers[5] && (
-                      <span style={{ color: '#10b981', marginLeft: '12px', fontSize: '0.95rem', fontWeight: 600 }}>
+                      <S.CorrectAnswerText>
                         (Đáp án đúng: <strong>{correctAnswers[5]}</strong>)
-                      </span>
+                      </S.CorrectAnswerText>
                     )}
                   </S.QuestionText>
                 </S.QuestionRow>
               </div>
             </S.ContentCard>
 
-            <S.AdminExperienceCard style={{ marginTop: '0.5rem' }}>
+            <S.AdminExperienceCard>
               <div className="info-left">
                 <div className="icon-bulb">
                   <BulbOutlined />
@@ -265,51 +266,34 @@ export const Part1Page: React.FC = () => {
           </S.MainContent>
 
           <S.Footer>
-            <Button
+            <S.FooterButton
               type="default"
               icon={<LeftOutlined />}
               size="large"
-              style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', border: '1px solid #e2e8f0', color: '#64748b' }}
               onClick={() => navigate({ to: '/reading' })}
             >
               Quay lại danh sách
-            </Button>
+            </S.FooterButton>
 
             <Space size="middle">
               {isSubmitted ? (
-                <Button
+                <S.RetryButton
                   type="primary"
                   icon={<RollbackOutlined />}
                   size="large"
-                  style={{
-                    borderRadius: '2rem',
-                    fontWeight: 600,
-                    background: '#6366f1',
-                    borderColor: '#6366f1',
-                    padding: '0 2rem',
-                    boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.2)'
-                  }}
                   onClick={handleRetry}
                 >
                   Làm lại
-                </Button>
+                </S.RetryButton>
               ) : (
-                <Button
+                <S.SubmitButton
                   type="primary"
                   icon={<CheckCircleOutlined />}
                   size="large"
-                  style={{
-                    borderRadius: '2rem',
-                    fontWeight: 600,
-                    background: '#10b981',
-                    borderColor: '#10b981',
-                    padding: '0 2rem',
-                    boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
-                  }}
                   onClick={handleSubmit}
                 >
                   Nộp bài
-                </Button>
+                </S.SubmitButton>
               )}
             </Space>
           </S.Footer>

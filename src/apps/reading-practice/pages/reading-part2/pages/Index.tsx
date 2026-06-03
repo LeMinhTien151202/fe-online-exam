@@ -48,9 +48,9 @@ export const Part2Page: React.FC = () => {
               <S.BackLink to="/reading">
                 <LeftOutlined /> Quay lại danh sách
               </S.BackLink>
-              <span style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white' }}>
+              <S.HeaderTitle>
                 Part 2: Text Cohesion
-              </span>
+              </S.HeaderTitle>
               <S.HeaderSelect 
                 value={version} 
                 onChange={(val) => setVersion(val as string)}
@@ -64,43 +64,44 @@ export const Part2Page: React.FC = () => {
               </S.HeaderSelect>
             </Space>
 
-            <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
+            <Space size="large" className="flex items-center">
               <Progress 
                 type="circle" 
                 percent={progressPercent} 
                 size={40} 
                 strokeColor="#10b981" 
                 trailColor="rgba(255,255,255,0.2)"
-                format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{placedCount}/5</span>}
+                format={() => <S.ProgressText>{placedCount}/5</S.ProgressText>}
               />
               <S.TimerWrapper>
-                <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
+                <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
                 {formatTime(timeLeft)}
               </S.TimerWrapper>
             </Space>
           </S.Header>
 
           {isSubmitted && (
-            <div style={{ padding: '1.5rem 2rem 0 2rem' }}>
-              <Alert
-                message={
-                  <span style={{ fontWeight: 600 }}>
-                    Kết quả sắp xếp: {correctCount}/5 vị trí đúng ({Math.round(correctCount / 5 * 100)}%)
-                  </span>
-                }
-                description="Các câu đúng có viền xanh lá. Các câu sai có viền đỏ. Bạn có thể xem thứ tự đúng bên dưới."
-                type={correctCount === 5 ? "success" : "warning"}
-                showIcon
-                closable
-                style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}
-              />
-            </div>
+            <S.AlertOuterWrapper>
+              <S.AlertWrapper>
+                <Alert
+                  message={
+                    <span className="font-semibold">
+                      Kết quả sắp xếp: {correctCount}/5 vị trí đúng ({Math.round(correctCount / 5 * 100)}%)
+                    </span>
+                  }
+                  description="Các câu đúng có viền xanh lá. Các câu sai có viền đỏ. Bạn có thể xem thứ tự đúng bên dưới."
+                  type={correctCount === 5 ? "success" : "warning"}
+                  showIcon
+                  closable
+                />
+              </S.AlertWrapper>
+            </S.AlertOuterWrapper>
           )}
 
           <S.MainContent>
             <S.Column>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                <Badge status="processing" text={<span style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.95rem' }}>Sắp xếp các đáp án theo đúng thứ tự</span>} />
+              <div className="flex items-center gap-2 mb-2">
+                <Badge status="processing" text={<span className="font-bold text-[#0f172a] text-[0.95rem]">Sắp xếp các đáp án theo đúng thứ tự</span>} />
               </div>
               <S.ColumnHeader>
                 A new café in town (Version 3)
@@ -131,7 +132,7 @@ export const Part2Page: React.FC = () => {
                           $status={isSubmitted ? (isCorrect ? 'success' : 'error') : 'default'}
                         >
                           <span className="text">
-                            <span style={{ color: '#94a3b8', marginRight: '6px' }}>({idx})</span>
+                            <span className="text-[#94a3b8] mr-1.5">({idx})</span>
                             {item.text}
                           </span>
                           {!isSubmitted && (
@@ -168,32 +169,32 @@ export const Part2Page: React.FC = () => {
             </S.Column>
 
             <S.Column>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <span style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.95rem' }}>
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-bold text-[#0f172a] text-[0.95rem]">
                   {isSubmitted ? 'Đáp án đúng' : '← Kéo hoặc click để chọn câu'}
                 </span>
-                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>
+                <span className="text-[0.75rem] text-[#64748b] font-semibold">
                   {isSubmitted ? 'Bảng đáp án' : `${placedCount}/5 Đã xếp`}
                 </span>
               </div>
-              <S.ColumnHeader style={{ visibility: 'hidden', userSelect: 'none' }}>
+              <S.ColumnHeader className="invisible select-none">
                 &nbsp;
               </S.ColumnHeader>
               <S.OptionsPool>
                 {isSubmitted ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <S.OptionsWrapper>
                     {correctOrder.map((id, index) => {
                       const text = initialSentences.find(s => s.id === id)?.text;
                       return (
-                        <div key={id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '1rem 1.25rem', borderRadius: '0.5rem' }}>
-                          <span style={{ background: '#10b981', color: 'white', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                        <S.CorrectAnswerRow key={id}>
+                          <S.CorrectBadgeNumber>
                             {index + 1}
-                          </span>
-                          <span style={{ color: '#14532d', fontWeight: 600, fontSize: '0.95rem' }}>{text}</span>
-                        </div>
+                          </S.CorrectBadgeNumber>
+                          <S.CorrectAnswerText>{text}</S.CorrectAnswerText>
+                        </S.CorrectAnswerRow>
                       );
                     })}
-                  </div>
+                  </S.OptionsWrapper>
                 ) : (
                   pool.map((item) => (
                     <S.DraggableCard
@@ -208,60 +209,43 @@ export const Part2Page: React.FC = () => {
                   ))
                 )}
                 {!isSubmitted && pool.length === 0 && (
-                  <div style={{ textAlign: 'center', padding: '2rem', border: '1.5px dashed #10b981', borderRadius: '0.5rem', background: '#f6fdfa', color: '#059669', fontWeight: 600 }}>
+                  <S.CompletedMessage>
                     ✓ Đã sắp xếp tất cả các câu!
-                  </div>
+                  </S.CompletedMessage>
                 )}
               </S.OptionsPool>
             </S.Column>
           </S.MainContent>
 
           <S.Footer>
-            <Button 
+            <S.FooterButton 
               type="default" 
               icon={<LeftOutlined />} 
               size="large"
-              style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', border: '1px solid #e2e8f0', color: '#64748b' }}
               onClick={() => navigate({ to: '/reading' })}
             >
               Quay lại danh sách
-            </Button>
+            </S.FooterButton>
 
             <Space size="middle">
               {isSubmitted ? (
-                <Button
+                <S.RetryButton
                   type="primary"
                   icon={<RollbackOutlined />}
                   size="large"
-                  style={{
-                    borderRadius: '2rem',
-                    fontWeight: 600,
-                    background: '#6366f1',
-                    borderColor: '#6366f1',
-                    padding: '0 2rem',
-                    boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.2)'
-                  }}
                   onClick={handleRetry}
                 >
                   Làm lại
-                </Button>
+                </S.RetryButton>
               ) : (
-                <Button 
+                <S.SubmitButton 
                   type="primary" 
                   icon={<CheckCircleOutlined />} 
                   size="large"
-                  style={{ 
-                    borderRadius: '2rem', 
-                    fontWeight: 600, 
-                    background: '#10b981', 
-                    borderColor: '#10b981',
-                    padding: '0 2rem',
-                    boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
-                  }}
                   onClick={handleSubmit}
                 >
                   Nộp bài
-                </Button>
+                </S.SubmitButton>
               )}
             </Space>
           </S.Footer>

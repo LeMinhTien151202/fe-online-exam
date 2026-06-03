@@ -28,12 +28,12 @@ export const Part2Page: React.FC = () => {
   const sampleAnswersForModal = question.sampleAnswers.map((ans, idx) => ({
     label: `Gợi ý đáp án mẫu ${idx + 1}`,
     content: (
-      <div style={{ color: '#1e293b', fontSize: '1rem', fontStyle: 'italic' }}>
+      <S.SampleAnswerContainer>
         "{ans}"
-        <div style={{ marginTop: '12px', fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
+        <S.SampleAnswerWordCount>
           Số từ: {getWordCount(ans)} từ
-        </div>
-      </div>
+        </S.SampleAnswerWordCount>
+      </S.SampleAnswerContainer>
     )
   }));
 
@@ -47,13 +47,13 @@ export const Part2Page: React.FC = () => {
               <S.BackLink to="/writing/part/1">
                 <LeftOutlined /> Quay lại Part 1
               </S.BackLink>
-              <span style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white' }}>
+              <S.HeaderTitle>
                 Part 2: Short Text Writing
-              </span>
+              </S.HeaderTitle>
             </Space>
 
             <S.TimerWrapper>
-              <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
+              <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
               {timer.formatTime()}
             </S.TimerWrapper>
           </S.Header>
@@ -66,22 +66,21 @@ export const Part2Page: React.FC = () => {
                     <h2>Giới thiệu bản thân ngắn gọn cho câu lạc bộ</h2>
                     <div className="subtitle">Writing Part 2 • Write in sentences (20 - 30 words)</div>
                   </div>
-                  <Button
+                  <S.ViewSampleButton
                     type="dashed"
                     icon={<BulbOutlined />}
                     onClick={() => setShowSampleModal(true)}
-                    style={{ borderRadius: '1.5rem', color: '#9333ea', borderColor: '#d8b4fe' }}
                   >
                     Xem đáp án mẫu
-                  </Button>
+                  </S.ViewSampleButton>
                 </S.TitleArea>
 
                 <S.InstructionBox $borderColor="#4f46e5">
                   {question.instruction} (Khuyên dùng: Dành ra khoảng 3 phút cho phần này).
                 </S.InstructionBox>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>
+                <div className="flex flex-col gap-4">
+                  <div className="text-[1.05rem] font-bold text-[#0f172a]">
                     Prompt: {question.prompt}
                   </div>
 
@@ -94,10 +93,10 @@ export const Part2Page: React.FC = () => {
                     $hasText={!!answer}
                   />
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '1.5rem' }}>
-                    <div style={{ flex: 1, paddingRight: '4px' }}>
+                  <div className="flex justify-between items-center min-h-[1.5rem]">
+                    <div className="flex-1 pr-1">
                       {answer && !isValid && (
-                        <span style={{ fontSize: '0.8rem', color: '#ef4444', fontWeight: 600 }}>
+                        <span className="text-[0.8rem] color-[#ef4444] font-semibold">
                           {wordCount < 20 ? `Cần thêm ${20 - wordCount} từ` : `Cần bớt ${wordCount - 30} từ`}
                         </span>
                       )}
@@ -112,32 +111,24 @@ export const Part2Page: React.FC = () => {
           </S.MainContent>
 
           <S.Footer>
-            <Button
+            <S.FooterButton
               type="default"
               icon={<LeftOutlined />}
               size="large"
-              style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', color: '#64748b' }}
               onClick={handleBack}
             >
               Quay lại Part 1
-            </Button>
+            </S.FooterButton>
 
             <Space size="middle">
-              <Button
+              <S.SubmitButton
                 type="primary"
                 icon={<CheckSquareOutlined />}
                 size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#10b981',
-                  borderColor: '#10b981',
-                  padding: '0 2rem',
-                }}
                 onClick={handleSubmit}
               >
                 Tiếp tục (Part 3)
-              </Button>
+              </S.SubmitButton>
             </Space>
           </S.Footer>
         </S.PageContainer>

@@ -1,11 +1,11 @@
 import styled from 'styled-components';
-import { Select } from 'antd';
+import { Select, Button, Space } from 'antd';
 import { Link } from '@tanstack/react-router';
 
 export const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   width: 100%;
   background: #ffffff;
   overflow: hidden;
@@ -379,3 +379,293 @@ export const Footer = styled.footer`
   z-index: 10;
   flex-shrink: 0;
 `;
+
+export const ContextDropdownInlineWrapper = styled.div`
+  display: inline-block;
+  width: 180px;
+  margin: 0 0.5rem;
+  vertical-align: middle;
+`;
+
+export const UsedOptionText = styled.span`
+  font-size: 11px;
+  color: #bfbfbf;
+  font-style: italic;
+`;
+
+export const VocabularySectionWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+`;
+
+export const VocabularySetCardBase = styled(VocabularySetCard)`
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+`;
+
+export const SetTitleBase = styled(SetTitle)`
+  font-size: 1.25rem !important;
+  color: #001a41 !important;
+  margin-bottom: 0.25rem !important;
+`;
+
+export const SetInstructionBase = styled(SetInstruction)`
+  font-size: 0.95rem !important;
+  color: #64748b !important;
+  margin-bottom: 1.5rem !important;
+`;
+
+export const VocabQuestionCard = styled(GrammarQuestionCard)`
+  margin-bottom: 0.75rem !important;
+  padding: 1rem 1.25rem !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.75rem !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+`;
+
+export const VocabContextQuestionText = styled(QuestionText)`
+  margin-bottom: 0 !important;
+  font-size: 1rem !important;
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  line-height: 1.6 !important;
+`;
+
+export const VocabQuestionNumberBadge = styled(QuestionNumberBadge)`
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  font-size: 0.85rem !important;
+  display: inline-flex !important;
+  vertical-align: middle !important;
+  margin-right: 0.5rem !important;
+  flex-shrink: 0 !important;
+`;
+
+export const VocabLabelBase = styled(VocabLabel)`
+  font-size: 1rem !important;
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+`;
+
+
+export const LegendColorDot = styled.div<{ $type: 'unanswered' | 'answered' | 'active' }>`
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 0.25rem;
+  
+  background: ${props => {
+    if (props.$type === 'unanswered') return '#f1f5f9';
+    if (props.$type === 'answered') return '#e6f4ff';
+    return 'white';
+  }};
+  
+  border: ${props => {
+    if (props.$type === 'answered') return '1px solid rgba(22, 119, 255, 0.3)';
+    if (props.$type === 'active') return '1.5px solid #1677ff';
+    return 'none';
+  }};
+`;
+
+export const NavProgressRow = styled.div`
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #475569;
+  display: flex;
+  justify-content: space-between;
+`;
+
+
+export const GrammarSectionWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  padding: 1rem 0;
+`;
+
+export const GrammarCardBase = styled(GrammarQuestionCard)`
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+`;
+
+export const GrammarQuestionText = styled(QuestionText)`
+  font-size: clamp(1.15rem, 4vw, 1.35rem) !important;
+  line-height: 2 !important;
+  margin-bottom: 2.5rem !important;
+  font-weight: 600 !important;
+  display: block !important;
+`;
+
+export const GrammarQuestionNumber = styled(QuestionNumberBadge)`
+  display: inline-flex !important;
+  vertical-align: middle !important;
+  margin-right: 0.75rem !important;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  font-size: 1rem !important;
+  flex-shrink: 0 !important;
+`;
+
+export const QuestionTextSpan = styled.span`
+  vertical-align: middle;
+`;
+
+export const EmptyQuestionsMsg = styled.div`
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+`;
+
+
+export const HeaderBackButton = styled(Button)`
+  color: #cbd5e1 !important;
+  font-weight: bold !important;
+`;
+
+export const HeaderTitleText = styled.span`
+  font-size: clamp(1rem, 3vw, 1.15rem);
+  font-weight: 800;
+`;
+
+export const HeaderSpace = styled(Space)`
+  display: flex;
+  align-items: center;
+`;
+
+export const ProgressText = styled.span`
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+`;
+
+export const FooterButton = styled(Button)`
+  border-radius: 2rem !important;
+  font-weight: 600 !important;
+  padding: 0 1.5rem !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+`;
+
+export const FooterProgressText = styled.span`
+  font-weight: 700;
+  color: #475569;
+  font-size: 0.95rem;
+`;
+
+export const SubmitButton = styled(Button)`
+  border-radius: 2rem !important;
+  font-weight: 600 !important;
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+  padding: 0 2rem !important;
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important;
+  color: white !important;
+  
+  &:hover {
+    background: #059669 !important;
+    border-color: #059669 !important;
+  }
+`;
+
+export const NextButton = styled(Button)`
+  border-radius: 2rem !important;
+  font-weight: 600 !important;
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  padding: 0 1.5rem !important;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2) !important;
+  color: white !important;
+  
+  &:hover {
+    background: #1d4ed8 !important;
+    border-color: #1d4ed8 !important;
+  }
+`;
+
+export const ResultIconWrapper = styled.div`
+  font-size: 4.5rem;
+  color: #52c41a;
+  margin-bottom: 1rem;
+`;
+
+export const ResultTitle = styled.h2`
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+`;
+
+export const ResultDescription = styled.p`
+  color: #64748b;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+`;
+
+export const ResultStatsGrid = styled.div<{ $isPartMode: boolean }>`
+  display: grid;
+  grid-template-columns: ${props => props.$isPartMode ? '1fr' : 'repeat(2, 1fr)'};
+  gap: 1rem;
+  margin-bottom: 2rem;
+`;
+
+export const StatBlock = styled.div`
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 0.75rem;
+`;
+
+export const SummaryBox = styled.div`
+  background: #e6f4ff;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  margin-bottom: 2.5rem;
+  border: 1px solid rgba(22, 119, 255, 0.2);
+`;
+
+export const SummaryBoxTitle = styled.div`
+  font-size: 0.85rem;
+  color: #475569;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+`;
+
+export const SummaryBoxScore = styled.div`
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: #1e3a8a;
+  
+  span {
+    font-size: 1.25rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+`;
+
+export const SummaryBoxDesc = styled.p`
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  font-style: italic;
+`;
+
+export const ModalActionButtons = styled(Space)`
+  width: 100%;
+  justify-content: center;
+  
+  button {
+    border-radius: 0.5rem !important;
+    font-weight: 600 !important;
+  }
+`;
+

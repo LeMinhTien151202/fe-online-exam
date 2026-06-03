@@ -38,6 +38,42 @@ const AnswerBody = styled.div`
   overflow-y: auto;
 `;
 
+const ModalTitle = styled(Space)`
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1e293b;
+`;
+
+const LockIcon = styled(UnlockOutlined)`
+  color: #9333ea;
+`;
+
+const CloseButton = styled(Button)`
+  border-radius: 1.5rem !important;
+  background: #9333ea !important;
+  border-color: #9333ea !important;
+  color: white !important;
+`;
+
+const TopicText = styled.div`
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 600;
+`;
+
+const TabButton = styled(Button)<{ $active: boolean }>`
+  border-radius: 12px !important;
+  font-size: 12px !important;
+  background: ${props => props.$active ? '#9333ea !important' : 'transparent'};
+  border-color: ${props => props.$active ? '#9333ea !important' : '#d9d9d9'};
+  color: ${props => props.$active ? 'white !important' : 'inherit'};
+`;
+
+const StyledDivider = styled(Divider)`
+  margin: 12px 0 !important;
+`;
+
 export const SampleAnswerModal: React.FC<ISampleAnswerModalProps> = ({
   open,
   onClose,
@@ -50,49 +86,44 @@ export const SampleAnswerModal: React.FC<ISampleAnswerModalProps> = ({
   return (
     <Modal
       title={
-        <Space style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b' }}>
-          <UnlockOutlined style={{ color: '#9333ea' }} />
+        <ModalTitle>
+          <LockIcon />
           <span>Gợi ý đáp án mẫu • {partTitle}</span>
-        </Space>
+        </ModalTitle>
       }
       open={open}
       onCancel={onClose}
       footer={[
-        <Button key="close" type="primary" style={{ borderRadius: '1.5rem', background: '#9333ea', borderColor: '#9333ea' }} onClick={onClose}>
+        <CloseButton key="close" type="primary" onClick={onClose}>
           Đóng
-        </Button>,
+        </CloseButton>,
       ]}
       width={700}
       destroyOnClose
       centered
     >
       <ModalContent>
-        <div style={{ marginBottom: '12px', fontSize: '0.9rem', color: '#64748b', fontWeight: 600 }}>
+        <TopicText>
           Chủ đề: {title}
-        </div>
+        </TopicText>
         
         {sampleAnswers.length > 1 && (
           <TabButtonGroup>
             {sampleAnswers.map((answer, index) => (
-              <Button
+              <TabButton
                 key={index}
                 size="small"
                 type={activeTab === index ? "primary" : "default"}
                 onClick={() => setActiveTab(index)}
-                style={{
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  background: activeTab === index ? '#9333ea' : undefined,
-                  borderColor: activeTab === index ? '#9333ea' : undefined,
-                }}
+                $active={activeTab === index}
               >
                 {answer.label}
-              </Button>
+              </TabButton>
             ))}
           </TabButtonGroup>
         )}
 
-        <Divider style={{ margin: '12px 0' }} />
+        <StyledDivider />
 
         <AnswerBody>
           {sampleAnswers[activeTab]?.content}

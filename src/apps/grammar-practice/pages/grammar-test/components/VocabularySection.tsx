@@ -44,10 +44,10 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
     return (
       <>
         {parts[0]}
-        <div style={{ display: 'inline-block', width: '180px', margin: '0 0.5rem', verticalAlign: 'middle' }}>
+        <S.ContextDropdownInlineWrapper>
           <Select
             placeholder="Chọn từ..."
-            style={{ width: '100%' }}
+            className="w-full"
             value={answerValue || undefined}
             onChange={(val) => onSelectAnswer(questionNumber, val)}
             dropdownMatchSelectWidth={false}
@@ -58,93 +58,60 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
                 <Select.Option key={opt} value={opt} disabled={isUsed}>
                   <Space>
                     <span>{opt}</span>
-                    {isUsed && <span style={{ fontSize: '11px', color: '#bfbfbf', fontStyle: 'italic' }}>(đã dùng)</span>}
+                    {isUsed && <S.UsedOptionText>(đã dùng)</S.UsedOptionText>}
                   </Space>
                 </Select.Option>
               );
             })}
           </Select>
-        </div>
+        </S.ContextDropdownInlineWrapper>
         {parts[1]}
       </>
     );
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-      <S.VocabularySetCard style={{ border: 'none', boxShadow: 'none', padding: 0 }}>
-        <S.SetTitle style={{ fontSize: '1.25rem', color: '#001a41', marginBottom: '0.25rem' }}>
+    <S.VocabularySectionWrapper>
+      <S.VocabularySetCardBase>
+        <S.SetTitleBase>
           {activeSet.title}
-        </S.SetTitle>
-        <S.SetInstruction style={{ fontSize: '0.95rem', color: '#64748b', marginBottom: '1.5rem' }}>
+        </S.SetTitleBase>
+        <S.SetInstructionBase>
           {activeSet.instruction}
-        </S.SetInstruction>
+        </S.SetInstructionBase>
 
         <S.VocabGrid>
           {activeSet.subQuestions.map((subQ) => {
             const answer = answers[subQ.questionNumber];
 
             return (
-              <S.GrammarQuestionCard
+              <S.VocabQuestionCard
                 key={subQ.id}
                 id={`q-container-${subQ.questionNumber}`}
                 $isActive={false}
-                style={{ 
-                  marginBottom: '0.75rem', 
-                  padding: '1rem 1.25rem',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '0.75rem',
-                  background: '#ffffff',
-                  boxShadow: 'none'
-                }}
               >
                 {activeSet.type === 'context' ? (
-                  <S.QuestionText style={{ marginBottom: 0, fontSize: '1rem', color: '#1e293b', fontWeight: 600, lineHeight: '1.6' }}>
-                    <S.QuestionNumberBadge 
-                      $answered={!!answer} 
-                      style={{ 
-                        width: '1.75rem', 
-                        height: '1.75rem', 
-                        fontSize: '0.85rem',
-                        background: answer ? '#e6f4ff' : '#f1f5f9',
-                        color: answer ? '#1677ff' : '#475569',
-                        display: 'inline-flex',
-                        marginRight: '0.5rem',
-                        verticalAlign: 'middle',
-                        flexShrink: 0
-                      }}
-                    >
+                  <S.VocabContextQuestionText>
+                    <S.VocabQuestionNumberBadge $answered={!!answer}>
                       {subQ.questionNumber}
-                    </S.QuestionNumberBadge>
+                    </S.VocabQuestionNumberBadge>
                     {renderContextQuestion(subQ.leftLabel, subQ.questionNumber, answer, activeSet.optionsList, usedWords)}
-                  </S.QuestionText>
+                  </S.VocabContextQuestionText>
                 ) : (
                   <S.VocabRow>
-                    <S.VocabLabel style={{ fontSize: '1rem', color: '#1e293b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <S.QuestionNumberBadge 
-                        $answered={!!answer} 
-                        style={{ 
-                          width: '1.75rem', 
-                          height: '1.75rem', 
-                          fontSize: '0.85rem',
-                          background: answer ? '#e6f4ff' : '#f1f5f9',
-                          color: answer ? '#1677ff' : '#475569',
-                          display: 'inline-flex',
-                          marginRight: '0.25rem',
-                          flexShrink: 0
-                        }}
-                      >
+                    <S.VocabLabelBase>
+                      <S.VocabQuestionNumberBadge $answered={!!answer}>
                         {subQ.questionNumber}
-                      </S.QuestionNumberBadge>
+                      </S.VocabQuestionNumberBadge>
                       <span>{subQ.leftLabel}</span>
-                    </S.VocabLabel>
+                    </S.VocabLabelBase>
                     <S.CustomDropdownWrapper>
                       <Select
                         placeholder="Chọn từ..."
                         value={answer || undefined}
                         onChange={(val) => onSelectAnswer(subQ.questionNumber, val)}
                         dropdownMatchSelectWidth={false}
-                        style={{ width: '100%' }}
+                        className="w-full"
                       >
                         {activeSet.optionsList.map((opt) => {
                           const isUsed = usedWords.has(opt) && answer !== opt;
@@ -152,7 +119,7 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
                             <Select.Option key={opt} value={opt} disabled={isUsed}>
                               <Space>
                                 <span>{opt}</span>
-                                {isUsed && <span style={{ fontSize: '11px', color: '#bfbfbf', fontStyle: 'italic' }}>(đã dùng)</span>}
+                                {isUsed && <S.UsedOptionText>(đã dùng)</S.UsedOptionText>}
                               </Space>
                             </Select.Option>
                           );
@@ -161,11 +128,11 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
                     </S.CustomDropdownWrapper>
                   </S.VocabRow>
                 )}
-              </S.GrammarQuestionCard>
+              </S.VocabQuestionCard>
             );
           })}
         </S.VocabGrid>
-      </S.VocabularySetCard>
-    </div>
+      </S.VocabularySetCardBase>
+    </S.VocabularySectionWrapper>
   );
 };
