@@ -89,15 +89,16 @@ const CreateExam: React.FC = () => {
         {currentStep === 0 && (
           <Card bordered={false} title="Bước 1: Thông tin cơ bản bộ đề">
             <Row gutter={16}>
-              <Col span={16}>
+              <Col span={14}>
                 <Form.Item label="Tên bộ đề" name="name" rules={[{ required: true, message: 'Nhập tên đề!' }]}>
                   <Input placeholder="Ví dụ: Đề thi thử Aptis Grammar & Vocab #10" />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+              <Col span={10}>
                 <Form.Item label="Loại đề thi" name="type" rules={[{ required: true }]}>
                   <Radio.Group>
                     <Radio value="partial">Luyện theo phần</Radio>
+                    <Radio value="set">Luyện theo bộ đề</Radio>
                     <Radio value="full">Thi thử toàn bộ</Radio>
                   </Radio.Group>
                 </Form.Item>

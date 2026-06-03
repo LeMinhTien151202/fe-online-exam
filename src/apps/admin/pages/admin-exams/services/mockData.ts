@@ -37,6 +37,45 @@ export const initialPartExams = [
   },
 ];
 
+export const initialSetExams = [
+  {
+    key: '1',
+    name: 'Bộ đề Aptis Reading 2026 - Đề số 1',
+    skill: 'Reading',
+    partCount: 4,
+    questionCount: 25,
+    duration: 35,
+    difficulty: 'medium',
+    tryCount: 310,
+    avgScore: '72%',
+    status: 'active',
+  },
+  {
+    key: '2',
+    name: 'Bộ đề Aptis Listening 2026 - Đề số 1',
+    skill: 'Listening',
+    partCount: 4,
+    questionCount: 25,
+    duration: 40,
+    difficulty: 'medium',
+    tryCount: 285,
+    avgScore: '65%',
+    status: 'active',
+  },
+  {
+    key: '3',
+    name: 'Bộ đề Aptis Writing 2026 - Đề số 2',
+    skill: 'Writing',
+    partCount: 4,
+    questionCount: 4,
+    duration: 50,
+    difficulty: 'hard',
+    tryCount: 198,
+    avgScore: '58%',
+    status: 'draft',
+  },
+];
+
 export const initialFullExams = [
   {
     key: '1',
