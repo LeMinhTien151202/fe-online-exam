@@ -1,5 +1,5 @@
-import styled from 'styled-components';
-import { ArrowRightOutlined } from '@ant-design/icons';
+import styled from "styled-components";
+import { ArrowRightOutlined } from "@ant-design/icons";
 
 export const Grid = styled.div`
   display: grid;
@@ -20,9 +20,10 @@ export const Card = styled.a`
   background: white;
   border-radius: 0.75rem;
   padding: 1rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #cbd5e1;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -32,8 +33,9 @@ export const Card = styled.a`
 
   &:hover {
     transform: translateY(-0.25rem);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
-    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 20px 25px -5px rgba(0, 0, 0, 0.05),
+      0 10px 10px -5px rgba(0, 0, 0, 0.03);
   }
 `;
 
@@ -43,7 +45,7 @@ export const DecorCircle = styled.div<{ $color: string }>`
   right: 0;
   width: 3rem;
   height: 3rem;
-  background: ${props => props.$color};
+  background: ${(props) => props.$color};
   opacity: 0.08;
   border-bottom-left-radius: 100%;
 `;
@@ -52,16 +54,20 @@ export const IconBox = styled.div<{ $bgColor: string; $color: string }>`
   width: 2rem;
   height: 2rem;
   border-radius: 0.5rem;
-  background: ${props => props.$bgColor};
-  color: ${props => props.$color};
+  background: ${(props) => props.$bgColor};
+  color: ${(props) => props.$color};
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 0.5rem;
-  
+
   span.material-symbols-outlined {
     font-size: 1.125rem;
-    font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 48;
+    font-variation-settings:
+      "FILL" 0,
+      "wght" 500,
+      "GRAD" 0,
+      "opsz" 48;
   }
 `;
 
@@ -90,8 +96,8 @@ export const Footer = styled.div`
 export const Tag = styled.span<{ $bgColor: string; $color: string }>`
   font-size: 0.6875rem;
   font-weight: 700;
-  background: ${props => props.$bgColor};
-  color: ${props => props.$color};
+  background: ${(props) => props.$bgColor};
+  color: ${(props) => props.$color};
   padding: 0.25rem 0.625rem;
   border-radius: 6.25rem;
 `;
@@ -100,7 +106,7 @@ export const ArrowIcon = styled(ArrowRightOutlined)`
   color: #d1d5db;
   font-size: 0.875rem;
   transition: all 0.3s;
-  
+
   ${Card}:hover & {
     color: #111827;
     transform: translateX(0.25rem);

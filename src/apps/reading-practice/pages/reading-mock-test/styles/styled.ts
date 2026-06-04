@@ -18,7 +18,7 @@ export const Header = styled.header`
   align-items: center;
   padding: 0 2rem;
   height: 4.5rem;
-  background: #001a41;
+  background: #0D2245;
   color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 10;
@@ -118,7 +118,7 @@ export const NavItem = styled.div<{ $active?: boolean; $completed?: boolean }>`
     
     .nav-title {
       font-weight: 700;
-      color: ${props => props.$active ? '#1e40af' : '#334155'};
+      color: ${props => props.$active ? '#244b80' : '#334155'};
       font-size: 0.95rem;
     }
     
@@ -186,7 +186,7 @@ export const PartIntroCard = styled(Card)`
 
   h3 {
     font-weight: 800;
-    color: #00205B;
+    color: #1a365d;
     font-size: 1.25rem;
     margin: 0 0 6px 0;
   }
@@ -246,7 +246,7 @@ export const ScoreLabel = styled.div`
   .score-val {
     font-size: 2.25rem;
     font-weight: 900;
-    color: #00205B;
+    color: #1a365d;
     line-height: 1.1;
   }
   
@@ -302,7 +302,7 @@ export const ReportStatItem = styled.div`
 export const ReviewSectionTitle = styled.h3`
   font-size: 1.3rem;
   font-weight: 800;
-  color: #00205B;
+  color: #1a365d;
   width: 100%;
   text-align: left;
   margin-top: 2.5rem;
@@ -358,7 +358,7 @@ export const InlineSentenceSelect = styled(Select)<{ $hasValue?: boolean; $statu
     color: ${props => {
       if (props.$status === 'success') return '#047857';
       if (props.$status === 'error') return '#b91c1c';
-      return props.$hasValue ? '#1e40af' : '#334155';
+      return props.$hasValue ? '#244b80' : '#334155';
     }} !important;
     font-weight: 700 !important;
   }
@@ -409,7 +409,7 @@ export const BadgeNumber = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1e40af;
+  color: #244b80;
   font-weight: 700;
   font-size: 0.9rem;
   flex-shrink: 0;
@@ -587,7 +587,7 @@ export const StatementCard = styled(Card)<{ $isAnswered: boolean; $isActive?: bo
   border: 1.5px solid ${props => {
     if (props.$status === 'success') return '#10b981';
     if (props.$status === 'error') return '#ef4444';
-    if (props.$isActive) return '#00205B';
+    if (props.$isActive) return '#1a365d';
     return props.$isAnswered ? '#2563eb' : 'rgba(0, 0, 0, 0.06)';
   }};
   background: ${props => {
@@ -664,7 +664,7 @@ export const QuestionSlot = styled(Card)<{ $isAnswered: boolean; $isActive?: boo
   border: 1.5px solid ${props => {
     if (props.$status === 'success') return '#10b981';
     if (props.$status === 'error') return '#ef4444';
-    if (props.$isActive) return '#00205B';
+    if (props.$isActive) return '#1a365d';
     return props.$isAnswered ? '#2563eb' : 'rgba(0, 0, 0, 0.06)';
   }};
   background: ${props => {
@@ -781,7 +781,7 @@ export const NavGridButton = styled.button<{
   }};
   
   border-color: ${props => {
-    if (props.$active) return '#00205B';
+    if (props.$active) return '#1a365d';
     if (props.$isCorrect === 'success') return '#bbf7d0';
     if (props.$isCorrect === 'error') return '#fecaca';
     if (props.$status === 'answered') return '#bfdbfe';
@@ -789,7 +789,7 @@ export const NavGridButton = styled.button<{
   }};
   
   color: ${props => {
-    if (props.$active) return '#00205B';
+    if (props.$active) return '#1a365d';
     if (props.$isCorrect === 'success') return '#10b981';
     if (props.$isCorrect === 'error') return '#ef4444';
     if (props.$status === 'answered') return '#1d4ed8';
@@ -797,7 +797,7 @@ export const NavGridButton = styled.button<{
   }};
 
   &:hover {
-    border-color: #00205B;
+    border-color: #1a365d;
     background: ${props => props.$status === 'answered' ? '#dbeafe' : '#e2e8f0'};
   }
 `;

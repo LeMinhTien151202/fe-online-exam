@@ -84,7 +84,7 @@ export const StyledMenu = styled(Menu)`
   border: none !important;
 
   .ant-menu-item-group-title {
-    color: #4b5563 !important;
+    color: rgba(255, 255, 255, 0.3) !important;
     font-size: 0.6875rem !important;
     font-weight: 700 !important;
     text-transform: uppercase;
@@ -93,7 +93,7 @@ export const StyledMenu = styled(Menu)`
   }
 
   .ant-menu-item, .ant-menu-submenu-title {
-    color: ${ADMIN_COLORS.sidebarText} !important;
+    color: rgba(255, 255, 255, 0.7) !important;
     font-weight: 500;
     margin: 4px 12px !important;
     width: calc(100% - 24px) !important;
@@ -102,20 +102,52 @@ export const StyledMenu = styled(Menu)`
     line-height: 40px !important;
     display: flex;
     align-items: center;
+    transition: all 0.2s ease !important;
     
     .anticon {
       font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.7) !important;
+      transition: color 0.2s ease !important;
+    }
+
+    &:hover, &-active, &-selected {
+      color: #ffffff !important;
+      
+      .anticon {
+        color: #ffffff !important;
+      }
     }
   }
 
+  .ant-menu-item:hover, 
+  .ant-menu-submenu-title:hover,
+  .ant-menu-item-active, 
+  .ant-menu-submenu-active {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #ffffff !important;
+  }
+
   .ant-menu-item-selected {
-    background: ${ADMIN_COLORS.sidebarActive} !important;
-    color: ${ADMIN_COLORS.sidebarTextActive} !important;
-    font-weight: 600;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+    
+    .anticon {
+      color: #ffffff !important;
+    }
   }
 
   .ant-menu-submenu-arrow {
-    color: ${ADMIN_COLORS.sidebarText} !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    transition: color 0.2s ease !important;
+  }
+
+  .ant-menu-submenu-open > .ant-menu-submenu-title,
+  .ant-menu-submenu-selected > .ant-menu-submenu-title {
+    color: #ffffff !important;
+    
+    .anticon, .ant-menu-submenu-arrow {
+      color: #ffffff !important;
+    }
   }
 
   .ant-menu-sub {
@@ -131,6 +163,18 @@ export const StyledMenu = styled(Menu)`
       height: 36px !important;
       line-height: 36px !important;
       font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.5) !important;
+      transition: all 0.2s ease !important;
+
+      &:hover, &-active {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: #ffffff !important;
+      }
+
+      &.ant-menu-item-selected {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
+      }
     }
   }
 `;
@@ -172,7 +216,7 @@ export const UserCard = styled.div<{ $collapsed: boolean }>`
     }
 
     .role {
-      color: ${ADMIN_COLORS.sidebarText};
+      color: rgba(255, 255, 255, 0.5);
       font-size: 0.75rem;
     }
   }

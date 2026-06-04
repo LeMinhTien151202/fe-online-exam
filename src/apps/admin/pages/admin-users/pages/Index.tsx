@@ -196,7 +196,7 @@ const UsersIndex: React.FC = () => {
           {/* Bulk actions */}
           {selectedRowKeys.length > 0 && (
             <S.BulkActionBar>
-              <Text strong style={{ color: '#1e40af' }}>
+              <Text strong style={{ color: '#244b80' }}>
                 Đã chọn {selectedRowKeys.length} học viên
               </Text>
               <Space>

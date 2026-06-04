@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Typography, Drawer, Button } from 'antd';
-import { InfoCircleOutlined, MessageOutlined, MenuOutlined, BellOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, MessageOutlined, MenuOutlined, BellOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { Link } from '@tanstack/react-router';
 
 // Components
@@ -37,7 +37,7 @@ const HomePage: React.FC = () => {
         placement="left"
         onClose={() => setIsMobileMenuOpen(false)}
         open={isMobileMenuOpen}
-        bodyStyle={{ padding: 0, background: '#001A41' }}
+        bodyStyle={{ padding: 0, background: '#0D2245' }}
         width={280}
         closable={false}
       >
@@ -93,7 +93,7 @@ const HomePage: React.FC = () => {
                     Tìm hiểu thêm về cấu trúc bài thi, hệ thống tính điểm và cách tối đa hóa kết quả của bạn.
                   </Text>
                   <a href="" onClick={(e) => e.preventDefault()}>
-                    Đọc Hướng dẫn →
+                    Đọc Hướng dẫn <ArrowRightOutlined style={{ fontSize: '0.8125rem', marginLeft: '4px' }} />
                   </a>
                 </S.InfoCardContent>
               </S.InfoCard>
@@ -108,7 +108,7 @@ const HomePage: React.FC = () => {
                     Kết nối với các thí sinh khác, chia sẻ mẹo học và đặt câu hỏi về quá trình ôn luyện của bạn.
                   </Text>
                   <a href="" onClick={(e) => e.preventDefault()}>
-                    Tham gia Thảo luận →
+                    Tham gia Thảo luận <ArrowRightOutlined style={{ fontSize: '0.8125rem', marginLeft: '4px' }} />
                   </a>
                 </S.InfoCardContent>
               </S.InfoCard>

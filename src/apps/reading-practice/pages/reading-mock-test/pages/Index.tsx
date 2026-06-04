@@ -586,7 +586,7 @@ export const ReadingMockTestPage: React.FC = () => {
                 <span>Đã trả lời</span>
               </S.LegendItem>
               <S.LegendItem>
-                <div className="color-dot" style={{ background: 'white', border: '1.5px solid #00205B' }} />
+                <div className="color-dot" style={{ background: 'white', border: '1.5px solid #1a365d' }} />
                 <span>Đang chọn</span>
               </S.LegendItem>
             </>
@@ -660,7 +660,7 @@ export const ReadingMockTestPage: React.FC = () => {
                   <Button
                     type="primary"
                     onClick={() => setShowReport(true)}
-                    style={{ background: '#00205B', borderColor: '#00205B', borderRadius: '2rem', fontWeight: 700 }}
+                    style={{ background: '#1a365d', borderColor: '#1a365d', borderRadius: '2rem', fontWeight: 700 }}
                   >
                     Xem báo cáo điểm
                   </Button>
@@ -704,7 +704,7 @@ export const ReadingMockTestPage: React.FC = () => {
             <S.ReportContainer>
               <S.ReportCard>
                 <Space direction="vertical" size="small" style={{ marginBottom: '1.5rem' }}>
-                  <Title level={2} style={{ color: '#00205B', margin: 0 }}>Kết quả thi thử</Title>
+                  <Title level={2} style={{ color: '#1a365d', margin: 0 }}>Kết quả thi thử</Title>
                   <Text type="secondary" style={{ fontSize: '1rem', fontWeight: 500 }}>
                     Bạn đã hoàn thành {testTitle} trong kỹ năng Đọc hiểu
                   </Text>
@@ -746,7 +746,7 @@ export const ReadingMockTestPage: React.FC = () => {
                 </S.ReportGrid>
 
                 <div style={{ width: '100%', textAlign: 'left', background: '#f8fafc', padding: '1.25rem 1.5rem', borderRadius: '0.75rem', border: '1px solid #e2e8f0', marginBottom: '2rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '6px', color: '#00205B', fontWeight: 700 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '6px', color: '#1a365d', fontWeight: 700 }}>
                     <AlertOutlined /> <span>Nhận xét chi tiết từ hệ thống:</span>
                   </div>
                   <p style={{ margin: 0, color: '#475569', fontSize: '0.95rem', lineHeight: 1.6, fontWeight: 500 }}>
@@ -763,7 +763,7 @@ export const ReadingMockTestPage: React.FC = () => {
                 <Button 
                   type="primary" 
                   size="large"
-                  style={{ borderRadius: '2rem', height: '48px', padding: '0 2.5rem', fontWeight: 700, background: '#00205B', borderColor: '#00205B' }}
+                  style={{ borderRadius: '2rem', height: '48px', padding: '0 2.5rem', fontWeight: 700, background: '#1a365d', borderColor: '#1a365d' }}
                   onClick={() => setShowReport(false)}
                 >
                   Xem lại đáp án chi tiết & Giải thích

@@ -184,7 +184,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               <span className="nav-text">Thi thử</span>
               <Badge status="warning" className="ml-auto" />
             </S.ProLink>
-            <S.NavLink as="div" onClick={onClose} $collapsed={collapsed}>
+            <S.NavLink as="div" $active={currentPath === '/materials'} onClick={() => {
+              navigate({ to: '/materials' });
+              if (onClose) onClose();
+            }} $collapsed={collapsed}>
               <span className="material-symbols-outlined">library_books</span>
               <span className="nav-text">Tài liệu học tập</span>
             </S.NavLink>

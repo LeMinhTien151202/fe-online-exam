@@ -110,8 +110,8 @@ const DashboardIndex: React.FC = () => {
                 <AreaChart data={activityData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorGrammar" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#1e3a8a" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#1e3a8a" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#1a365d" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#1a365d" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorReading" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.2} />
@@ -123,7 +123,7 @@ const DashboardIndex: React.FC = () => {
                   <YAxis tickLine={false} axisLine={false} />
                   <Tooltip />
                   <Legend />
-                  <Area type="monotone" dataKey="Grammar" stroke="#1e3a8a" fillOpacity={1} fill="url(#colorGrammar)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="Grammar" stroke="#1a365d" fillOpacity={1} fill="url(#colorGrammar)" strokeWidth={2} />
                   <Area type="monotone" dataKey="Reading" stroke="#0ea5e9" fillOpacity={1} fill="url(#colorReading)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>

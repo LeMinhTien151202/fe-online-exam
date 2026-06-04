@@ -1,8 +1,8 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
-  width: ${props => props.$collapsed ? '5.5rem' : '17.5rem'};
-  background: #001A41;
+  width: ${(props) => (props.$collapsed ? "5.5rem" : "17.5rem")};
+  background: #0f1d36;
   color: white;
   display: flex;
   flex-direction: column;
@@ -13,7 +13,7 @@ export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
   z-index: 100;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: visible; /* Ensure absolute child toggle button is not clipped */
-  
+
   @media (max-width: 1024px) {
     display: none;
   }
@@ -25,7 +25,7 @@ export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: #001A41;
+    background: #0f1d36;
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
     display: flex;
@@ -35,22 +35,22 @@ export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
     z-index: 110;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     transition: all 0.2s ease;
-    
+
     &:hover {
-      background: #1677ff; /* Nice primary brand hover color */
-      border-color: #1677ff;
+      background: #244b80; /* Nice primary brand hover color */
+      border-color: #244b80;
     }
   }
 `;
 
 export const LogoWrapper = styled.div<{ $collapsed?: boolean }>`
-  padding: 1.5rem ${props => props.$collapsed ? '1rem' : '1.5rem'};
+  padding: 1.5rem ${(props) => (props.$collapsed ? "1rem" : "1.5rem")};
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: #001A41;
+  background: #0f1d36;
   transition: all 0.3s;
-  justify-content: ${props => props.$collapsed ? 'center' : 'flex-start'};
+  justify-content: ${(props) => (props.$collapsed ? "center" : "flex-start")};
   position: relative;
   flex-shrink: 0;
 
@@ -69,8 +69,8 @@ export const LogoWrapper = styled.div<{ $collapsed?: boolean }>`
     font-weight: 800;
     letter-spacing: -0.02em;
     color: white;
-    opacity: ${props => props.$collapsed ? '0' : '1'};
-    display: ${props => props.$collapsed ? 'none' : 'block'};
+    opacity: ${(props) => (props.$collapsed ? "0" : "1")};
+    display: ${(props) => (props.$collapsed ? "none" : "block")};
     white-space: nowrap;
   }
 `;
@@ -86,8 +86,8 @@ export const NavContainer = styled.nav`
   &::-webkit-scrollbar {
     display: none;
   }
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 `;
 
 export const NavSection = styled.div`
@@ -103,13 +103,13 @@ export const SectionTitle = styled.h3<{ $collapsed?: boolean }>`
   letter-spacing: 0.15em;
   color: rgba(255, 255, 255, 0.3);
   font-weight: 700;
-  text-align: ${props => props.$collapsed ? 'center' : 'left'};
-  
+  text-align: ${(props) => (props.$collapsed ? "center" : "left")};
+
   .text {
-    display: ${props => props.$collapsed ? 'none' : 'inline'};
+    display: ${(props) => (props.$collapsed ? "none" : "inline")};
   }
   .line {
-    display: ${props => props.$collapsed ? 'block' : 'none'};
+    display: ${(props) => (props.$collapsed ? "block" : "none")};
     height: 1px;
     background: rgba(255, 255, 255, 0.1);
     margin: 0.5rem auto;
@@ -121,23 +121,31 @@ export const NavItemWrapper = styled.div`
   margin-bottom: 0.25rem;
 `;
 
-export const NavLink = styled.a<{ $active?: boolean; $isSub?: boolean; $collapsed?: boolean; $isOpen?: boolean }>`
+export const NavLink = styled.a<{
+  $active?: boolean;
+  $isSub?: boolean;
+  $collapsed?: boolean;
+  $isOpen?: boolean;
+}>`
   display: flex;
   align-items: center;
-  gap: ${props => props.$collapsed ? '0' : '0.75rem'};
-  padding: ${props => {
-    if (props.$collapsed) return '0.75rem 0';
-    return props.$isSub ? '0.5rem 1rem 0.5rem 3.25rem' : '0.75rem 1rem';
+  gap: ${(props) => (props.$collapsed ? "0" : "0.75rem")};
+  padding: ${(props) => {
+    if (props.$collapsed) return "0.75rem 0";
+    return props.$isSub ? "0.5rem 1rem 0.5rem 3.25rem" : "0.75rem 1rem";
   }};
-  justify-content: ${props => props.$collapsed ? 'center' : 'flex-start'};
+  justify-content: ${(props) => (props.$collapsed ? "center" : "flex-start")};
   border-radius: 0.75rem;
-  color: ${props => {
-    if (props.$active) return 'white';
-    if (props.$isSub) return 'rgba(255, 255, 255, 0.5)';
-    return 'rgba(255, 255, 255, 0.7)';
+  color: ${(props) => {
+    if (props.$active) return "white";
+    if (props.$isSub) return "rgba(255, 255, 255, 0.5)";
+    return "rgba(255, 255, 255, 0.7)";
   }};
-  background: ${props => (props.$active && !(props.$isOpen && !props.$isSub)) ? 'rgba(255, 255, 255, 0.1)' : 'transparent'};
-  font-size: ${props => props.$isSub ? '0.8125rem' : '0.875rem'};
+  background: ${(props) =>
+    props.$active && !(props.$isOpen && !props.$isSub)
+      ? "rgba(255, 255, 255, 0.1)"
+      : "transparent"};
+  font-size: ${(props) => (props.$isSub ? "0.8125rem" : "0.875rem")};
   font-weight: 500;
   transition: all 0.2s ease;
   text-decoration: none;
@@ -156,9 +164,9 @@ export const NavLink = styled.a<{ $active?: boolean; $isSub?: boolean; $collapse
     flex-shrink: 0;
     text-align: center;
   }
-  
+
   .nav-text {
-    display: ${props => props.$collapsed ? 'none' : 'block'};
+    display: ${(props) => (props.$collapsed ? "none" : "block")};
   }
 
   .arrow-icon {
@@ -166,20 +174,24 @@ export const NavLink = styled.a<{ $active?: boolean; $isSub?: boolean; $collapse
     font-size: 0.625rem;
     color: rgba(255, 255, 255, 0.3);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: ${props => props.$collapsed ? 'none' : 'block'};
+    display: ${(props) => (props.$collapsed ? "none" : "block")};
   }
 `;
 
-export const SubMenuWrapper = styled.div<{ $isOpen: boolean; $collapsed?: boolean }>`
-  max-height: ${props => (props.$isOpen && !props.$collapsed) ? '18.75rem' : '0'};
-  opacity: ${props => (props.$isOpen && !props.$collapsed) ? '1' : '0'};
+export const SubMenuWrapper = styled.div<{
+  $isOpen: boolean;
+  $collapsed?: boolean;
+}>`
+  max-height: ${(props) =>
+    props.$isOpen && !props.$collapsed ? "18.75rem" : "0"};
+  opacity: ${(props) => (props.$isOpen && !props.$collapsed ? "1" : "0")};
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
 
   & + div .arrow-icon {
-    transform: ${props => props.$isOpen ? 'rotate(180deg)' : 'rotate(0)'};
+    transform: ${(props) => (props.$isOpen ? "rotate(180deg)" : "rotate(0)")};
   }
 `;
 
@@ -187,24 +199,24 @@ export const ProLink = styled(NavLink)`
   background: rgba(251, 191, 36, 0.05);
   border: 1px solid rgba(251, 191, 36, 0.1);
   color: #fbbf24;
-  
+
   &:hover {
     background: rgba(251, 191, 36, 0.1);
   }
-  
+
   .ant-badge {
-    display: ${props => props.$collapsed ? 'none' : 'block'};
+    display: ${(props) => (props.$collapsed ? "none" : "block")};
   }
 `;
 
 export const OnlineBadge = styled.div<{ $collapsed?: boolean }>`
   display: flex;
   align-items: center;
-  justify-content: ${props => props.$collapsed ? 'center' : 'flex-start'};
-  gap: ${props => props.$collapsed ? '0' : '0.5rem'};
+  justify-content: ${(props) => (props.$collapsed ? "center" : "flex-start")};
+  gap: ${(props) => (props.$collapsed ? "0" : "0.5rem")};
   background: rgba(255, 255, 255, 0.05);
-  padding: ${props => props.$collapsed ? '0.75rem 0' : '0.5rem 1rem'};
-  border-radius: ${props => props.$collapsed ? '0.75rem' : '6.25rem'};
+  padding: ${(props) => (props.$collapsed ? "0.75rem 0" : "0.5rem 1rem")};
+  border-radius: ${(props) => (props.$collapsed ? "0.75rem" : "6.25rem")};
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.8);
   margin: 0 1rem 1rem;
@@ -219,9 +231,9 @@ export const OnlineBadge = styled.div<{ $collapsed?: boolean }>`
     box-shadow: 0 0 8px #22c55e;
     flex-shrink: 0;
   }
-  
+
   .badge-text {
-    display: ${props => props.$collapsed ? 'none' : 'block'};
+    display: ${(props) => (props.$collapsed ? "none" : "block")};
   }
 `;
 
@@ -229,7 +241,7 @@ export const UserProfileCard = styled.div<{ $collapsed?: boolean }>`
   padding: 1rem;
   display: flex;
   align-items: center;
-  justify-content: ${props => props.$collapsed ? 'center' : 'flex-start'};
+  justify-content: ${(props) => (props.$collapsed ? "center" : "flex-start")};
   gap: 0.75rem;
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -251,8 +263,8 @@ export const UserProfileCard = styled.div<{ $collapsed?: boolean }>`
 
   .user-info {
     flex: 1;
-    display: ${props => props.$collapsed ? 'none' : 'block'};
-    
+    display: ${(props) => (props.$collapsed ? "none" : "block")};
+
     .name {
       font-size: 0.875rem;
       font-weight: 600;
@@ -274,8 +286,8 @@ export const UserProfileCard = styled.div<{ $collapsed?: boolean }>`
     border: none;
     cursor: pointer;
     padding: 0.25rem;
-    display: ${props => props.$collapsed ? 'none' : 'flex'};
-    
+    display: ${(props) => (props.$collapsed ? "none" : "flex")};
+
     &:hover {
       color: white;
     }
@@ -288,7 +300,7 @@ export const UserProfileCard = styled.div<{ $collapsed?: boolean }>`
       height: 0.375rem;
       background: #ef4444;
       border-radius: 50%;
-      border: 1px solid #001A41;
+      border: 1px solid #0f1d36;
     }
   }
 `;

@@ -88,7 +88,7 @@ export const ListeningMockTestPage: React.FC = () => {
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontWeight: 700, color: '#00205B', fontSize: '1.1rem' }}>
+            <span style={{ fontWeight: 700, color: '#1a365d', fontSize: '1.1rem' }}>
               Nghe audio và trả lời câu hỏi dưới đây:
             </span>
           </div>
@@ -155,7 +155,7 @@ export const ListeningMockTestPage: React.FC = () => {
     if (activeQuestionNum >= 14 && activeQuestionNum <= 17) {
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <span style={{ fontWeight: 700, color: '#00205B', fontSize: '1.1rem' }}>
+          <span style={{ fontWeight: 700, color: '#1a365d', fontSize: '1.1rem' }}>
             Four people are talking about music habits. Complete the sentences below.
           </span>
 
@@ -234,7 +234,7 @@ export const ListeningMockTestPage: React.FC = () => {
     if (activeQuestionNum >= 18 && activeQuestionNum <= 21) {
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <span style={{ fontWeight: 700, color: '#00205B', fontSize: '1.1rem' }}>
+          <span style={{ fontWeight: 700, color: '#1a365d', fontSize: '1.1rem' }}>
             Listen and decide whose opinion matches the statements: the man, the woman, or both.
           </span>
 
@@ -316,7 +316,7 @@ export const ListeningMockTestPage: React.FC = () => {
 
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <span style={{ fontWeight: 700, color: '#00205B', fontSize: '1.1rem' }}>
+          <span style={{ fontWeight: 700, color: '#1a365d', fontSize: '1.1rem' }}>
             {group.title}
           </span>
           <div className="subtitle" style={{ fontSize: '0.95rem', color: '#64748b' }}>
@@ -474,7 +474,7 @@ export const ListeningMockTestPage: React.FC = () => {
                 <span>Đã trả lời</span>
               </S.LegendItem>
               <S.LegendItem>
-                <div className="color-dot" style={{ background: 'white', border: '1.5px solid #00205B' }} />
+                <div className="color-dot" style={{ background: 'white', border: '1.5px solid #1a365d' }} />
                 <span>Đang chọn</span>
               </S.LegendItem>
             </>
@@ -551,7 +551,7 @@ export const ListeningMockTestPage: React.FC = () => {
                   <Button
                     type="primary"
                     onClick={() => setShowReport(true)}
-                    style={{ background: '#00205B', borderColor: '#00205B', borderRadius: '2rem', fontWeight: 700 }}
+                    style={{ background: '#1a365d', borderColor: '#1a365d', borderRadius: '2rem', fontWeight: 700 }}
                   >
                     Xem báo cáo điểm
                   </Button>
@@ -595,7 +595,7 @@ export const ListeningMockTestPage: React.FC = () => {
             <S.ReportContainer>
               <S.ReportCard>
                 <Space direction="vertical" size="small" style={{ marginBottom: '1.5rem' }}>
-                  <Title level={2} style={{ color: '#00205B', margin: 0 }}>Kết quả thi thử</Title>
+                  <Title level={2} style={{ color: '#1a365d', margin: 0 }}>Kết quả thi thử</Title>
                   <Text type="secondary" style={{ fontSize: '1rem', fontWeight: 500 }}>
                     Bạn đã hoàn thành {testTitle} trong kỹ năng Nghe hiểu
                   </Text>
@@ -637,7 +637,7 @@ export const ListeningMockTestPage: React.FC = () => {
                 </S.ReportGrid>
 
                 <div style={{ width: '100%', textAlign: 'left', background: '#f8fafc', padding: '1.25rem 1.5rem', borderRadius: '0.75rem', border: '1px solid #e2e8f0', marginBottom: '2rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '6px', color: '#00205B', fontWeight: 700 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '6px', color: '#1a365d', fontWeight: 700 }}>
                     <AlertOutlined /> <span>Nhận xét chi tiết từ hệ thống:</span>
                   </div>
                   <p style={{ margin: 0, color: '#475569', fontSize: '0.95rem', lineHeight: 1.6, fontWeight: 500 }}>
@@ -654,7 +654,7 @@ export const ListeningMockTestPage: React.FC = () => {
                 <Button 
                   type="primary" 
                   size="large"
-                  style={{ borderRadius: '2rem', height: '48px', padding: '0 2.5rem', fontWeight: 700, background: '#00205B', borderColor: '#00205B' }}
+                  style={{ borderRadius: '2rem', height: '48px', padding: '0 2.5rem', fontWeight: 700, background: '#1a365d', borderColor: '#1a365d' }}
                   onClick={() => setShowReport(false)} // Switch to Review Mode
                 >
                   Xem lại đáp án chi tiết & Giải thích

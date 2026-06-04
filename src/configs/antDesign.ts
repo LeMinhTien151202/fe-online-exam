@@ -1,15 +1,15 @@
-import { ThemeConfig } from 'antd';
+import { ThemeConfig } from "antd";
 
 export const APP_COLORS = {
-  primary: '#00205B',
-  secondary: '#2D447F',
-  success: '#52c41a',
-  warning: '#faad14',
-  error: '#ff4d4f',
-  info: '#1890ff',
-  background: '#f0f2f5',
-  text: '#000000d9',
-  textSecondary: '#00000073',
+  primary: "#1a365d",
+  secondary: "#1a365d",
+  success: "#52c41a",
+  warning: "#faad14",
+  error: "#ff4d4f",
+  info: "#1890ff",
+  background: "#f0f2f5",
+  text: "#000000d9",
+  textSecondary: "#00000073",
 };
 
 export const antThemeConfig: ThemeConfig = {
@@ -20,7 +20,7 @@ export const antThemeConfig: ThemeConfig = {
     colorWarning: APP_COLORS.warning,
     colorError: APP_COLORS.error,
     borderRadius: 8,
-    fontFamily: 'Inter, sans-serif',
+    fontFamily: "Inter, sans-serif",
   },
   components: {
     Button: {
@@ -28,13 +28,13 @@ export const antThemeConfig: ThemeConfig = {
       controlHeight: 36,
     },
     Table: {
-      headerBg: '#fafafa',
+      headerBg: "#fafafa",
       headerColor: APP_COLORS.text,
-      headerSortActiveBg: '#f0f0f0',
+      headerSortActiveBg: "#f0f0f0",
     },
     Card: {
-      colorBorderSecondary: '#cbd5e1',
-      boxShadowTertiary: '0 4px 20px rgba(0,0,0,0.08)',
+      colorBorderSecondary: "#cbd5e1",
+      boxShadowTertiary: "0 4px 20px rgba(0,0,0,0.08)",
     },
   },
 };

@@ -24,7 +24,7 @@ export const Header = styled.header`
   align-items: center;
   padding: 0 2rem;
   height: 4.5rem;
-  background: #001a41;
+  background: #0D2245;
   color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 10;
@@ -172,7 +172,7 @@ export const InlineSentenceSelect = styled(Select)<{ $hasValue?: boolean; $statu
     color: ${props => {
       if (props.$status === 'success') return '#047857';
       if (props.$status === 'error') return '#b91c1c';
-      return props.$hasValue ? '#1e40af' : '#334155';
+      return props.$hasValue ? '#244b80' : '#334155';
     }} !important;
     font-weight: 700 !important;
   }
@@ -330,7 +330,7 @@ export const BadgeNumber = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1e40af;
+  color: #244b80;
   font-weight: 700;
   font-size: 0.95rem;
   flex-shrink: 0;

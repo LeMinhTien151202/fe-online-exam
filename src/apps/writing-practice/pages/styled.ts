@@ -25,7 +25,7 @@ export const CategoryTag = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #2D447F;
+  color: #1a365d;
   font-weight: 700;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -40,7 +40,7 @@ export const CategoryTag = styled.div`
 export const PageTitle = styled.h1`
   font-size: 2rem;
   font-weight: 800;
-  color: #00205B;
+  color: #1a365d;
   margin-bottom: 0.75rem;
 `;
 
@@ -125,9 +125,9 @@ export const TabSectionWrapper = styled.div`
     }
     
     .ant-segmented-item-selected {
-      background: #00205B !important;
+      background: #1a365d !important;
       color: white !important;
-      box-shadow: 0 4px 6px -1px rgba(0, 32, 91, 0.2) !important;
+      box-shadow: 0 4px 6px -1px rgba(26, 54, 93, 0.2) !important;
     }
   }
 `;
@@ -160,7 +160,7 @@ export const MockTestCard = styled.div`
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(0, 32, 91, 0.06);
+    box-shadow: 0 10px 25px rgba(26, 54, 93, 0.06);
     border-color: #cbd5e1;
   }
 `;
@@ -168,7 +168,7 @@ export const MockTestCard = styled.div`
 export const MockTestTitle = styled.h3`
   font-size: 1.15rem;
   font-weight: 800;
-  color: #00205B;
+  color: #1a365d;
   margin-bottom: 0.75rem;
   padding-right: 4.5rem; /* Avoid overlapping badge */
 `;

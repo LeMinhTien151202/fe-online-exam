@@ -45,8 +45,8 @@ const SettingsIndex: React.FC = () => {
                     </Upload>
                   </Form.Item>
 
-                  <Form.Item label="Màu chủ đạo Primary color (Hex)" name="primaryHex" initialValue="#1e3a8a">
-                    <Input prefix={<div style={{ width: 16, height: 16, background: '#1e3a8a', borderRadius: '50%' }} />} />
+                  <Form.Item label="Màu chủ đạo Primary color (Hex)" name="primaryHex" initialValue="#1a365d">
+                    <Input prefix={<div style={{ width: 16, height: 16, background: '#1a365d', borderRadius: '50%' }} />} />
                   </Form.Item>
 
                   <Form.Item label="Giới hạn dung lượng tệp tin tải lên (MB)" name="maxUpload" initialValue={50}>

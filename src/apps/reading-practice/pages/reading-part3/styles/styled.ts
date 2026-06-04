@@ -18,7 +18,7 @@ export const Header = styled.header`
   align-items: center;
   padding: 0 2rem;
   height: 4.5rem;
-  background: #001a41;
+  background: #0D2245;
   color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 10;

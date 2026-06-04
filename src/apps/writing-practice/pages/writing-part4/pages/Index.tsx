@@ -103,7 +103,7 @@ export const Part4Page: React.FC = () => {
                 </S.TitleArea>
 
                 {/* THÔNG BÁO / TÌNH HUỐNG (CHỈ HIỂN THỊ 1 LẦN Ở TRÊN CÙNG) */}
-                <S.InstructionBox $borderColor="#3b82f6" className="mb-6 p-4 text-[0.9rem] bg-[#eff6ff] text-[#1e40af]">
+                <S.InstructionBox $borderColor="#3b82f6" className="mb-6 p-4 text-[0.9rem] bg-[#eff6ff] text-[#244b80]">
                   <S.SituationTitle>
                     Tình huống giả định (Club Notification)
                   </S.SituationTitle>

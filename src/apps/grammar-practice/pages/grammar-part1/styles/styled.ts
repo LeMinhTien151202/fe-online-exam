@@ -18,7 +18,7 @@ export const Header = styled.header`
   align-items: center;
   padding: 0 2rem;
   height: 4.5rem;
-  background: #001a41;
+  background: #0D2245;
   color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 10;
@@ -408,7 +408,7 @@ export const VocabularySetCardBase = styled(VocabularySetCard)`
 
 export const SetTitleBase = styled(SetTitle)`
   font-size: 1.25rem !important;
-  color: #001a41 !important;
+  color: #0D2245 !important;
   margin-bottom: 0.25rem !important;
 `;
 
@@ -642,7 +642,7 @@ export const SummaryBoxTitle = styled.div`
 export const SummaryBoxScore = styled.div`
   font-size: 2.25rem;
   font-weight: 900;
-  color: #1e3a8a;
+  color: #1a365d;
   
   span {
     font-size: 1.25rem;

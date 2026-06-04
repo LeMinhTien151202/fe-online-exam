@@ -18,7 +18,7 @@ export const Header = styled.header`
   align-items: center;
   padding: 0 2rem;
   height: 4.5rem;
-  background: #001a41;
+  background: #0D2245;
   color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 10;
@@ -183,7 +183,7 @@ export const OptionCard = styled.div<{ $selected?: boolean; $status?: 'success' 
     color: ${props => {
       if (props.$status === 'success') return '#047857';
       if (props.$status === 'error') return '#b91c1c';
-      return props.$selected ? '#1e3a8a' : '#334155';
+      return props.$selected ? '#1a365d' : '#334155';
     }};
     font-weight: ${props => props.$selected ? '700' : '500'};
     font-size: 1rem;
@@ -258,7 +258,7 @@ export const StyledSelect = styled(Select)<{ $hasValue?: boolean; $status?: 'suc
     color: ${props => {
       if (props.$status === 'success') return '#047857';
       if (props.$status === 'error') return '#b91c1c';
-      return props.$hasValue ? '#1e40af' : '#475569';
+      return props.$hasValue ? '#244b80' : '#475569';
     }} !important;
   }
 `;
@@ -400,7 +400,7 @@ export const NavGridButton = styled.button<{
   }};
   
   border-color: ${props => {
-    if (props.$active) return '#00205B';
+    if (props.$active) return '#1a365d';
     if (props.$isCorrect === 'success') return '#bbf7d0';
     if (props.$isCorrect === 'error') return '#fecaca';
     if (props.$status === 'answered') return '#bfdbfe';
@@ -408,7 +408,7 @@ export const NavGridButton = styled.button<{
   }};
   
   color: ${props => {
-    if (props.$active) return '#00205B';
+    if (props.$active) return '#1a365d';
     if (props.$isCorrect === 'success') return '#10b981';
     if (props.$isCorrect === 'error') return '#ef4444';
     if (props.$status === 'answered') return '#1d4ed8';
@@ -416,7 +416,7 @@ export const NavGridButton = styled.button<{
   }};
 
   &:hover {
-    border-color: #00205B;
+    border-color: #1a365d;
     background: ${props => props.$status === 'answered' ? '#dbeafe' : '#e2e8f0'};
   }
 `;
@@ -493,7 +493,7 @@ export const ScoreLabel = styled.div`
   .score-val {
     font-size: 2.25rem;
     font-weight: 900;
-    color: #00205B;
+    color: #1a365d;
     line-height: 1.1;
   }
   

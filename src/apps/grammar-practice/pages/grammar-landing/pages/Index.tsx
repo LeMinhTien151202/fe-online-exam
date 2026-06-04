@@ -38,7 +38,7 @@ export const GrammarPracticePage: React.FC = () => {
         placement="left"
         onClose={() => setIsMobileMenuOpen(false)}
         open={isMobileMenuOpen}
-        styles={{ body: { padding: 0, background: '#001A41' } }}
+        styles={{ body: { padding: 0, background: '#0D2245' } }}
         width={280}
         closable={false}
       >

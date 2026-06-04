@@ -1,16 +1,16 @@
-import styled from 'styled-components';
-import { Button } from 'antd';
-import { StarFilled } from '@ant-design/icons';
+import styled from "styled-components";
+import { Button } from "antd";
+import { StarFilled, ArrowRightOutlined } from "@ant-design/icons";
 
 export const HeroContainer = styled.div`
-  background: #2D447F; /* Màu xanh chuẩn theo ảnh mẫu */
+  background: #1a365d; /* Màu xanh chuẩn theo ảnh mẫu */
   border-radius: 1.5rem;
   padding: 2.25rem 3rem;
   margin-bottom: 1.5rem;
   color: white;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(45, 68, 127, 0.2);
+  box-shadow: 0 10px 30px rgba(26, 54, 93, 0.2);
 
   @media (max-width: 768px) {
     padding: 1.5rem;
@@ -60,11 +60,15 @@ export const MascotWrapper = styled.div`
   top: 0;
   bottom: 0;
   width: 40%;
-  background: rgba(255, 255, 255, 0.1); /* Tạo khối màu sáng bên phải giống ảnh */
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.12) 100%
+  );
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   @media (max-width: 1024px) {
     display: none;
   }
@@ -78,23 +82,33 @@ export const MascotWrapper = styled.div`
   }
 `;
 
+export const StyledArrow = styled(ArrowRightOutlined)`
+  transition: transform 0.3s ease;
+  font-size: 0.875rem;
+`;
+
 export const StyledButton = styled(Button)`
   height: 3rem;
   padding: 0 2rem;
   border-radius: 6.25rem;
   font-weight: 700;
   font-size: 0.9375rem;
-  border: none;
-  background: white;
-  color: #2D447F;
+  border: none !important;
+  background: white !important;
+  color: #1a365d !important;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  
+  transition: all 0.3s ease;
+  cursor: pointer;
+  transform: none !important;
+
   &:hover {
-    background: #f0f7ff !important;
-    color: #2D447F !important;
-    transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.9) !important;
+    transform: none !important;
+  }
+
+  &:hover ${StyledArrow} {
+    transform: translateX(6px);
   }
 `;

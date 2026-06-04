@@ -3,6 +3,8 @@ export interface IHomeStats {
   completedModules: number;
   totalModules: number;
   targetLevel: string;
+  learningStreak: number;
+  predictedScore: string;
 }
 
 export interface ILearningModule {
@@ -12,7 +14,7 @@ export interface ILearningModule {
   icon: string;
   duration: string;
   tag?: string;
-  color: 'red' | 'orange' | 'blue' | 'purple' | 'teal' | 'green';
+  color: "red" | "orange" | "blue" | "purple" | "teal" | "green";
   path: string;
 }
 

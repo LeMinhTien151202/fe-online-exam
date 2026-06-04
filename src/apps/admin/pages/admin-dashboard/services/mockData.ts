@@ -9,7 +9,7 @@ export const activityData = [
 ];
 
 export const skillDistribution = [
-  { name: 'Grammar', value: 35, color: '#1e3a8a' },
+  { name: 'Grammar', value: 35, color: '#1a365d' },
   { name: 'Reading', value: 25, color: '#0ea5e9' },
   { name: 'Listening', value: 20, color: '#8b5cf6' },
   { name: 'Speaking', value: 10, color: '#f97316' },

@@ -18,7 +18,7 @@ export const Header = styled.header`
   align-items: center;
   padding: 0 2rem;
   height: 4.5rem;
-  background: #001a41;
+  background: #0D2245;
   color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 10;
@@ -374,19 +374,19 @@ export const NavGridButton = styled.button<{
   }};
   
   border-color: ${props => {
-    if (props.$active) return '#00205B';
+    if (props.$active) return '#1a365d';
     if (props.$status === 'answered') return '#bfdbfe';
     return 'transparent';
   }};
   
   color: ${props => {
-    if (props.$active) return '#00205B';
+    if (props.$active) return '#1a365d';
     if (props.$status === 'answered') return '#1d4ed8';
     return '#64748b';
   }};
 
   &:hover {
-    border-color: #00205B;
+    border-color: #1a365d;
     background: ${props => props.$status === 'answered' ? '#dbeafe' : '#e2e8f0'};
   }
 `;
@@ -463,7 +463,7 @@ export const ScoreLabel = styled.div`
   .score-val {
     font-size: 2.25rem;
     font-weight: 900;
-    color: #00205B;
+    color: #1a365d;
     line-height: 1.1;
   }
   

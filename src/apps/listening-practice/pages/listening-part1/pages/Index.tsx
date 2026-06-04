@@ -121,7 +121,7 @@ export const Part1Page: React.FC = () => {
                       }}
                     >
                       <div className="option-letter" style={{ color: isSelected ? '#2563eb' : '#0f172a' }}>{letter}</div>
-                      <div className="option-text" style={{ color: isSelected ? '#1e3a8a' : '#334155', fontWeight: isSelected ? '700' : '500' }}>{option}</div>
+                      <div className="option-text" style={{ color: isSelected ? '#1a365d' : '#334155', fontWeight: isSelected ? '700' : '500' }}>{option}</div>
                     </S.OptionCard>
                   );
                 })}

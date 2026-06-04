@@ -117,7 +117,7 @@ export const WritingPracticePage: React.FC = () => {
         placement="left"
         onClose={() => setIsMobileMenuOpen(false)}
         open={isMobileMenuOpen}
-        styles={{ body: { padding: 0, background: '#001A41' } }}
+        styles={{ body: { padding: 0, background: '#0D2245' } }}
         width={280}
         closable={false}
       >
@@ -248,10 +248,10 @@ export const WritingPracticePage: React.FC = () => {
                           borderRadius: '8px', 
                           height: '40px', 
                           fontWeight: 700,
-                          background: hasDone ? '#eff6ff' : '#00205B',
-                          borderColor: hasDone ? '#bfdbfe' : '#00205B',
+                          background: hasDone ? '#eff6ff' : '#1a365d',
+                          borderColor: hasDone ? '#bfdbfe' : '#1a365d',
                           color: hasDone ? '#1d4ed8' : '#ffffff',
-                          boxShadow: hasDone ? 'none' : '0 4px 6px -1px rgba(0, 32, 91, 0.15)'
+                          boxShadow: hasDone ? 'none' : '0 4px 6px -1px rgba(26, 54, 93, 0.15)'
                         }}
                         onClick={() => handleMockClick(mock.id)}
                       >

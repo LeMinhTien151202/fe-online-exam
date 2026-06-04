@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const MainLayout = styled.div`
   display: flex;
@@ -35,6 +35,7 @@ export const ContentArea = styled.main`
   flex: 1;
   overflow-y: auto;
   padding: 2rem 4rem;
+  background: #f8fafc; /* Beautiful soft slate-50 background */
 
   @media (max-width: 1280px) {
     padding: 2rem;
@@ -71,22 +72,26 @@ export const BottomInfoGrid = styled.div`
 export const InfoCard = styled.div`
   background: white;
   border-radius: 0.75rem;
-  padding: 1rem;
+  padding: 1.25rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease;
+  gap: 1.25rem;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   @media (max-width: 640px) {
     flex-direction: column;
     text-align: center;
-    padding: 1rem;
+    padding: 1.25rem;
   }
 
   &:hover {
     transform: translateY(-0.25rem);
+    box-shadow:
+      0 20px 25px -5px rgba(0, 0, 0, 0.05),
+      0 10px 10px -5px rgba(0, 0, 0, 0.03);
   }
 `;
 
@@ -94,11 +99,11 @@ export const InfoIconBox = styled.div`
   width: 2rem;
   height: 2rem;
   border-radius: 0.5rem;
-  background: #F4F7FE;
+  background: #f4f7fe;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #2D447F;
+  color: #1a365d;
   font-size: 1rem;
   flex-shrink: 0;
 `;
@@ -131,7 +136,7 @@ export const FooterLinks = styled.div`
     text-decoration: none;
     transition: color 0.2s;
     &:hover {
-      color: #2D447F;
+      color: #1a365d;
     }
   }
 `;
@@ -142,7 +147,7 @@ export const HeaderLogo = styled.img`
 
 export const HeaderTitle = styled.span`
   font-weight: 800;
-  color: #00205B;
+  color: #1a365d;
   font-size: 1rem; /* 16px */
 `;
 
@@ -172,7 +177,7 @@ export const InfoCardContent = styled.div`
   }
 
   a {
-    color: #2D447F;
+    color: #1a365d;
     font-weight: 600;
     font-size: 0.875rem; /* 14px */
     text-decoration: none;
@@ -181,5 +186,5 @@ export const InfoCardContent = styled.div`
 
 export const CopyrightText = styled.div`
   font-weight: 600;
-  color: #00205B;
+  color: #1a365d;
 `;

@@ -148,17 +148,17 @@ export const ActionArea = styled.div`
   span {
     font-size: 0.875rem;
     font-weight: 700;
-    color: #00205B;
+    color: #1a365d;
     transition: color 0.3s;
   }
   
   &:hover span, &:hover .anticon {
-    color: #2D447F;
+    color: #1a365d;
   }
 `;
 
 export const StyledArrowIcon = styled(ArrowRightOutlined)`
-  color: #00205B;
+  color: #1a365d;
   font-size: 1rem;
   transition: all 0.3s;
   

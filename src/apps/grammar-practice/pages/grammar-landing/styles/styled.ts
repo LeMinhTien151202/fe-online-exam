@@ -27,7 +27,7 @@ export const CategoryTag = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #2D447F;
+  color: #1a365d;
   font-weight: 700;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -42,7 +42,7 @@ export const CategoryTag = styled.div`
 export const PageTitle = styled.h1`
   font-size: 2rem;
   font-weight: 800;
-  color: #00205B;
+  color: #1a365d;
   margin-bottom: 0.75rem;
 `;
 
@@ -127,9 +127,9 @@ export const TabSectionWrapper = styled.div`
     }
     
     .ant-segmented-item-selected {
-      background: #00205B !important;
+      background: #1a365d !important;
       color: white !important;
-      box-shadow: 0 4px 6px -1px rgba(0, 32, 91, 0.2) !important;
+      box-shadow: 0 4px 6px -1px rgba(26, 54, 93, 0.2) !important;
     }
   }
 `;
@@ -162,7 +162,7 @@ export const MockTestCard = styled.div`
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(0, 32, 91, 0.06);
+    box-shadow: 0 10px 25px rgba(26, 54, 93, 0.06);
     border-color: #cbd5e1;
   }
 `;
@@ -170,7 +170,7 @@ export const MockTestCard = styled.div`
 export const MockTestTitle = styled.h3`
   font-size: 1.15rem;
   font-weight: 800;
-  color: #00205B;
+  color: #1a365d;
   margin-bottom: 0.75rem;
   padding-right: 4.5rem; /* Avoid overlapping badge */
 `;
@@ -248,14 +248,14 @@ export const MockStartButton = styled(Button) <{ $hasScore: boolean }>`
   border-radius: 8px !important;
   height: 40px !important;
   font-weight: 700 !important;
-  background: ${props => props.$hasScore ? '#eff6ff' : '#00205B'} !important;
-  border-color: ${props => props.$hasScore ? '#bfdbfe' : '#00205B'} !important;
+  background: ${props => props.$hasScore ? '#eff6ff' : '#1a365d'} !important;
+  border-color: ${props => props.$hasScore ? '#bfdbfe' : '#1a365d'} !important;
   color: ${props => props.$hasScore ? '#1d4ed8' : '#ffffff'} !important;
-  box-shadow: ${props => props.$hasScore ? 'none' : '0 4px 6px -1px rgba(0, 32, 91, 0.15)'} !important;
+  box-shadow: ${props => props.$hasScore ? 'none' : '0 4px 6px -1px rgba(26, 54, 93, 0.15)'} !important;
   
   &:hover {
-    background: ${props => props.$hasScore ? '#dbeafe' : '#001A41'} !important;
-    border-color: ${props => props.$hasScore ? '#93c5fd' : '#001A41'} !important;
+    background: ${props => props.$hasScore ? '#dbeafe' : '#0D2245'} !important;
+    border-color: ${props => props.$hasScore ? '#93c5fd' : '#0D2245'} !important;
   }
 `;
 
@@ -293,7 +293,7 @@ export const TestSetCard = styled.div`
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(0, 32, 91, 0.06);
+    box-shadow: 0 10px 25px rgba(26, 54, 93, 0.06);
     border-color: #94a3b8;
   }
 `;
@@ -301,7 +301,7 @@ export const TestSetCard = styled.div`
 export const TestSetTitle = styled.h3`
   font-size: 1.25rem;
   font-weight: 800;
-  color: #00205B;
+  color: #1a365d;
   margin-bottom: 1rem;
 `;
 
@@ -342,12 +342,12 @@ export const TestSetPartRow = styled.div`
   .part-action {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #2D447F;
+    color: #1a365d;
     cursor: pointer;
     text-decoration: none;
     
     &:hover {
-      color: #1e3a8a;
+      color: #1a365d;
       text-decoration: underline;
     }
   }

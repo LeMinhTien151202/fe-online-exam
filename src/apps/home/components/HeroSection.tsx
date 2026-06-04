@@ -19,15 +19,15 @@ export const HeroSection: React.FC = () => {
         <Paragraph>
           Tiếp tục hành trình ôn luyện để đạt mục tiêu chứng chỉ B2. Bạn đang làm rất tốt!
         </Paragraph>
-        <S.StyledButton icon={<ArrowRightOutlined />}>
-          Tiếp tục Luyện tập
+        <S.StyledButton>
+          Tiếp tục Luyện tập <S.StyledArrow />
         </S.StyledButton>
       </S.ContentWrapper>
 
       <S.MascotWrapper>
-        <img 
-          src="/image.png" 
-          alt="Mascot" 
+        <img
+          src="/image.png"
+          alt="Mascot"
         />
       </S.MascotWrapper>
     </S.HeroContainer>
