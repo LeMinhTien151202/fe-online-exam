@@ -18,7 +18,7 @@ export const MobileHeader = styled.header`
   display: none;
   height: 4rem;
   background: white;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 0.0625rem solid rgba(0, 0, 0, 0.05);
   padding: 0 1.25rem;
   align-items: center;
   justify-content: space-between;
@@ -26,7 +26,7 @@ export const MobileHeader = styled.header`
   top: 0;
   z-index: 90;
 
-  @media (max-width: 1024px) {
+  @media (max-width: 64rem) {
     display: flex;
   }
 `;
@@ -37,11 +37,11 @@ export const ContentArea = styled.main`
   padding: 2rem 4rem;
   background: #f8fafc; /* Beautiful soft slate-50 background */
 
-  @media (max-width: 1280px) {
+  @media (max-width: 80rem) {
     padding: 2rem;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 48rem) {
     padding: 1.5rem 1rem;
   }
 `;
@@ -64,7 +64,7 @@ export const BottomInfoGrid = styled.div`
   gap: 1rem;
   margin-top: 1.5rem;
 
-  @media (max-width: 768px) {
+  @media (max-width: 48rem) {
     grid-template-columns: 1fr;
   }
 `;
@@ -77,11 +77,11 @@ export const InfoCard = styled.div`
   align-items: center;
   gap: 1.25rem;
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.05),
-    0 1px 2px rgba(0, 0, 0, 0.02);
+    0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.05),
+    0 0.0625rem 0.125rem rgba(0, 0, 0, 0.02);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  @media (max-width: 640px) {
+  @media (max-width: 40rem) {
     flex-direction: column;
     text-align: center;
     padding: 1.25rem;
@@ -90,8 +90,8 @@ export const InfoCard = styled.div`
   &:hover {
     transform: translateY(-0.25rem);
     box-shadow:
-      0 20px 25px -5px rgba(0, 0, 0, 0.05),
-      0 10px 10px -5px rgba(0, 0, 0, 0.03);
+      0 1.25rem 1.5625rem -0.3125rem rgba(0, 0, 0, 0.05),
+      0 0.625rem 0.625rem -0.3125rem rgba(0, 0, 0, 0.03);
   }
 `;
 
@@ -111,7 +111,7 @@ export const InfoIconBox = styled.div`
 export const Footer = styled.footer`
   margin-top: 3rem;
   padding: 2rem 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 0.0625rem solid rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -127,7 +127,7 @@ export const FooterLinks = styled.div`
   flex-wrap: wrap;
   justify-content: center;
 
-  @media (max-width: 640px) {
+  @media (max-width: 40rem) {
     gap: 1rem;
   }
 
@@ -142,20 +142,20 @@ export const FooterLinks = styled.div`
 `;
 
 export const HeaderLogo = styled.img`
-  height: 2rem; /* 32px */
+  height: 2rem;
 `;
 
 export const HeaderTitle = styled.span`
   font-weight: 800;
   color: #1a365d;
-  font-size: 1rem; /* 16px */
+  font-size: 1rem;
 `;
 
 export const SectionTitleWrapper = styled.div`
-  margin-bottom: 1.5rem; /* mb-6 */
+  margin-bottom: 1.5rem;
 
   h2.ant-typography {
-    font-size: 1.5rem; /* 24px */
+    font-size: 1.5rem;
     font-weight: 800;
   }
 `;
@@ -163,23 +163,23 @@ export const SectionTitleWrapper = styled.div`
 export const InfoCardContent = styled.div`
   h4.ant-typography {
     margin: 0;
-    font-size: 1.125rem; /* 18px */
+    font-size: 1.125rem;
     font-weight: 700;
   }
 
   span.ant-typography {
-    font-size: 0.9375rem; /* 15px */
+    font-size: 0.9375rem;
     display: block;
     margin-top: 0.25rem;
     margin-bottom: 0.5rem;
-    color: #8c8c8c; /* type="secondary" */
+    color: #8c8c8c;
     line-height: 1.4;
   }
 
   a {
     color: #1a365d;
     font-weight: 600;
-    font-size: 0.875rem; /* 14px */
+    font-size: 0.875rem;
     text-decoration: none;
   }
 `;

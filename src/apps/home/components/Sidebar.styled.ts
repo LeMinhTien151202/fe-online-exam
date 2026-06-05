@@ -9,31 +9,31 @@ export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
   height: 100vh;
   position: sticky;
   top: 0;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 0.0625rem solid rgba(255, 255, 255, 0.05);
   z-index: 100;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: visible; /* Ensure absolute child toggle button is not clipped */
 
-  @media (max-width: 1024px) {
+  @media (max-width: 64rem) {
     display: none;
   }
 
   .collapse-btn {
     position: absolute;
-    right: -14px;
+    right: -0.875rem;
     top: 2rem; /* Move it slightly down from the top edge */
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     border-radius: 50%;
     background: #0f1d36;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 0.0625rem solid rgba(255, 255, 255, 0.2);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     z-index: 110;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.2);
     transition: all 0.2s ease;
 
     &:hover {
@@ -110,7 +110,7 @@ export const SectionTitle = styled.h3<{ $collapsed?: boolean }>`
   }
   .line {
     display: ${(props) => (props.$collapsed ? "block" : "none")};
-    height: 1px;
+    height: 0.0625rem;
     background: rgba(255, 255, 255, 0.1);
     margin: 0.5rem auto;
     width: 2rem;
@@ -237,70 +237,515 @@ export const OnlineBadge = styled.div<{ $collapsed?: boolean }>`
   }
 `;
 
-export const UserProfileCard = styled.div<{ $collapsed?: boolean }>`
+export const UserProfileWrapper = styled.div`
+  margin-top: auto;
   padding: 1rem;
+  border-top: 0.0625rem solid rgba(255, 255, 255, 0.06);
+  position: relative;
+`;
+
+export const UserProfileCard = styled.div<{
+  $collapsed?: boolean;
+  $isActive?: boolean;
+}>`
+  background: ${(props) => (props.$isActive ? "#1e2e4d" : "transparent")};
+  padding: 0.625rem;
+  border-radius: 0.75rem;
   display: flex;
   align-items: center;
-  justify-content: ${(props) => (props.$collapsed ? "center" : "flex-start")};
   gap: 0.75rem;
-  margin-top: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  justify-content: ${(props) => (props.$collapsed ? "center" : "flex-start")};
+
+  &:hover {
+    background: #1a2b4b; /* 5-8% lighter than #0f1d36 */
+  }
+
+  .avatar-container {
+    position: relative;
+    flex-shrink: 0;
+  }
 
   .avatar {
-    width: 2.75rem;
-    height: 2.75rem;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: 50%;
-    background: #60a5fa;
+    background: #3b82f6;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     color: white;
-    font-size: 1rem;
-    flex-shrink: 0;
+    font-size: 0.9375rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
   }
 
   .user-info {
     flex: 1;
     display: ${(props) => (props.$collapsed ? "none" : "block")};
+    min-width: 0;
 
     .name {
       font-size: 0.875rem;
       font-weight: 600;
       color: white;
-      margin-bottom: 0.125rem;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+
     .plan {
-      font-size: 0.6875rem;
-      color: #94a3b8;
-      white-space: nowrap;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 0.125rem;
     }
   }
 
-  .notification-btn {
+  .notif-wrapper {
+    display: ${(props) => (props.$collapsed ? "none" : "block")};
     position: relative;
-    color: rgba(255, 255, 255, 0.6);
-    background: transparent;
-    border: none;
-    cursor: pointer;
     padding: 0.25rem;
-    display: ${(props) => (props.$collapsed ? "none" : "flex")};
+    color: rgba(255, 255, 255, 0.4);
+    transition: color 0.2s;
 
     &:hover {
       color: white;
     }
+  }
+`;
 
-    .dot {
-      position: absolute;
-      top: 0.25rem;
-      right: 0.25rem;
-      width: 0.375rem;
-      height: 0.375rem;
-      background: #ef4444;
-      border-radius: 50%;
-      border: 1px solid #0f1d36;
+export const NotificationBadge = styled.span`
+  position: absolute;
+  top: -0.125rem;
+  right: -0.125rem;
+  background: #ef4444;
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 0.125rem 0.3125rem;
+  border-radius: 6.25rem;
+  border: 0.125rem solid #1a2b4b;
+  min-width: 1rem;
+  text-align: center;
+  animation: pulse-ring 2s infinite;
+
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
     }
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0.3125rem rgba(239, 68, 68, 0);
+    }
+    100% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+  }
+`;
+
+export const CollapsedBadge = styled(NotificationBadge)`
+  top: -0.25rem;
+  right: -0.25rem;
+  border-width: 0.125rem;
+`;
+
+export const DropdownMenu = styled.div<{
+  $isOpen: boolean;
+  $collapsed?: boolean;
+}>`
+  position: absolute;
+  bottom: 100%;
+  left: 0.75rem;
+  right: 0.75rem;
+  background: #1a2b4b;
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 -0.625rem 1.5625rem rgba(0, 0, 0, 0.3);
+  z-index: 200;
+  display: ${(props) => (props.$isOpen ? "block" : "none")};
+  transform-origin: bottom center;
+  animation: dropdown-fade-in 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 0.0625rem solid rgba(255, 255, 255, 0.08);
+
+  @keyframes dropdown-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: ${(props) => (props.$collapsed ? "50%" : "2.5rem")};
+    margin-left: -0.375rem;
+    border: 0.375rem solid transparent;
+    border-top-color: #1a2b4b;
+  }
+`;
+
+export const MenuItem = styled.div<{ $danger?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: ${(props) => (props.$danger ? "#f87171" : "rgba(255, 255, 255, 0.7)")};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: ${(props) => (props.$danger ? "#ef4444" : "white")};
+  }
+
+  span.material-symbols-outlined {
+    font-size: 1.125rem;
+  }
+`;
+
+export const MenuDivider = styled.div`
+  height: 0.0625rem;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 0.5rem 0;
+`;
+export const NotificationPopover = styled.div<{
+  $isOpen: boolean;
+  $collapsed?: boolean;
+}>`
+  position: absolute;
+  left: 100%;
+  bottom: 1rem;
+  margin-left: 0.5rem;
+  width: 22.5rem;
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 0.625rem 2.5rem rgba(0, 0, 0, 0.08); /* Softer, more diffused shadow */
+  z-index: 250;
+  display: ${(props) => (props.$isOpen ? "flex" : "none")};
+  flex-direction: column;
+  overflow: hidden;
+  border: 0.0625rem solid rgba(0, 0, 0, 0.05);
+  animation: popover-fly-out 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left bottom;
+
+  @keyframes popover-fly-out {
+    from {
+      opacity: 0;
+      transform: translateX(-0.5rem) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: -0.5rem;
+    bottom: 1.25rem;
+    border: 0.25rem solid transparent;
+    border-right-color: #ffffff;
+    filter: drop-shadow(-1px 0 1px rgba(0, 0, 0, 0.02));
+  }
+`;
+
+export const PopoverHeader = styled.div`
+  padding: 1.25rem;
+  border-bottom: 0.0625rem solid rgba(0, 0, 0, 0.05);
+  background: #fdfdfe;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a; /* Deep navy */
+    margin: 0;
+    letter-spacing: -0.0125em;
+  }
+
+  .mark-read-btn {
+    background: transparent;
+    border: none;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #3b82f6;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.05);
+      color: #2563eb;
+    }
+  }
+`;
+
+export const PopoverBody = styled.div`
+  max-height: 18rem;
+  overflow-y: auto;
+  padding: 0.25rem 0;
+
+  /* Custom Scrollbar */
+  &::-webkit-scrollbar {
+    width: 0.25rem;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 0.625rem;
+  }
+`;
+
+export const NotificationEntry = styled.div`
+  padding: 1rem 1.25rem;
+  display: flex;
+  gap: 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+  border-bottom: 0.0625rem solid rgba(0, 0, 0, 0.02);
+
+  &:hover {
+    background: #f8fafc; /* Soft gray hover */
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+export const IconBox = styled.div<{ $type: string }>`
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.625rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  background: ${(props) => {
+    switch (props.$type) {
+      case "mock-test":
+        return "rgba(59, 130, 246, 0.1)";
+      case "question":
+        return "rgba(20, 184, 166, 0.1)";
+      case "streak":
+        return "rgba(244, 63, 94, 0.1)";
+      case "progress":
+        return "rgba(34, 197, 94, 0.1)";
+      default:
+        return "rgba(0, 0, 0, 0.05)";
+    }
+  }};
+
+  color: ${(props) => {
+    switch (props.$type) {
+      case "mock-test":
+        return "#3b82f6";
+      case "question":
+        return "#14b8a6";
+      case "streak":
+        return "#f43f5e";
+      case "progress":
+        return "#22c55e";
+      default:
+        return "#64748b";
+    }
+  }};
+
+  span {
+    font-size: 1.25rem;
+  }
+`;
+
+export const TimeGroupTitle = styled.div`
+  padding: 0.75rem 1.25rem 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  background: #fdfdfe;
+`;
+
+export const PopoverFooter = styled.div`
+  padding: 0.875rem;
+  border-top: 0.0625rem solid rgba(0, 0, 0, 0.05);
+  text-align: center;
+  background: #fdfdfe;
+
+  button {
+    background: transparent;
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #0f172a;
+    cursor: pointer;
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #f1f5f9;
+      color: #3b82f6;
+    }
+  }
+`;
+
+export const EntryContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .message {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #334155;
+    font-weight: 500;
+  }
+
+  .time {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 0.125rem;
+  }
+`;
+export const LoginCTAWrapper = styled.div<{ $collapsed?: boolean }>`
+  background: #1a2b4b; /* 8-10% lighter than #0f1d36 */
+  border: 0.0625rem solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: ${(props) => (props.$collapsed ? "0.75rem 0.5rem" : "1.25rem")};
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.2);
+  margin-top: 0.5rem;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: ${(props) =>
+      props.$collapsed ? "none" : "translateY(-0.125rem)"};
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0.25rem;
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    opacity: 0.8;
+  }
+`;
+
+export const LoginCTATitle = styled.h4`
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.01em;
+`;
+
+export const LoginCTADesc = styled.p`
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+  margin: 0;
+  font-weight: 400;
+`;
+
+export const CTAButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+`;
+
+export const PrimaryCTAButton = styled.button`
+  width: 100%;
+  padding: 0.625rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0.125rem 0.5rem rgba(59, 130, 246, 0.3);
+
+  &:hover {
+    background: #2563eb;
+    box-shadow: 0 0.25rem 0.75rem rgba(59, 130, 246, 0.4);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+`;
+
+export const SecondaryCTAButton = styled.button`
+  width: 100%;
+  padding: 0.5rem;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  border: 0.0625rem solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+`;
+
+export const CollapsedLoginBtn = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  background: #1a2b4b;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3b82f6;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 0.0625rem solid rgba(255, 255, 255, 0.1);
+
+  &:hover {
+    background: #3b82f6;
+    color: white;
+    transform: scale(1.05);
   }
 `;
