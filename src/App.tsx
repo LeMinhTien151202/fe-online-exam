@@ -14,6 +14,7 @@ import { speakingRoute, speakingPart1Route, speakingPart2Route, speakingPart3Rou
 import { grammarRoute, grammarTestRoute, grammarPart1Route, grammarPart2Route, grammarMockTestRoute } from './apps/grammar-practice/routes';
 import { writingRoute, writingPart1Route, writingPart2Route, writingPart3Route, writingPart4Route, writingMockTestRoute } from './apps/writing-practice/routes';
 import { authRoutes } from './apps/auth/routes';
+import { mockExamRoute, mainMockExamRoute } from './apps/full-mock-exam/routes';
 import {
   adminRoute,
   adminDashboardRoute,
@@ -63,6 +64,8 @@ const routeTree = rootRoute.addChildren([
   writingPart4Route,
   writingMockTestRoute,
   ...authRoutes,
+  mockExamRoute,
+  mainMockExamRoute,
   adminRoute.addChildren([
     adminDashboardRoute,
     adminUsersRoute,

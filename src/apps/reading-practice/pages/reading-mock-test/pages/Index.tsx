@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button, Space, Progress, Badge, Select, Radio, Alert, Modal, Typography, Tooltip } from 'antd';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { 
-  LeftOutlined, 
+import {
+  LeftOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   RollbackOutlined,
@@ -350,8 +350,8 @@ export const ReadingMockTestPage: React.FC = () => {
                           {q.text}
                         </Text>
 
-                        <S.StyledRadioGroup 
-                          optionType="button" 
+                        <S.StyledRadioGroup
+                          optionType="button"
                           buttonStyle="solid"
                           value={answer}
                           onChange={(e) => setP3Answers(prev => ({ ...prev, [idx + 1]: e.target.value as string }))}
@@ -531,15 +531,14 @@ export const ReadingMockTestPage: React.FC = () => {
             return (
               <Tooltip
                 key={n}
-                title={`Câu ${n}: ${
-                  isSubmitted
-                    ? isCorrect === 'success'
-                      ? 'Trả lời đúng'
-                      : 'Trả lời sai'
-                    : status === 'answered'
+                title={`Câu ${n}: ${isSubmitted
+                  ? isCorrect === 'success'
+                    ? 'Trả lời đúng'
+                    : 'Trả lời sai'
+                  : status === 'answered'
                     ? 'Đã trả lời'
                     : 'Chưa trả lời'
-                }`}
+                  }`}
                 placement={placement}
                 mouseEnterDelay={0.15}
               >
@@ -561,7 +560,7 @@ export const ReadingMockTestPage: React.FC = () => {
     return (
       <S.NavPanel>
         <S.PanelTitle>Bảng câu hỏi</S.PanelTitle>
-        
+
         <S.SectionLabel>Part 1: Điền từ (1 - 5)</S.SectionLabel>
         {renderGridButtons([1, 2, 3, 4, 5])}
 
@@ -664,8 +663,8 @@ export const ReadingMockTestPage: React.FC = () => {
                   >
                     Xem báo cáo điểm
                   </Button>
-                  <Button 
-                    type="primary" 
+                  <Button
+                    type="primary"
                     icon={<RollbackOutlined />}
                     onClick={handleRetry}
                     style={{ background: '#6366f1', borderColor: '#6366f1', borderRadius: '2rem', fontWeight: 700 }}
@@ -711,9 +710,9 @@ export const ReadingMockTestPage: React.FC = () => {
                 </Space>
 
                 <S.ScoreRingWrapper>
-                  <Progress 
-                    type="circle" 
-                    percent={Math.round(totalScore / totalQuestions * 100)} 
+                  <Progress
+                    type="circle"
+                    percent={Math.round(totalScore / totalQuestions * 100)}
                     size={140}
                     strokeWidth={10}
                     strokeColor="#10b981"
@@ -750,18 +749,18 @@ export const ReadingMockTestPage: React.FC = () => {
                     <AlertOutlined /> <span>Nhận xét chi tiết từ hệ thống:</span>
                   </div>
                   <p style={{ margin: 0, color: '#475569', fontSize: '0.95rem', lineHeight: 1.6, fontWeight: 500 }}>
-                    {totalScore >= 21 
-                      ? "Tuyệt vời! Kỹ năng đọc hiểu của bạn ở mức C (Cao cấp). Bạn có khả năng đọc hiểu trôi chảy tất cả các loại văn bản học thuật và thực tế phức tạp. Hãy duy trì phong độ này!" 
-                      : totalScore >= 15 
-                      ? "Rất tốt! Kỹ năng đọc của bạn đạt trình độ B2. Bạn có thể hiểu rõ ý chính và các chi tiết tương đối sâu trong văn bản. Ôn luyện thêm các cấu trúc từ vựng nâng cao ở Part 4 để bứt phá lên mức C."
-                      : totalScore >= 8 
-                      ? "Kỹ năng đọc của bạn ở mức B1. Bạn có thể hiểu các đoạn văn bản cơ bản đến trung bình, tuy nhiên còn gặp khó khăn với cấu trúc câu phức tạp và từ vựng chuyên ngành. Hãy luyện tập thêm."
-                      : "Kỹ năng đọc của bạn đang ở mức A1/A2. Bạn cần củng cố thêm lượng từ vựng căn bản và luyện tập thường xuyên hơn các bài đọc ngắn để nâng cao khả năng nắm bắt thông tin cơ bản."}
+                    {totalScore >= 21
+                      ? "Tuyệt vời! Kỹ năng đọc hiểu của bạn ở mức C (Cao cấp). Bạn có khả năng đọc hiểu trôi chảy tất cả các loại văn bản học thuật và thực tế phức tạp. Hãy duy trì phong độ này!"
+                      : totalScore >= 15
+                        ? "Rất tốt! Kỹ năng đọc của bạn đạt trình độ B2. Bạn có thể hiểu rõ ý chính và các chi tiết tương đối sâu trong văn bản. Ôn luyện thêm các cấu trúc từ vựng nâng cao ở Part 4 để bứt phá lên mức C."
+                        : totalScore >= 8
+                          ? "Kỹ năng đọc của bạn ở mức B1. Bạn có thể hiểu các đoạn văn bản cơ bản đến trung bình, tuy nhiên còn gặp khó khăn với cấu trúc câu phức tạp và từ vựng chuyên ngành. Hãy luyện tập thêm."
+                          : "Kỹ năng đọc của bạn đang ở mức A1/A2. Bạn cần củng cố thêm lượng từ vựng căn bản và luyện tập thường xuyên hơn các bài đọc ngắn để nâng cao khả năng nắm bắt thông tin cơ bản."}
                   </p>
                 </div>
 
-                <Button 
-                  type="primary" 
+                <Button
+                  type="primary"
                   size="large"
                   style={{ borderRadius: '2rem', height: '48px', padding: '0 2.5rem', fontWeight: 700, background: '#1a365d', borderColor: '#1a365d' }}
                   onClick={() => setShowReport(false)}

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button, Space, Progress, message, Select, Modal, Typography, Tooltip } from 'antd';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { 
-  LeftOutlined, 
+import {
+  LeftOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   RollbackOutlined,
@@ -15,6 +15,7 @@ import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { AudioPlayer } from '../../../components/AudioPlayer';
 import * as S from '../styles/styled';
+import { ExamQuestionNavigator, NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
 import { useMockTest } from '../hook/useMockTest';
 import {
   correctP1,
@@ -110,7 +111,7 @@ export const ListeningMockTestPage: React.FC = () => {
               }
 
               return (
-                <S.OptionCard 
+                <S.OptionCard
                   key={idx}
                   $selected={isSelected}
                   $status={currentStatus}
@@ -131,10 +132,10 @@ export const ListeningMockTestPage: React.FC = () => {
               <p style={{ margin: '0 0 1rem 0', color: '#475569', fontSize: '0.95rem', lineHeight: 1.6 }}>
                 {q.explanation}
               </p>
-              
-              <Button 
+
+              <Button
                 size="small"
-                icon={<FileTextOutlined />} 
+                icon={<FileTextOutlined />}
                 onClick={() => setShowTranscript(!showTranscript)}
                 style={{ marginBottom: '1rem' }}
               >
@@ -207,10 +208,10 @@ export const ListeningMockTestPage: React.FC = () => {
                 <li><strong>Person 3 (Câu 16):</strong> 'attends live concerts frequently' (thường xuyên đi xem hòa nhạc trực tiếp).</li>
                 <li><strong>Person 4 (Câu 17):</strong> 'plays an instrument' (chơi một nhạc cụ - piano).</li>
               </ul>
-              
-              <Button 
+
+              <Button
                 size="small"
-                icon={<FileTextOutlined />} 
+                icon={<FileTextOutlined />}
                 onClick={() => setShowTranscript(!showTranscript)}
                 style={{ marginBottom: '1rem' }}
               >
@@ -286,10 +287,10 @@ export const ListeningMockTestPage: React.FC = () => {
                 <li><strong>Câu 20 (Festivals):</strong> 'Man' bày tỏ sự lo ngại (festivals disappear soon).</li>
                 <li><strong>Câu 21 (Schools):</strong> 'Woman' khẳng định tầm quan trọng của nhà trường.</li>
               </ul>
-              
-              <Button 
+
+              <Button
                 size="small"
-                icon={<FileTextOutlined />} 
+                icon={<FileTextOutlined />}
                 onClick={() => setShowTranscript(!showTranscript)}
                 style={{ marginBottom: '1rem' }}
               >
@@ -368,10 +369,10 @@ export const ListeningMockTestPage: React.FC = () => {
                   <li key={subQ.id}><strong>{subQ.id}:</strong> {subQ.explanation}</li>
                 ))}
               </ul>
-              
-              <Button 
+
+              <Button
                 size="small"
-                icon={<FileTextOutlined />} 
+                icon={<FileTextOutlined />}
                 onClick={() => setShowTranscript(!showTranscript)}
                 style={{ marginBottom: '1rem' }}
               >
@@ -401,97 +402,22 @@ export const ListeningMockTestPage: React.FC = () => {
       return answers[qNum] === correctAnswersBank[qNum] ? 'success' : 'error';
     };
 
-    const renderGridButtons = (qNums: number[]) => {
-      return (
-        <S.ButtonGrid>
-          {qNums.map((n) => {
-            const status = getStatus(n);
-            const isCorrect = getCorrectness(n);
-            const isActive = activeQuestionNum === n;
-
-            let placement: 'top' | 'topRight' | 'topLeft' = 'top';
-            if (n % 5 === 1) {
-              placement = 'topRight';
-            } else if (n % 5 === 0) {
-              placement = 'topLeft';
-            }
-
-            return (
-              <Tooltip
-                key={n}
-                title={`Câu ${n}: ${
-                  isSubmitted
-                    ? isCorrect === 'success'
-                      ? 'Trả lời đúng'
-                      : 'Trả lời sai'
-                    : status === 'answered'
-                    ? 'Đã trả lời'
-                    : 'Chưa trả lời'
-                }`}
-                placement={placement}
-                mouseEnterDelay={0.15}
-              >
-                <S.NavGridButton
-                  $active={isActive}
-                  $status={status}
-                  $isCorrect={isCorrect}
-                  onClick={() => handleNavigateQuestion(n)}
-                >
-                  {n}
-                </S.NavGridButton>
-              </Tooltip>
-            );
-          })}
-        </S.ButtonGrid>
-      );
-    };
+    const navSections: NavSection[] = [
+      { label: 'Part 1: Câu hỏi ngắn (1 - 13)', questions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] },
+      { label: 'Part 2: Điền từ (14 - 17)', questions: [14, 15, 16, 17] },
+      { label: 'Part 3: Ghép ý kiến (18 - 21)', questions: [18, 19, 20, 21] },
+      { label: 'Part 4: Đàm thoại dài (22 - 25)', questions: [22, 23, 24, 25] },
+    ];
 
     return (
-      <S.NavPanel>
-        <S.PanelTitle>Bảng câu hỏi</S.PanelTitle>
-        
-        <S.SectionLabel>Part 1: Câu hỏi ngắn (1 - 13)</S.SectionLabel>
-        {renderGridButtons([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])}
-
-        <S.SectionLabel>Part 2: Điền từ (14 - 17)</S.SectionLabel>
-        {renderGridButtons([14, 15, 16, 17])}
-
-        <S.SectionLabel>Part 3: Ghép ý kiến (18 - 21)</S.SectionLabel>
-        {renderGridButtons([18, 19, 20, 21])}
-
-        <S.SectionLabel>Part 4: Đàm thoại dài (22 - 25)</S.SectionLabel>
-        {renderGridButtons([22, 23, 24, 25])}
-
-        <S.Legend>
-          {!isSubmitted ? (
-            <>
-              <S.LegendItem>
-                <div className="color-dot" style={{ background: '#f1f5f9', border: '1px solid #cbd5e1' }} />
-                <span>Chưa trả lời</span>
-              </S.LegendItem>
-              <S.LegendItem>
-                <div className="color-dot" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }} />
-                <span>Đã trả lời</span>
-              </S.LegendItem>
-              <S.LegendItem>
-                <div className="color-dot" style={{ background: 'white', border: '1.5px solid #1a365d' }} />
-                <span>Đang chọn</span>
-              </S.LegendItem>
-            </>
-          ) : (
-            <>
-              <S.LegendItem>
-                <div className="color-dot" style={{ background: '#ecfdf5', border: '1px solid #bbf7d0' }} />
-                <span>Trả lời đúng</span>
-              </S.LegendItem>
-              <S.LegendItem>
-                <div className="color-dot" style={{ background: '#fef2f2', border: '1px solid #fecaca' }} />
-                <span>Trả lời sai</span>
-              </S.LegendItem>
-            </>
-          )}
-        </S.Legend>
-      </S.NavPanel>
+      <ExamQuestionNavigator
+        sections={navSections}
+        answers={answers}
+        currentQuestion={activeQuestionNum}
+        onNavigate={handleNavigateQuestion}
+        isSubmitted={isSubmitted}
+        correctAnswers={correctAnswersBank}
+      />
     );
   };
 
@@ -555,8 +481,8 @@ export const ListeningMockTestPage: React.FC = () => {
                   >
                     Xem báo cáo điểm
                   </Button>
-                  <Button 
-                    type="primary" 
+                  <Button
+                    type="primary"
                     icon={<RollbackOutlined />}
                     onClick={handleRetry}
                     style={{ background: '#6366f1', borderColor: '#6366f1', borderRadius: '2rem', fontWeight: 700 }}
@@ -602,9 +528,9 @@ export const ListeningMockTestPage: React.FC = () => {
                 </Space>
 
                 <S.ScoreRingWrapper>
-                  <Progress 
-                    type="circle" 
-                    percent={Math.round(totalScore / totalQuestions * 100)} 
+                  <Progress
+                    type="circle"
+                    percent={Math.round(totalScore / totalQuestions * 100)}
                     size={140}
                     strokeWidth={10}
                     strokeColor="#10b981"
@@ -641,18 +567,18 @@ export const ListeningMockTestPage: React.FC = () => {
                     <AlertOutlined /> <span>Nhận xét chi tiết từ hệ thống:</span>
                   </div>
                   <p style={{ margin: 0, color: '#475569', fontSize: '0.95rem', lineHeight: 1.6, fontWeight: 500 }}>
-                    {totalScore >= 22 
-                      ? "Tuyệt vời! Kỹ năng nghe hiểu của bạn ở mức C (Cao cấp). Bạn có khả năng nghe hiểu chính xác mọi ý kiến, quan điểm và các chi tiết phức tạp trong cuộc đàm thoại dài. Hãy tiếp tục phát huy!" 
-                      : totalScore >= 16 
-                      ? "Rất tốt! Kỹ năng nghe của bạn đạt trình độ B2. Bạn có thể nghe hiểu hầu hết các ý chính và thông tin quan trọng. Luyện tập thêm kỹ năng bắt thông tin nhiễu ở Part 4 để nâng cao lên mức C."
-                      : totalScore >= 9 
-                      ? "Kỹ năng nghe của bạn ở mức B1. Bạn có thể nghe hiểu các hội thoại ngắn hàng ngày, tuy nhiên còn gặp khó khăn với cấu trúc câu phức tạp và tốc độ nói nhanh ở các đoạn hội thoại dài. Hãy luyện tập thêm."
-                      : "Kỹ năng nghe của bạn đang ở mức A1/A2. Bạn cần nghe nhiều hơn, làm quen với nối âm và ngữ điệu nói của người bản xứ để nâng cao khả năng nắm bắt thông tin cơ bản."}
+                    {totalScore >= 22
+                      ? "Tuyệt vời! Kỹ năng nghe hiểu của bạn ở mức C (Cao cấp). Bạn có khả năng nghe hiểu chính xác mọi ý kiến, quan điểm và các chi tiết phức tạp trong cuộc đàm thoại dài. Hãy tiếp tục phát huy!"
+                      : totalScore >= 16
+                        ? "Rất tốt! Kỹ năng nghe của bạn đạt trình độ B2. Bạn có thể nghe hiểu hầu hết các ý chính và thông tin quan trọng. Luyện tập thêm kỹ năng bắt thông tin nhiễu ở Part 4 để nâng cao lên mức C."
+                        : totalScore >= 9
+                          ? "Kỹ năng nghe của bạn ở mức B1. Bạn có thể nghe hiểu các hội thoại ngắn hàng ngày, tuy nhiên còn gặp khó khăn với cấu trúc câu phức tạp và tốc độ nói nhanh ở các đoạn hội thoại dài. Hãy luyện tập thêm."
+                          : "Kỹ năng nghe của bạn đang ở mức A1/A2. Bạn cần nghe nhiều hơn, làm quen với nối âm và ngữ điệu nói của người bản xứ để nâng cao khả năng nắm bắt thông tin cơ bản."}
                   </p>
                 </div>
 
-                <Button 
-                  type="primary" 
+                <Button
+                  type="primary"
                   size="large"
                   style={{ borderRadius: '2rem', height: '48px', padding: '0 2.5rem', fontWeight: 700, background: '#1a365d', borderColor: '#1a365d' }}
                   onClick={() => setShowReport(false)} // Switch to Review Mode

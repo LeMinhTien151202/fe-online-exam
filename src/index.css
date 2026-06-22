@@ -2,7 +2,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
 
 :root {
-  font-family: "Outfit", Inter, system-ui, sans-serif;
+  font-family: "Outfit", "Inter", system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 }

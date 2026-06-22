@@ -1,74 +1,80 @@
 import styled from "styled-components";
 
 export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
-  width: ${(props) => (props.$collapsed ? "5.5rem" : "17.5rem")};
-  background: #0f1d36;
+  width: ${(props) => (props.$collapsed ? "5.5rem" : "18rem")};
+  background: linear-gradient(180deg, #0f1d36 0%, #0a1426 100%);
+  backdrop-filter: blur(20px);
   color: white;
   display: flex;
   flex-direction: column;
   height: 100vh;
   position: sticky;
   top: 0;
-  border-right: 0.0625rem solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   z-index: 100;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: visible; /* Ensure absolute child toggle button is not clipped */
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible;
+  font-family: "Outfit", "Inter", system-ui, sans-serif;
 
-  @media (max-width: 64rem) {
+  @media (max-width: 1024px) {
     display: none;
   }
 
   .collapse-btn {
     position: absolute;
-    right: -0.875rem;
-    top: 2rem; /* Move it slightly down from the top edge */
-    width: 1.75rem;
-    height: 1.75rem;
+    right: -14px;
+    top: 2rem;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background: #0f1d36;
-    border: 0.0625rem solid rgba(255, 255, 255, 0.2);
+    background: #1a2b4b;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     z-index: 110;
-    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover {
-      background: #244b80; /* Nice primary brand hover color */
-      border-color: #244b80;
+      background: #3b82f6;
+      transform: scale(1.1);
+      border-color: #60a5fa;
     }
   }
 `;
 
 export const LogoWrapper = styled.div<{ $collapsed?: boolean }>`
-  padding: 1.5rem ${(props) => (props.$collapsed ? "1rem" : "1.5rem")};
+  padding: 2.25rem ${(props) => (props.$collapsed ? "1rem" : "1.75rem")};
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  background: #0f1d36;
+  gap: 1rem;
   transition: all 0.3s;
   justify-content: ${(props) => (props.$collapsed ? "center" : "flex-start")};
   position: relative;
   flex-shrink: 0;
 
   img {
-    height: 2rem;
-    width: 2rem;
+    height: 2.25rem;
+    width: 2.25rem;
     object-fit: contain;
-    background: white;
-    padding: 0.25rem;
-    border-radius: 0.25rem;
+    background: #ffffff;
+    padding: 2px;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
     flex-shrink: 0;
   }
 
   span {
-    font-size: 1.25rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
     color: white;
+    background: linear-gradient(to bottom, #ffffff, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     opacity: ${(props) => (props.$collapsed ? "0" : "1")};
     display: ${(props) => (props.$collapsed ? "none" : "block")};
     white-space: nowrap;
@@ -259,7 +265,12 @@ export const UserProfileCard = styled.div<{
   justify-content: ${(props) => (props.$collapsed ? "center" : "flex-start")};
 
   &:hover {
-    background: #1a2b4b; /* 5-8% lighter than #0f1d36 */
+    background: rgba(255, 255, 255, 0.05);
+    .avatar {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+      transform: scale(1.05);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
   }
 
   .avatar-container {
@@ -268,17 +279,19 @@ export const UserProfileCard = styled.div<{
   }
 
   .avatar {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
     border-radius: 50%;
-    background: #3b82f6;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-weight: 800;
     color: white;
-    font-size: 0.9375rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+    font-size: 1rem;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.1);
   }
 
   .user-info {
