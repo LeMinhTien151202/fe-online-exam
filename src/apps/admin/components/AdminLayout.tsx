@@ -13,12 +13,13 @@ import {
   BarChartOutlined,
   CheckSquareOutlined,
   SettingOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons';
 import { useRouterState, useNavigate, Outlet, Link } from '@tanstack/react-router';
 import * as S from '../styles/layout.styled';
 import { ADMIN_THEME, ADMIN_COLORS } from '../constants';
 
-interface AdminLayoutProps {}
+interface AdminLayoutProps { }
 
 const AdminLayout: React.FC<AdminLayoutProps> = () => {
   const routerState = useRouterState();
@@ -63,7 +64,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = () => {
     paths.forEach((path, index) => {
       if (path === 'admin') return;
       currentAcc += `/${path}`;
-      
+
       let label = path.charAt(0).toUpperCase() + path.slice(1);
       if (path === 'users') label = 'Người dùng';
       else if (path === 'questions') label = 'Ngân hàng câu hỏi';
@@ -72,8 +73,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = () => {
       else if (path === 'progress') label = 'Tiến độ học viên';
       else if (path === 'grading') label = 'Chấm điểm';
       else if (path === 'settings') label = 'Cài đặt';
+      else if (path === 'faq') label = 'Quản lý Q&A';
       else if (path === 'create') label = 'Tạo bộ đề';
-      
+
       breadcrumbItems.push({
         title: index === paths.length - 1 ? <span>{label}</span> : <Link to={currentAcc as any}>{label}</Link>,
       });
@@ -133,6 +135,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = () => {
       label: 'Kết quả & Lịch sử thi',
     },
     {
+      key: '/admin/faq',
+      icon: <QuestionCircleOutlined />,
+      label: 'Quản lý Q&A',
+    },
+    {
       key: '/admin/settings',
       icon: <SettingOutlined />,
       label: 'Cài đặt hệ thống',
@@ -153,6 +160,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = () => {
     if (currentPath.startsWith('/admin/progress')) return ['/admin/progress'];
     if (currentPath.startsWith('/admin/grading')) return ['/admin/grading'];
     if (currentPath.startsWith('/admin/settings')) return ['/admin/settings'];
+    if (currentPath.startsWith('/admin/faq')) return ['/admin/faq'];
     return [];
   };
 

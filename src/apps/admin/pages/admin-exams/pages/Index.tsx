@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useExams } from '../hook/useExams';
 import { ExamsHeader } from '../components/ExamsHeader';
 import * as S from '../styles/styled';
+import { AppPagination } from '@shared/components/Pagination/Index';
 
 const { Text } = Typography;
 
@@ -231,36 +232,60 @@ const ExamsIndex: React.FC = () => {
               key: 'partial',
               label: 'Đề thi theo phần',
               children: (
-                <Table
-                  columns={columnsPart}
-                  dataSource={partExams}
-                  size="middle"
-                  pagination={{ pageSize: 10 }}
-                />
+                <>
+                  <Table
+                    columns={columnsPart}
+                    dataSource={partExams}
+                    size="middle"
+                    pagination={false}
+                  />
+                  <AppPagination
+                    current={1}
+                    total={partExams.length}
+                    pageSize={10}
+                    onChange={() => { }}
+                  />
+                </>
               ),
             },
             {
               key: 'set',
               label: 'Đề thi theo bộ đề',
               children: (
-                <Table
-                  columns={columnsSet}
-                  dataSource={setExams}
-                  size="middle"
-                  pagination={{ pageSize: 10 }}
-                />
+                <>
+                  <Table
+                    columns={columnsSet}
+                    dataSource={setExams}
+                    size="middle"
+                    pagination={false}
+                  />
+                  <AppPagination
+                    current={1}
+                    total={setExams.length}
+                    pageSize={10}
+                    onChange={() => { }}
+                  />
+                </>
               ),
             },
             {
               key: 'full',
               label: 'Đề thi thử liên tục (Full Test)',
               children: (
-                <Table
-                  columns={columnsFull}
-                  dataSource={fullExams}
-                  size="middle"
-                  pagination={{ pageSize: 10 }}
-                />
+                <>
+                  <Table
+                    columns={columnsFull}
+                    dataSource={fullExams}
+                    size="middle"
+                    pagination={false}
+                  />
+                  <AppPagination
+                    current={1}
+                    total={fullExams.length}
+                    pageSize={10}
+                    onChange={() => { }}
+                  />
+                </>
               ),
             },
           ]}

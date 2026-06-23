@@ -30,6 +30,7 @@ import {
 import { ADMIN_COLORS } from '../../../constants';
 import { useQuestions } from '../hook/useQuestions';
 import * as S from '../styles/styled';
+import { AppPagination } from '@shared/components/Pagination/Index';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -268,8 +269,14 @@ const QuestionsIndex: React.FC = () => {
         <Table
           columns={columns}
           dataSource={questions.filter(q => q.type.toLowerCase().includes(skillTab.substring(0, 4)))}
-          pagination={{ pageSize: 8 }}
+          pagination={false}
           size="middle"
+        />
+        <AppPagination
+          current={1}
+          total={questions.length}
+          pageSize={8}
+          onChange={() => { }}
         />
       </Card>
 

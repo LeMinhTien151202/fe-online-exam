@@ -15,6 +15,7 @@ import { grammarRoute, grammarTestRoute, grammarPart1Route, grammarPart2Route, g
 import { writingRoute, writingPart1Route, writingPart2Route, writingPart3Route, writingPart4Route, writingMockTestRoute } from './apps/writing-practice/routes';
 import { authRoutes } from './apps/auth/routes';
 import { mockExamRoute, mainMockExamRoute } from './apps/full-mock-exam/routes';
+import { faqRoutes } from './apps/faq/routes';
 import {
   adminRoute,
   adminDashboardRoute,
@@ -28,6 +29,7 @@ import {
   adminGradingRoute,
   adminGradingDetailRoute,
   adminSettingsRoute,
+  adminFaqRoute,
 } from './apps/admin/routes';
 
 // 1. Xây dựng Route Tree và khởi tạo Router
@@ -66,6 +68,7 @@ const routeTree = rootRoute.addChildren([
   ...authRoutes,
   mockExamRoute,
   mainMockExamRoute,
+  ...faqRoutes,
   adminRoute.addChildren([
     adminDashboardRoute,
     adminUsersRoute,
@@ -78,6 +81,7 @@ const routeTree = rootRoute.addChildren([
     adminGradingRoute,
     adminGradingDetailRoute,
     adminSettingsRoute,
+    adminFaqRoute,
   ]),
 ]);
 const router = createRouter({ routeTree });

@@ -275,7 +275,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isLoggedIn = true }) 
               <span className="material-symbols-outlined">library_books</span>
               <span className="nav-text">Tài liệu học tập</span>
             </S.NavLink>
-            <S.NavLink as="div" onClick={onClose} $collapsed={collapsed}>
+            <S.NavLink as="div" $active={currentPath === '/faq'} onClick={() => {
+              navigate({ to: '/faq' });
+              if (onClose) onClose();
+            }} $collapsed={collapsed}>
               <span className="material-symbols-outlined">forum</span>
               <span className="nav-text">Góc giải đáp (Q&A)</span>
             </S.NavLink>

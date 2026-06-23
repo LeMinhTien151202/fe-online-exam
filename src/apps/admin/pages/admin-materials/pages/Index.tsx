@@ -30,6 +30,7 @@ import {
 import { ADMIN_COLORS } from '../../../constants';
 import { useMaterials } from '../hook/useMaterials';
 import * as S from '../styles/styled';
+import { AppPagination } from '@shared/components/Pagination/Index';
 
 const { Title, Text } = Typography;
 const { Dragger } = Upload;
@@ -130,6 +131,15 @@ const MaterialsIndex: React.FC = () => {
           </Col>
         ))}
       </Row>
+
+      <div style={{ marginTop: '2rem' }}>
+        <AppPagination
+          current={1}
+          total={materials.length}
+          pageSize={12}
+          onChange={() => { }}
+        />
+      </div>
 
       {/* Upload Drawer */}
       <Drawer

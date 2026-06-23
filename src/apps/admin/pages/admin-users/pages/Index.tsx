@@ -31,6 +31,7 @@ import {
 import { ADMIN_COLORS } from '../../../constants';
 import { useUsers } from '../hook/useUsers';
 import * as S from '../styles/styled';
+import { AppPagination } from '@shared/components/Pagination/Index';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -219,8 +220,16 @@ const UsersIndex: React.FC = () => {
             }}
             columns={columns}
             dataSource={students}
-            pagination={{ pageSize: 10 }}
+            pagination={false}
             size="middle"
+          />
+          <AppPagination
+            current={1} // In a real app, this would be from state
+            total={students.length}
+            pageSize={10}
+            onChange={(page: number, size: number) => {
+              // Handle page change
+            }}
           />
         </Card>
       ) : (
@@ -350,7 +359,7 @@ const UsersIndex: React.FC = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0.5rem 0' }}>
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                           <Text>Ngữ pháp & Từ vựng</Text>
+                          <Text>Ngữ pháp & Từ vựng</Text>
                           <Text strong>85%</Text>
                         </div>
                         <Progress percent={85} strokeColor="#f97316" />

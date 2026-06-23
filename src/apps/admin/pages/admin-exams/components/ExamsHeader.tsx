@@ -1,31 +1,26 @@
 import React from 'react';
-import { Button, Typography } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { ADMIN_COLORS } from '../../../constants';
-import * as S from '../styles/styled';
-
-const { Title } = Typography;
+import * as S from '../../../styles/shared.styled';
 
 interface ExamsHeaderProps {
-  title: string;
-  onCreateNew: () => void;
-  buttonText: string;
+    title: string;
+    onCreateNew: () => void;
+    buttonText: string;
 }
 
 export const ExamsHeader: React.FC<ExamsHeaderProps> = ({ title, onCreateNew, buttonText }) => {
-  return (
-    <S.Header>
-      <Title level={3} style={{ margin: 0, color: ADMIN_COLORS.textPrimary }}>
-        {title}
-      </Title>
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={onCreateNew}
-        style={{ background: ADMIN_COLORS.primary }}
-      >
-        {buttonText}
-      </Button>
-    </S.Header>
-  );
+    return (
+        <S.PageHeader>
+            <div>
+                <h1>{title}</h1>
+                <p>Thống kê và quản lý các bộ đề thi Aptis hiện có</p>
+            </div>
+            <S.PrimaryButton
+                type="primary"
+                onClick={onCreateNew}
+            >
+                <PlusOutlined /> {buttonText}
+            </S.PrimaryButton>
+        </S.PageHeader>
+    );
 };
