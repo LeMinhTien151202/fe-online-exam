@@ -21,6 +21,7 @@ import AdminGradingPage from './pages/admin-grading/pages/Index';
 import AdminGradingDetailPage from './pages/admin-grading/pages/Detail';
 import AdminSettingsPage from './pages/admin-settings/pages/Index';
 import AdminFaqPage from './pages/admin-faq/pages/Index';
+import AdminNotificationsPage from './pages/admin-notifications/pages/Index';
 
 export const adminDashboardRoute = createRoute({
   getParentRoute: () => adminRoute,
@@ -98,6 +99,12 @@ export const adminFaqRoute = createRoute({
   component: AdminFaqPage,
 });
 
+export const adminNotificationsRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: '/notifications',
+  component: AdminNotificationsPage,
+});
+
 // Helper collection of all child routes to add to routeTree in App.tsx
 export const adminRoutes = [
   adminRoute,
@@ -113,6 +120,7 @@ export const adminRoutes = [
   adminGradingDetailRoute,
   adminSettingsRoute,
   adminFaqRoute,
+  adminNotificationsRoute,
 ];
 export const adminRouteChildren = [
   adminDashboardRoute,
@@ -127,4 +135,5 @@ export const adminRouteChildren = [
   adminGradingDetailRoute,
   adminSettingsRoute,
   adminFaqRoute,
+  adminNotificationsRoute,
 ];

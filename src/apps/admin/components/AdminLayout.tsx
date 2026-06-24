@@ -74,6 +74,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = () => {
       else if (path === 'grading') label = 'Chấm điểm';
       else if (path === 'settings') label = 'Cài đặt';
       else if (path === 'faq') label = 'Quản lý Q&A';
+      else if (path === 'notifications') label = 'Quản lý thông báo';
       else if (path === 'create') label = 'Tạo bộ đề';
 
       breadcrumbItems.push({
@@ -140,6 +141,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = () => {
       label: 'Quản lý Q&A',
     },
     {
+      key: '/admin/notifications',
+      icon: <BellOutlined />,
+      label: 'Quản lý thông báo',
+    },
+    {
       key: '/admin/settings',
       icon: <SettingOutlined />,
       label: 'Cài đặt hệ thống',
@@ -161,6 +167,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = () => {
     if (currentPath.startsWith('/admin/grading')) return ['/admin/grading'];
     if (currentPath.startsWith('/admin/settings')) return ['/admin/settings'];
     if (currentPath.startsWith('/admin/faq')) return ['/admin/faq'];
+    if (currentPath.startsWith('/admin/notifications')) return ['/admin/notifications'];
     return [];
   };
 

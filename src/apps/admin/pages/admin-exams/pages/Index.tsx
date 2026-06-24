@@ -2,9 +2,11 @@ import React from 'react';
 import { Card, Table, Tag, Button, Space, Typography, Tabs } from 'antd';
 import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useExams } from '../hook/useExams';
+import { useExamColumns } from '../hook/useExamColumns';
 import { ExamsHeader } from '../components/ExamsHeader';
 import * as S from '../styles/styled';
 import { AppPagination } from '@shared/components/Pagination/Index';
+import { AdminTableWrapper, AdminPaginationWrapper } from '../../../styles/admin-shared.styles';
 
 const { Text } = Typography;
 
@@ -20,204 +22,7 @@ const ExamsIndex: React.FC = () => {
     handleDeleteSet,
   } = useExams();
 
-  const columnsPart = [
-    {
-      title: 'Tên bộ đề',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text: string) => <Text strong>{text}</Text>,
-    },
-    {
-      title: 'Kỹ năng',
-      dataIndex: 'skill',
-      key: 'skill',
-      render: (s: string) => {
-        const colors: Record<string, string> = { Reading: 'blue', Grammar: 'orange', Writing: 'green', Listening: 'purple', Speaking: 'red' };
-        return <Tag color={colors[s] || 'cyan'}>{s}</Tag>;
-      },
-    },
-    {
-      title: 'Số câu',
-      dataIndex: 'questionCount',
-      key: 'questionCount',
-    },
-    {
-      title: 'Thời gian',
-      dataIndex: 'duration',
-      key: 'duration',
-      render: (d: number) => <span>{d} phút</span>,
-    },
-    {
-      title: 'Độ khó',
-      dataIndex: 'difficulty',
-      key: 'difficulty',
-      render: (diff: string) => {
-        const colors: Record<string, string> = { easy: 'success', medium: 'warning', hard: 'error' };
-        const label: Record<string, string> = { easy: 'Dễ', medium: 'Trung bình', hard: 'Khó' };
-        return <Tag color={colors[diff]}>{label[diff]}</Tag>;
-      },
-    },
-    {
-      title: 'Lượt thi',
-      dataIndex: 'tryCount',
-      key: 'tryCount',
-    },
-    {
-      title: 'Điểm số TB',
-      dataIndex: 'avgScore',
-      key: 'avgScore',
-      render: (score: string) => <Text strong>{score}</Text>,
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => (
-        <Tag color={status === 'active' ? 'success' : 'default'}>
-          {status === 'active' ? 'Công khai' : 'Nháp'}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Hành động',
-      key: 'actions',
-      render: (record: any) => (
-        <Space>
-          <Button type="text" icon={<EyeOutlined />} />
-          <Button type="text" icon={<EditOutlined />} />
-          <Button type="text" danger icon={<DeleteOutlined />} onClick={() => handleDeletePart(record.key)} />
-        </Space>
-      ),
-    },
-  ];
-
-  const columnsSet = [
-    {
-      title: 'Tên bộ đề',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text: string) => <Text strong>{text}</Text>,
-    },
-    {
-      title: 'Kỹ năng',
-      dataIndex: 'skill',
-      key: 'skill',
-      render: (s: string) => {
-        const colors: Record<string, string> = { Reading: 'blue', Grammar: 'orange', Writing: 'green', Listening: 'purple', Speaking: 'red' };
-        return <Tag color={colors[s] || 'cyan'}>{s}</Tag>;
-      },
-    },
-    {
-      title: 'Số phần',
-      dataIndex: 'partCount',
-      key: 'partCount',
-      render: (count: number) => <span>{count} phần</span>,
-    },
-    {
-      title: 'Số câu',
-      dataIndex: 'questionCount',
-      key: 'questionCount',
-    },
-    {
-      title: 'Thời gian',
-      dataIndex: 'duration',
-      key: 'duration',
-      render: (d: number) => <span>{d} phút</span>,
-    },
-    {
-      title: 'Độ khó',
-      dataIndex: 'difficulty',
-      key: 'difficulty',
-      render: (diff: string) => {
-        const colors: Record<string, string> = { easy: 'success', medium: 'warning', hard: 'error' };
-        const label: Record<string, string> = { easy: 'Dễ', medium: 'Trung bình', hard: 'Khó' };
-        return <Tag color={colors[diff]}>{label[diff]}</Tag>;
-      },
-    },
-    {
-      title: 'Lượt thi',
-      dataIndex: 'tryCount',
-      key: 'tryCount',
-    },
-    {
-      title: 'Điểm số TB',
-      dataIndex: 'avgScore',
-      key: 'avgScore',
-      render: (score: string) => <Text strong>{score}</Text>,
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => (
-        <Tag color={status === 'active' ? 'success' : 'default'}>
-          {status === 'active' ? 'Công khai' : 'Nháp'}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Hành động',
-      key: 'actions',
-      render: (record: any) => (
-        <Space>
-          <Button type="text" icon={<EyeOutlined />} />
-          <Button type="text" icon={<EditOutlined />} />
-          <Button type="text" danger icon={<DeleteOutlined />} onClick={() => handleDeleteSet(record.key)} />
-        </Space>
-      ),
-    },
-  ];
-
-  const columnsFull = [
-    {
-      title: 'Tên đề thi thử',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text: string) => <Text strong>{text}</Text>,
-    },
-    {
-      title: 'Cấu trúc bài thi',
-      dataIndex: 'skills',
-      key: 'skills',
-      render: (skills: string[]) => (
-        <Space wrap>
-          {skills.map(s => <Tag key={s} color="blue" style={{ fontSize: '11px' }}>{s}</Tag>)}
-        </Space>
-      ),
-    },
-    {
-      title: 'Thời lượng',
-      dataIndex: 'duration',
-      key: 'duration',
-      render: (d: number) => <Text strong>{d} phút</Text>,
-    },
-    {
-      title: 'Lượt thi',
-      dataIndex: 'tryCount',
-      key: 'tryCount',
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => (
-        <Tag color={status === 'active' ? 'success' : 'default'}>
-          {status === 'active' ? 'Công khai' : 'Nháp'}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Hành động',
-      key: 'actions',
-      render: () => (
-        <Space>
-          <Button type="text" icon={<EyeOutlined />} />
-          <Button type="text" icon={<EditOutlined />} />
-          <Button type="text" danger icon={<DeleteOutlined />} />
-        </Space>
-      ),
-    },
-  ];
+  const { columnsPart, columnsSet, columnsFull } = useExamColumns(handleDeletePart, handleDeleteSet);
 
   return (
     <S.Container>
@@ -233,18 +38,22 @@ const ExamsIndex: React.FC = () => {
               label: 'Đề thi theo phần',
               children: (
                 <>
-                  <Table
-                    columns={columnsPart}
-                    dataSource={partExams}
-                    size="middle"
-                    pagination={false}
-                  />
-                  <AppPagination
-                    current={1}
-                    total={partExams.length}
-                    pageSize={10}
-                    onChange={() => { }}
-                  />
+                  <AdminTableWrapper>
+                    <Table
+                      columns={columnsPart}
+                      dataSource={partExams}
+                      size="middle"
+                      pagination={false}
+                    />
+                  </AdminTableWrapper>
+                  <AdminPaginationWrapper>
+                    <AppPagination
+                      current={1}
+                      total={partExams.length}
+                      pageSize={10}
+                      onChange={() => { }}
+                    />
+                  </AdminPaginationWrapper>
                 </>
               ),
             },
@@ -253,18 +62,22 @@ const ExamsIndex: React.FC = () => {
               label: 'Đề thi theo bộ đề',
               children: (
                 <>
-                  <Table
-                    columns={columnsSet}
-                    dataSource={setExams}
-                    size="middle"
-                    pagination={false}
-                  />
-                  <AppPagination
-                    current={1}
-                    total={setExams.length}
-                    pageSize={10}
-                    onChange={() => { }}
-                  />
+                  <AdminTableWrapper>
+                    <Table
+                      columns={columnsSet}
+                      dataSource={setExams}
+                      size="middle"
+                      pagination={false}
+                    />
+                  </AdminTableWrapper>
+                  <AdminPaginationWrapper>
+                    <AppPagination
+                      current={1}
+                      total={setExams.length}
+                      pageSize={10}
+                      onChange={() => { }}
+                    />
+                  </AdminPaginationWrapper>
                 </>
               ),
             },
@@ -273,18 +86,22 @@ const ExamsIndex: React.FC = () => {
               label: 'Đề thi thử liên tục (Full Test)',
               children: (
                 <>
-                  <Table
-                    columns={columnsFull}
-                    dataSource={fullExams}
-                    size="middle"
-                    pagination={false}
-                  />
-                  <AppPagination
-                    current={1}
-                    total={fullExams.length}
-                    pageSize={10}
-                    onChange={() => { }}
-                  />
+                  <AdminTableWrapper>
+                    <Table
+                      columns={columnsFull}
+                      dataSource={fullExams}
+                      size="middle"
+                      pagination={false}
+                    />
+                  </AdminTableWrapper>
+                  <AdminPaginationWrapper>
+                    <AppPagination
+                      current={1}
+                      total={fullExams.length}
+                      pageSize={10}
+                      onChange={() => { }}
+                    />
+                  </AdminPaginationWrapper>
                 </>
               ),
             },

@@ -30,6 +30,7 @@ import {
   adminGradingDetailRoute,
   adminSettingsRoute,
   adminFaqRoute,
+  adminNotificationsRoute,
 } from './apps/admin/routes';
 
 // 1. Xây dựng Route Tree và khởi tạo Router
@@ -82,6 +83,7 @@ const routeTree = rootRoute.addChildren([
     adminGradingDetailRoute,
     adminSettingsRoute,
     adminFaqRoute,
+    adminNotificationsRoute,
   ]),
 ]);
 const router = createRouter({ routeTree });

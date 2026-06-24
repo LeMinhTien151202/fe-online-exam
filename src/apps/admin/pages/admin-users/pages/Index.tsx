@@ -28,123 +28,36 @@ import {
   FileOutlined,
   SaveOutlined,
 } from '@ant-design/icons';
+import { Link } from '@tanstack/react-router';
 import { ADMIN_COLORS } from '../../../constants';
 import { useUsers } from '../hook/useUsers';
+import { useUserColumns } from '../hook/useUserColumns';
 import * as S from '../styles/styled';
 import { AppPagination } from '@shared/components/Pagination/Index';
+import { AdminTableWrapper, AdminPaginationWrapper } from '../../../styles/admin-shared.styles';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
+
+import UserModal from '../components/UserModal';
 
 const UsersIndex: React.FC = () => {
   const {
     activeTab,
     setActiveTab,
     students,
-    selectedRowKeys,
-    setSelectedRowKeys,
     selectedStudent,
     drawerOpen,
     setDrawerOpen,
     permissions,
     setPermissions,
     handleStatusChange,
-    handleBulkLock,
     handleOpenDrawer,
   } = useUsers();
 
-  const columns = [
-    {
-      title: 'Học viên',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text: string, record: any) => (
-        <Space>
-          <Avatar style={{ backgroundColor: ADMIN_COLORS.primary }}>{text.charAt(0)}</Avatar>
-          <div>
-            <Text strong style={{ fontSize: '13px' }}>{text}</Text>
-            <div style={{ fontSize: '11px', color: ADMIN_COLORS.textSecondary }}>{record.email}</div>
-          </div>
-        </Space>
-      ),
-    },
-    {
-      title: 'Gói thành viên',
-      dataIndex: 'package',
-      key: 'package',
-      render: (pkg: string) => (
-        <Tag color={pkg === 'Premium' ? 'gold' : pkg === 'Pro' ? 'blue' : 'default'}>
-          {pkg}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Tiến độ ôn tập',
-      dataIndex: 'progress',
-      key: 'progress',
-      render: (prog: number) => (
-        <div style={{ width: 140 }}>
-          <Progress percent={prog} size="small" strokeColor={ADMIN_COLORS.primary} />
-        </div>
-      ),
-    },
-    {
-      title: 'Chuỗi ngày',
-      dataIndex: 'streak',
-      key: 'streak',
-      render: (streak: number) => (
-        <Space>
-          <span>🔥</span>
-          <Text strong>{streak} ngày</Text>
-        </Space>
-      ),
-    },
-    {
-      title: 'Mục tiêu',
-      dataIndex: 'target',
-      key: 'target',
-      render: (target: string) => (
-        <Tag color="cyan" style={{ fontWeight: 600 }}>
-          {target}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Ngày tham gia',
-      dataIndex: 'registeredDate',
-      key: 'registeredDate',
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'active',
-      key: 'active',
-      render: (active: boolean, record: any) => (
-        <Switch
-          checked={active}
-          onChange={(checked) => handleStatusChange(checked, record.key)}
-          size="small"
-        />
-      ),
-    },
-    {
-      title: 'Hành động',
-      key: 'actions',
-      render: (record: any) => (
-        <Space>
-          <Button
-            type="text"
-            icon={<EyeOutlined style={{ color: ADMIN_COLORS.primary }} />}
-            onClick={() => handleOpenDrawer(record)}
-          />
-          <Button
-            type="text"
-            icon={record.active ? <LockOutlined style={{ color: ADMIN_COLORS.danger }} /> : <UnlockOutlined style={{ color: ADMIN_COLORS.success }} />}
-            onClick={() => handleStatusChange(!record.active, record.key)}
-          />
-        </Space>
-      ),
-    },
-  ];
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+  const columns = useUserColumns(handleOpenDrawer, handleStatusChange);
 
   return (
     <S.Container>
@@ -189,46 +102,43 @@ const UsersIndex: React.FC = () => {
               <RangePicker style={{ width: 260 }} />
             </S.FilterRow>
             <Space>
-              <Button type="primary" style={{ background: ADMIN_COLORS.primary }}>Thêm học viên</Button>
+              <Button
+                type="primary"
+                style={{ background: ADMIN_COLORS.primary }}
+                onClick={() => setIsModalOpen(true)}
+              >
+                Thêm học viên
+              </Button>
               <Button icon={<DownloadOutlined />}>Xuất Excel</Button>
             </Space>
           </S.FilterBar>
 
-          {/* Bulk actions */}
-          {selectedRowKeys.length > 0 && (
-            <S.BulkActionBar>
-              <Text strong style={{ color: '#244b80' }}>
-                Đã chọn {selectedRowKeys.length} học viên
-              </Text>
-              <Space>
-                <Button size="small" type="primary" danger onClick={handleBulkLock}>
-                  Khóa tài khoản
-                </Button>
-                <Button size="small">Thay đổi gói</Button>
-                <Button size="small" onClick={() => setSelectedRowKeys([])}>
-                  Huỷ chọn
-                </Button>
-              </Space>
-            </S.BulkActionBar>
-          )}
-
           {/* Student Table */}
-          <Table
-            rowSelection={{
-              selectedRowKeys,
-              onChange: setSelectedRowKeys,
-            }}
-            columns={columns}
-            dataSource={students}
-            pagination={false}
-            size="middle"
-          />
-          <AppPagination
-            current={1} // In a real app, this would be from state
-            total={students.length}
-            pageSize={10}
-            onChange={(page: number, size: number) => {
-              // Handle page change
+          <AdminTableWrapper>
+            <Table
+              columns={columns}
+              dataSource={students}
+              pagination={false}
+              size="middle"
+            />
+          </AdminTableWrapper>
+          <AdminPaginationWrapper>
+            <AppPagination
+              current={1} // In a real app, this would be from state
+              total={students.length}
+              pageSize={10}
+              onChange={(page: number, size: number) => {
+                // Handle page change
+              }}
+            />
+          </AdminPaginationWrapper>
+
+          <UserModal
+            open={isModalOpen}
+            onCancel={() => setIsModalOpen(false)}
+            onSuccess={(values) => {
+              console.log(values);
+              setIsModalOpen(false);
             }}
           />
         </Card>

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Table, Space, Button, Popconfirm, Tag, Tooltip } from 'antd';
+import { Table, Space, Button, Popconfirm, Tag, Tooltip, Modal, Descriptions } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
-import { Modal, Descriptions } from 'antd';
 import { ADMIN_COLORS } from '../../../constants';
 import * as S from '../styles/faqAdmin.styled';
 import FaqModal from '../components/FaqModal';
-import { AppPagination } from '@shared/components/Pagination/Index';
+import { AppPagination } from '@/shared/components/Pagination/Index';
+import { AdminTableWrapper, AdminPaginationWrapper } from '../../../styles/admin-shared.styles';
+import { useFAQColumns } from '../hook/useFAQColumns';
 
 const initialData = [
     {
@@ -37,16 +38,24 @@ const AdminFaqPage: React.FC = () => {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<any>(null);
     const [viewingItem, setViewingItem] = useState<any>(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
 
     const handleDelete = (id: number) => {
-        setData(data.filter(item => item.id !== id));
+        setData(data.filter((item: any) => item.id !== id));
+    };
+
+    const handleEdit = (record: any) => {
+        setEditingItem(record);
+        setIsModalOpen(true);
+    };
+
+    const handleView = (record: any) => {
+        setViewingItem(record);
+        setIsPreviewOpen(true);
     };
 
     const handleAddOrEdit = (values: any) => {
         if (editingItem) {
-            setData(data.map(item => item.id === editingItem.id ? { ...item, ...values } : item));
+            setData(data.map((item: any) => item.id === editingItem.id ? { ...item, ...values } : item));
         } else {
             setData([...data, { id: Date.now(), ...values }]);
         }
@@ -54,114 +63,45 @@ const AdminFaqPage: React.FC = () => {
         setEditingItem(null);
     };
 
-    const columns = [
-        {
-            title: 'Danh mục',
-            dataIndex: 'category',
-            key: 'category',
-            width: 150,
-            render: (cat: string) => <Tag color="blue">{cat}</Tag>
-        },
-        {
-            title: 'Câu hỏi',
-            dataIndex: 'question',
-            key: 'question',
-            ellipsis: true,
-            render: (text: string) => <strong>{text}</strong>
-        },
-        {
-            title: 'Nội dung trả lời',
-            dataIndex: 'answer',
-            key: 'answer',
-            ellipsis: true,
-            width: 300,
-        },
-        {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
-            width: 140,
-            render: (status: string) => (
-                <S.StatusBadge $status={status}>
-                    {status === 'active' ? 'Đang hiển thị' : 'Đã ẩn'}
-                </S.StatusBadge>
-            )
-        },
-        {
-            title: 'Thao tác',
-            key: 'action',
-            width: 140,
-            align: 'center' as const,
-            render: (_: any, record: any) => (
-                <Space size={4}>
-                    <Tooltip title="Xem chi tiết">
-                        <Button
-                            type="text"
-                            icon={<EyeOutlined style={{ color: '#64748b' }} />}
-                            onClick={() => {
-                                setViewingItem(record);
-                                setIsPreviewOpen(true);
-                            }}
-                        />
-                    </Tooltip>
-                    <Tooltip title="Chỉnh sửa">
-                        <Button
-                            type="text"
-                            icon={<EditOutlined style={{ color: ADMIN_COLORS.primary }} />}
-                            onClick={() => {
-                                setEditingItem(record);
-                                setIsModalOpen(true);
-                            }}
-                        />
-                    </Tooltip>
-                    <Popconfirm
-                        title="Xóa câu hỏi này?"
-                        onConfirm={() => handleDelete(record.id)}
-                        okText="Xóa"
-                        cancelText="Hủy"
-                        okButtonProps={{ danger: true }}
-                    >
-                        <Tooltip title="Xóa">
-                            <Button type="text" icon={<DeleteOutlined style={{ color: '#ef4444' }} />} />
-                        </Tooltip>
-                    </Popconfirm>
-                </Space>
-            ),
-        },
-    ];
+    const columns = useFAQColumns(handleEdit, handleDelete, handleView);
 
     return (
-        <div style={{ padding: '2rem' }}>
-            <S.PageHeader>
+        <div style={{ padding: '1.5rem' }}>
+            <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1>Quản lý Q&A</h1>
-                    <p>Đăng tải và chỉnh sửa các câu hỏi giải đáp cho học viên</p>
+                    <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#1e293b', margin: 0 }}>Quản lý Q&A</h1>
+                    <p style={{ color: '#64748b', margin: '4px 0 0 0' }}>Đăng tải và chỉnh sửa các câu hỏi giải đáp cho học viên</p>
                 </div>
-                <S.ActionButton onClick={() => {
-                    setEditingItem(null);
-                    setIsModalOpen(true);
-                }}>
-                    <PlusOutlined /> Thêm câu hỏi
-                </S.ActionButton>
-            </S.PageHeader>
+                <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    style={{ height: '40px', borderRadius: '8px', background: '#1a365d' }}
+                    onClick={() => {
+                        setEditingItem(null);
+                        setIsModalOpen(true);
+                    }}
+                >
+                    Thêm câu hỏi
+                </Button>
+            </div>
 
-            <S.TableContainer>
+            <AdminTableWrapper>
                 <Table
                     columns={columns}
                     dataSource={data}
                     rowKey="id"
                     pagination={false}
                 />
+            </AdminTableWrapper>
+
+            <AdminPaginationWrapper>
                 <AppPagination
-                    current={currentPage}
+                    current={1}
                     total={data.length}
-                    pageSize={pageSize}
-                    onChange={(page: number, size: number) => {
-                        setCurrentPage(page);
-                        setPageSize(size);
-                    }}
+                    pageSize={10}
+                    onChange={() => { }}
                 />
-            </S.TableContainer>
+            </AdminPaginationWrapper>
 
             <FaqModal
                 visible={isModalOpen}
