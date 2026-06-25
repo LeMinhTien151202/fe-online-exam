@@ -2,7 +2,6 @@ import React from 'react';
 import {
   RiseOutlined,
   FireOutlined,
-  CheckCircleOutlined,
   TrophyOutlined,
   LineChartOutlined
 } from '@ant-design/icons';
@@ -36,15 +35,7 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ stats }) => {
         </div>
       </S.StatCard>
 
-      <S.StatCard>
-        <S.IconWrapper $bgColor="#dcfce7" $color="#16a34a">
-          <CheckCircleOutlined />
-        </S.IconWrapper>
-        <div>
-          <S.Label>Số học phần</S.Label>
-          <S.Value>{stats.completedModules} / {stats.totalModules}</S.Value>
-        </div>
-      </S.StatCard>
+
 
       <S.StatCard>
         <S.IconWrapper $bgColor="#fef3c7" $color="#d97706">

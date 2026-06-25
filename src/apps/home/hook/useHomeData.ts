@@ -8,7 +8,7 @@ export const useHomeData = () => {
     totalModules: 15,
     targetLevel: "B2",
     learningStreak: 12,
-    predictedScore: "74/100",
+    predictedScore: "139/200",
   });
 
   const [modules, setModules] = useState<ILearningModule[]>([

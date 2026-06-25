@@ -22,7 +22,7 @@ export const Badge = styled.div`
   align-items: center;
   gap: 0.5rem;
   background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
+  // backdrop-filter: blur(8px);
   padding: 0.375rem 1rem;
   border-radius: 6.25rem;
   font-size: 0.8125rem;
