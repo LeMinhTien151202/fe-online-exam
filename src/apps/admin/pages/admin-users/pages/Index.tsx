@@ -1,45 +1,29 @@
 import React from 'react';
 import {
-  Table,
-  Button,
-  Input,
-  Select,
-  DatePicker,
-  Switch,
-  Tag,
-  Avatar,
-  Space,
   Typography,
   Drawer,
   Tabs,
   Progress,
-  Checkbox,
+  Tag,
+  Avatar,
+  Space,
+  Table,
   Card,
-  message,
 } from 'antd';
 import {
-  SearchOutlined,
-  DownloadOutlined,
-  EyeOutlined,
-  LockOutlined,
-  UnlockOutlined,
   TrophyOutlined,
   HistoryOutlined,
   FileOutlined,
-  SaveOutlined,
 } from '@ant-design/icons';
-import { Link } from '@tanstack/react-router';
 import { ADMIN_COLORS } from '../../../constants';
 import { useUsers } from '../hook/useUsers';
 import { useUserColumns } from '../hook/useUserColumns';
 import * as S from '../styles/styled';
-import { AppPagination } from '@shared/components/Pagination/Index';
-import { AdminTableWrapper, AdminPaginationWrapper } from '../../../styles/admin-shared.styles';
+
+import UserList from '../components/UserList';
+import PermissionMatrix from '../components/PermissionMatrix';
 
 const { Title, Text } = Typography;
-const { RangePicker } = DatePicker;
-
-import UserModal from '../components/UserModal';
 
 const UsersIndex: React.FC = () => {
   const {
@@ -54,8 +38,6 @@ const UsersIndex: React.FC = () => {
     handleStatusChange,
     handleOpenDrawer,
   } = useUsers();
-
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const columns = useUserColumns(handleOpenDrawer, handleStatusChange);
 
@@ -76,162 +58,9 @@ const UsersIndex: React.FC = () => {
       </S.Header>
 
       {activeTab === 'list' ? (
-        <Card bordered={false}>
-          {/* Tool bar filter */}
-          <S.FilterBar>
-            <S.FilterRow>
-              <Input
-                placeholder="Tìm tên hoặc email..."
-                prefix={<SearchOutlined />}
-                style={{ width: 220 }}
-              />
-              <Select placeholder="Chọn gói" style={{ width: 120 }} allowClear>
-                <Select.Option value="free">Miễn phí</Select.Option>
-                <Select.Option value="pro">Pro</Select.Option>
-                <Select.Option value="premium">Premium</Select.Option>
-              </Select>
-              <Select placeholder="Trạng thái" style={{ width: 120 }} allowClear>
-                <Select.Option value="active">Hoạt động</Select.Option>
-                <Select.Option value="inactive">Bị khóa</Select.Option>
-              </Select>
-              <Select placeholder="Mục tiêu" style={{ width: 100 }} allowClear>
-                <Select.Option value="B1">B1</Select.Option>
-                <Select.Option value="B2">B2</Select.Option>
-                <Select.Option value="C">C</Select.Option>
-              </Select>
-              <RangePicker style={{ width: 260 }} />
-            </S.FilterRow>
-            <Space>
-              <Button
-                type="primary"
-                style={{ background: ADMIN_COLORS.primary }}
-                onClick={() => setIsModalOpen(true)}
-              >
-                Thêm học viên
-              </Button>
-              <Button icon={<DownloadOutlined />}>Xuất Excel</Button>
-            </Space>
-          </S.FilterBar>
-
-          {/* Student Table */}
-          <AdminTableWrapper>
-            <Table
-              columns={columns}
-              dataSource={students}
-              pagination={false}
-              size="middle"
-            />
-          </AdminTableWrapper>
-          <AdminPaginationWrapper>
-            <AppPagination
-              current={1} // In a real app, this would be from state
-              total={students.length}
-              pageSize={10}
-              onChange={(page: number, size: number) => {
-                // Handle page change
-              }}
-            />
-          </AdminPaginationWrapper>
-
-          <UserModal
-            open={isModalOpen}
-            onCancel={() => setIsModalOpen(false)}
-            onSuccess={(values) => {
-              console.log(values);
-              setIsModalOpen(false);
-            }}
-          />
-        </Card>
+        <UserList students={students} columns={columns} />
       ) : (
-        <Card bordered={false}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <div>
-              <Title level={4} style={{ margin: 0 }}>Ma trận Phân quyền Vai trò</Title>
-              <Text type="secondary">Cấp quyền chi tiết cho các nhóm vai trò trong hệ thống.</Text>
-            </div>
-            <Button
-              type="primary"
-              icon={<SaveOutlined />}
-              onClick={() => message.success('Đã lưu cấu hình phân quyền!')}
-              style={{ background: ADMIN_COLORS.success, borderColor: ADMIN_COLORS.success }}
-            >
-              Lưu cấu hình
-            </Button>
-          </div>
-
-          <Table
-            dataSource={permissions}
-            pagination={false}
-            columns={[
-              {
-                title: 'Hành động / Quyền hạn',
-                dataIndex: 'action',
-                key: 'action',
-                render: (text: string) => <Text strong>{text}</Text>,
-              },
-              {
-                title: 'Super Admin',
-                dataIndex: 'superAdmin',
-                key: 'superAdmin',
-                render: (val: boolean, record: any) => (
-                  <Checkbox
-                    checked={val}
-                    onChange={(e) => {
-                      setPermissions(prev =>
-                        prev.map(p => (p.key === record.key ? { ...p, superAdmin: e.target.checked } : p))
-                      );
-                    }}
-                  />
-                ),
-              },
-              {
-                title: 'Admin',
-                dataIndex: 'admin',
-                key: 'admin',
-                render: (val: boolean, record: any) => (
-                  <Checkbox
-                    checked={val}
-                    onChange={(e) => {
-                      setPermissions(prev =>
-                        prev.map(p => (p.key === record.key ? { ...p, admin: e.target.checked } : p))
-                      );
-                    }}
-                  />
-                ),
-              },
-              {
-                title: 'Giáo viên',
-                dataIndex: 'teacher',
-                key: 'teacher',
-                render: (val: boolean, record: any) => (
-                  <Checkbox
-                    checked={val}
-                    onChange={(e) => {
-                      setPermissions(prev =>
-                        prev.map(p => (p.key === record.key ? { ...p, teacher: e.target.checked } : p))
-                      );
-                    }}
-                  />
-                ),
-              },
-              {
-                title: 'Học viên',
-                dataIndex: 'student',
-                key: 'student',
-                render: (val: boolean, record: any) => (
-                  <Checkbox
-                    checked={val}
-                    onChange={(e) => {
-                      setPermissions(prev =>
-                        prev.map(p => (p.key === record.key ? { ...p, student: e.target.checked } : p))
-                      );
-                    }}
-                  />
-                ),
-              },
-            ]}
-          />
-        </Card>
+        <PermissionMatrix permissions={permissions} setPermissions={setPermissions} />
       )}
 
       {/* Student Detail Drawer */}
@@ -244,7 +73,6 @@ const UsersIndex: React.FC = () => {
       >
         {selectedStudent && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* Header info */}
             <S.DrawerHeader>
               <Avatar size={64} style={{ backgroundColor: ADMIN_COLORS.primary, fontSize: '24px' }}>
                 {selectedStudent.name.charAt(0)}
@@ -259,7 +87,6 @@ const UsersIndex: React.FC = () => {
               </div>
             </S.DrawerHeader>
 
-            {/* Inner Tabs */}
             <Tabs
               items={[
                 {
@@ -267,41 +94,21 @@ const UsersIndex: React.FC = () => {
                   label: <Space><TrophyOutlined />Tiến độ học</Space>,
                   children: (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0.5rem 0' }}>
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                          <Text>Ngữ pháp & Từ vựng</Text>
-                          <Text strong>85%</Text>
+                      {[
+                        { label: 'Ngữ pháp & Từ vựng', percent: 85, color: '#f97316' },
+                        { label: 'Đọc hiểu', percent: 70, color: '#0ea5e9' },
+                        { label: 'Nghe', percent: 65, color: '#8b5cf6' },
+                        { label: 'Nói', percent: 40, color: '#f43f5e' },
+                        { label: 'Viết', percent: 55, color: '#10b981' },
+                      ].map(item => (
+                        <div key={item.label}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <Text>{item.label}</Text>
+                            <Text strong>{item.percent}%</Text>
+                          </div>
+                          <Progress percent={item.percent} strokeColor={item.color} />
                         </div>
-                        <Progress percent={85} strokeColor="#f97316" />
-                      </div>
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                          <Text>Đọc hiểu</Text>
-                          <Text strong>70%</Text>
-                        </div>
-                        <Progress percent={70} strokeColor="#0ea5e9" />
-                      </div>
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                          <Text>Nghe</Text>
-                          <Text strong>65%</Text>
-                        </div>
-                        <Progress percent={65} strokeColor="#8b5cf6" />
-                      </div>
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                          <Text>Nói</Text>
-                          <Text strong>40%</Text>
-                        </div>
-                        <Progress percent={40} strokeColor="#f43f5e" />
-                      </div>
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                          <Text>Viết</Text>
-                          <Text strong>55%</Text>
-                        </div>
-                        <Progress percent={55} strokeColor="#10b981" />
-                      </div>
+                      ))}
                     </div>
                   ),
                 },

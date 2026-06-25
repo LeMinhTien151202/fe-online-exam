@@ -13,7 +13,7 @@ interface QuestionTableProps {
 
 const QuestionTable: React.FC<QuestionTableProps> = ({ columns, dataSource, total }) => {
     return (
-        <Card bordered={false}>
+        <Card bordered={false} styles={{ body: { padding: 0 } }} style={{ background: 'transparent', boxShadow: 'none' }}>
             <S.FilterBar style={{ marginBottom: '1rem' }}>
                 <Input placeholder="Tìm nội dung câu hỏi..." prefix={<SearchOutlined />} style={{ width: 280 }} />
                 <Select placeholder="Độ khó" style={{ width: 120 }} allowClear>

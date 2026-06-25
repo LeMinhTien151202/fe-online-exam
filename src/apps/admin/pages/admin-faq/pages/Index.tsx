@@ -66,7 +66,7 @@ const AdminFaqPage: React.FC = () => {
     const columns = useFAQColumns(handleEdit, handleDelete, handleView);
 
     return (
-        <div style={{ padding: '1.5rem' }}>
+        <div>
             <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#1e293b', margin: 0 }}>Quản lý Q&A</h1>
@@ -75,7 +75,7 @@ const AdminFaqPage: React.FC = () => {
                 <Button
                     type="primary"
                     icon={<PlusOutlined />}
-                    style={{ height: '40px', borderRadius: '8px', background: '#1a365d' }}
+                    style={{ borderRadius: '8px', background: '#1a365d' }}
                     onClick={() => {
                         setEditingItem(null);
                         setIsModalOpen(true);

@@ -3,7 +3,7 @@ import { Card } from "antd";
 import { ADMIN_COLORS } from "../../../constants";
 
 export const Container = styled.div`
-  padding: 1.5rem;
+  // padding: 1.5rem;
   background-color: #ffffff;
   min-height: calc(100vh - 64px);
 `;

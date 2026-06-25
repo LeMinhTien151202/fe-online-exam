@@ -1,11 +1,12 @@
 import React from 'react';
-import { Col, Row, Card, Table, Timeline, Typography, Avatar, Tag, Space } from 'antd';
+import { Col, Row, Card, Table, Timeline, Typography, Avatar, Tag, Space, Progress } from 'antd';
 import {
   UserOutlined,
   FireOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   FileOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 import {
   AreaChart,
@@ -19,6 +20,8 @@ import {
   Pie,
   Cell,
   Legend,
+  BarChart,
+  Bar,
 } from 'recharts';
 import { ADMIN_COLORS } from '../../../constants';
 import { useDashboard } from '../hook/useDashboard';
@@ -35,17 +38,19 @@ const DashboardIndex: React.FC = () => {
     recentStudents,
     recentTests,
     timelineEvents,
+    questionStats,
+    examCounts,
   } = useDashboard();
 
   return (
     <S.Container>
-      <Title level={3} style={{ margin: 0, color: ADMIN_COLORS.textPrimary }}>
+      <Title level={3} style={{ margin: 0, color: ADMIN_COLORS.textPrimary, marginBottom: '1.5rem' }}>
         Tổng quan Hệ thống
       </Title>
 
       {/* KPI Section */}
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} xl={4.8} style={{ flex: '1 1 20%' }}>
+      <Row gutter={[16, 16]} justify="space-between">
+        <Col xs={24} sm={12} xl={4}>
           <KPICard
             title="Tổng học viên"
             value={stats.totalStudents}
@@ -56,7 +61,18 @@ const DashboardIndex: React.FC = () => {
           />
         </Col>
 
-        <Col xs={24} sm={12} xl={4.8} style={{ flex: '1 1 20%' }}>
+        <Col xs={24} sm={12} xl={4}>
+          <KPICard
+            title="Ngân hàng câu hỏi"
+            value={stats.totalQuestions}
+            icon={<FileOutlined style={{ color: ADMIN_COLORS.success, marginRight: '8px' }} />}
+            trend="New"
+            trendType="neutral"
+            trendLabel="Xem chi tiết bên dưới"
+          />
+        </Col>
+
+        <Col xs={24} sm={12} xl={4}>
           <KPICard
             title="Hoạt động hôm nay"
             value={stats.dailyActivity}
@@ -67,7 +83,18 @@ const DashboardIndex: React.FC = () => {
           />
         </Col>
 
-        <Col xs={24} sm={12} xl={4.8} style={{ flex: '1 1 20%' }}>
+        <Col xs={24} sm={12} xl={4}>
+          <KPICard
+            title="Bộ đề thi"
+            value={stats.totalExams}
+            icon={<FileTextOutlined style={{ color: ADMIN_COLORS.info, marginRight: '8px' }} />}
+            trend="Live"
+            trendType="neutral"
+            trendLabel="Xem chi tiết bên dưới"
+          />
+        </Col>
+
+        <Col xs={24} sm={12} xl={4}>
           <KPICard
             title="Bài thi hoàn thành"
             value={stats.completedTests}
@@ -77,31 +104,61 @@ const DashboardIndex: React.FC = () => {
             trendLabel="so với hôm qua"
           />
         </Col>
+      </Row>
 
-        <Col xs={24} sm={12} xl={4.8} style={{ flex: '1 1 20%' }}>
-          <KPICard
-            title="Đang chờ chấm"
-            value={stats.pendingGrading}
-            icon={<ClockCircleOutlined style={{ color: ADMIN_COLORS.danger, marginRight: '8px' }} />}
-            trend="3%"
-            trendType="down"
-            trendLabel="tồn đọng chưa chấm"
-          />
+
+
+
+
+      {/* Content Visualization Section */}
+      <Row gutter={[16, 16]} style={{ marginTop: '1rem' }}>
+        <Col xs={24} lg={14}>
+          <Card title="Phân bổ Ngân hàng câu hỏi" bordered={false}>
+            <div style={{ height: 250 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={questionStats.skills} layout="vertical" margin={{ left: 40, right: 30 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                  <XAxis type="number" hide />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#64748b', fontSize: 12 }}
+                  />
+                  <Tooltip cursor={{ fill: 'transparent' }} />
+                  <Bar dataKey="count" fill={ADMIN_COLORS.primary} radius={[0, 4, 4, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
         </Col>
+        <Col xs={24} lg={10}>
+          <Card title="Cấu trúc Bộ đề thi" bordered={false}>
+            <div style={{ height: 250, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              {examCounts.types.map((type, index) => (
+                <div key={index} style={{ marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <Text strong>{type.name}</Text>
+                    <Text type="secondary">{type.count} đề</Text>
+                  </div>
+                  <Progress
+                    percent={(type.count / examCounts.total) * 100}
+                    showInfo={false}
+                    strokeColor={ADMIN_COLORS.primary}
+                    strokeWidth={10}
+                  />
 
-        <Col xs={24} sm={12} xl={4.8} style={{ flex: '1 1 20%' }}>
-          <KPICard
-            title="Tài liệu chờ duyệt"
-            value={stats.pendingMaterials}
-            icon={<FileOutlined style={{ color: ADMIN_COLORS.info, marginRight: '8px' }} />}
-            trend="Pending"
-            trendType="neutral"
-            trendLabel="cần Admin kiểm duyệt"
-          />
+
+                </div>
+              ))}
+            </div>
+          </Card>
         </Col>
       </Row>
 
       {/* Charts Section */}
+
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={16}>
           <Card title="Học viên hoạt động 30 ngày qua" bordered={false}>
@@ -145,7 +202,7 @@ const DashboardIndex: React.FC = () => {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {skillDistribution.map((entry, index) => (
+                    {skillDistribution.map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -223,9 +280,9 @@ const DashboardIndex: React.FC = () => {
                   render: (skill: string) => (
                     <Tag color={
                       skill === 'Reading' ? 'blue' :
-                      skill === 'Listening' ? 'purple' :
-                      skill === 'Speaking' ? 'orange' :
-                      skill === 'Writing' ? 'green' : 'cyan'
+                        skill === 'Listening' ? 'purple' :
+                          skill === 'Speaking' ? 'orange' :
+                            skill === 'Writing' ? 'green' : 'cyan'
                     }>
                       {skill}
                     </Tag>

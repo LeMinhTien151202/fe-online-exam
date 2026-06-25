@@ -57,7 +57,6 @@ const QuestionsIndex: React.FC = () => {
 
   return (
     <S.Container>
-      <S.GlobalStyle />
       <S.Header>
         <Title level={3} style={{ margin: 0, color: ADMIN_COLORS.textPrimary }}>
           Ngân hàng câu hỏi: {skillLabels[skillTab] || 'Tổng hợp'}

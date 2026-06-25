@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Tabs, Form, Input, Button, Switch, Upload, Space, Table, InputNumber, Tag, Typography } from 'antd';
+import { Card, Tabs, Form, Input, Button, Switch, Upload, Space, Table, InputNumber, Tag, Typography, Row, Col } from 'antd';
 import { SaveOutlined, UploadOutlined, SafetyCertificateOutlined, SettingOutlined, HistoryOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useSettings } from '../hook/useSettings';
@@ -22,7 +22,7 @@ const SettingsIndex: React.FC = () => {
         Cài đặt hệ thống
       </Title>
 
-      <Card bordered={false}>
+      <Card bordered={false} styles={{ body: { padding: 0 } }} style={{ background: 'transparent', boxShadow: 'none', marginTop: '1rem' }}>
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
@@ -31,41 +31,56 @@ const SettingsIndex: React.FC = () => {
               key: 'general',
               label: <Space><SettingOutlined />Cài đặt chung</Space>,
               children: (
-                <Form layout="vertical" onFinish={handleSaveGeneral} style={{ maxWidth: 600, padding: '1rem 0' }}>
-                  <Form.Item label="Tên nền tảng" name="appName" initialValue="Aptis Prep Online">
-                    <Input />
-                  </Form.Item>
-                  <Form.Item label="Mô tả nền tảng" name="appDesc" initialValue="Nền tảng luyện thi thử Aptis tốt nhất Việt Nam">
-                    <Input.TextArea rows={3} />
-                  </Form.Item>
+                <Form layout="vertical" onFinish={handleSaveGeneral} style={{ padding: '1.5rem 0' }}>
+                  <Row gutter={48}>
+                    <Col xs={24} lg={12}>
+                      <Title level={5} style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: 4, height: 16, background: ADMIN_COLORS.primary, borderRadius: 2 }} />
+                        Thông tin cơ bản
+                      </Title>
+                      <Form.Item label="Tên nền tảng" name="appName" initialValue="Aptis Prep Online">
+                        <Input placeholder="Ví dụ: Aptis Prep Online" />
+                      </Form.Item>
+                      <Form.Item label="Mô tả nền tảng" name="appDesc" initialValue="Nền tảng luyện thi thử Aptis tốt nhất Việt Nam">
+                        <Input.TextArea rows={4} placeholder="Mô tả ngắn gọn về website..." />
+                      </Form.Item>
+                      <Form.Item label="Logo nền tảng">
+                        <Upload maxCount={1} beforeUpload={() => false}>
+                          <Button icon={<UploadOutlined />} style={{ borderRadius: '8px' }}>Tải Logo mới</Button>
+                        </Upload>
+                      </Form.Item>
+                    </Col>
 
-                  <Form.Item label="Logo nền tảng">
-                    <Upload maxCount={1} beforeUpload={() => false}>
-                      <Button icon={<UploadOutlined />}>Tải Logo mới</Button>
-                    </Upload>
-                  </Form.Item>
+                    <Col xs={24} lg={12}>
+                      <Title level={5} style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: 4, height: 16, background: ADMIN_COLORS.primary, borderRadius: 2 }} />
+                        Cấu hình kỹ thuật
+                      </Title>
+                      <Form.Item label="Màu chủ đạo Primary color (Hex)" name="primaryHex" initialValue="#1a365d">
+                        <Input prefix={<div style={{ width: 16, height: 16, background: '#1a365d', borderRadius: '50%' }} />} />
+                      </Form.Item>
 
-                  <Form.Item label="Màu chủ đạo Primary color (Hex)" name="primaryHex" initialValue="#1a365d">
-                    <Input prefix={<div style={{ width: 16, height: 16, background: '#1a365d', borderRadius: '50%' }} />} />
-                  </Form.Item>
+                      <Form.Item label="Giới hạn dung lượng tệp tin tải lên (MB)" name="maxUpload" initialValue={50}>
+                        <InputNumber style={{ width: '100%' }} />
+                      </Form.Item>
 
-                  <Form.Item label="Giới hạn dung lượng tệp tin tải lên (MB)" name="maxUpload" initialValue={50}>
-                    <InputNumber style={{ width: '100%' }} />
-                  </Form.Item>
+                      <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #eef2f6' }}>
+                        <Form.Item label="Tự động gửi email thông báo kết quả thi" name="sendMailNotify" valuePropName="checked" initialValue={true} style={{ marginBottom: '1rem' }}>
+                          <Switch />
+                        </Form.Item>
 
-                  <Form.Item label="Tự động gửi email thông báo kết quả thi" name="sendMailNotify" valuePropName="checked" initialValue={true}>
-                    <Switch />
-                  </Form.Item>
+                        <Form.Item label="Tự động gửi email nhắc nhở học viên hàng ngày" name="sendMailStreak" valuePropName="checked" initialValue={false} style={{ marginBottom: 0 }}>
+                          <Switch />
+                        </Form.Item>
+                      </div>
+                    </Col>
+                  </Row>
 
-                  <Form.Item label="Tự động gửi email nhắc nhở học viên hàng ngày" name="sendMailStreak" valuePropName="checked" initialValue={false}>
-                    <Switch />
-                  </Form.Item>
-
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit" icon={<SaveOutlined />} style={{ background: ADMIN_COLORS.primary }}>
-                      Lưu cài đặt
+                  <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button type="primary" htmlType="submit" icon={<SaveOutlined />} style={{ background: ADMIN_COLORS.primary, height: '40px', padding: '0 2rem', borderRadius: '8px' }}>
+                      Lưu cài đặt hệ thống
                     </Button>
-                  </Form.Item>
+                  </div>
                 </Form>
               ),
             },

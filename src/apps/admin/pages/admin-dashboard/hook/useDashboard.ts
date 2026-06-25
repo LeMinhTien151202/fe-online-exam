@@ -1,5 +1,13 @@
-import { useState } from 'react';
-import { activityData, skillDistribution, recentStudents, recentTests, timelineEvents } from '../services/mockData';
+import { useState } from "react";
+import {
+  activityData,
+  skillDistribution,
+  recentStudents,
+  recentTests,
+  timelineEvents,
+  questionStats,
+  examCounts,
+} from "../services/data";
 
 export const useDashboard = () => {
   const [stats] = useState({
@@ -8,6 +16,8 @@ export const useDashboard = () => {
     completedTests: 328,
     pendingGrading: 42,
     pendingMaterials: 8,
+    totalQuestions: questionStats.total,
+    totalExams: examCounts.total,
   });
 
   return {
@@ -17,5 +27,7 @@ export const useDashboard = () => {
     recentStudents,
     recentTests,
     timelineEvents,
+    questionStats,
+    examCounts,
   };
 };

@@ -28,7 +28,7 @@ const ExamsIndex: React.FC = () => {
     <S.Container>
       <ExamsHeader title="Danh sách bộ đề thi" buttonText="Tạo bộ đề mới" onCreateNew={handleCreateNew} />
 
-      <Card bordered={false}>
+      <Card bordered={false} styles={{ body: { padding: 0 } }} style={{ background: 'transparent', boxShadow: 'none' }}>
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}

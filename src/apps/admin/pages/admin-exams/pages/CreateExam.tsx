@@ -16,7 +16,10 @@ import {
   Row,
   Col,
   List,
+  Tabs,
+  Progress,
 } from 'antd';
+
 import {
   ArrowLeftOutlined,
   ThunderboltOutlined,
@@ -27,7 +30,21 @@ import {
 } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useCreateExam } from '../hook/useCreateExam';
+import { mockBankQuestions } from '../services/mockData';
 import * as S from '../styles/styled';
+
+// Selection Components
+import ReadingSelection from '../components/ReadingSelection';
+import GrammarSelection from '../components/GrammarSelection';
+import ListeningSelection from '../components/ListeningSelection';
+import SpeakingSelection from '../components/SpeakingSelection';
+import WritingSelection from '../components/WritingSelection';
+import GeneralSelection from '../components/GeneralSelection';
+
+
+
+
+
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -37,7 +54,8 @@ const CreateExam: React.FC = () => {
     form,
     currentStep,
     selectedQuestions,
-    mockBankQuestions,
+    filteredQuestions,
+    examConfig,
     handleNext,
     handleBack,
     handleAddQuestion,
@@ -47,6 +65,12 @@ const CreateExam: React.FC = () => {
     handleAddRandom,
     handlePublish,
   } = useCreateExam();
+
+  const skillValue = Form.useWatch('skill', form) || examConfig.skill;
+  const typeValue = Form.useWatch('type', form) || examConfig.type;
+  const partValue = Form.useWatch('part', form) || examConfig.part;
+
+
 
   return (
     <S.Container>
@@ -64,7 +88,6 @@ const CreateExam: React.FC = () => {
         items={[
           { title: 'Thông tin chung' },
           { title: 'Chọn câu hỏi' },
-          { title: 'Cài đặt nâng cao' },
           { title: 'Xem trước & Xuất bản' },
         ]}
         style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '8px', marginBottom: '1rem' }}
@@ -73,10 +96,12 @@ const CreateExam: React.FC = () => {
       <Form
         form={form}
         layout="vertical"
+        preserve={true}
         initialValues={{
           type: 'partial',
           skill: 'Grammar',
           part: 'Part 1',
+          vocabTask: 'Task 1',
           difficulty: 'medium',
           duration: 25,
           shuffle: false,
@@ -89,12 +114,7 @@ const CreateExam: React.FC = () => {
         {currentStep === 0 && (
           <Card bordered={false} title="Bước 1: Thông tin cơ bản bộ đề">
             <Row gutter={16}>
-              <Col span={14}>
-                <Form.Item label="Tên bộ đề" name="name" rules={[{ required: true, message: 'Nhập tên đề!' }]}>
-                  <Input placeholder="Ví dụ: Đề thi thử Aptis Grammar & Vocab #10" />
-                </Form.Item>
-              </Col>
-              <Col span={10}>
+              <Col span={24} style={{ marginBottom: 16 }}>
                 <Form.Item label="Loại đề thi" name="type" rules={[{ required: true }]}>
                   <Radio.Group>
                     <Radio value="partial">Luyện theo phần</Radio>
@@ -103,10 +123,21 @@ const CreateExam: React.FC = () => {
                   </Radio.Group>
                 </Form.Item>
               </Col>
-              <Col span={8}>
+
+              {typeValue !== 'partial' && (
+                <Col span={24}>
+                  <Form.Item label="Tên bộ đề" name="name" rules={[{ required: typeValue !== 'partial', message: 'Nhập tên đề!' }]}>
+                    <Input placeholder="Ví dụ: Đề thi thử Aptis Grammar & Vocab #10" />
+                  </Form.Item>
+                </Col>
+              )}
+
+              <Col span={typeValue === 'partial' ? 8 : 12}>
                 <Form.Item label="Kỹ năng chính" name="skill">
-                  <Select>
-                    <Select.Option value="Grammar">Ngữ pháp & Từ vựng</Select.Option>
+                  <Select onChange={() => {
+                    form.setFieldsValue({ part: 'Part 1' });
+                  }}>
+                    <Select.Option value="Grammar">Grammar & Vocabulary</Select.Option>
                     <Select.Option value="Reading">Đọc hiểu</Select.Option>
                     <Select.Option value="Listening">Nghe</Select.Option>
                     <Select.Option value="Speaking">Nói</Select.Option>
@@ -114,139 +145,195 @@ const CreateExam: React.FC = () => {
                   </Select>
                 </Form.Item>
               </Col>
-              <Col span={8}>
-                <Form.Item label="Phần câu hỏi" name="part">
-                  <Select>
-                    <Select.Option value="Part 1">Phần 1 / Part 1</Select.Option>
-                    <Select.Option value="Part 2">Phần 2 / Part 2</Select.Option>
-                    <Select.Option value="Part 3">Phần 3 / Part 3</Select.Option>
-                    <Select.Option value="Part 4">Phần 4 / Part 4</Select.Option>
-                  </Select>
+
+              {typeValue === 'partial' && (
+                <Col span={8}>
+                  <Form.Item label="Phần câu hỏi" name="part">
+                    <Select>
+
+                      {skillValue === 'Grammar' ? (
+                        <>
+                          <Select.Option value="Part 1">Phần 1: Grammar (25 câu)</Select.Option>
+                          <Select.Option value="Part 2">Phần 2: Vocabulary (5 Tasks)</Select.Option>
+                        </>
+                      ) : skillValue === 'Reading' ? (
+                        <>
+                          <Select.Option value="Part 1">Part 1: Sentence Comprehension</Select.Option>
+                          <Select.Option value="Part 2">Part 2: Text Cohesion (Task 1)</Select.Option>
+                          <Select.Option value="Part 3">Part 3: Text Cohesion (Task 2)</Select.Option>
+                          <Select.Option value="Part 4">Part 4: Short Text Comprehension</Select.Option>
+                          <Select.Option value="Part 5">Part 5: Long Text Comprehension</Select.Option>
+                        </>
+                      ) : skillValue === 'Listening' ? (
+                        <>
+                          <Select.Option value="Part 1">Part 1: Information Recognition</Select.Option>
+                          <Select.Option value="Part 2">Part 2: Information Matching</Select.Option>
+                          <Select.Option value="Part 3">Part 3: Opinion Matching</Select.Option>
+                          <Select.Option value="Part 4">Part 4: Monologue Comprehension</Select.Option>
+                        </>
+                      ) : skillValue === 'Speaking' ? (
+                        <>
+                          <Select.Option value="Part 1">Part 1: Personal Information</Select.Option>
+                          <Select.Option value="Part 2">Part 2: Photo Description</Select.Option>
+                          <Select.Option value="Part 3">Part 3: Compare Two Photos</Select.Option>
+                          <Select.Option value="Part 4">Part 4: Abstract Topic</Select.Option>
+                        </>
+                      ) : skillValue === 'Writing' ? (
+                        <>
+                          <Select.Option value="Part 1">Part 1: Word-level Writing</Select.Option>
+                          <Select.Option value="Part 2">Part 2: Short Text</Select.Option>
+                          <Select.Option value="Part 3">Part 3: Social Media Chat</Select.Option>
+                          <Select.Option value="Part 4">Part 4: Contextual Email</Select.Option>
+                        </>
+                      ) : (
+                        <>
+                          <Select.Option value="Part 1">Part 1</Select.Option>
+                          <Select.Option value="Part 2">Part 2</Select.Option>
+                          <Select.Option value="Part 3">Part 3</Select.Option>
+                          <Select.Option value="Part 4">Part 4</Select.Option>
+                        </>
+                      )}
+                    </Select>
+
+                  </Form.Item>
+                </Col>
+              )}
+
+              <Col span={typeValue === 'partial' ? 8 : 12}>
+                <Form.Item label="Thời gian (phút)" name="duration" rules={[{ required: true }]}>
+                  <InputNumber min={5} max={180} style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
-              <Col span={8}>
-                <Form.Item label="Độ khó gợi ý" name="difficulty">
-                  <Select>
-                    <Select.Option value="easy">Dễ</Select.Option>
-                    <Select.Option value="medium">Trung bình</Select.Option>
-                    <Select.Option value="hard">Khó</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="Thời gian làm bài (Phút)" name="duration" rules={[{ required: true }]}>
-                  <InputNumber min={1} style={{ width: '100%' }} />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="Xáo trộn câu hỏi" name="shuffle" valuePropName="checked">
-                  <Switch />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="Hiển thị đáp án sau làm bài" name="showExplanation" valuePropName="checked">
-                  <Switch />
-                </Form.Item>
-              </Col>
-              <Col span={24}>
-                <Form.Item label="Mô tả bộ đề" name="description">
-                  <Input.TextArea placeholder="Mô tả ngắn gọn nội dung đề thi..." rows={3} />
-                </Form.Item>
-              </Col>
+
+
+              {typeValue !== 'partial' && (
+                <Col span={24}>
+                  <Form.Item label="Mô tả bộ đề" name="description">
+                    <Input.TextArea placeholder="Mô tả mục tiêu, yêu cầu của bộ đề..." rows={3} />
+                  </Form.Item>
+                </Col>
+              )}
             </Row>
+
           </Card>
         )}
 
         {currentStep === 1 && (
           <Row gutter={16}>
-            {/* Left Bank */}
-            <Col xs={24} lg={12}>
-              <Card title="Ngân hàng câu hỏi" bordered={false} extra={<Button size="small" onClick={() => handleAddRandom(3)}>Chọn ngẫu nhiên 3 câu</Button>}>
-                <Table
-                  dataSource={mockBankQuestions}
-                  size="small"
-                  pagination={false}
-                  columns={[
-                    { title: 'Nội dung', dataIndex: 'content', key: 'content', ellipsis: true },
+            <Col span={24} style={{ marginBottom: '1.5rem' }}>
+              <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Space direction="vertical" size={0}>
+                  <Text strong style={{ fontSize: '18px', color: ADMIN_COLORS.primary }}>
+                    {typeValue === 'full' ? 'CHẾ ĐỘ: THI THỬ TOÀN BỘ (FULL 5 SKILLS)' : `Cấu hình Kỹ năng: ${skillValue}`}
+                  </Text>
+                  <Text type="secondary">
+                    {typeValue === 'full'
+                      ? 'Vui lòng hoàn thành đủ 5 Tab kỹ năng bên dưới'
+                      : (typeValue === 'set' ? 'Chế độ: Luyện theo bộ đề (Full Parts)' : `Chế độ: Luyện tập phần ${partValue}`)}
+                  </Text>
+                </Space>
+
+                <div style={{ textAlign: 'right' }}>
+                  <Text strong>{selectedQuestions.length} câu đã chọn</Text>
+                  <Progress
+                    percent={Math.min(100, Math.round((selectedQuestions.length / (typeValue === 'full' ? 80 : 5)) * 100))}
+                    style={{ width: 300, display: 'block' }}
+                    status="active"
+                  />
+                </div>
+              </div>
+            </Col>
+
+            <Col span={24}>
+              {typeValue === 'full' ? (
+                <Tabs
+                  defaultActiveKey="Grammar"
+                  type="card"
+                  items={[
                     {
-                      title: 'Độ khó',
-                      dataIndex: 'difficulty',
-                      key: 'difficulty',
-                      render: (d: string) => <Tag color={d === 'easy' ? 'success' : 'warning'}>{d}</Tag>,
+                      key: 'Grammar',
+                      label: '1. Grammar & Vocab',
+                      children: <GrammarSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} />
                     },
                     {
-                      title: 'Hành động',
-                      key: 'action',
-                      render: (record: any) => (
-                        <Button
-                          size="small"
-                          type="text"
-                          icon={<PlusOutlined style={{ color: ADMIN_COLORS.primary }} />}
-                          onClick={() => handleAddQuestion(record)}
-                        />
-                      ),
+                      key: 'Reading',
+                      label: '2. Reading',
+                      children: <ReadingSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} />
+                    },
+                    {
+                      key: 'Listening',
+                      label: '3. Listening',
+                      children: <ListeningSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} />
+                    },
+                    {
+                      key: 'Speaking',
+                      label: '4. Speaking',
+                      children: <SpeakingSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} />
+                    },
+                    {
+                      key: 'Writing',
+                      label: '5. Writing',
+                      children: <WritingSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} />
                     },
                   ]}
                 />
-              </Card>
-            </Col>
-
-            {/* Right selected */}
-            <Col xs={24} lg={12}>
-              <Card title={`Câu hỏi đã chọn (${selectedQuestions.length})`} bordered={false}>
-                <List
-                  dataSource={selectedQuestions}
-                  renderItem={(item, index) => (
-                    <List.Item
-                      actions={[
-                        <Button size="small" icon={<ArrowUpOutlined />} onClick={() => handleMoveUp(index)} disabled={index === 0} key="up" />,
-                        <Button size="small" icon={<ArrowDownOutlined />} onClick={() => handleMoveDown(index)} disabled={index === selectedQuestions.length - 1} key="down" />,
-                        <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleRemoveQuestion(item.key)} key="delete" />,
-                      ]}
-                    >
-                      <Space>
-                        <Tag color="blue">{index + 1}</Tag>
-                        <Text style={{ fontSize: '13px' }} ellipsis>{item.content}</Text>
-                      </Space>
-                    </List.Item>
+              ) : (
+                <>
+                  {skillValue === 'Reading' ? (
+                    <ReadingSelection
+                      selectedQuestions={selectedQuestions}
+                      handleAddQuestion={handleAddQuestion}
+                      handleRemoveQuestion={handleRemoveQuestion}
+                      mode={typeValue as any}
+                      targetPart={partValue}
+                    />
+                  ) : skillValue === 'Grammar' ? (
+                    <GrammarSelection
+                      selectedQuestions={selectedQuestions}
+                      handleAddQuestion={handleAddQuestion}
+                      handleRemoveQuestion={handleRemoveQuestion}
+                      mode={typeValue as any}
+                      targetPart={partValue}
+                    />
+                  ) : skillValue === 'Listening' ? (
+                    <ListeningSelection
+                      selectedQuestions={selectedQuestions}
+                      handleAddQuestion={handleAddQuestion}
+                      handleRemoveQuestion={handleRemoveQuestion}
+                      mode={typeValue as any}
+                      targetPart={partValue}
+                    />
+                  ) : skillValue === 'Speaking' ? (
+                    <SpeakingSelection
+                      selectedQuestions={selectedQuestions}
+                      handleAddQuestion={handleAddQuestion}
+                      handleRemoveQuestion={handleRemoveQuestion}
+                      mode={typeValue as any}
+                      targetPart={partValue}
+                    />
+                  ) : skillValue === 'Writing' ? (
+                    <WritingSelection
+                      selectedQuestions={selectedQuestions}
+                      handleAddQuestion={handleAddQuestion}
+                      handleRemoveQuestion={handleRemoveQuestion}
+                      mode={typeValue as any}
+                      targetPart={partValue}
+                    />
+                  ) : (
+                    <GeneralSelection
+                      filteredQuestions={filteredQuestions}
+                      selectedQuestions={selectedQuestions}
+                      handleAddQuestion={handleAddQuestion}
+                      handleRemoveQuestion={handleRemoveQuestion}
+                    />
                   )}
-                />
-              </Card>
+                </>
+              )}
             </Col>
           </Row>
         )}
 
         {currentStep === 2 && (
-          <Card bordered={false} title="Bước 3: Thiết lập hiển thị & Bảo mật">
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item label="Giao diện hiển thị" name="viewLayout">
-                  <Radio.Group>
-                    <Radio value="allInOne">Tất cả câu hỏi trong 1 trang</Radio>
-                    <Radio value="oneByOne">Từng câu hỏi một (Next/Prev)</Radio>
-                    <Radio value="byPart">Phân nhóm theo các phần thi</Radio>
-                  </Radio.Group>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item label="Quyền truy cập" name="accessLimit">
-                  <Radio.Group>
-                    <Radio value="public">Công khai cho tất cả</Radio>
-                    <Radio value="pro">Chỉ học viên gói Pro</Radio>
-                    <Radio value="premium">Chỉ học viên gói Premium</Radio>
-                  </Radio.Group>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item label="Số lần làm tối đa" name="limitAttempts">
-                  <InputNumber min={0} placeholder="0 = không giới hạn" style={{ width: '100%' }} />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Card>
-        )}
-
-        {currentStep === 3 && (
           <Row gutter={16}>
             <Col xs={24} lg={16}>
               <Card title="Giao diện xem trước bộ đề (Mockup)" bordered={false} style={{ background: '#f8fafc' }}>
@@ -261,15 +348,15 @@ const CreateExam: React.FC = () => {
                   <List
                     size="small"
                     dataSource={selectedQuestions}
-                    renderItem={(item, index) => (
+                    renderItem={(item: any, index: number) => (
                       <List.Item>
                         <Space direction="vertical" style={{ width: '100%' }}>
                           <Text strong>Câu {index + 1}: {item.content}</Text>
                           <Space style={{ paddingLeft: '1rem' }}>
-                            <Radio>Phương án A</Radio>
-                            <Radio>Phương án B</Radio>
-                            <Radio>Phương án C</Radio>
-                            <Radio>Phương án D</Radio>
+                            <Radio disabled>Phương án A</Radio>
+                            <Radio disabled>Phương án B</Radio>
+                            <Radio disabled>Phương án C</Radio>
+                            <Radio disabled>Phương án D</Radio>
                           </Space>
                         </Space>
                       </List.Item>
@@ -278,7 +365,6 @@ const CreateExam: React.FC = () => {
                 </div>
               </Card>
             </Col>
-
             <Col xs={24} lg={8}>
               <Card title="Thông tin cấu hình đề" bordered={false}>
                 <Space direction="vertical" style={{ width: '100%' }}>
@@ -292,43 +378,37 @@ const CreateExam: React.FC = () => {
                   </div>
                   <div>
                     <Text type="secondary">Phân loại: </Text>
-                    <Tag color="geekblue">{form.getFieldValue('skill')}</Tag>
+                    <Tag color="cyan">{typeValue === 'full' ? 'Full Mock Test' : (typeValue === 'set' ? 'Full Set' : 'Partial Practice')}</Tag>
                   </div>
                   <div>
-                    <Text type="secondary">Tổng số câu chọn: </Text>
+                    <Text type="secondary">Số lượng câu: </Text>
                     <Text strong>{selectedQuestions.length} câu</Text>
                   </div>
-                  <div>
-                    <Text type="secondary">Cấp độ gói: </Text>
-                    <Tag color="gold">{form.getFieldValue('accessLimit') === 'public' ? 'Mọi người' : form.getFieldValue('accessLimit')}</Tag>
-                  </div>
                 </Space>
+                <div style={{ marginTop: '20px' }}>
+                  <Button
+                    type="primary"
+                    icon={<ThunderboltOutlined />}
+                    block
+                    size="large"
+                    onClick={handlePublish}
+                    style={{ background: ADMIN_COLORS.success, borderColor: ADMIN_COLORS.success }}
+                  >
+                    XUẤT BẢN ĐỀ THI
+                  </Button>
+                </div>
               </Card>
             </Col>
           </Row>
         )}
-
-        {/* Wizard Footer controls */}
-        <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-          {currentStep > 0 && (
-            <Button onClick={handleBack}>Quay lại</Button>
-          )}
-          {currentStep < 3 ? (
-            <Button type="primary" onClick={handleNext} style={{ background: ADMIN_COLORS.primary }}>
-              Tiếp tục
-            </Button>
-          ) : (
-            <Button
-              type="primary"
-              icon={<ThunderboltOutlined />}
-              onClick={handlePublish}
-              style={{ background: ADMIN_COLORS.success, borderColor: ADMIN_COLORS.success }}
-            >
-              Xuất bản bộ đề thi
-            </Button>
-          )}
-        </div>
       </Form>
+
+      <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between', background: '#fff', padding: '1rem', borderRadius: '8px' }}>
+        <Button onClick={handleBack} disabled={currentStep === 0}>Quay lại</Button>
+        {currentStep < 2 && (
+          <Button type="primary" onClick={handleNext}>Tiếp theo</Button>
+        )}
+      </div>
     </S.Container>
   );
 };

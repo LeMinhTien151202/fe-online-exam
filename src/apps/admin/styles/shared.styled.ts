@@ -31,7 +31,7 @@ export const PageHeader = styled.div`
 `;
 
 export const PrimaryButton = styled(Button)`
-  height: 42px;
+  height: 36px;
   padding: 0 1.5rem;
   border-radius: 8px;
   background-color: ${ADMIN_COLORS.primary} !important;
@@ -40,13 +40,15 @@ export const PrimaryButton = styled(Button)`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: none !important;
 
   &:hover {
-    background-color: #2d3748 !important;
-    transform: translateY(-1px);
+    opacity: 0.9 !important;
+    box-shadow: none !important;
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 `;
 

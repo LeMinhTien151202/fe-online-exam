@@ -121,7 +121,9 @@ export const AppPagination: React.FC<AppPaginationProps> = ({
           value={pageSize.toString()}
           onChange={(val) => onChange(1, parseInt(val))}
           style={{ width: 120 }}
-          options={pageSizeOptions.map(opt => ({ label: `${opt} / trang`, value: opt }))}
+          options={Array.from(new Set([...pageSizeOptions, pageSize.toString()]))
+            .sort((a, b) => parseInt(a) - parseInt(b))
+            .map(opt => ({ label: `${opt} / trang`, value: opt }))}
         />
       </PageSizeSelector>
     </PaginationContainer>

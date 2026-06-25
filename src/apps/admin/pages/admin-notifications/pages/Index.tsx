@@ -30,7 +30,7 @@ const AdminNotificationsPage: React.FC = () => {
                 <Button
                     type="primary"
                     icon={<PlusOutlined />}
-                    style={{ height: '40px', borderRadius: '8px', background: '#1a365d' }}
+                    style={{ borderRadius: '8px', background: '#1a365d' }}
                     onClick={() => {
                         setEditingItem(null);
                         setIsModalOpen(true);
