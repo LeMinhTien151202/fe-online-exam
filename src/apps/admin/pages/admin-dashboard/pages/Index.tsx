@@ -49,8 +49,8 @@ const DashboardIndex: React.FC = () => {
       </Title>
 
       {/* KPI Section */}
-      <Row gutter={[16, 16]} justify="space-between">
-        <Col xs={24} sm={12} xl={4}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={12} xl={{ flex: '1 0 18%' }}>
           <KPICard
             title="Tổng học viên"
             value={stats.totalStudents}
@@ -61,7 +61,7 @@ const DashboardIndex: React.FC = () => {
           />
         </Col>
 
-        <Col xs={24} sm={12} xl={4}>
+        <Col xs={24} sm={12} xl={{ flex: '1 0 18%' }}>
           <KPICard
             title="Ngân hàng câu hỏi"
             value={stats.totalQuestions}
@@ -72,7 +72,7 @@ const DashboardIndex: React.FC = () => {
           />
         </Col>
 
-        <Col xs={24} sm={12} xl={4}>
+        <Col xs={24} sm={12} xl={{ flex: '1 0 18%' }}>
           <KPICard
             title="Hoạt động hôm nay"
             value={stats.dailyActivity}
@@ -83,7 +83,7 @@ const DashboardIndex: React.FC = () => {
           />
         </Col>
 
-        <Col xs={24} sm={12} xl={4}>
+        <Col xs={24} sm={12} xl={{ flex: '1 0 18%' }}>
           <KPICard
             title="Bộ đề thi"
             value={stats.totalExams}
@@ -94,7 +94,7 @@ const DashboardIndex: React.FC = () => {
           />
         </Col>
 
-        <Col xs={24} sm={12} xl={4}>
+        <Col xs={24} sm={12} xl={{ flex: '1 0 18%' }}>
           <KPICard
             title="Bài thi hoàn thành"
             value={stats.completedTests}
@@ -110,9 +110,10 @@ const DashboardIndex: React.FC = () => {
 
 
 
+
       {/* Content Visualization Section */}
       <Row gutter={[16, 16]} style={{ marginTop: '1rem' }}>
-        <Col xs={24} lg={14}>
+        <Col xs={24} lg={12}>
           <Card title="Phân bổ Ngân hàng câu hỏi" bordered={false}>
             <div style={{ height: 250 }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -133,8 +134,9 @@ const DashboardIndex: React.FC = () => {
             </div>
           </Card>
         </Col>
-        <Col xs={24} lg={10}>
+        <Col xs={24} lg={12}>
           <Card title="Cấu trúc Bộ đề thi" bordered={false}>
+
             <div style={{ height: 250, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               {examCounts.types.map((type, index) => (
                 <div key={index} style={{ marginBottom: '20px' }}>
