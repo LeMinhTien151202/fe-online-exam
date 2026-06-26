@@ -55,21 +55,22 @@ const ListeningSelection: React.FC<Props> = ({
                                     <Panel
                                         header={<Space><Text strong>{p}</Text><Tag style={{ fontSize: '10px' }}>{partQuestions.length} file</Tag></Space>}
                                         key={p}
-                                        style={{ background: '#f5f3ff', marginBottom: '8px', borderRadius: '4px', border: '1px solid #ddd6fe' }}
+                                        style={{ background: '#f8fafc', marginBottom: '8px', borderRadius: '4px', border: '1px solid #e2e8f0' }}
                                     >
                                         <List
                                             size="small"
                                             pagination={{ pageSize: 6, size: 'small', simple: true }}
                                             dataSource={partQuestions}
+                                            rowKey={(item: any) => item?.id || item?.key}
 
                                             renderItem={(record: any) => (
                                                 <List.Item
-                                                    style={{ background: '#fff', border: '1px solid #e9d5ff', marginBottom: '4px', borderRadius: '4px', padding: '10px 15px' }}
+                                                    style={{ background: '#fff', border: '1px solid #f1f5f9', marginBottom: '4px', borderRadius: '4px', padding: '10px 15px' }}
                                                     actions={[
                                                         <Button
                                                             size="small"
                                                             type="text"
-                                                            style={{ color: '#7c3aed' }}
+                                                            style={{ color: ADMIN_COLORS.primary }}
                                                             icon={<PlusOutlined />}
                                                             onClick={() => handleAddQuestion(record)}
                                                         />
@@ -97,22 +98,23 @@ const ListeningSelection: React.FC<Props> = ({
                             const totalSlots = p === 'Part 1' ? 13 : 4;
 
                             return (
-                                <div key={p} style={{ marginBottom: '16px', border: '1px solid #ddd6fe', borderRadius: '12px', overflow: 'hidden' }}>
-                                    <div style={{ background: '#f5f3ff', padding: '12px 16px', borderBottom: '1px solid #ddd6fe', display: 'flex', justifyContent: 'space-between' }}>
-                                        <Text strong style={{ color: '#5b21b6' }}>{p}</Text>
+                                <div key={p} style={{ marginBottom: '16px', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+                                    <div style={{ background: '#f8fafc', padding: '12px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between' }}>
+                                        <Text strong style={{ color: ADMIN_COLORS.primary }}>{p}</Text>
                                         <Text type={partQs.length === totalSlots ? 'success' : 'warning'} style={{ fontSize: '12px' }}>{partQs.length}/{totalSlots} slots</Text>
                                     </div>
                                     <div style={{ padding: '8px' }}>
                                         <List
                                             size="small"
-                                            dataSource={Array.from({ length: totalSlots }).map((_, i) => partQs[i] || null)}
-                                            renderItem={(item: any, idx: number) => (
-                                                <div style={{ padding: '8px 12px', background: item ? '#fff' : '#fafafa', border: '1px solid #f3e8ff', marginBottom: '4px', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            dataSource={Array.from({ length: totalSlots }).map((_, i) => partQs[i] ? { ...partQs[i], _slotIndex: i } : { _slotIndex: i, isPlaceholder: true })}
+                                            rowKey={(item: any) => item?.id || item?.key || `slot-${item?._slotIndex}`}
+                                            renderItem={(item: any) => (
+                                                <div style={{ padding: '8px 12px', background: !item?.isPlaceholder ? '#fff' : '#fafafa', border: '1px solid #f1f5f9', marginBottom: '4px', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <Space>
-                                                        <Text type="secondary" style={{ fontSize: '11px' }}>Slot {idx + 1}:</Text>
-                                                        {item ? <Text style={{ fontSize: '13px' }}>{item.content}</Text> : <Text type="secondary" italic style={{ fontSize: '12px' }}>Trống</Text>}
+                                                        <Text type="secondary" style={{ fontSize: '11px' }}>Slot {item?._slotIndex + 1}:</Text>
+                                                        {!item?.isPlaceholder ? <Text style={{ fontSize: '13px' }}>{item?.content}</Text> : <Text type="secondary" italic style={{ fontSize: '12px' }}>Trống</Text>}
                                                     </Space>
-                                                    {item && <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => handleRemoveQuestion(item.key)} />}
+                                                    {!item?.isPlaceholder && <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => handleRemoveQuestion(item?.key)} />}
                                                 </div>
                                             )}
                                         />

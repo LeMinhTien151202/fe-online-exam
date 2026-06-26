@@ -58,7 +58,7 @@ export const useCreateExam = () => {
 
   const handleAddQuestion = (record: any) => {
     if (!record) return;
-    if (selectedQuestions.some((q) => q && q.key === record.key)) {
+    if (selectedQuestions.some((q) => q?.key === record?.key)) {
       message.warning("Câu hỏi này đã được chọn!");
       return;
     }
@@ -77,12 +77,12 @@ export const useCreateExam = () => {
     if (record.type === "Vocabulary") {
       // Replace by task
       newSelected = newSelected.filter(
-        (q) => !(q.type === "Vocabulary" && q.task === record.task),
+        (q) => !(q?.type === "Vocabulary" && q?.task === record.task),
       );
     } else if (isSingleSlotPart(record.type, record.part)) {
       // Replace by part
       newSelected = newSelected.filter(
-        (q) => !(q.type === record.type && q.part === record.part),
+        (q) => !(q?.type === record.type && q?.part === record.part),
       );
     }
 
@@ -90,7 +90,7 @@ export const useCreateExam = () => {
   };
 
   const handleRemoveQuestion = (key: string) => {
-    setSelectedQuestions(selectedQuestions.filter((q) => q.key !== key));
+    setSelectedQuestions(selectedQuestions.filter((q) => q?.key !== key));
   };
 
   const handleMoveUp = (index: number) => {
@@ -113,7 +113,7 @@ export const useCreateExam = () => {
 
   const handleAddRandom = (count: number) => {
     const available = mockBankQuestions.filter(
-      (bq) => !selectedQuestions.some((sq) => sq.key === bq.key),
+      (bq) => !selectedQuestions.some((sq) => sq?.key === bq?.key),
     );
     if (available.length === 0) {
       message.info("Không còn câu hỏi ngẫu nhiên trong ngân hàng!");
