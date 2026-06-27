@@ -17,10 +17,10 @@ export const HeroSection: React.FC = () => {
           Chào mừng trở lại, Thí sinh!
         </Title>
         <Paragraph>
-          Tiếp tục hành trình ôn luyện để đạt mục tiêu chứng chỉ B2. Bạn đang làm rất tốt!
+          Bắt đầu hành trình ôn luyện ngay hôm nay. Bạn đang làm rất tốt!
         </Paragraph>
         <S.StyledButton>
-          Tiếp tục Luyện tập <S.StyledArrow />
+          Bắt đầu Luyện tập <S.StyledArrow />
         </S.StyledButton>
       </S.ContentWrapper>
 

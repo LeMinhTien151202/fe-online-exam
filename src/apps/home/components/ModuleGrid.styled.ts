@@ -102,13 +102,32 @@ export const Tag = styled.span<{ $bgColor: string; $color: string }>`
   border-radius: 6.25rem;
 `;
 
-export const ArrowIcon = styled(ArrowRightOutlined)`
-  color: #d1d5db;
-  font-size: 0.875rem;
+export const ActionLink = styled.div`
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #111827;
+  opacity: 0.6;
   transition: all 0.3s;
 
   ${Card}:hover & {
-    color: #111827;
-    transform: translateX(0.25rem);
+    opacity: 1;
+    gap: 0.75rem;
   }
+`;
+
+export const ActionCircle = styled.div`
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  color: #111827;
+  font-size: 0.75rem;
 `;

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ILearningModule } from '../services/types';
 import { useNavigate } from '@tanstack/react-router';
+import { ArrowRightOutlined } from '@ant-design/icons';
 import * as S from './ModuleGrid.styled';
 
 interface ModuleGridProps {
@@ -49,14 +50,14 @@ export const ModuleGrid: React.FC<ModuleGridProps> = ({ modules }) => {
               <S.IconBox $bgColor={colors.bg} $color={colors.text}>
                 <span className="material-symbols-outlined">{module.icon}</span>
               </S.IconBox>
+
               <S.Title>{module.title}</S.Title>
               <S.Description>{module.description}</S.Description>
-              <S.Footer>
-                <S.Tag $bgColor={colors.bg} $color={colors.text}>
-                  {module.duration}
-                </S.Tag>
-                <S.ArrowIcon />
-              </S.Footer>
+
+              <S.ActionLink>
+                <span>Luyện tập ngay</span>
+                <ArrowRightOutlined style={{ fontSize: '0.75rem' }} />
+              </S.ActionLink>
             </div>
           </S.Card>
         );

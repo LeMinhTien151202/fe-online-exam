@@ -22,15 +22,6 @@ interface PartCardProps {
 }
 
 export const PartCard: React.FC<PartCardProps> = ({ part, onClick }) => {
-  const getDifficultyText = (level: string) => {
-    switch (level) {
-      case 'easy': return 'Dễ (A1-A2)';
-      case 'medium': return 'Trung bình (B1)';
-      case 'hard': return 'Rất Khó (C)';
-      default: return '';
-    }
-  };
-
   return (
     <S.CardWrapper $borderColor={part.theme.borderColor} onClick={onClick} style={{ cursor: 'pointer' }}>
       <S.HeaderArea>
@@ -43,13 +34,8 @@ export const PartCard: React.FC<PartCardProps> = ({ part, onClick }) => {
             {part.subTitle && <S.SubTitle>{part.subTitle}</S.SubTitle>}
           </S.TitleContainer>
         </S.HeaderLeft>
-        {part.difficulty && (
-          <S.Tag $type={part.difficulty}>
-            {getDifficultyText(part.difficulty)}
-          </S.Tag>
-        )}
       </S.HeaderArea>
-      
+
       <S.ContentArea>
         <S.Description>{part.description}</S.Description>
       </S.ContentArea>

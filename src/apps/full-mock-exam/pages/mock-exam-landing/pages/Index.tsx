@@ -10,18 +10,10 @@ const mockExams = [
     { id: 'M04', title: 'Aptis Mock Test 04', questions: 125, duration: 162, difficulty: 'Expert', score: 0, status: 'new' },
 ];
 
-const skillScores = [
-    { label: 'Ngữ pháp', score: 22, max: 25 },
-    { label: 'Nghe', score: 19, max: 25 },
-    { label: 'Đọc', score: 20, max: 25 },
-    { label: 'Viết', score: 15, max: 25 },
-    { label: 'Nói', score: 17, max: 25 },
-];
-
 const history = [
-    { date: '15/06', name: 'Test 01', cefr: 'C', score: 82 },
-    { date: '10/06', name: 'Test 01', cefr: 'B2', score: 75 },
-    { date: '02/06', name: 'Test 02', cefr: 'B2', score: 72 },
+    { date: '15/06', name: 'Test 01', cefr: 'C', score: 165 },
+    { date: '10/06', name: 'Test 01', cefr: 'B2', score: 143 },
+    { date: '02/06', name: 'Test 02', cefr: 'B2', score: 140 },
 ];
 
 const MockExamLandingPage: React.FC = () => {
@@ -45,7 +37,7 @@ const MockExamLandingPage: React.FC = () => {
                     <div className="banner-right">
                         <div className="stat-row">
                             <div className="stat-item">
-                                <span className="val">78.5</span>
+                                <span className="val">152.0</span>
                                 <span className="label">Điểm Trung Bình</span>
                             </div>
                             <div className="stat-item">
@@ -57,7 +49,7 @@ const MockExamLandingPage: React.FC = () => {
                         <S.TargetProgressWidget>
                             <div className="progress-info">
                                 <span>Tiến độ mục tiêu</span>
-                                <span className="target">Mục tiêu C · 90</span>
+                                <span className="target">Mục tiêu C · 180</span>
                             </div>
                             <div className="progress-rail">
                                 <div className="progress-fill" style={{ width: '82%' }}></div>
@@ -81,16 +73,15 @@ const MockExamLandingPage: React.FC = () => {
                                 <div className="info">
                                     <div className="top">
                                         <h3>{exam.title}</h3>
-                                        <div className="difficulty">{exam.difficulty}</div>
                                         {exam.status === 'completed' && <div className="status-tag">Đã thi</div>}
                                     </div>
                                     <div className="meta">{exam.questions} câu · {exam.duration} phút</div>
                                 </div>
                                 <div className="score-display">
                                     {exam.score > 0 ? (
-                                        <div className="big">{exam.score}<span>/100</span></div>
+                                        <div className="big">{exam.score}<span>/200</span></div>
                                     ) : (
-                                        <div className="big">--<span>/100</span></div>
+                                        <div className="big">--<span>/200</span></div>
                                     )}
                                 </div>
                                 <S.ActionButton
@@ -105,21 +96,7 @@ const MockExamLandingPage: React.FC = () => {
 
                     {/* Right Column - Skill & History */}
                     <div>
-                        <S.SidebarCard>
-                            <h4>Điểm từng kỹ năng</h4>
-                            {skillScores.map(skill => (
-                                <S.SkillBarRow key={skill.label}>
-                                    <div className="label">{skill.label}</div>
-                                    <div className="bar-container">
-                                        <div
-                                            className="fill"
-                                            style={{ width: `${(skill.score / skill.max) * 100}%` }}
-                                        />
-                                    </div>
-                                    <div className="score">{skill.score}</div>
-                                </S.SkillBarRow>
-                            ))}
-                        </S.SidebarCard>
+
 
                         <S.SidebarCard>
                             <h4>Lịch sử thi</h4>

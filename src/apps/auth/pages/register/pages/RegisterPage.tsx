@@ -40,6 +40,14 @@ const RegisterPage: React.FC = () => {
                     </div>
                 </S.FormGroup>
 
+                <S.FormGroup>
+                    <label>Nhập lại mật khẩu</label>
+                    <div className="input-wrapper">
+                        <span className="material-symbols-outlined field-icon">lock_reset</span>
+                        <input type="password" placeholder="••••••••" required />
+                    </div>
+                </S.FormGroup>
+
                 <S.PrimaryButton type="submit">Đăng ký ngay</S.PrimaryButton>
             </S.Form>
 

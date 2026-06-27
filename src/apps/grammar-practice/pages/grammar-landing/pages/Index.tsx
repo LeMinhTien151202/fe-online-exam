@@ -82,13 +82,7 @@ export const GrammarPracticePage: React.FC = () => {
                     <span>5 Ngày</span>
                   </div>
                 </S.StatPill>
-                <S.StatPill>
-                  <S.StatPillIcon $color="#16a34a">✅</S.StatPillIcon>
-                  <div className="info">
-                    <span>Đã hoàn thành</span>
-                    <span>{completedCount}/2 Phần</span>
-                  </div>
-                </S.StatPill>
+
               </S.StatsContainer>
             </S.HeaderSection>
 
@@ -121,13 +115,9 @@ export const GrammarPracticePage: React.FC = () => {
               <S.MockTestGrid>
                 {mockTestsData.map((mock) => {
                   const score = mockProgress[mock.id] ?? 0;
-                  const difficultyLabel = mock.difficulty === 'easy' ? 'Dễ' : mock.difficulty === 'medium' ? 'Trung bình' : 'Khó';
 
                   return (
                     <S.MockTestCard key={mock.id}>
-                      <S.MockTestBadge $type={mock.difficulty}>
-                        {difficultyLabel}
-                      </S.MockTestBadge>
                       <S.MockTestTitle>{mock.title}</S.MockTestTitle>
 
                       <S.MockTestMeta>
