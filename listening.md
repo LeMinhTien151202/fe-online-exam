@@ -12,7 +12,7 @@ Dấu hiệu nhận biết đáp án (Bẫy thường gặp): Người nói thư
 Ví dụ chủ đề: Hỏi về thời gian (mấy giờ, ngày nào), giá tiền, số điện thoại, địa điểm gặp mặt, phương tiện di chuyển.
 
 📌 Part 2: Information Matching (Ghép nối thông tin)
-Số lượng câu hỏi: 4 câu (tương ứng với 4 người nói: Speaker 1, Speaker 2, Speaker 3, Speaker 4).
+Số lượng câu hỏi: 4 câu (tương ứng với 4 người nói: Speaker 1, Speaker 2, Speaker 3, Speaker 4). đây là câu 14
 
 Ngữ cảnh (Context): 4 đoạn độc thoại ngắn của 4 người khác nhau, nhưng tất cả đều nói về cùng một chủ đề (Ví dụ: Trải nghiệm kỳ nghỉ, quan điểm về làm việc từ xa, sở thích lúc rảnh rỗi).
 
@@ -21,7 +21,7 @@ Mục tiêu kiểm tra: Khả năng hiểu ý chính và thái độ của từn
 Loại câu hỏi: Ghép người nói với ý kiến tương ứng. Sẽ có một danh sách gồm 6 ý kiến/nhận định (A, B, C, D, E, F). Người học phải chọn ra 4 ý kiến đúng cho 4 người (thừa ra 2 ý kiến gây nhiễu).
 
 📌 Part 3: Opinion Matching (Xác định quan điểm/ý kiến)
-Số lượng câu hỏi: 4 câu hỏi dựa trên 1 bài nghe duy nhất.
+Số lượng câu hỏi: 4 câu hỏi dựa trên 1 bài nghe duy nhất.  đây là câu 15
 
 Ngữ cảnh (Context): Một đoạn hội thoại dài (khoảng 2-3 phút) giữa một người Nam (Man) và một người Nữ (Woman). Họ đang thảo luận, tranh luận hoặc chia sẻ góc nhìn về một vấn đề (Ví dụ: Chọn trường cho con, nhận xét về một bộ phim, kế hoạch tổ chức sự kiện).
 
@@ -36,7 +36,7 @@ Woman (Chỉ người phụ nữ đồng ý/nói ý này).
 Both (Cả hai người đều đồng ý với ý này).
 
 📌 Part 4: Monologue Comprehension (Nghe hiểu bài nói dài)
-Số lượng câu hỏi: 4 câu hỏi trắc nghiệm dựa trên 1 bài nghe duy nhất.
+Số lượng câu hỏi: 2 câu hỏi trắc nghiệm dựa trên 1 bài nghe duy nhất và 2 câu hỏi trắc nghiệm dựa trên 1 bài nghe duy nhất gồm đây là câu 16 + 17 nhé chia 2 2 mỗi câu
 
 Ngữ cảnh (Context): Một bài độc thoại dài (khoảng 3 phút) mang tính học thuật hoặc chuyên nghiệp hơn (Ví dụ: Một bài giảng ngắn của giáo sư, một bài thuyết trình sản phẩm, một buổi phỏng vấn radio sâu, bài phát biểu lịch sử).
 

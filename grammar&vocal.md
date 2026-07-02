@@ -2,7 +2,7 @@ Cấu Trúc Chi Tiết Phần Grammar & Vocabulary
 1. Grammatical Knowledge (25 câu hỏi)
 Cấu trúc: 25 câu hỏi trắc nghiệm riêng biệt dạng điền vào chỗ trống. Mỗi câu có 3 lựa chọn (A, B, C).
 
-Mức độ phân hóa: Đi từ dễ đến khó (Từ A1 đến C).
+Mức độ phân hóa: Đi từ dễ đến khó.
 
 Câu 1 - 10: Ngữ pháp cơ bản (Thì hiện tại đơn, quá khứ đơn, đại từ, số ít/số nhiều, giới từ chỉ thời gian/nơi chốn).
 

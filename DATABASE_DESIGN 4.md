@@ -14,7 +14,7 @@
 -- ============================================================
 
 CREATE TABLE users (
-id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+id SERIAL PRIMARY KEY,
 email VARCHAR(255) NOT NULL UNIQUE,
 password_hash VARCHAR(255) NOT NULL,
 role VARCHAR(20) NOT NULL CHECK (role IN ('ADMIN', 'TEACHER', 'STUDENT')),
@@ -23,7 +23,7 @@ created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE user_profiles (
-user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+user_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
 full_name VARCHAR(100) NOT NULL,
 avatar_url TEXT,
 target_date DATE,
@@ -62,7 +62,7 @@ total_parts INT NOT NULL
 INSERT INTO skills (id, name, total_parts) VALUES
 (1, 'Grammar & Vocabulary', 2),
 (2, 'Listening', 4),
-(3, 'Reading', 4),
+(3, 'Reading', 5),
 (4, 'Writing', 4),
 (5, 'Speaking', 4);
 
@@ -81,19 +81,19 @@ INSERT INTO skills (id, name, total_parts) VALUES
 -- Ví dụ: Bộ đề Listening đủ 4 parts
 --
 -- type='MOCK_TEST' → skill_id NULL, part_number NULL
--- Backend tự sinh: 5 sections (1 per skill) + 4 parts mỗi section = 20 parts
+-- Backend tự sinh: 5 sections (1 per skill) + N parts mỗi section theo total_parts = 19 parts (2+4+5+4+4)
 -- Ví dụ: Thi thử Aptis đầy đủ
 --
 -- ─────────────────────────────────────────────────────────────
 CREATE TABLE exam_sets (
-id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+id SERIAL PRIMARY KEY,
 title VARCHAR(255) NOT NULL,
 description TEXT,
 type VARCHAR(30) NOT NULL CHECK (type IN ('PART_PRACTICE', 'SKILL_FULL_SET', 'MOCK_TEST')),
 skill_id INT REFERENCES skills(id),
 part_number INT,
 is_active BOOLEAN NOT NULL DEFAULT TRUE,
-created_by UUID NOT NULL REFERENCES users(id),
+created_by INT NOT NULL REFERENCES users(id),
 created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 deleted_at TIMESTAMP,
 
@@ -124,8 +124,8 @@ deleted_at TIMESTAMP,
 -- Admin có thể chỉnh duration_minutes sau khi tạo.
 -- ─────────────────────────────────────────────────────────────
 CREATE TABLE exam_sections (
-id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-exam_id UUID NOT NULL REFERENCES exam_sets(id) ON DELETE CASCADE,
+id SERIAL PRIMARY KEY,
+exam_id INT NOT NULL REFERENCES exam_sets(id) ON DELETE CASCADE,
 skill_id INT NOT NULL REFERENCES skills(id),
 duration_minutes INT NOT NULL,
 order_index INT NOT NULL
@@ -138,13 +138,13 @@ order_index INT NOT NULL
 --
 -- PART_PRACTICE → INSERT 1 part (part_number lấy từ exam_sets.part_number)
 -- SKILL_FULL_SET → INSERT N parts (N = skills.total_parts của skill đó)
--- MOCK_TEST → INSERT 4 parts cho mỗi section → tổng 20 parts
+-- MOCK_TEST → INSERT N parts mỗi section theo skills.total_parts → tổng 19 parts (2+4+5+4+4)
 --
 -- Sau khi sinh xong, Admin vào từng part để assign câu hỏi từ question_bank.
 -- ─────────────────────────────────────────────────────────────
 CREATE TABLE exam_parts (
-id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-section_id UUID NOT NULL REFERENCES exam_sections(id) ON DELETE CASCADE,
+id SERIAL PRIMARY KEY,
+section_id INT NOT NULL REFERENCES exam_sections(id) ON DELETE CASCADE,
 part_number INT NOT NULL,
 instruction TEXT,
 audio_url TEXT -- Audio dùng chung cho cả Part (Listening P3, P4)
@@ -163,7 +163,15 @@ audio_url TEXT -- Audio dùng chung cho cả Part (Listening P3, P4)
 --
 -- extra_config JSONB — metadata đặc thù theo question_type:
 --
--- 'MC' → null (dùng question_bank_options)
+-- 'MC' → MC đơn (Grammar P1, Listening P1/P4): {
+--          "options": [ { "content": "...", "is_correct": true }, ... 3 đáp án, 1 đúng ]
+--        }
+--        HOẶC gap-fill (Reading Part 1): {
+--          "gaps": [
+--            { "gap_id": 1, "options": ["a","b","c"], "correct_index": 0 },
+--            ... (5 gaps, mỗi gap 3 options riêng, 1 đúng)
+--          ]
+--        }  -- content = đoạn văn chứa placeholder ___
 --
 -- 'ORDERING' → {
 -- "fixed_first": true,
@@ -211,7 +219,7 @@ audio_url TEXT -- Audio dùng chung cho cả Part (Listening P3, P4)
 -- }
 -- ─────────────────────────────────────────────────────────────
 CREATE TABLE question_bank (
-id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+id SERIAL PRIMARY KEY,
 skill_id INT NOT NULL REFERENCES skills(id),
 part_number INT NOT NULL, -- Thuộc part mấy (1/2/3/4)
 content TEXT, -- Nội dung câu hỏi / đề bài
@@ -226,18 +234,13 @@ question_type VARCHAR(30) NOT NULL CHECK (question_type IN (
 'RECORD'
 )),
 extra_config JSONB,
-created_by UUID NOT NULL REFERENCES users(id),
+created_by INT NOT NULL REFERENCES users(id),
 created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 deleted_at TIMESTAMP
 );
 
--- Đáp án cho câu hỏi MC (gắn vào question_bank, không phải exam)
-CREATE TABLE question_bank_options (
-id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-question_id UUID NOT NULL REFERENCES question_bank(id) ON DELETE CASCADE,
-content TEXT NOT NULL,
-is_correct BOOLEAN NOT NULL
-);
+-- (ĐÃ BỎ bảng question_bank_options — đáp án MC gom vào question_bank.extra_config.options
+--  = [{ "content": "...", "is_correct": true }, ...] cho nhất quán với các dạng khác.)
 
 -- ─────────────────────────────────────────────────────────────
 -- 3.2. Bảng exam_part_questions — gán câu hỏi vào đề (nhiều-nhiều)
@@ -252,8 +255,8 @@ is_correct BOOLEAN NOT NULL
 -- 1 câu hỏi có thể xuất hiện trong nhiều đề khác nhau.
 -- ─────────────────────────────────────────────────────────────
 CREATE TABLE exam_part_questions (
-exam_part_id UUID NOT NULL REFERENCES exam_parts(id) ON DELETE CASCADE,
-question_id UUID NOT NULL REFERENCES question_bank(id),
+exam_part_id INT NOT NULL REFERENCES exam_parts(id) ON DELETE CASCADE,
+question_id INT NOT NULL REFERENCES question_bank(id),
 order_index INT NOT NULL DEFAULT 0,
 PRIMARY KEY (exam_part_id, question_id)
 );
@@ -270,9 +273,9 @@ PRIMARY KEY (exam_part_id, question_id)
 -- Luồng chạy: FE submit 1 JSON cực lớn -> BE chấm trắc nghiệm + gọi AI chấm tự luận
 -- -> Trả kết quả Review nóng về FE -> Lưu duy nhất điểm tổng vào bảng này.
 CREATE TABLE exam_attempts (
-id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-student_id UUID NOT NULL REFERENCES users(id),
-exam_id UUID NOT NULL REFERENCES exam_sets(id),
+id SERIAL PRIMARY KEY,
+student_id INT NOT NULL REFERENCES users(id),
+exam_id INT NOT NULL REFERENCES exam_sets(id),
 status VARCHAR(20) NOT NULL DEFAULT 'SUBMITTED',
 total_score INT NOT NULL, -- Điểm tổng quát cuối cùng
 started_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -290,7 +293,7 @@ finished_at TIMESTAMP NOT NULL DEFAULT NOW()
 -- Bảng này CHỈ làm nhiệm vụ đếm số câu đã làm theo từng Part.
 -- Không lưu điểm số, không lưu aggregate cho cả Skill (tự SUM từ Part nếu cần).
 CREATE TABLE student_progress (
-student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 skill_id INT NOT NULL REFERENCES skills(id),
 part_number INT NOT NULL, -- Bắt buộc chỉ định Part
 questions_answered INT NOT NULL DEFAULT 0,
@@ -298,7 +301,7 @@ PRIMARY KEY (student_id, skill_id, part_number)
 );
 
 CREATE TABLE learning_streaks (
-student_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+student_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
 current_streak INT NOT NULL DEFAULT 0,
 longest_streak INT NOT NULL DEFAULT 0,
 last_activity DATE NOT NULL DEFAULT CURRENT_DATE
@@ -307,19 +310,19 @@ last_activity DATE NOT NULL DEFAULT CURRENT_DATE
 -- (Đã lược bỏ study_logs để đơn giản hóa, track tiến độ qua student_progress và learning_streaks)
 
 CREATE TABLE study_materials (
-id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+id SERIAL PRIMARY KEY,
 title VARCHAR(255) NOT NULL,
 file_url TEXT NOT NULL,
 file_type VARCHAR(20) NOT NULL CHECK (file_type IN ('PDF', 'VIDEO')),
 duration_seconds INT,
 skill_id INT REFERENCES skills(id),
-teacher_id UUID NOT NULL REFERENCES users(id),
+teacher_id INT NOT NULL REFERENCES users(id),
 deleted_at TIMESTAMP
 );
 
 CREATE TABLE notifications (
-id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-receiver_id UUID REFERENCES users(id) ON DELETE CASCADE, -- NULL = broadcast toàn hệ thống
+id SERIAL PRIMARY KEY,
+receiver_id INT REFERENCES users(id) ON DELETE CASCADE, -- NULL = broadcast toàn hệ thống
 notification_type VARCHAR(50) NOT NULL CHECK (notification_type IN ('SYSTEM', 'EXAM_REMINDER', 'GRADE_RESULT')),
 title VARCHAR(200) NOT NULL,
 message TEXT NOT NULL,
@@ -365,11 +368,11 @@ CREATE INDEX idx_exam_part_questions_part ON exam_part_questions (exam_part_id, 
 --
 -- Auth & RBAC : users, user_profiles, system_menus, role_menu_access (4)
 -- Exam Bank : skills, exam_sets, exam_sections, exam_parts (4)
--- Question Bank : question_bank, question_bank_options, exam_part_questions (3)
+-- Question Bank : question_bank, exam_part_questions (2 — đã bỏ question_bank_options)
 -- Attempts : exam_attempts (1)
 -- Progress & Phụ : student_progress, learning_streaks, study_materials,
 -- notifications, system_settings (5)
 --
--- TỔNG : 17 bảng
+-- TỔNG : 16 bảng (đã bỏ question_bank_options — MC options vào extra_config)
 -- (Đã tối ưu siêu triệt để: Xóa lịch sử đáp án, snapshot, xóa AI grading tables, xóa logs)
 -- ============================================================
