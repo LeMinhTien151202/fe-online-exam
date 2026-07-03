@@ -1,7 +1,10 @@
 import React from 'react';
 import { ConfigProvider } from 'antd';
+import { Provider as ReduxProvider } from 'react-redux';
 import { antThemeConfig } from './configs/antDesign';
 import { QueryProvider } from './shared/providers/QueryProvider';
+import { store } from './shared/store/store';
+import { useAuthBootstrap } from './shared/hooks/useAuthBootstrap';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 
 // Import Root Route và các Route con định nghĩa riêng tại từng module trang
@@ -95,16 +98,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
+// Khôi phục phiên đăng nhập (nếu có), không chặn app khi thất bại (guest mode)
+const AuthBootstrap: React.FC = () => {
+  useAuthBootstrap();
+  return null;
+};
+
 /**
  * Root Component của ứng dụng
  */
 function App() {
   return (
-    <QueryProvider>
-      <ConfigProvider theme={antThemeConfig}>
-        <RouterProvider router={router} />
-      </ConfigProvider>
-    </QueryProvider>
+    <ReduxProvider store={store}>
+      <QueryProvider>
+        <ConfigProvider theme={antThemeConfig}>
+          <AuthBootstrap />
+          <RouterProvider router={router} />
+        </ConfigProvider>
+      </QueryProvider>
+    </ReduxProvider>
   );
 }
 

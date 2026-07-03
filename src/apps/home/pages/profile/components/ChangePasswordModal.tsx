@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, Form, Input, Button, message } from 'antd';
+import { Modal, Form, Input } from 'antd';
+import { useChangePasswordMutation } from '@apps/auth/services/authQuery';
 import * as S from '../styles/profile.styled';
 
 interface ChangePasswordModalProps {
@@ -7,14 +8,26 @@ interface ChangePasswordModalProps {
     onClose: () => void;
 }
 
-const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClose }) => {
-    const [form] = Form.useForm();
+interface ChangePasswordFormValues {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+}
 
-    const handleSubmit = async (values: any) => {
-        console.log('Change Password:', values);
-        message.success('Đổi mật khẩu thành công!');
-        onClose();
-        form.resetFields();
+const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClose }) => {
+    const [form] = Form.useForm<ChangePasswordFormValues>();
+    const changePasswordMutation = useChangePasswordMutation();
+
+    const handleSubmit = (values: ChangePasswordFormValues) => {
+        changePasswordMutation.mutate(
+            { oldPassword: values.currentPassword, newPassword: values.newPassword },
+            {
+                onSuccess: () => {
+                    onClose();
+                    form.resetFields();
+                },
+            }
+        );
     };
 
     return (
@@ -74,8 +87,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                     <S.CancelButton type="button" style={{ padding: '0.5rem 1.25rem' }} onClick={onClose}>
                         Hủy
                     </S.CancelButton>
-                    <S.SaveButton type="submit" style={{ padding: '0.5rem 1.25rem' }}>
-                        Cập nhật
+                    <S.SaveButton type="submit" style={{ padding: '0.5rem 1.25rem' }} disabled={changePasswordMutation.isPending}>
+                        {changePasswordMutation.isPending ? 'Đang xử lý...' : 'Cập nhật'}
                     </S.SaveButton>
                 </div>
             </Form>

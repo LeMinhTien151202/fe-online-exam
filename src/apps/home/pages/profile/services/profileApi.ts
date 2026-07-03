@@ -1,13 +1,7 @@
-export const updateProfile = async (data: any) => {
-  return { success: true, data };
-};
+import axiosInstance from '@/configs/axios';
+import { IProfile, IUpdateProfilePayload } from './types';
 
-export const getProfile = async () => {
-  return {
-    id: "1",
-    fullName: "Lê Minh Tiến",
-    email: "minhtien.le@example.com",
-    dob: "15/12/2002",
-    plan: "free",
-  };
-};
+export const getProfile = () => axiosInstance.get<IProfile, IProfile>('/profile/me');
+
+export const updateProfile = (payload: IUpdateProfilePayload) =>
+  axiosInstance.patch<IProfile, IProfile>('/profile/me', payload);

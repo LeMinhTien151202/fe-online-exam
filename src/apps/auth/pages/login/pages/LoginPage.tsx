@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import AuthLayout from '../../../components/AuthLayout';
+import { useLogin } from '../hook/useLogin';
+import { authApi } from '@apps/auth/services/authApi';
 import * as S from '../styles/login.styled';
 
 const LoginPage: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const { login, isLoggingIn } = useLogin();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        login({ username, password });
+    };
+
+    const handleGoogleLogin = () => {
+        window.location.href = authApi.googleLoginUrl();
     };
 
     return (
@@ -26,6 +36,8 @@ const LoginPage: React.FC = () => {
                             type="email"
                             placeholder="thisinh@gmail.com"
                             required
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                         />
                     </div>
                 </S.FormGroup>
@@ -38,6 +50,8 @@ const LoginPage: React.FC = () => {
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
                             required
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
                         <span
                             className="material-symbols-outlined visibility-toggle"
@@ -55,14 +69,16 @@ const LoginPage: React.FC = () => {
                     <Link to="/login" className="forgot-link">Quên mật khẩu?</Link>
                 </S.UtilityRow>
 
-                <S.PrimaryButton type="submit">Đăng nhập</S.PrimaryButton>
+                <S.PrimaryButton type="submit" disabled={isLoggingIn}>
+                    {isLoggingIn ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                </S.PrimaryButton>
             </S.Form>
 
             <S.SocialDivider>
                 <span>hoặc đăng nhập bằng</span>
             </S.SocialDivider>
 
-            <S.GoogleLoginButton type="button">
+            <S.GoogleLoginButton type="button" onClick={handleGoogleLogin}>
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
                 Tiếp tục với Google
             </S.GoogleLoginButton>

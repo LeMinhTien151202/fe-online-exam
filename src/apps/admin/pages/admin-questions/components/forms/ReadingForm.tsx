@@ -28,6 +28,8 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
 
     const watchedPart = Form.useWatch('part', form);
     const watchedPassage = Form.useWatch('passage', form);
+    const watchedPeople = Form.useWatch('people', form);
+    const watchedHeadings = Form.useWatch('headings', form);
 
     React.useEffect(() => {
         if (watchedPart && watchedPart !== activePart) setActivePart(watchedPart);
@@ -65,41 +67,51 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
 
     const next = async () => {
         try {
-            await form.validateFields();
+            await form.validateFields(currentStep === 0 ? ['title', 'part'] : []);
             setCurrentStep(currentStep + 1);
         } catch (error) { console.log(error); }
     };
 
     const prev = () => setCurrentStep(currentStep - 1);
 
-    // PART 1: 5 Sentences with Gaps (Based on Image)
+    // PART 1: 1 đoạn văn/email chứa 5 chỗ trống ___(1)..(5) + 5 bộ đáp án
     const renderPart1 = () => (
         <div className="animate-fade-in">
-            <Divider orientation={"left" as any}><Space><EditOutlined /> THIẾT LẬP 5 CÂU CÓ CHỖ TRỐNG (MESSAGE CONTENT)</Space></Divider>
+            <Divider orientation={"left" as any}><Space><FileTextOutlined /> NỘI DUNG ĐOẠN VĂN / EMAIL</Space></Divider>
+            <Card size="small" className="premium-card" style={{ marginBottom: '20px' }}>
+                <Form.Item
+                    name="passage"
+                    label="Đoạn văn (chèn ___(1) đến ___(5) tại đúng vị trí 5 chỗ trống)"
+                    rules={[{ required: true, message: 'Nhập nội dung đoạn văn có chỗ trống' }]}
+                    style={{ marginBottom: 0 }}
+                >
+                    <TextArea
+                        rows={6}
+                        placeholder="Ví dụ: Hi Anna, thanks for your ___(1). I would ___(2) to join the trip. Please let me ___(3) the details. See ___(4) soon. Best ___(5), Tom."
+                    />
+                </Form.Item>
+            </Card>
+
+            <Divider orientation={"left" as any}><Space><EditOutlined /> ĐÁP ÁN CHO 5 CHỖ TRỐNG (mỗi chỗ 3 lựa chọn)</Space></Divider>
             <Form.List name="gaps">
                 {(fields) => (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         {fields.map(({ key, name, ...restField }) => (
-                            <Card key={key} size="small" className="premium-card" title={<Tag color="blue">Dòng/Câu #{name + 1}</Tag>}>
-                                <Row gutter={24}>
-                                    <Col span={24}>
-                                        <Form.Item {...restField} name={[name, 'sentence']} label="Nội dung câu (dùng ____ cho chỗ trống)" rules={[{ required: true }]}>
-                                            <Input placeholder="Ví dụ: We finally moved into our new house! The living room is very ____ and bright." />
-                                        </Form.Item>
+                            <Card key={key} size="small" className="premium-card" title={<Tag color="blue">Chỗ trống ({name + 1})</Tag>}>
+                                <Row gutter={16} align="bottom">
+                                    <Col span={7}>
+                                        <Form.Item {...restField} name={[name, 'optA']} label="Lựa chọn A" rules={[{ required: true }]} style={{ marginBottom: 0 }}><Input /></Form.Item>
                                     </Col>
-                                    <Col span={6}>
-                                        <Form.Item {...restField} name={[name, 'optA']} label="Lựa chọn A" rules={[{ required: true }]}><Input /></Form.Item>
+                                    <Col span={7}>
+                                        <Form.Item {...restField} name={[name, 'optB']} label="Lựa chọn B" rules={[{ required: true }]} style={{ marginBottom: 0 }}><Input /></Form.Item>
                                     </Col>
-                                    <Col span={6}>
-                                        <Form.Item {...restField} name={[name, 'optB']} label="Lựa chọn B" rules={[{ required: true }]}><Input /></Form.Item>
+                                    <Col span={7}>
+                                        <Form.Item {...restField} name={[name, 'optC']} label="Lựa chọn C" rules={[{ required: true }]} style={{ marginBottom: 0 }}><Input /></Form.Item>
                                     </Col>
-                                    <Col span={6}>
-                                        <Form.Item {...restField} name={[name, 'optC']} label="Lựa chọn C" rules={[{ required: true }]}><Input /></Form.Item>
-                                    </Col>
-                                    <Col span={6}>
-                                        <Form.Item {...restField} name={[name, 'answer']} label="Đáp án đúng" rules={[{ required: true }]}>
-                                            <Radio.Group>
-                                                <Radio value="A">A</Radio><Radio value="B">B</Radio><Radio value="C">C</Radio>
+                                    <Col span={3}>
+                                        <Form.Item {...restField} name={[name, 'answer']} label="Đúng" rules={[{ required: true }]} style={{ marginBottom: 0 }}>
+                                            <Radio.Group buttonStyle="solid" size="small">
+                                                <Radio.Button value="A">A</Radio.Button><Radio.Button value="B">B</Radio.Button><Radio.Button value="C">C</Radio.Button>
                                             </Radio.Group>
                                         </Form.Item>
                                     </Col>
@@ -188,7 +200,7 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
                                     <Col span={6}>
                                         <Form.Item {...restField} name={[name, 'answerIndex']} label="Người phát biểu" rules={[{ required: true }]}>
                                             <Select placeholder="Chọn người">
-                                                {form.getFieldValue('people')?.map((p: any, idx: number) => (
+                                                {watchedPeople?.map((p: any, idx: number) => (
                                                     <Select.Option key={idx} value={idx}>{p.name || `Người #${idx + 1}`}</Select.Option>
                                                 ))}
                                             </Select>
@@ -236,7 +248,7 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
                                 </Form.Item>
                                 <Form.Item {...restField} name={[name, 'headingIndex']} label="Tiêu đề phù hợp" rules={[{ required: true }]} style={{ marginBottom: 0 }}>
                                     <Select placeholder="Chọn tiêu đề phù hợp">
-                                        {form.getFieldValue('headings')?.map((h: any, idx: number) => (
+                                        {watchedHeadings?.map((h: any, idx: number) => (
                                             <Select.Option key={idx} value={idx}>Heading #{idx + 1}: {h.text || '...'}</Select.Option>
                                         ))}
                                     </Select>

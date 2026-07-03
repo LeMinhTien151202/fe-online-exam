@@ -1,12 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as S from '../styles/profile.styled';
 import ProfileAvatar from '../components/ProfileAvatar';
 import ProfileField from '../components/ProfileField';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import { DashboardLayout } from '../../../components/DashboardLayout';
+import { useProfile } from '../hook/useProfile';
+import { useAppSelector } from '@/shared/store/hooks';
+import { useLogout } from '@/shared/hooks/useLogout';
+import { AptisGoal, IProfile } from '../services/types';
+import { useNavigate } from '@tanstack/react-router';
+
+const toDateInputValue = (isoDate: string | null): string => (isoDate ? isoDate.slice(0, 10) : '');
 
 const ProfilePage: React.FC = () => {
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const { logout } = useLogout();
+    const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+    const { profile, isLoading, updateProfile, isUpdating } = useProfile();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            navigate({ to: '/login' });
+        }
+    }, [isAuthenticated, navigate]);
+
+    const [fullName, setFullName] = useState('');
+    const [targetDate, setTargetDate] = useState('');
+    const [aptisGoal, setAptisGoal] = useState<AptisGoal>('B2');
+    const [schoolName, setSchoolName] = useState('');
+
+    // Nạp dữ liệu form từ profile vừa fetch xong (điều chỉnh state khi props/data đổi, theo khuyến nghị của React thay vì dùng useEffect)
+    const [loadedProfile, setLoadedProfile] = useState<IProfile | null>(null);
+    if (profile && profile !== loadedProfile) {
+        setLoadedProfile(profile);
+        setFullName(profile.fullName || '');
+        setTargetDate(toDateInputValue(profile.targetDate));
+        setAptisGoal(profile.aptisGoal || 'B2');
+        setSchoolName(profile.schoolName || '');
+    }
+
+    const displayName = profile?.fullName || user?.fullName || user?.email || 'Thí sinh';
+    const avatarInitials = displayName.charAt(0).toUpperCase();
+
+    const handleSave = () => {
+        updateProfile({
+            full_name: fullName,
+            target_date: targetDate || undefined,
+            aptis_goal: aptisGoal,
+            school_name: schoolName || undefined,
+        });
+    };
+
+    const handleReset = () => {
+        if (!profile) return;
+        setFullName(profile.fullName || '');
+        setTargetDate(toDateInputValue(profile.targetDate));
+        setAptisGoal(profile.aptisGoal || 'B2');
+        setSchoolName(profile.schoolName || '');
+    };
+
+    if (!isAuthenticated) return null;
+    if (isLoading) return <div>Đang tải hồ sơ...</div>;
 
     return (
         <DashboardLayout>
@@ -18,36 +73,32 @@ const ProfilePage: React.FC = () => {
             <S.MainGrid>
                 {/* Left Column: Profile Summary */}
                 <S.SummaryCard>
-                    <ProfileAvatar initials="T" />
+                    <ProfileAvatar initials={avatarInitials} />
 
-                    <S.UserName>Lê Minh Tiến</S.UserName>
+                    <S.UserName>{displayName}</S.UserName>
 
                     <S.ProfileStatsList>
                         <S.StatItem>
                             <span className="label">Full name:</span>
-                            <span className="value">Lê Minh Tiến</span>
+                            <span className="value">{displayName}</span>
                         </S.StatItem>
                         <S.StatItem>
                             <span className="label">Email:</span>
-                            <span className="value">leminhtien@gmail.com</span>
-                        </S.StatItem>
-                        <S.StatItem>
-                            <span className="label">Phone:</span>
-                            <span className="value">Chưa có</span>
+                            <span className="value">{user?.email || 'Chưa có'}</span>
                         </S.StatItem>
                         <S.StatItem>
                             <span className="label">Trạng thái:</span>
-                            <span className="status-badge">Đã kích hoạt</span>
+                            <span className="status-badge">{user?.status === 'LOCKED' ? 'Đã khoá' : 'Đã kích hoạt'}</span>
                         </S.StatItem>
                         <S.StatItem>
                             <span className="label">Ngày thi:</span>
-                            <span className="value">07/02/2026</span>
+                            <span className="value">{profile?.targetDate ? toDateInputValue(profile.targetDate) : 'Chưa đặt'}</span>
                         </S.StatItem>
                     </S.ProfileStatsList>
 
                     <S.ProfileActionRow>
                         <S.OutlineButton onClick={() => setIsPasswordModalOpen(true)}>Đổi mật khẩu</S.OutlineButton>
-                        <S.OutlineButton color="#EF4444">Đăng xuất</S.OutlineButton>
+                        <S.OutlineButton color="#EF4444" onClick={logout}>Đăng xuất</S.OutlineButton>
                     </S.ProfileActionRow>
                 </S.SummaryCard>
 
@@ -62,39 +113,30 @@ const ProfilePage: React.FC = () => {
                         <ProfileField
                             id="fullName"
                             label="Họ và tên"
-                            defaultValue="Lê Minh Tiến"
+                            value={fullName}
+                            onChange={setFullName}
                             placeholder="Nhập họ và tên"
                         />
                         <ProfileField
-                            id="email"
-                            label="Địa chỉ Email"
-                            type="email"
-                            defaultValue="leminhtien1202@gmail.com"
-                            placeholder="name@example.com"
-                        />
-                        <ProfileField
-                            id="dob"
-                            label="Ngày sinh"
-                            defaultValue="15/12/2002"
-                            placeholder="15/12/2002"
-                        />
-                        <ProfileField
-                            id="phone"
-                            label="Số điện thoại"
-                            type="tel"
-                            placeholder="090x xxx xxx"
+                            id="schoolName"
+                            label="Trường học"
+                            value={schoolName}
+                            onChange={setSchoolName}
+                            placeholder="Ví dụ: THPT ABC"
                         />
                         <ProfileField
                             id="examDateComp"
                             label="Ngày thi dự kiến"
                             type="date"
-                            defaultValue="2026-02-07"
+                            value={targetDate}
+                            onChange={setTargetDate}
                         />
                         <ProfileField
                             id="goal"
                             label="Mục tiêu Aptis"
                             isSelect={true}
-                            defaultValue="B2"
+                            value={aptisGoal}
+                            onChange={(v) => setAptisGoal(v as AptisGoal)}
                         >
                             <option value="B1">B1</option>
                             <option value="B2">B2</option>
@@ -102,28 +144,13 @@ const ProfilePage: React.FC = () => {
                         </ProfileField>
                     </S.FormGrid>
 
-                    <S.SectionHeader>
-                        <span className="icon material-symbols-outlined">shield</span>
-                        <S.SectionTitle>Địa chỉ & Bảo mật</S.SectionTitle>
-                    </S.SectionHeader>
-
-                    <S.FormGrid>
-                        <ProfileField
-                            id="city"
-                            label="Thành phố đang sống"
-                            defaultValue="Hà Nội"
-                            placeholder="Ví dụ: Hà Nội"
-                        />
-                        <ProfileField
-                            id="language"
-                            label="Ngôn ngữ màn hình"
-                            defaultValue="Tiếng Việt"
-                        />
-                    </S.FormGrid>
-
                     <S.ActionArea>
-                        <S.CancelButton type="button">Hủy bỏ</S.CancelButton>
-                        <S.SaveButton type="button">Lưu thay đổi</S.SaveButton>
+                        <S.CancelButton type="button" onClick={handleReset}>
+                            Hủy bỏ
+                        </S.CancelButton>
+                        <S.SaveButton type="button" onClick={handleSave} disabled={isUpdating}>
+                            {isUpdating ? 'Đang lưu...' : 'Lưu thay đổi'}
+                        </S.SaveButton>
                     </S.ActionArea>
                 </S.DetailsCard>
             </S.MainGrid>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Select, Space, Row, Col, Button, Card, Tag, Typography, Steps, Upload, Divider } from 'antd';
+import { Form, Input, Select, Space, Row, Col, Button, Card, Tag, Typography, Steps, Upload, Divider, message } from 'antd';
 import {
     AudioOutlined,
     SaveOutlined,
@@ -13,9 +13,11 @@ import {
     UserOutlined,
     TeamOutlined,
     BulbOutlined,
-    UploadOutlined
+    UploadOutlined,
+    DeleteOutlined
 } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../../constants';
+import { questionApi } from '../../services/questionApi';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -28,7 +30,28 @@ interface SpeakingFormProps {
 
 const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => {
     const [currentStep, setCurrentStep] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
     const watchedPart = Form.useWatch('part', form);
+    const p2ImageUrl = Form.useWatch('p2ImageUrl', form);
+    const p3ImageUrlA = Form.useWatch('p3ImageUrlA', form);
+    const p3ImageUrlB = Form.useWatch('p3ImageUrlB', form);
+    const p4ImageUrl = Form.useWatch('p4ImageUrl', form);
+
+    const handleUpload = async (options: any, folderType: 'images' | 'audio', formKey: string) => {
+        const { file, onSuccess, onError } = options;
+        try {
+            setIsUploading(true);
+            const res = await questionApi.upload(file as File, folderType);
+            form.setFieldValue(formKey, res.url);
+            onSuccess(res, file);
+            message.success('Upload file thành công!');
+        } catch (err: any) {
+            onError(err);
+            message.error(err.response?.data?.message || 'Upload file thất bại.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     // Sync prop part to form if store is empty
     React.useEffect(() => {
@@ -84,11 +107,31 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
         <Card className="premium-card" title={<Space><CameraOutlined /> Part 2: Describe & Opinion (Mô tả tranh)</Space>}>
             <Row gutter={24}>
                 <Col span={8}>
-                    <Form.Item name="p2Image" label="Bức tranh Part 2" rules={[{ required: true }]}>
-                        <Upload.Dragger multiple={false} listType="picture-card" style={{ background: '#f8fafc', borderRadius: '12px' }}>
-                            <p className="ant-upload-drag-icon"><PictureOutlined /></p>
-                            <p className="ant-upload-text">Tải ảnh tranh</p>
-                        </Upload.Dragger>
+                    <Form.Item name="p2ImageUrl" label="Bức tranh Part 2" rules={[{ required: true, message: 'Vui lòng tải ảnh lên!' }]}>
+                        {p2ImageUrl ? (
+                            <div style={{ position: 'relative', border: '1px dashed #d9d9d9', borderRadius: '12px', padding: '8px', background: '#f8fafc' }}>
+                                <img src={p2ImageUrl} alt="Preview" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '8px' }} />
+                                <Button
+                                    type="primary"
+                                    danger
+                                    shape="circle"
+                                    icon={<DeleteOutlined />}
+                                    size="small"
+                                    style={{ position: 'absolute', top: '16px', right: '16px' }}
+                                    onClick={() => form.setFieldValue('p2ImageUrl', undefined)}
+                                />
+                            </div>
+                        ) : (
+                            <Upload.Dragger
+                                customRequest={(options) => handleUpload(options, 'images', 'p2ImageUrl')}
+                                showUploadList={false}
+                                accept="image/*"
+                                style={{ background: '#f8fafc', borderRadius: '12px' }}
+                            >
+                                <p className="ant-upload-drag-icon" style={{ marginBottom: '8px' }}><PictureOutlined style={{ fontSize: '24px', color: ADMIN_COLORS.primary }} /></p>
+                                <p className="ant-upload-text" style={{ fontSize: '13px' }}>Kéo thả hoặc Click để tải ảnh</p>
+                            </Upload.Dragger>
+                        )}
                     </Form.Item>
                     <Form.Item name="p2ImageDesc" label="Mô tả tranh (Cho AI)">
                         <TextArea rows={2} placeholder="Mô tả nội dung bức tranh để làm dữ liệu..." />
@@ -115,17 +158,59 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
         <Card className="premium-card" title={<Space><TeamOutlined /> Part 3: Compare & Contrast (So sánh 2 tranh)</Space>}>
             <Row gutter={24} style={{ marginBottom: '24px' }}>
                 <Col span={12}>
-                    <Form.Item name="p3ImageA" label="Bức tranh A (Trái)" rules={[{ required: true }]}>
-                        <Upload.Dragger listType="picture-card" style={{ background: '#f8fafc', borderRadius: '12px' }}>
-                            <PictureOutlined /> <div>Tranh A</div>
-                        </Upload.Dragger>
+                    <Form.Item name="p3ImageUrlA" label="Bức tranh A (Trái)" rules={[{ required: true, message: 'Vui lòng tải ảnh A lên!' }]}>
+                        {p3ImageUrlA ? (
+                            <div style={{ position: 'relative', border: '1px dashed #d9d9d9', borderRadius: '12px', padding: '8px', background: '#f8fafc' }}>
+                                <img src={p3ImageUrlA} alt="Preview A" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '8px' }} />
+                                <Button
+                                    type="primary"
+                                    danger
+                                    shape="circle"
+                                    icon={<DeleteOutlined />}
+                                    size="small"
+                                    style={{ position: 'absolute', top: '16px', right: '16px' }}
+                                    onClick={() => form.setFieldValue('p3ImageUrlA', undefined)}
+                                />
+                            </div>
+                        ) : (
+                            <Upload.Dragger
+                                customRequest={(options) => handleUpload(options, 'images', 'p3ImageUrlA')}
+                                showUploadList={false}
+                                accept="image/*"
+                                style={{ background: '#f8fafc', borderRadius: '12px' }}
+                            >
+                                <p className="ant-upload-drag-icon" style={{ marginBottom: '8px' }}><PictureOutlined style={{ fontSize: '24px', color: ADMIN_COLORS.primary }} /></p>
+                                <p className="ant-upload-text" style={{ fontSize: '13px' }}>Tải ảnh tranh A</p>
+                            </Upload.Dragger>
+                        )}
                     </Form.Item>
                 </Col>
                 <Col span={12}>
-                    <Form.Item name="p3ImageB" label="Bức tranh B (Phải)" rules={[{ required: true }]}>
-                        <Upload.Dragger listType="picture-card" style={{ background: '#f8fafc', borderRadius: '12px' }}>
-                            <PictureOutlined /> <div>Tranh B</div>
-                        </Upload.Dragger>
+                    <Form.Item name="p3ImageUrlB" label="Bức tranh B (Phải)" rules={[{ required: true, message: 'Vui lòng tải ảnh B lên!' }]}>
+                        {p3ImageUrlB ? (
+                            <div style={{ position: 'relative', border: '1px dashed #d9d9d9', borderRadius: '12px', padding: '8px', background: '#f8fafc' }}>
+                                <img src={p3ImageUrlB} alt="Preview B" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '8px' }} />
+                                <Button
+                                    type="primary"
+                                    danger
+                                    shape="circle"
+                                    icon={<DeleteOutlined />}
+                                    size="small"
+                                    style={{ position: 'absolute', top: '16px', right: '16px' }}
+                                    onClick={() => form.setFieldValue('p3ImageUrlB', undefined)}
+                                />
+                            </div>
+                        ) : (
+                            <Upload.Dragger
+                                customRequest={(options) => handleUpload(options, 'images', 'p3ImageUrlB')}
+                                showUploadList={false}
+                                accept="image/*"
+                                style={{ background: '#f8fafc', borderRadius: '12px' }}
+                            >
+                                <p className="ant-upload-drag-icon" style={{ marginBottom: '8px' }}><PictureOutlined style={{ fontSize: '24px', color: ADMIN_COLORS.primary }} /></p>
+                                <p className="ant-upload-text" style={{ fontSize: '13px' }}>Tải ảnh tranh B</p>
+                            </Upload.Dragger>
+                        )}
                     </Form.Item>
                 </Col>
             </Row>
@@ -147,14 +232,35 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
     const renderPart4 = () => (
         <Card className="premium-card" title={<Space><BulbOutlined /> Part 4: Abstract Topic (Thảo luận trừu tượng)</Space>}>
             <Row gutter={24}>
-                <Col span={6}>
-                    <Form.Item name="p4Image" label="Ảnh gợi ý (Tùy chọn)">
-                        <Upload.Dragger listType="picture-card" style={{ background: '#f8fafc', borderRadius: '12px' }}>
-                            <PictureOutlined /> <div>Ảnh gợi ý</div>
-                        </Upload.Dragger>
+                <Col span={8}>
+                    <Form.Item name="p4ImageUrl" label="Ảnh gợi ý (Tùy chọn)">
+                        {p4ImageUrl ? (
+                            <div style={{ position: 'relative', border: '1px dashed #d9d9d9', borderRadius: '12px', padding: '8px', background: '#f8fafc' }}>
+                                <img src={p4ImageUrl} alt="Preview Suggestions" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '8px' }} />
+                                <Button
+                                    type="primary"
+                                    danger
+                                    shape="circle"
+                                    icon={<DeleteOutlined />}
+                                    size="small"
+                                    style={{ position: 'absolute', top: '16px', right: '16px' }}
+                                    onClick={() => form.setFieldValue('p4ImageUrl', undefined)}
+                                />
+                            </div>
+                        ) : (
+                            <Upload.Dragger
+                                customRequest={(options) => handleUpload(options, 'images', 'p4ImageUrl')}
+                                showUploadList={false}
+                                accept="image/*"
+                                style={{ background: '#f8fafc', borderRadius: '12px' }}
+                            >
+                                <p className="ant-upload-drag-icon" style={{ marginBottom: '8px' }}><PictureOutlined style={{ fontSize: '24px', color: ADMIN_COLORS.primary }} /></p>
+                                <p className="ant-upload-text" style={{ fontSize: '13px' }}>Kéo thả hoặc Click</p>
+                            </Upload.Dragger>
+                        )}
                     </Form.Item>
                 </Col>
-                <Col span={18}>
+                <Col span={16}>
                     <div style={{ background: '#fffbeb', border: '1px solid #fef3c7', padding: '16px', borderRadius: '12px', marginBottom: '16px' }}>
                         <Text strong style={{ color: '#92400e' }}>Lưu ý: </Text>
                         <Text style={{ color: '#92400e' }}>Thí sinh có 1 phút chuẩn bị và 2 phút nói liên tục cho cả 3 câu dưới đây.</Text>

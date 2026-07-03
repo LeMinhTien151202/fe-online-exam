@@ -5,7 +5,8 @@ interface ProfileFieldProps {
     label: string;
     id: string;
     type?: string;
-    defaultValue?: string;
+    value?: string;
+    onChange?: (value: string) => void;
     placeholder?: string;
     isSelect?: boolean;
     children?: React.ReactNode;
@@ -15,7 +16,8 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
     label,
     id,
     type = 'text',
-    defaultValue,
+    value,
+    onChange,
     placeholder,
     isSelect = false,
     children
@@ -25,14 +27,19 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
             <label htmlFor={id}>{label}</label>
             <div className="input-wrapper">
                 {isSelect ? (
-                    <select id={id} defaultValue={defaultValue}>
+                    <select
+                        id={id}
+                        value={value}
+                        onChange={(e) => onChange?.(e.target.value)}
+                    >
                         {children}
                     </select>
                 ) : (
                     <input
                         id={id}
                         type={type}
-                        defaultValue={defaultValue}
+                        value={value}
+                        onChange={(e) => onChange?.(e.target.value)}
                         placeholder={placeholder}
                     />
                 )}

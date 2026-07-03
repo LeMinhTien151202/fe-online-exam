@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Select, Radio, Space, Divider, Row, Col, Upload, Button, Typography, Card, Tag, Steps } from 'antd';
+import { Form, Input, Select, Radio, Space, Divider, Row, Col, Upload, Button, Typography, Card, Tag, Steps, message } from 'antd';
 import {
     AudioOutlined,
     UploadOutlined,
@@ -15,6 +15,7 @@ import {
     SaveOutlined
 } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../../constants';
+import { questionApi } from '../../services/questionApi';
 
 const { TextArea } = Input;
 
@@ -27,8 +28,12 @@ interface ListeningFormProps {
 const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) => {
     const [currentStep, setCurrentStep] = useState(0);
     const [activePart, setActivePart] = useState(part);
+    const [isUploading, setIsUploading] = useState(false);
 
     const watchedPart = Form.useWatch('part', form);
+    const audioUrl = Form.useWatch('audioUrl', form);
+    const watchedSpeakerAnswers = Form.useWatch('speakerAnswers', form);
+
     React.useEffect(() => {
         if (watchedPart && watchedPart !== activePart) {
             setActivePart(watchedPart);
@@ -41,6 +46,22 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
     const isPart4 = activePart === 'part4';
 
     const opinionPool = Form.useWatch('opinionPool', form);
+
+    const handleUpload = async (options: any, folderType: 'images' | 'audio', formKey: string) => {
+        const { file, onSuccess, onError } = options;
+        try {
+            setIsUploading(true);
+            const res = await questionApi.upload(file as File, folderType);
+            form.setFieldValue(formKey, res.url);
+            onSuccess(res, file);
+            message.success('Upload file thành công!');
+        } catch (err: any) {
+            onError(err);
+            message.error(err.response?.data?.message || 'Upload file thất bại.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     // Re-initialize fields when part changes
     React.useEffect(() => {
@@ -189,7 +210,7 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
                             <Form.Item name={['speakerAnswers', idx - 1]} label={<strong>Speaker {idx}</strong>} rules={[{ required: true }]}>
                                 <Select placeholder="Chọn ý kiến" allowClear>
                                     {opinionPool?.map((op: any, i: number) => (
-                                        <Select.Option key={i} value={i} disabled={form.getFieldValue('speakerAnswers')?.includes(i)}>
+                                        <Select.Option key={i} value={i} disabled={watchedSpeakerAnswers?.includes(i)}>
                                             {op.text ? `(${String.fromCharCode(65 + i)}) ${op.text.substring(0, 30)}...` : `Ý kiến ${String.fromCharCode(65 + i)}`}
                                         </Select.Option>
                                     ))}
@@ -271,11 +292,20 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
                                 </Col>
                                 <Col span={6}>
                                     <Form.Item label="Hoặc tải lên">
-                                        <Upload maxCount={1} showUploadList={false}>
-                                            <Button icon={<UploadOutlined />} block>Upload</Button>
+                                        <Upload
+                                            customRequest={(opts) => handleUpload(opts, 'audio', 'audioUrl')}
+                                            showUploadList={false}
+                                            accept="audio/*"
+                                        >
+                                            <Button icon={<UploadOutlined />} loading={isUploading} block>Upload</Button>
                                         </Upload>
                                     </Form.Item>
                                 </Col>
+                                {audioUrl && (
+                                    <Col span={24} style={{ marginBottom: '16px' }}>
+                                        <audio src={audioUrl} controls style={{ width: '100%' }} />
+                                    </Col>
+                                )}
                                 <Col span={24}>
                                     <Form.Item name="transcript" label="Nội dung Script (Lời thoại)" rules={[{ required: true }]}>
                                         <TextArea rows={8} placeholder="Nhập transcript chi tiết..." />

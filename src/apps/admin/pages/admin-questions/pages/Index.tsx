@@ -1,10 +1,13 @@
 import React from 'react';
-import { Button, Typography, Modal, Space } from 'antd';
+import { Button, Typography, Modal } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useQuestions } from '../hook/useQuestions';
 import { useQuestionColumns } from '../hook/useQuestionColumns';
+import { mapQuestionToRow } from '../services/questionMapper';
 import * as S from '../styles/styled';
+
+type QuestionRow = ReturnType<typeof mapQuestionToRow>;
 
 import MetricOverview from '../components/MetricOverview';
 import SkillSubTabs from '../components/SkillSubTabs';
@@ -20,27 +23,33 @@ const QuestionsIndex: React.FC = () => {
     partTab,
     setPartTab,
     questions,
+    isLoading,
     isModalOpen,
     setIsModalOpen,
     selectedQuestion,
     form,
     handleCreateQuestion,
     handleSaveQuestion,
+    handleDeleteQuestion,
   } = useQuestions();
 
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
-  const [viewingQuestion, setViewingQuestion] = React.useState<any>(null);
+  const [viewingQuestion, setViewingQuestion] = React.useState<QuestionRow | null>(null);
 
-  const handleEdit = (record: any) => {
+  const handleEdit = () => {
     setIsModalOpen(true);
   };
 
-  const handleView = (record: any) => {
+  const handleView = (record: QuestionRow) => {
     setViewingQuestion(record);
     setIsPreviewOpen(true);
   };
 
-  const columns = useQuestionColumns(handleEdit, handleView);
+  const handleDelete = (record: QuestionRow) => {
+    if (record?.id != null) handleDeleteQuestion(record.id);
+  };
+
+  const columns = useQuestionColumns(handleEdit, handleView, handleDelete);
 
   const skillLabels: Record<string, string> = {
     grammar: 'Ngữ pháp & Từ vựng',
@@ -49,11 +58,6 @@ const QuestionsIndex: React.FC = () => {
     speaking: 'Nói',
     writing: 'Viết',
   };
-
-  const filteredQuestions = questions.filter(q =>
-    q.type.toLowerCase().includes(skillTab.substring(0, 4)) &&
-    (!q.part || q.part === partTab)
-  );
 
   return (
     <S.Container>
@@ -81,8 +85,9 @@ const QuestionsIndex: React.FC = () => {
 
       <QuestionTable
         columns={columns}
-        dataSource={filteredQuestions}
-        total={filteredQuestions.length}
+        dataSource={questions}
+        total={questions.length}
+        loading={isLoading}
       />
 
       <Modal

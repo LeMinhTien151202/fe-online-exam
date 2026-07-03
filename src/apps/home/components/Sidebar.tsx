@@ -4,11 +4,12 @@ import {
   DownOutlined
 } from '@ant-design/icons';
 import { useRouterState, useNavigate } from '@tanstack/react-router';
+import { useAppSelector } from '@/shared/store/hooks';
+import { useLogout } from '@/shared/hooks/useLogout';
 import * as S from './Sidebar.styled';
 
 interface SidebarProps {
   onClose?: () => void;
-  isLoggedIn?: boolean;
 }
 
 interface Notification {
@@ -20,10 +21,20 @@ interface Notification {
   group: 'Hôm nay' | 'Hôm qua' | 'Tuần này';
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ onClose, isLoggedIn = true }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const { logout } = useLogout();
+
+  const displayName = user?.fullName || user?.profile?.fullName || user?.email || 'Thí sinh';
+  const avatarLetter = displayName.charAt(0).toUpperCase();
+
+  const handleLogout = () => {
+    logout();
+    if (onClose) onClose();
+  };
 
   const [collapsed, setCollapsed] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -329,10 +340,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isLoggedIn = true }) 
 
         {/* User Profile Footer */}
         <S.UserProfileWrapper>
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <div ref={userMenuRef}>
               <S.DropdownMenu $isOpen={isUserMenuOpen} $collapsed={collapsed}>
-                <S.MenuItem onClick={() => setIsUserMenuOpen(false)}>
+                <S.MenuItem onClick={() => { setIsUserMenuOpen(false); navigate({ to: '/profile' }); }}>
                   <span className="material-symbols-outlined">person</span>
                   Hồ sơ cá nhân
                 </S.MenuItem>
@@ -340,24 +351,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isLoggedIn = true }) 
                   <span className="material-symbols-outlined">settings</span>
                   Cài đặt tài khoản
                 </S.MenuItem>
-                <S.MenuItem $danger onClick={() => navigate({ to: '/login' })}>
+                <S.MenuItem $danger onClick={handleLogout}>
                   <span className="material-symbols-outlined">logout</span>
                   Đăng xuất
                 </S.MenuItem>
               </S.DropdownMenu>
 
-              <Tooltip title={collapsed ? "Thí sinh" : ""} placement="right">
+              <Tooltip title={collapsed ? displayName : ""} placement="right">
                 <S.UserProfileCard
                   $collapsed={collapsed}
                   $isActive={isUserMenuOpen}
                   onClick={toggleUserMenu}
                 >
                   <div className="avatar-container" onClick={collapsed ? toggleNotif : undefined}>
-                    <div className="avatar">T</div>
+                    <div className="avatar">{avatarLetter}</div>
                     {collapsed && <S.CollapsedBadge>4</S.CollapsedBadge>}
                   </div>
                   <div className="user-info">
-                    <div className="name">Thí sinh</div>
+                    <div className="name">{displayName}</div>
                     <div className="plan">Gói Miễn phí</div>
                   </div>
                   {!collapsed && (

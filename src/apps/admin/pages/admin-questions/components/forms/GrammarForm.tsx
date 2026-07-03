@@ -28,6 +28,7 @@ interface GrammarFormProps {
 const GrammarForm: React.FC<GrammarFormProps> = ({ form, part, onSubmit }) => {
     const [currentStep, setCurrentStep] = useState(0);
     const watchedPart = Form.useWatch('part', form);
+    const watchedVocabPool = Form.useWatch('vocabPool', form);
 
     // Sync prop part to form if store is empty
     React.useEffect(() => {
@@ -165,7 +166,7 @@ const GrammarForm: React.FC<GrammarFormProps> = ({ form, part, onSubmit }) => {
                                         <Col span={6}>
                                             <Form.Item {...restField} name={[name, 'answerIndex']} label="Từ đúng (trong pool)" rules={[{ required: true }]}>
                                                 <Select placeholder="Chọn từ đúng">
-                                                    {form.getFieldValue('vocabPool')?.map((word: string, idx: number) => (
+                                                    {watchedVocabPool?.map((word: string, idx: number) => (
                                                         <Select.Option key={idx} value={idx}>
                                                             <Tag color="cyan">#{idx + 1}</Tag> {word || `Từ #${idx + 1}`}
                                                         </Select.Option>

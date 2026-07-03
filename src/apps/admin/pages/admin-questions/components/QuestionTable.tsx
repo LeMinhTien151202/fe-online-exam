@@ -9,9 +9,10 @@ interface QuestionTableProps {
     columns: any[];
     dataSource: any[];
     total: number;
+    loading?: boolean;
 }
 
-const QuestionTable: React.FC<QuestionTableProps> = ({ columns, dataSource, total }) => {
+const QuestionTable: React.FC<QuestionTableProps> = ({ columns, dataSource, total, loading }) => {
     return (
         <Card bordered={false} styles={{ body: { padding: 0 } }} style={{ background: 'transparent', boxShadow: 'none' }}>
             <S.FilterBar style={{ marginBottom: '1rem' }}>
@@ -34,6 +35,7 @@ const QuestionTable: React.FC<QuestionTableProps> = ({ columns, dataSource, tota
                     dataSource={dataSource}
                     pagination={false}
                     size="middle"
+                    loading={loading}
                 />
             </AdminTableWrapper>
             <AdminPaginationWrapper>

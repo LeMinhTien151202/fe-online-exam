@@ -29,6 +29,12 @@ _Mỗi khi hoàn thành task, phải dùng lệnh /save để cập nhật vắn
 
 ---
 
+- _2026-07-03_: Nối API Auth + Profile + Question Bank (React Query, không dùng fetch):
+  - **Auth**: `apps/auth/services` (authApi/authQuery/types) cho login/register/refresh/logout/change-password/Google; axios interceptor tự refresh token, guest-mode (401 âm thầm trừ login/register), Redux `authSlice` + `useLogout` xóa cache khi đổi phiên; trang `/oauth` callback Google.
+  - **Profile**: `GET/PATCH /profile/me` khớp `user_profiles` (full_name, target_date, aptis_goal, school_name).
+  - **Question Bank** (`apps/admin/pages/admin-questions/services`): types 19 dạng extraConfig + questionApi (CRUD `/questions` + `/files/upload`) + questionQuery + **questionMapper** so khớp form 5 kỹ năng → payload theo QUESTION_SAMPLES (mở rộng form "gộp" thành mảng POST: Grammar 25 câu, Listening P3/P4 nhiều bản, Writing P4 2 task cùng question_group_id...). Bảng câu hỏi fetch thật theo skill+part, có xóa.
+  - _Còn tồn_: Reading P5 heading-match cần form thu thập "câu 0" mẫu (đang sinh example tối thiểu); upload ảnh/audio Speaking/Listening cần wire `useUploadFileMutation` vào antd Upload để lấy URL thật.
+
 - _2026-05-17_: Xây dựng 4 màn hình luyện tập Đọc hiểu tương tác đỉnh cao (Reading Practice Sub-Pages):
   - Phân rã cấu trúc và tổ chức 4 trang luyện tập thành các thư mục riêng biệt (`part1/`, `part2/`, `part3/`, `part4/`) dưới thư mục `src/apps/reading-practice/pages/parts/`:
     * Mỗi thư mục tự quản lý file giao diện chính (`Index.tsx`) và file định nghĩa kiểu dáng CSS-in-JS (`styled.ts`) giúp tối ưu hóa khả năng bảo trì và nâng cấp.

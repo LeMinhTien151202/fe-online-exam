@@ -7,7 +7,8 @@ const { Text } = Typography;
 
 export const useQuestionColumns = (
     handleEdit: (record: any) => void,
-    handleView: (record: any) => void
+    handleView: (record: any) => void,
+    handleDelete?: (record: any) => void
 ) => {
     const columns: TableProps<any>['columns'] = [
         {
@@ -97,7 +98,7 @@ export const useQuestionColumns = (
                         <Button className="action-btn edit" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
                     </Tooltip>
                     <Tooltip title="Xóa">
-                        <Button className="action-btn delete" icon={<DeleteOutlined />} />
+                        <Button className="action-btn delete" icon={<DeleteOutlined />} onClick={() => handleDelete?.(record)} />
                     </Tooltip>
                 </Space>
             ),

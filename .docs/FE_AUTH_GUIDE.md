@@ -80,9 +80,16 @@ Tạo tài khoản **STUDENT** (không cần đăng nhập).
 {
   "access_token": "eyJhbGciOiJ...",
   "refresh_token": "eyJhbGciOiJ...",
-  "user": { "id": 1, "email": "student@test.com", "role": "STUDENT" }
+  "user": {
+    "id": 1,
+    "email": "student@test.com",
+    "role": "STUDENT",
+    "fullName": "Nguyen Van A"
+  }
 }
 ```
+
+> `user.fullName` lấy từ bảng `user_profiles`. Nếu cần thêm avatar/profile đầy đủ thì gọi `GET /auth/account`.
 
 - BE đồng thời set **cookie httpOnly `refresh_token`** (FE không cần tự lưu cái này).
 - FE lưu `access_token` (biến state / localStorage) để gắn vào header các request sau.
@@ -113,7 +120,93 @@ const res = await fetch('http://localhost:3000/api/v1/auth/account', {
 ```
 
 ### Lấy thông tin tài khoản — `GET /auth/account`
-Response `data` = user + profile (dùng để hiển thị sau khi login/refresh trang).
+Dùng để hiển thị lại thông tin user sau khi login/refresh trang.
+
+**Response:**
+```json
+{
+  "code": 200,
+  "success": true,
+  "message": "Lấy thông tin tài khoản thành công",
+  "messages": [],
+  "data": {
+    "id": 1,
+    "email": "student@test.com",
+    "role": "STUDENT",
+    "status": "ACTIVE",
+    "createdAt": "2026-07-02T10:00:00.000Z",
+    "profile": {
+      "userId": 1,
+      "fullName": "Nguyen Van A",
+      "avatarUrl": null,
+      "targetDate": null,
+      "aptisGoal": "B2",
+      "schoolName": null,
+      "overallMockAvg": 0
+    }
+  },
+  "metaData": null
+}
+```
+
+---
+
+## 3.1. Hồ sơ cá nhân — `/profile/me` (user đăng nhập)
+
+### GET /profile/me
+**Response:**
+```json
+{
+  "code": 200,
+  "success": true,
+  "message": "Lấy hồ sơ thành công",
+  "messages": [],
+  "data": {
+    "userId": 1,
+    "fullName": "Nguyen Van A",
+    "avatarUrl": null,
+    "targetDate": "2026-12-31T00:00:00.000Z",
+    "aptisGoal": "B2",
+    "schoolName": "THPT ABC",
+    "overallMockAvg": 0
+  },
+  "metaData": null
+}
+```
+
+### PATCH /profile/me
+Chỉ gửi field cần đổi. `aptis_goal` ∈ `B1|B2|C`; `target_date` dạng `YYYY-MM-DD`.
+
+**Request:**
+```json
+{
+  "full_name": "Nguyen Van A",
+  "avatar_url": "https://.../avatar.png",
+  "target_date": "2026-12-31",
+  "aptis_goal": "B2",
+  "school_name": "THPT ABC"
+}
+```
+
+**Response:**
+```json
+{
+  "code": 200,
+  "success": true,
+  "message": "Cập nhật hồ sơ thành công",
+  "messages": [],
+  "data": {
+    "userId": 1,
+    "fullName": "Nguyen Van A",
+    "avatarUrl": "https://.../avatar.png",
+    "targetDate": "2026-12-31T00:00:00.000Z",
+    "aptisGoal": "B2",
+    "schoolName": "THPT ABC",
+    "overallMockAvg": 0
+  },
+  "metaData": null
+}
+```
 
 ---
 
@@ -130,7 +223,26 @@ const body = await res.json();
 const newAccessToken = body.data.access_token; // lưu lại
 ```
 
-- Nếu refresh_token cũng hết hạn / không hợp lệ → **401** → điều hướng về trang đăng nhập.
+**Response:**
+```json
+{
+  "code": 200,
+  "success": true,
+  "message": "Làm mới token thành công",
+  "messages": [],
+  "data": {
+    "access_token": "eyJhbGciOiJ...",
+    "refresh_token": "eyJhbGciOiJ..."
+  },
+  "metaData": null
+}
+```
+
+- BE đồng thời set lại cookie `refresh_token` mới.
+- Nếu refresh_token cũng hết hạn / không hợp lệ → **401** → điều hướng về trang đăng nhập:
+  ```json
+  { "statusCode": 401, "message": "Refresh token không hợp lệ hoặc đã hết hạn", "error": "Unauthorized" }
+  ```
 
 ---
 
@@ -146,14 +258,45 @@ await fetch('http://localhost:3000/api/v1/auth/logout', {
 ```
 BE xóa cookie `refresh_token`.
 
+**Response:**
+```json
+{
+  "code": 200,
+  "success": true,
+  "message": "Đăng xuất thành công",
+  "messages": [],
+  "data": { "message": "Đăng xuất thành công" },
+  "metaData": null
+}
+```
+
 ---
 
 ## 6. Đổi mật khẩu — `PATCH /auth/change-password`
 
+Cần đăng nhập (gửi Bearer token).
+
+**Request:**
 ```json
 { "oldPassword": "123456", "newPassword": "123456new" }
 ```
-Cần đăng nhập (gửi Bearer token).
+
+**Response:**
+```json
+{
+  "code": 200,
+  "success": true,
+  "message": "Đổi mật khẩu thành công",
+  "messages": [],
+  "data": { "message": "Đổi mật khẩu thành công" },
+  "metaData": null
+}
+```
+
+- Sai mật khẩu cũ → **400**:
+  ```json
+  { "statusCode": 400, "message": "Mật khẩu hiện tại không đúng", "error": "Bad Request" }
+  ```
 
 ---
 
@@ -167,15 +310,23 @@ Flow OAuth chuẩn (chuyển hướng trình duyệt):
    ```
    (dùng `window.location.href = ...`, KHÔNG dùng fetch/ajax.)
 2. Người dùng chọn tài khoản Google → BE xử lý → callback.
-3. Kết quả:
-   - Nếu BE cấu hình `GOOGLE_SUCCESS_REDIRECT` → **redirect về FE** kèm token:
-     ```
-     https://your-fe.com/oauth?access_token=eyJ...
-     ```
-     FE đọc `access_token` từ query, lưu lại, gọi `/auth/account` để lấy user.
-   - Nếu chưa cấu hình redirect → BE trả JSON `{ data: { access_token, user } }` (chủ yếu để test).
+3. Kết quả — **BE đã cấu hình** `GOOGLE_SUCCESS_REDIRECT=http://localhost:5173/oauth` (môi trường dev) → sau khi đăng nhập Google, trình duyệt **tự redirect về FE** kèm token:
+   ```
+   http://localhost:5173/oauth?access_token=eyJ...
+   ```
+   FE tạo route `/oauth` để xử lý:
+   ```js
+   // Trang /oauth của FE
+   const params = new URLSearchParams(window.location.search);
+   const accessToken = params.get('access_token');
+   if (accessToken) {
+     setAccessToken(accessToken);           // lưu token
+     const me = await api.get('/auth/account'); // lấy user + profile
+     window.location.replace('/');           // vào app
+   }
+   ```
 
-> Khuyến nghị: đặt `GOOGLE_SUCCESS_REDIRECT` = trang xử lý OAuth của FE để có UX mượt.
+> Cookie `refresh_token` được set ở domain BE (`localhost:3000`) — vì cùng host `localhost` nên khi FE gọi `/auth/refresh` với `credentials:'include'` cookie vẫn được gửi. Khi lên production, đổi `GOOGLE_SUCCESS_REDIRECT` sang domain FE thật (nhờ BE cấu hình lại env).
 
 ---
 
@@ -258,6 +409,8 @@ const me = await api.get('/auth/account');
 | POST | `/auth/register` | Không | Tạo STUDENT |
 | POST | `/auth/login` | Không | Field `username` = email; set cookie refresh |
 | GET | `/auth/account` | Có | Thông tin user + profile |
+| GET | `/profile/me` | Có | Xem hồ sơ (fullName, aptisGoal...) |
+| PATCH | `/profile/me` | Có | Cập nhật hồ sơ |
 | GET | `/auth/refresh` | Không (dùng cookie) | Trả access_token mới |
 | POST | `/auth/logout` | Có | Xóa cookie refresh |
 | PATCH | `/auth/change-password` | Có | Đổi mật khẩu |

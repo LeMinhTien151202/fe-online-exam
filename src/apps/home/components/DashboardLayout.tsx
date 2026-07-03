@@ -15,7 +15,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     return (
         <S.MainLayout>
             {/* Sidebar Desktop */}
-            <Sidebar isLoggedIn={true} />
+            <Sidebar />
 
             {/* Sidebar Mobile */}
             <Drawer
@@ -26,7 +26,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 width={280}
                 closable={false}
             >
-                <Sidebar onClose={() => setIsMobileMenuOpen(false)} isLoggedIn={true} />
+                <Sidebar onClose={() => setIsMobileMenuOpen(false)} />
             </Drawer>
 
             <S.RightColumn>

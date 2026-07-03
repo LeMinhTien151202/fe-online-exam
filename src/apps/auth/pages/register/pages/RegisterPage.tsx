@@ -1,11 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from '@tanstack/react-router';
+import { message } from 'antd';
 import AuthLayout from '../../../components/AuthLayout';
+import { useRegister } from '../hook/useRegister';
 import * as S from '../styles/register.styled';
 
 const RegisterPage: React.FC = () => {
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const { register, isRegistering } = useRegister();
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (password !== confirmPassword) {
+            message.error('Mật khẩu nhập lại không khớp!');
+            return;
+        }
+        register({ full_name: fullName, email, password });
     };
 
     return (
@@ -20,7 +33,13 @@ const RegisterPage: React.FC = () => {
                     <label>Họ và tên</label>
                     <div className="input-wrapper">
                         <span className="material-symbols-outlined field-icon">badge</span>
-                        <input type="text" placeholder="Nguyễn Văn A" required />
+                        <input
+                            type="text"
+                            placeholder="Nguyễn Văn A"
+                            required
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                        />
                     </div>
                 </S.FormGroup>
 
@@ -28,7 +47,13 @@ const RegisterPage: React.FC = () => {
                     <label>Email học viên</label>
                     <div className="input-wrapper">
                         <span className="material-symbols-outlined field-icon">mail</span>
-                        <input type="email" placeholder="thisinh@gmail.com" required />
+                        <input
+                            type="email"
+                            placeholder="thisinh@gmail.com"
+                            required
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
                     </div>
                 </S.FormGroup>
 
@@ -36,7 +61,13 @@ const RegisterPage: React.FC = () => {
                     <label>Mật khẩu</label>
                     <div className="input-wrapper">
                         <span className="material-symbols-outlined field-icon">lock</span>
-                        <input type="password" placeholder="••••••••" required />
+                        <input
+                            type="password"
+                            placeholder="••••••••"
+                            required
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
                     </div>
                 </S.FormGroup>
 
@@ -44,11 +75,19 @@ const RegisterPage: React.FC = () => {
                     <label>Nhập lại mật khẩu</label>
                     <div className="input-wrapper">
                         <span className="material-symbols-outlined field-icon">lock_reset</span>
-                        <input type="password" placeholder="••••••••" required />
+                        <input
+                            type="password"
+                            placeholder="••••••••"
+                            required
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
                     </div>
                 </S.FormGroup>
 
-                <S.PrimaryButton type="submit">Đăng ký ngay</S.PrimaryButton>
+                <S.PrimaryButton type="submit" disabled={isRegistering}>
+                    {isRegistering ? 'Đang xử lý...' : 'Đăng ký ngay'}
+                </S.PrimaryButton>
             </S.Form>
 
             <S.FormFooter>
