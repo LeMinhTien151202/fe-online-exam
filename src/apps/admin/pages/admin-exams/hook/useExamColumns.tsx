@@ -1,10 +1,26 @@
 import React from 'react';
-import { Space, Button, Tag, Typography, TableProps } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { Space, Button, Tag, Typography, TableProps, Tooltip } from 'antd';
+import { DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
-export const useExamColumns = (handleDeletePart: (key: string) => void, handleDeleteSet: (key: string) => void) => {
+const renderStatus = (handleToggle: (key: string) => void) => (status: string, record: { key: string }) => (
+    <Tooltip title="Bấm để bật/tắt hiển thị cho học viên">
+        <Tag
+            color={status === 'active' ? 'success' : 'default'}
+            style={{ borderRadius: '12px', cursor: 'pointer' }}
+            onClick={() => handleToggle(record.key)}
+        >
+            {status === 'active' ? 'Công khai' : 'Nháp'}
+        </Tag>
+    </Tooltip>
+);
+
+export const useExamColumns = (
+    handleDelete: (key: string) => void,
+    handleToggle: (key: string) => void,
+    handleView?: (key: string) => void
+) => {
     const columnsPart: TableProps<any>['columns'] = [
         {
             title: 'TT',
@@ -65,11 +81,7 @@ export const useExamColumns = (handleDeletePart: (key: string) => void, handleDe
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
-            render: (status: string) => (
-                <div className="custom-status-tag">
-                    {status === 'active' ? 'Công khai' : 'Nháp'}
-                </div>
-            ),
+            render: renderStatus(handleToggle),
         },
         {
             title: 'Thao tác',
@@ -77,9 +89,8 @@ export const useExamColumns = (handleDeletePart: (key: string) => void, handleDe
             align: 'center',
             render: (record: any) => (
                 <Space>
-                    <Button className="action-btn" icon={<EyeOutlined />} />
-                    <Button className="action-btn edit" icon={<EditOutlined />} />
-                    <Button className="action-btn delete" icon={<DeleteOutlined />} onClick={() => handleDeletePart(record.key)} />
+                    <Button className="action-btn" icon={<EyeOutlined />} onClick={() => handleView?.(record.key)} />
+                    <Button className="action-btn delete" icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
                 </Space>
             ),
         },
@@ -151,11 +162,7 @@ export const useExamColumns = (handleDeletePart: (key: string) => void, handleDe
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
-            render: (status: string) => (
-                <div className="custom-status-tag">
-                    {status === 'active' ? 'Công khai' : 'Nháp'}
-                </div>
-            ),
+            render: renderStatus(handleToggle),
         },
         {
             title: 'Thao tác',
@@ -163,9 +170,8 @@ export const useExamColumns = (handleDeletePart: (key: string) => void, handleDe
             align: 'center',
             render: (record: any) => (
                 <Space>
-                    <Button className="action-btn" icon={<EyeOutlined />} />
-                    <Button className="action-btn edit" icon={<EditOutlined />} />
-                    <Button className="action-btn delete" icon={<DeleteOutlined />} onClick={() => handleDeleteSet(record.key)} />
+                    <Button className="action-btn" icon={<EyeOutlined />} onClick={() => handleView?.(record.key)} />
+                    <Button className="action-btn delete" icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
                 </Space>
             ),
         },
@@ -210,21 +216,16 @@ export const useExamColumns = (handleDeletePart: (key: string) => void, handleDe
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
-            render: (status: string) => (
-                <div className="custom-status-tag">
-                    {status === 'active' ? 'Công khai' : 'Nháp'}
-                </div>
-            ),
+            render: renderStatus(handleToggle),
         },
         {
             title: 'Thao tác',
             key: 'actions',
             align: 'center',
-            render: () => (
+            render: (record: any) => (
                 <Space>
-                    <Button className="action-btn" icon={<EyeOutlined />} />
-                    <Button className="action-btn edit" icon={<EditOutlined />} />
-                    <Button className="action-btn delete" icon={<DeleteOutlined />} />
+                    <Button className="action-btn" icon={<EyeOutlined />} onClick={() => handleView?.(record.key)} />
+                    <Button className="action-btn delete" icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
                 </Space>
             ),
         },

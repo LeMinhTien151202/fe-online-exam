@@ -85,7 +85,7 @@ export const useQuestions = () => {
 
     if (skill === "listening") {
       if (partTab === "part1") initialValues.questions = [{}];
-      else if (partTab === "part4") initialValues.questions = [{}, {}, {}, {}];
+      else if (partTab === "part4") initialValues.questions = [{}, {}];
       else if (partTab === "part3") initialValues.opinions = [{}, {}, {}, {}];
       else if (partTab === "part2") {
         initialValues.opinionPool = [{}, {}, {}, {}, {}, {}];

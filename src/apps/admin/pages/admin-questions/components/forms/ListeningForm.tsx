@@ -69,8 +69,8 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
         const values = form.getFieldsValue();
         if (isPart1 && (!values.questions || values.questions.length !== 1)) {
             form.setFieldsValue({ questions: [{}] });
-        } else if (isPart4 && (!values.questions || values.questions.length !== 4)) {
-            form.setFieldsValue({ questions: [{}, {}, {}, {}] });
+        } else if (isPart4 && (!values.questions || values.questions.length !== 2)) {
+            form.setFieldsValue({ questions: [{}, {}] });
         } else if (isPart3 && (!values.opinions || values.opinions.length !== 4)) {
             form.setFieldsValue({ opinions: [{}, {}, {}, {}] });
         } else if (isPart2 && (!values.opinionPool || values.opinionPool.length !== 6)) {
@@ -349,7 +349,7 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
                     {isPart1 && renderMCQSection(1, "PART 1: THÔNG TIN CHI TIẾT (1 CÂU HỎI)")}
                     {isPart2 && renderPart2Matching()}
                     {isPart3 && renderPart3Matching()}
-                    {isPart4 && renderMCQSection(4, "PART 4: BÀI NÓI DÀI (4 CÂU HỎI)")}
+                    {isPart4 && renderMCQSection(2, "PART 4: BÀI NÓI DÀI (1 AUDIO - 2 CÂU HỎI)")}
                 </div>
             )
         }

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, List, Button, Typography, Row, Col, Space, Tag, Collapse, Input, Tooltip } from 'antd';
 import { PlusOutlined, DeleteOutlined, SearchOutlined, AudioOutlined, PictureOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
-import { mockBankQuestions } from '../services/mockData';
+import { IBankQuestion } from '../services/types';
 
 const { Text } = Typography;
 const { Panel } = Collapse;
@@ -13,6 +13,7 @@ interface Props {
     handleRemoveQuestion: (key: string) => void;
     mode?: 'partial' | 'set' | 'full';
     targetPart?: string;
+    bankQuestions?: IBankQuestion[];
 }
 
 const SpeakingSelection: React.FC<Props> = ({
@@ -20,7 +21,8 @@ const SpeakingSelection: React.FC<Props> = ({
     handleAddQuestion,
     handleRemoveQuestion,
     mode = 'set',
-    targetPart = 'Part 1'
+    targetPart = 'Part 1',
+    bankQuestions = []
 }) => {
     const [searchText, setSearchText] = useState('');
     const displayParts = mode === 'partial' ? [targetPart] : ['Part 1', 'Part 2', 'Part 3', 'Part 4'];
@@ -45,7 +47,7 @@ const SpeakingSelection: React.FC<Props> = ({
                     <div style={{ maxHeight: '640px', overflowY: 'auto' }}>
                         <Collapse accordion defaultActiveKey={[displayParts[0]]} ghost expandIconPosition="end">
                             {displayParts.map(p => {
-                                const partQuestions = mockBankQuestions.filter((q: any) =>
+                                const partQuestions = bankQuestions.filter((q: any) =>
                                     q.type === 'Speaking' &&
                                     q.part === p &&
                                     (searchText === '' || q.content.toLowerCase().includes(searchText.toLowerCase()))

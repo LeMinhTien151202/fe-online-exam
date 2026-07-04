@@ -88,6 +88,8 @@ const buildListening = (v: FormValues): ICreateQuestionPayload[] => {
     const questions = arr<{ title: string; optA: string; optB: string; optC: string; correctAnswer: string }>(
       v.questions
     );
+    // P4: 1 audio dùng chung cho 2 câu -> cùng mediaUrl + cùng audio_group_id (mỗi lần lưu 1 group riêng)
+    const audioGroupId = `g-${Date.now()}`;
     return questions
       .filter((q) => q && q.title)
       .map((q) => ({
@@ -97,7 +99,7 @@ const buildListening = (v: FormValues): ICreateQuestionPayload[] => {
         mediaUrl,
         extraConfig: {
           options: buildMcOptions(q.optA, q.optB, q.optC, q.correctAnswer),
-          ...(part === 'part4' ? { audio_group_id: 'g1' } : {}),
+          ...(part === 'part4' ? { audio_group_id: audioGroupId } : {}),
         },
       }));
   }

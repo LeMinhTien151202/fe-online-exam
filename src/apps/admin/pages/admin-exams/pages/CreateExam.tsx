@@ -30,7 +30,6 @@ import {
 } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useCreateExam } from '../hook/useCreateExam';
-import { mockBankQuestions } from '../services/mockData';
 import * as S from '../styles/styled';
 
 // Selection Components
@@ -55,6 +54,8 @@ const CreateExam: React.FC = () => {
     currentStep,
     selectedQuestions,
     filteredQuestions,
+    bankQuestions,
+    isPublishing,
     examConfig,
     handleNext,
     handleBack,
@@ -253,27 +254,27 @@ const CreateExam: React.FC = () => {
                     {
                       key: 'Grammar',
                       label: '1. Grammar & Vocab',
-                      children: <GrammarSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} />
+                      children: <GrammarSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} bankQuestions={bankQuestions} />
                     },
                     {
                       key: 'Reading',
                       label: '2. Reading',
-                      children: <ReadingSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} />
+                      children: <ReadingSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} bankQuestions={bankQuestions} />
                     },
                     {
                       key: 'Listening',
                       label: '3. Listening',
-                      children: <ListeningSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} />
+                      children: <ListeningSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} bankQuestions={bankQuestions} />
                     },
                     {
                       key: 'Speaking',
                       label: '4. Speaking',
-                      children: <SpeakingSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} />
+                      children: <SpeakingSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} bankQuestions={bankQuestions} />
                     },
                     {
                       key: 'Writing',
                       label: '5. Writing',
-                      children: <WritingSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} />
+                      children: <WritingSelection selectedQuestions={selectedQuestions} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} bankQuestions={bankQuestions} />
                     },
                   ]}
                 />
@@ -286,6 +287,7 @@ const CreateExam: React.FC = () => {
                       handleRemoveQuestion={handleRemoveQuestion}
                       mode={typeValue as any}
                       targetPart={partValue}
+                      bankQuestions={bankQuestions}
                     />
                   ) : skillValue === 'Grammar' ? (
                     <GrammarSelection
@@ -294,6 +296,7 @@ const CreateExam: React.FC = () => {
                       handleRemoveQuestion={handleRemoveQuestion}
                       mode={typeValue as any}
                       targetPart={partValue}
+                      bankQuestions={bankQuestions}
                     />
                   ) : skillValue === 'Listening' ? (
                     <ListeningSelection
@@ -302,6 +305,7 @@ const CreateExam: React.FC = () => {
                       handleRemoveQuestion={handleRemoveQuestion}
                       mode={typeValue as any}
                       targetPart={partValue}
+                      bankQuestions={bankQuestions}
                     />
                   ) : skillValue === 'Speaking' ? (
                     <SpeakingSelection
@@ -310,6 +314,7 @@ const CreateExam: React.FC = () => {
                       handleRemoveQuestion={handleRemoveQuestion}
                       mode={typeValue as any}
                       targetPart={partValue}
+                      bankQuestions={bankQuestions}
                     />
                   ) : skillValue === 'Writing' ? (
                     <WritingSelection
@@ -318,6 +323,7 @@ const CreateExam: React.FC = () => {
                       handleRemoveQuestion={handleRemoveQuestion}
                       mode={typeValue as any}
                       targetPart={partValue}
+                      bankQuestions={bankQuestions}
                     />
                   ) : (
                     <GeneralSelection
@@ -391,6 +397,7 @@ const CreateExam: React.FC = () => {
                     icon={<ThunderboltOutlined />}
                     block
                     size="large"
+                    loading={isPublishing}
                     onClick={handlePublish}
                     style={{ background: ADMIN_COLORS.success, borderColor: ADMIN_COLORS.success }}
                   >

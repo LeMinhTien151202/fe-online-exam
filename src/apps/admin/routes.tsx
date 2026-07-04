@@ -15,6 +15,7 @@ import AdminUsersPage from './pages/admin-users/pages/Index';
 import AdminQuestionsPage from './pages/admin-questions/pages/Index';
 import AdminExamsPage from './pages/admin-exams/pages/Index';
 import AdminCreateExamPage from './pages/admin-exams/pages/CreateExam';
+import AdminExamDetailPage from './pages/admin-exams/pages/ExamDetail';
 import AdminMaterialsPage from './pages/admin-materials/pages/Index';
 import AdminProgressPage from './pages/admin-progress/pages/Index';
 import AdminGradingPage from './pages/admin-grading/pages/Index';
@@ -61,6 +62,12 @@ export const adminCreateExamRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/exams/create',
   component: AdminCreateExamPage,
+});
+
+export const adminExamDetailRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: '/exams/$examId',
+  component: AdminExamDetailPage,
 });
 
 export const adminMaterialsRoute = createRoute({
@@ -114,6 +121,7 @@ export const adminRoutes = [
   adminQuestionsBaseRoute,
   adminExamsRoute,
   adminCreateExamRoute,
+  adminExamDetailRoute,
   adminMaterialsRoute,
   adminProgressRoute,
   adminGradingRoute,
@@ -129,6 +137,7 @@ export const adminRouteChildren = [
   adminQuestionsBaseRoute,
   adminExamsRoute,
   adminCreateExamRoute,
+  adminExamDetailRoute,
   adminMaterialsRoute,
   adminProgressRoute,
   adminGradingRoute,

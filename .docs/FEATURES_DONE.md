@@ -29,6 +29,13 @@ _Mỗi khi hoàn thành task, phải dùng lệnh /save để cập nhật vắn
 
 ---
 
+- _2026-07-03_: Nối API Phase 4 — Exam Sets (dựng đề) cho `admin-exams`:
+  - Service: `services/types.ts` (map ui type partial/set/full ↔ PART_PRACTICE/SKILL_FULL_SET/MOCK_TEST, skill label ↔ id), `examApi.ts` (exam-sets CRUD + toggle-active + assign/reorder/remove question + patch section/part), `examQuery.ts`, `examBank.ts` (map câu hỏi API → shape Selection, gồm Vocabulary task_variant → Task 1-5).
+  - List ([useExams.ts]): fetch thật `/exam-sets`, tách 3 tab theo `type`, xóa + toggle-active thật (bấm tag trạng thái để bật/tắt hiển thị).
+  - Create ([useCreateExam.ts]): publish flow thật = `POST /exam-sets` (BE tự sinh sections/parts) → gom câu đã chọn theo `(skillId-partNumber)` map tới `part.id` → `POST /exam-parts/{id}/questions` → `toggle-active`. Ngân hàng câu hỏi ở bước chọn lấy thật từ `/questions` (thay `mockBankQuestions`), truyền xuống 5 Selection component qua prop `bankQuestions`.
+  - Chi tiết/sửa đề (route `/admin/exams/$examId`, [ExamDetail.tsx] + [useExamDetail.ts] + `ExamSectionCard`/`ExamPartEditor`): `GET /exam-sets/{id}` full tree; sửa title/description (`PATCH /exam-sets/{id}`); toggle-active; đổi `durationMinutes` từng section (`PATCH /exam-sections/{id}`); sửa `instruction` + upload/gán `audioUrl` chung part cho Listening P3/P4 (`PATCH /exam-parts/{id}`); gỡ câu hỏi (`DELETE`) + đổi thứ tự lên/xuống (`PATCH .../reorder`). Nút "xem" ở list mở trang này.
+  - _Còn tồn_: gán thêm câu hỏi vào đề đã tạo từ màn chi tiết (mới có gỡ/sắp xếp); `mockData.ts` còn export thừa chưa dùng.
+
 - _2026-07-03_: Nối API Auth + Profile + Question Bank (React Query, không dùng fetch):
   - **Auth**: `apps/auth/services` (authApi/authQuery/types) cho login/register/refresh/logout/change-password/Google; axios interceptor tự refresh token, guest-mode (401 âm thầm trừ login/register), Redux `authSlice` + `useLogout` xóa cache khi đổi phiên; trang `/oauth` callback Google.
   - **Profile**: `GET/PATCH /profile/me` khớp `user_profiles` (full_name, target_date, aptis_goal, school_name).

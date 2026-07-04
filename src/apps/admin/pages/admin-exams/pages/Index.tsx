@@ -17,12 +17,14 @@ const ExamsIndex: React.FC = () => {
     partExams,
     setExams,
     fullExams,
+    isLoading,
     handleCreateNew,
-    handleDeletePart,
-    handleDeleteSet,
+    handleDelete,
+    handleToggle,
+    handleView,
   } = useExams();
 
-  const { columnsPart, columnsSet, columnsFull } = useExamColumns(handleDeletePart, handleDeleteSet);
+  const { columnsPart, columnsSet, columnsFull } = useExamColumns(handleDelete, handleToggle, handleView);
 
   return (
     <S.Container>
@@ -44,6 +46,7 @@ const ExamsIndex: React.FC = () => {
                       dataSource={partExams}
                       size="middle"
                       pagination={false}
+                      loading={isLoading}
                     />
                   </AdminTableWrapper>
                   <AdminPaginationWrapper>
@@ -68,6 +71,7 @@ const ExamsIndex: React.FC = () => {
                       dataSource={setExams}
                       size="middle"
                       pagination={false}
+                      loading={isLoading}
                     />
                   </AdminTableWrapper>
                   <AdminPaginationWrapper>
@@ -92,6 +96,7 @@ const ExamsIndex: React.FC = () => {
                       dataSource={fullExams}
                       size="middle"
                       pagination={false}
+                      loading={isLoading}
                     />
                   </AdminTableWrapper>
                   <AdminPaginationWrapper>
