@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Table, Button, Input, Space } from 'antd';
-import { PlusOutlined, SearchOutlined, BellOutlined } from '@ant-design/icons';
+import { Table, Button, Input, Space, Tag } from 'antd';
+import { PlusOutlined, SearchOutlined, CheckOutlined } from '@ant-design/icons';
 import * as S from '../styles/styled';
 import { useNotifications } from '../hook/useNotifications';
 import { useNotificationColumns } from '../hook/useNotificationColumns';
@@ -9,16 +9,10 @@ import { AppPagination } from '@shared/components/Pagination/Index';
 import { AdminTableWrapper, AdminPaginationWrapper } from '../../../styles/admin-shared.styles';
 
 const AdminNotificationsPage: React.FC = () => {
-    const { notifications, loading, handleCreate, handleDelete } = useNotifications();
+    const { notifications, loading, unreadCount, handleCreate, handleMarkRead, handleReadAll } = useNotifications();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState<any>(null);
 
-    const handleEdit = (record: any) => {
-        setEditingItem(record);
-        setIsModalOpen(true);
-    };
-
-    const columns = useNotificationColumns(handleEdit, handleDelete);
+    const columns = useNotificationColumns(handleMarkRead);
 
     return (
         <S.Container>
@@ -31,12 +25,9 @@ const AdminNotificationsPage: React.FC = () => {
                     type="primary"
                     icon={<PlusOutlined />}
                     style={{ borderRadius: '8px', background: '#1a365d' }}
-                    onClick={() => {
-                        setEditingItem(null);
-                        setIsModalOpen(true);
-                    }}
+                    onClick={() => setIsModalOpen(true)}
                 >
-                    Tạo thông báo
+                    Gửi thông báo
                 </Button>
             </div>
 
@@ -50,7 +41,8 @@ const AdminNotificationsPage: React.FC = () => {
                         />
                     </S.SearchWrapper>
                     <Space>
-                        <Button icon={<BellOutlined />} style={{ borderRadius: '8px' }}>Lịch sử gửi</Button>
+                        <Tag color="orange">{unreadCount} chưa đọc</Tag>
+                        <Button icon={<CheckOutlined />} style={{ borderRadius: '8px' }} onClick={handleReadAll}>Đọc tất cả</Button>
                     </Space>
                 </S.FilterBar>
 
@@ -81,7 +73,6 @@ const AdminNotificationsPage: React.FC = () => {
                     handleCreate(values);
                     setIsModalOpen(false);
                 }}
-                initialValues={editingItem}
             />
         </S.Container>
     );

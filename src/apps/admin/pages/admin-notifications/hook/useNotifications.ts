@@ -1,43 +1,44 @@
-import { useState, useEffect } from "react";
+import { message } from 'antd';
 import {
-  AdminNotification,
-  notificationService,
-} from "../services/notificationService";
+  useCreateNotificationMutation,
+  useMarkReadMutation,
+  useNotificationsQuery,
+  useReadAllMutation,
+} from '../services/notificationQuery';
+import { ICreateNotificationPayload } from '../services/types';
 
 export const useNotifications = () => {
-  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { data, isLoading } = useNotificationsQuery();
+  const createMutation = useCreateNotificationMutation();
+  const markReadMutation = useMarkReadMutation();
+  const readAllMutation = useReadAllMutation();
 
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      const data = await notificationService.getNotifications();
-      setNotifications(data);
-    } catch (error) {
-      console.error("Failed to fetch notifications", error);
-    } finally {
-      setLoading(false);
-    }
+  const notifications = data ?? [];
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const handleCreate = (payload: ICreateNotificationPayload) => {
+    createMutation.mutate(payload, {
+      onSuccess: () => message.success('Đã gửi thông báo.'),
+    });
   };
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  const handleCreate = async (data: any) => {
-    const newNotif = await notificationService.createNotification(data);
-    setNotifications([newNotif, ...notifications]);
+  const handleMarkRead = (id: number) => {
+    markReadMutation.mutate(id);
   };
 
-  const handleDelete = (id: string) => {
-    setNotifications(notifications.filter((n) => n.id !== id));
+  const handleReadAll = () => {
+    readAllMutation.mutate(undefined, {
+      onSuccess: (res) => message.success(`Đã đánh dấu đã đọc ${res.updated} thông báo.`),
+    });
   };
 
   return {
     notifications,
-    loading,
+    loading: isLoading,
+    unreadCount,
+    isSending: createMutation.isPending,
     handleCreate,
-    handleDelete,
-    refresh: fetchNotifications,
+    handleMarkRead,
+    handleReadAll,
   };
 };

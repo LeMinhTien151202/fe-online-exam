@@ -29,6 +29,12 @@ _Mỗi khi hoàn thành task, phải dùng lệnh /save để cập nhật vắn
 
 ---
 
+- _2026-07-04_: Chi tiết câu hỏi + Phase 7 (Materials/Notifications/Settings):
+  - **Chi tiết câu hỏi** ([QuestionDetailModal.tsx]): viết lại render theo đúng loại câu hỏi từ `raw.extraConfig` — MC, gap-fill, WORD_BANK, ORDERING, SPEAKER_MATCH (Listening & Reading), Man/Woman/Both, HEADING_MATCH, ESSAY, RECORD (kèm audio player / ảnh). Không còn A/B/C/D giả.
+  - **Study Materials** ([admin-materials]): service (materialApi/query/types) + `GET/POST/DELETE /study-materials`; form dùng field thật (title, fileUrl, fileType PDF/VIDEO, skillId, durationSeconds); card mở fileUrl.
+  - **Notifications** ([admin-notifications]): service thật; list `GET /notifications/me` + badge chưa đọc, gửi `POST /notifications` (broadcast/gửi riêng receiverId, type SYSTEM/EXAM_REMINDER/GRADE_RESULT), `PATCH /{id}/read` + `read-all`. Bỏ edit/delete (không có API), xóa `notificationService.ts` mock.
+  - **Settings** ([admin-settings]): tab "Thời gian thi thử" nối `GET /settings` + `PATCH /settings/{key}` cho 5 key `MOCK_TEST_DURATION_*`. Các tab general/packages/logs vẫn là mock (ngoài phạm vi API).
+
 - _2026-07-03_: Nối API Phase 4 — Exam Sets (dựng đề) cho `admin-exams`:
   - Service: `services/types.ts` (map ui type partial/set/full ↔ PART_PRACTICE/SKILL_FULL_SET/MOCK_TEST, skill label ↔ id), `examApi.ts` (exam-sets CRUD + toggle-active + assign/reorder/remove question + patch section/part), `examQuery.ts`, `examBank.ts` (map câu hỏi API → shape Selection, gồm Vocabulary task_variant → Task 1-5).
   - List ([useExams.ts]): fetch thật `/exam-sets`, tách 3 tab theo `type`, xóa + toggle-active thật (bấm tag trạng thái để bật/tắt hiển thị).

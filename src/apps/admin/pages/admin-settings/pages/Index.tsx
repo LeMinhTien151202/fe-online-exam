@@ -1,8 +1,9 @@
 import React from 'react';
 import { Card, Tabs, Form, Input, Button, Switch, Upload, Space, Table, InputNumber, Tag, Typography, Row, Col } from 'antd';
-import { SaveOutlined, UploadOutlined, SafetyCertificateOutlined, SettingOutlined, HistoryOutlined } from '@ant-design/icons';
+import { SaveOutlined, UploadOutlined, SafetyCertificateOutlined, SettingOutlined, HistoryOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useSettings } from '../hook/useSettings';
+import MockDurationSettings from '../components/MockDurationSettings';
 import * as S from '../styles/styled';
 
 const { Title, Text } = Typography;
@@ -13,6 +14,10 @@ const SettingsIndex: React.FC = () => {
     setActiveTab,
     auditLogs,
     packages,
+    settingMap,
+    isLoadingSettings,
+    isSavingSetting,
+    handleSaveSetting,
     handleSaveGeneral,
   } = useSettings();
 
@@ -27,6 +32,18 @@ const SettingsIndex: React.FC = () => {
           activeKey={activeTab}
           onChange={setActiveTab}
           items={[
+            {
+              key: 'durations',
+              label: <Space><ClockCircleOutlined />Thời gian thi thử</Space>,
+              children: (
+                <MockDurationSettings
+                  settingMap={settingMap}
+                  isLoading={isLoadingSettings}
+                  isSaving={isSavingSetting}
+                  onSave={handleSaveSetting}
+                />
+              ),
+            },
             {
               key: 'general',
               label: <Space><SettingOutlined />Cài đặt chung</Space>,

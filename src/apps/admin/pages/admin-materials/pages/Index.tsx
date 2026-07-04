@@ -9,11 +9,9 @@ import {
   Tag,
   Typography,
   Drawer,
-  Upload,
-  Radio,
   Form,
   Space,
-  message,
+  Spin,
 } from 'antd';
 import {
   SearchOutlined,
@@ -25,7 +23,6 @@ import {
   FileExcelOutlined,
   DownloadOutlined,
   DeleteOutlined,
-  InboxOutlined,
 } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useMaterials } from '../hook/useMaterials';
@@ -33,18 +30,21 @@ import * as S from '../styles/styled';
 import { AppPagination } from '@shared/components/Pagination/Index';
 
 const { Title, Text } = Typography;
-const { Dragger } = Upload;
 
 const MaterialsIndex: React.FC = () => {
   const {
     materials,
+    isLoading,
     isDrawerOpen,
     setIsDrawerOpen,
     form,
+    isSaving,
     handleUploadClick,
     handleSaveMaterial,
     handleDelete,
   } = useMaterials();
+
+  const fileTypeValue = Form.useWatch('fileType', form);
 
   const getFormatIcon = (format: string) => {
     const style = { fontSize: '32px' };
@@ -99,13 +99,14 @@ const MaterialsIndex: React.FC = () => {
       </Card>
 
       {/* Grid of material cards */}
+      {isLoading && <Spin />}
       <Row gutter={[16, 16]}>
         {materials.map(material => (
           <Col xs={24} sm={12} md={8} xl={6} key={material.key}>
             <Card
               hoverable
               actions={[
-                <Button type="text" size="small" icon={<DownloadOutlined />} onClick={() => message.info('Tải tài liệu này về...')} key="download" />,
+                <Button type="text" size="small" icon={<DownloadOutlined />} onClick={() => window.open(material.fileUrl, '_blank')} key="download" />,
                 <Button type="text" size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(material.key)} key="delete" />,
               ]}
             >
@@ -116,15 +117,9 @@ const MaterialsIndex: React.FC = () => {
                     {material.name}
                   </Text>
                   <Space style={{ flexWrap: 'wrap' }}>
-                    <Tag color="cyan" style={{ fontSize: '10px' }}>{material.skill}</Tag>
-                    <Tag color={material.status === 'approved' ? 'success' : 'warning'} style={{ fontSize: '10px' }}>
-                      {material.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
-                    </Tag>
+                    {material.skill && <Tag color="cyan" style={{ fontSize: '10px' }}>{material.skill}</Tag>}
+                    <Tag color={material.fileType === 'VIDEO' ? 'blue' : 'red'} style={{ fontSize: '10px' }}>{material.fileType}</Tag>
                   </Space>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                    <Text type="secondary" style={{ fontSize: '11px' }}>{material.downloads} tải</Text>
-                    <Text type="secondary" style={{ fontSize: '11px' }}>{material.size}</Text>
-                  </div>
                 </S.MaterialCardInfo>
               </S.MaterialCardContent>
             </Card>
@@ -150,21 +145,26 @@ const MaterialsIndex: React.FC = () => {
         open={isDrawerOpen}
       >
         <Form form={form} layout="vertical" onFinish={handleSaveMaterial}>
-          <Form.Item label="Tải lên tệp tin" name="file" rules={[{ required: true, message: 'Hãy chọn file tải lên!' }]}>
-            <Dragger maxCount={1} beforeUpload={() => false}>
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined style={{ color: ADMIN_COLORS.primary }} />
-              </p>
-              <p className="ant-upload-text">Kéo thả tệp tin hoặc click để chọn</p>
-              <p className="ant-upload-hint">
-                Hỗ trợ định dạng PDF, MP3, MP4, DOCX, XLSX. Kích thước tối đa 50MB.
-              </p>
-            </Dragger>
-          </Form.Item>
-
-          <Form.Item label="Tên tài liệu" name="name" rules={[{ required: true, message: 'Nhập tên tài liệu!' }]}>
+          <Form.Item label="Tên tài liệu" name="title" rules={[{ required: true, message: 'Nhập tên tài liệu!' }]}>
             <Input placeholder="Tên hiển thị cho học viên..." />
           </Form.Item>
+
+          <Form.Item label="Loại tệp" name="fileType" initialValue="PDF" rules={[{ required: true }]}>
+            <Select>
+              <Select.Option value="PDF">PDF</Select.Option>
+              <Select.Option value="VIDEO">VIDEO</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item label="Đường dẫn tệp (URL)" name="fileUrl" rules={[{ required: true, message: 'Dán URL tệp!' }]}>
+            <Input placeholder="https://.../grammar.pdf" />
+          </Form.Item>
+
+          {fileTypeValue === 'VIDEO' && (
+            <Form.Item label="Thời lượng video (giây)" name="durationSeconds">
+              <Input type="number" placeholder="Ví dụ: 720" />
+            </Form.Item>
+          )}
 
           <Form.Item label="Kỹ năng chính" name="skill" rules={[{ required: true, message: 'Chọn kỹ năng liên quan!' }]}>
             <Select placeholder="Chọn kỹ năng">
@@ -176,23 +176,11 @@ const MaterialsIndex: React.FC = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item label="Mô tả chi tiết" name="description">
-            <Input.TextArea placeholder="Thông tin tóm tắt nội dung tài liệu..." rows={3} />
-          </Form.Item>
-
-          <Form.Item label="Quyền truy cập" name="accessLimit" initialValue="public">
-            <Radio.Group>
-              <Radio value="public">Tất cả học viên</Radio>
-              <Radio value="pro">Chỉ học viên gói Pro</Radio>
-              <Radio value="premium">Chỉ học viên gói Premium</Radio>
-            </Radio.Group>
-          </Form.Item>
-
           <Form.Item style={{ marginTop: '2rem' }}>
             <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
               <Button onClick={() => setIsDrawerOpen(false)}>Huỷ</Button>
-              <Button type="primary" htmlType="submit" style={{ background: ADMIN_COLORS.primary }}>
-                Đăng tải tài liệu
+              <Button type="primary" htmlType="submit" loading={isSaving} style={{ background: ADMIN_COLORS.primary }}>
+                Lưu tài liệu
               </Button>
             </Space>
           </Form.Item>
