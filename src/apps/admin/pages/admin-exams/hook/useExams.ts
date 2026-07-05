@@ -2,8 +2,15 @@ import { useMemo } from 'react';
 import { Modal, message } from 'antd';
 import { useNavigate } from '@tanstack/react-router';
 import { useDeleteExamMutation, useExamSetsQuery, useToggleExamActiveMutation } from '../services/examQuery';
-import { ID_TO_FE_SKILL, IExamSetListItem } from '../services/types';
+import { ExamType, ID_TO_FE_SKILL, IExamSetListItem } from '../services/types';
 import { useState } from 'react';
+import { usePagination } from '@/shared/hooks/usePagination';
+
+const TYPE_BY_TAB: Record<string, ExamType> = {
+  partial: 'PART_PRACTICE',
+  set: 'SKILL_FULL_SET',
+  full: 'MOCK_TEST',
+};
 
 const skillName = (e: IExamSetListItem) => e.skill?.name || (e.skillId ? ID_TO_FE_SKILL[e.skillId] : '') || '';
 
@@ -48,15 +55,25 @@ const mapFull = (e: IExamSetListItem) => ({
 export const useExams = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('partial');
+  const { page, pageSize, onChange, reset } = usePagination(10);
 
-  const { data, isLoading } = useExamSetsQuery();
+  // Query theo tab đang mở (mỗi tab = 1 loại đề), có phân trang
+  const { data, isLoading } = useExamSetsQuery({ type: TYPE_BY_TAB[activeTab], page, limit: pageSize });
   const deleteMutation = useDeleteExamMutation();
   const toggleMutation = useToggleExamActiveMutation();
 
-  const all = useMemo(() => data ?? [], [data]);
-  const partExams = useMemo(() => all.filter((e) => e.type === 'PART_PRACTICE').map(mapPart), [all]);
-  const setExams = useMemo(() => all.filter((e) => e.type === 'SKILL_FULL_SET').map(mapSet), [all]);
-  const fullExams = useMemo(() => all.filter((e) => e.type === 'MOCK_TEST').map(mapFull), [all]);
+  const rows = useMemo(() => data?.data ?? [], [data]);
+  const total = data?.metaData?.total ?? 0;
+
+  // Chỉ tab đang mở được render -> map theo tab hiện tại
+  const partExams = useMemo(() => (activeTab === 'partial' ? rows.map(mapPart) : []), [activeTab, rows]);
+  const setExams = useMemo(() => (activeTab === 'set' ? rows.map(mapSet) : []), [activeTab, rows]);
+  const fullExams = useMemo(() => (activeTab === 'full' ? rows.map(mapFull) : []), [activeTab, rows]);
+
+  const changeTab = (tab: string) => {
+    setActiveTab(tab);
+    reset();
+  };
 
   const handleCreateNew = () => {
     navigate({ to: '/admin/exams/create' });
@@ -88,10 +105,14 @@ export const useExams = () => {
 
   return {
     activeTab,
-    setActiveTab,
+    setActiveTab: changeTab,
     partExams,
     setExams,
     fullExams,
+    total,
+    page,
+    pageSize,
+    onPageChange: onChange,
     isLoading,
     handleCreateNew,
     handleDelete,

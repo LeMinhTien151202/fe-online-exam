@@ -1,12 +1,12 @@
-import React, { useState, useMemo, useImperativeHandle, forwardRef } from 'react';
-import { Typography, Row, Col, Button, Select, Divider } from 'antd';
 import {
-    CaretRightOutlined,
-    FileTextOutlined
+CaretRightOutlined,
+FileTextOutlined
 } from '@ant-design/icons';
-import * as S from '../styles/shared.styles';
+import { Button,Col,Row,Select,Typography } from 'antd';
+import React,{ forwardRef,useImperativeHandle,useState } from 'react';
+import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
 import * as LS from '../styles/listening.styles';
-import { ExamQuestionNavigator, NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
+import * as S from '../styles/shared.styles';
 
 const { Text } = Typography;
 

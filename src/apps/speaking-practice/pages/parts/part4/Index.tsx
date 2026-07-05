@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Space, Progress, Button, message } from 'antd';
-import { useNavigate } from '@tanstack/react-router';
-import { 
-  LeftOutlined, 
-  RightOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  BulbOutlined,
-  DownOutlined,
-  UpOutlined,
-  UnlockOutlined
+import {
+CheckCircleOutlined,
+ClockCircleOutlined,
+DownOutlined,
+LeftOutlined,
+UnlockOutlined,
+UpOutlined
 } from '@ant-design/icons';
-import * as S from './styled';
-import * as HomeS from '../../../../home/pages/styled';
+import { useNavigate } from '@tanstack/react-router';
+import { Button,message,Progress,Space } from 'antd';
+import React,{ useEffect,useState } from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
+import * as HomeS from '../../../../home/pages/styled';
 import { SpeakingController } from '../../../components/SpeakingController';
+import * as S from './styled';
 
 interface IAbstractSet {
   id: number;

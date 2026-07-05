@@ -3,21 +3,15 @@ import {
   Typography,
   Drawer,
   Tabs,
-  Progress,
   Tag,
   Avatar,
   Space,
-  Table,
-  Card,
+  Descriptions,
 } from 'antd';
-import {
-  TrophyOutlined,
-  HistoryOutlined,
-  FileOutlined,
-} from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useUsers } from '../hook/useUsers';
 import { useUserColumns } from '../hook/useUserColumns';
+import { ROLE_LABEL } from '../services/types';
 import * as S from '../styles/styled';
 
 import UserList from '../components/UserList';
@@ -30,12 +24,19 @@ const UsersIndex: React.FC = () => {
     activeTab,
     setActiveTab,
     students,
+    isLoading,
+    total,
+    page,
+    pageSize,
+    onPageChange,
+    isCreating,
     selectedStudent,
     drawerOpen,
     setDrawerOpen,
     permissions,
     setPermissions,
     handleStatusChange,
+    handleCreate,
     handleOpenDrawer,
   } = useUsers();
 
@@ -58,7 +59,17 @@ const UsersIndex: React.FC = () => {
       </S.Header>
 
       {activeTab === 'list' ? (
-        <UserList students={students} columns={columns} />
+        <UserList
+          students={students}
+          columns={columns}
+          loading={isLoading}
+          isCreating={isCreating}
+          total={total}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={onPageChange}
+          onCreate={handleCreate}
+        />
       ) : (
         <PermissionMatrix permissions={permissions} setPermissions={setPermissions} />
       )}
@@ -75,99 +86,36 @@ const UsersIndex: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <S.DrawerHeader>
               <Avatar size={64} style={{ backgroundColor: ADMIN_COLORS.primary, fontSize: '24px' }}>
-                {selectedStudent.name.charAt(0)}
+                {selectedStudent.name.charAt(0).toUpperCase()}
               </Avatar>
               <div>
                 <Title level={4} style={{ margin: 0 }}>{selectedStudent.name}</Title>
                 <Text type="secondary" style={{ display: 'block' }}>{selectedStudent.email}</Text>
                 <Space style={{ marginTop: '4px' }}>
-                  <Tag color="gold">{selectedStudent.package}</Tag>
+                  <Tag color="blue">{ROLE_LABEL[selectedStudent.role]}</Tag>
                   <Tag color="cyan">Mục tiêu: {selectedStudent.target}</Tag>
                 </Space>
               </div>
             </S.DrawerHeader>
 
-            <Tabs
-              items={[
-                {
-                  key: 'progress',
-                  label: <Space><TrophyOutlined />Tiến độ học</Space>,
-                  children: (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0.5rem 0' }}>
-                      {[
-                        { label: 'Ngữ pháp & Từ vựng', percent: 85, color: '#f97316' },
-                        { label: 'Đọc hiểu', percent: 70, color: '#0ea5e9' },
-                        { label: 'Nghe', percent: 65, color: '#8b5cf6' },
-                        { label: 'Nói', percent: 40, color: '#f43f5e' },
-                        { label: 'Viết', percent: 55, color: '#10b981' },
-                      ].map(item => (
-                        <div key={item.label}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                            <Text>{item.label}</Text>
-                            <Text strong>{item.percent}%</Text>
-                          </div>
-                          <Progress percent={item.percent} strokeColor={item.color} />
-                        </div>
-                      ))}
-                    </div>
-                  ),
-                },
-                {
-                  key: 'history',
-                  label: <Space><HistoryOutlined />Lịch sử thi</Space>,
-                  children: (
-                    <Table
-                      dataSource={[
-                        { key: '1', date: '01/06/2026', skill: 'Reading', test: 'Bộ đề Đọc #2', score: '42/50', time: '22:15' },
-                        { key: '2', date: '28/05/2026', skill: 'Listening', test: 'Bộ đề Nghe #1', score: '35/50', time: '30:00' },
-                        { key: '3', date: '25/05/2026', skill: 'Writing', test: 'Bộ đề Viết #4', score: '78/100', time: '45:00' },
-                      ]}
-                      pagination={false}
-                      size="small"
-                      columns={[
-                        { title: 'Ngày làm', dataIndex: 'date', key: 'date' },
-                        {
-                          title: 'Kỹ năng',
-                          dataIndex: 'skill',
-                          key: 'skill',
-                          render: (s: string) => (
-                            <Tag color={s === 'Reading' ? 'blue' : s === 'Listening' ? 'purple' : 'green'}>{s}</Tag>
-                          ),
-                        },
-                        { title: 'Bài thi', dataIndex: 'test', key: 'test' },
-                        { title: 'Điểm', dataIndex: 'score', key: 'score' },
-                      ]}
-                    />
-                  ),
-                },
-                {
-                  key: 'files',
-                  label: <Space><FileOutlined />Tài liệu tải</Space>,
-                  children: (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '0.5rem 0' }}>
-                      <Card size="small" hoverable>
-                        <Space>
-                          <span style={{ fontSize: '24px', color: '#ef4444' }}>📕</span>
-                          <div>
-                            <Text strong style={{ display: 'block', fontSize: '12px' }}>Aptis_Grammar_Master.pdf</Text>
-                            <Text type="secondary" style={{ fontSize: '10px' }}>Tải ngày 24/05/2026</Text>
-                          </div>
-                        </Space>
-                      </Card>
-                      <Card size="small" hoverable>
-                        <Space>
-                          <span style={{ fontSize: '24px', color: '#3b82f6' }}>📘</span>
-                          <div>
-                            <Text strong style={{ display: 'block', fontSize: '12px' }}>Reading_Part3_Tips.docx</Text>
-                            <Text type="secondary" style={{ fontSize: '10px' }}>Tải ngày 26/05/2026</Text>
-                          </div>
-                        </Space>
-                      </Card>
-                    </div>
-                  ),
-                },
-              ]}
-            />
+            <Descriptions column={1} bordered size="small">
+              <Descriptions.Item label="Mã người dùng">#{selectedStudent.id}</Descriptions.Item>
+              <Descriptions.Item label="Họ và tên">{selectedStudent.name}</Descriptions.Item>
+              <Descriptions.Item label="Email">{selectedStudent.email}</Descriptions.Item>
+              <Descriptions.Item label="Vai trò">{ROLE_LABEL[selectedStudent.role]}</Descriptions.Item>
+              <Descriptions.Item label="Mục tiêu Aptis">{selectedStudent.target}</Descriptions.Item>
+              <Descriptions.Item label="Chuỗi ngày (tạm tính)">🔥 {selectedStudent.streak} ngày</Descriptions.Item>
+              <Descriptions.Item label="Ngày tham gia">{selectedStudent.registeredDate}</Descriptions.Item>
+              <Descriptions.Item label="Trạng thái">
+                <Tag color={selectedStudent.active ? 'success' : 'default'}>
+                  {selectedStudent.active ? 'Hoạt động' : 'Bị khóa'}
+                </Tag>
+              </Descriptions.Item>
+            </Descriptions>
+
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              Tiến độ học và lịch sử thi sẽ hiển thị khi có API thống kê. "Chuỗi ngày" hiện đang tạm tính.
+            </Text>
           </div>
         )}
       </Drawer>

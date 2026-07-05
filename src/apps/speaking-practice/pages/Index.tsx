@@ -1,22 +1,22 @@
+import {
+AudioOutlined,
+BellOutlined,
+ClockCircleOutlined,
+MenuOutlined,
+MessageOutlined,
+QuestionCircleOutlined,
+TeamOutlined,
+ThunderboltOutlined,
+TrophyOutlined,
+UnorderedListOutlined
+} from '@ant-design/icons';
+import { Link,useNavigate } from '@tanstack/react-router';
+import { Button,Drawer,Progress,Segmented } from 'antd';
 import React from 'react';
 import { Sidebar } from '../../home/components/Sidebar';
-import { 
-  AudioOutlined, 
-  UnorderedListOutlined, 
-  MessageOutlined, 
-  TeamOutlined, 
-  BellOutlined, 
-  MenuOutlined,
-  ClockCircleOutlined,
-  QuestionCircleOutlined,
-  TrophyOutlined,
-  ThunderboltOutlined
-} from '@ant-design/icons';
-import { PartCard, IPracticePart } from '../components/PartCard';
-import * as S from './styled';
 import * as HomeS from '../../home/pages/styled';
-import { Drawer, Button, Segmented, Progress } from 'antd';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { IPracticePart,PartCard } from '../components/PartCard';
+import * as S from './styled';
 
 const speakingPartsData: Omit<IPracticePart, 'progress'>[] = [
   {

@@ -1,23 +1,23 @@
+import {
+AlignLeftOutlined,
+BellOutlined,
+ClockCircleOutlined,
+EditOutlined,
+MailOutlined,
+MenuOutlined,
+MessageOutlined,
+QuestionCircleOutlined,
+ThunderboltOutlined,
+TrophyOutlined,
+UnorderedListOutlined
+} from '@ant-design/icons';
+import { Link,useNavigate } from '@tanstack/react-router';
+import { Button,Drawer,Progress,Segmented } from 'antd';
 import React from 'react';
 import { Sidebar } from '../../home/components/Sidebar';
-import { 
-  AlignLeftOutlined, 
-  UnorderedListOutlined, 
-  MessageOutlined, 
-  MailOutlined, 
-  EditOutlined, 
-  BellOutlined, 
-  MenuOutlined,
-  ClockCircleOutlined,
-  QuestionCircleOutlined,
-  TrophyOutlined,
-  ThunderboltOutlined
-} from '@ant-design/icons';
-import { PartCard, IPracticePart } from '../components/PartCard';
-import * as S from './styled';
 import * as HomeS from '../../home/pages/styled';
-import { Drawer, Button, Segmented, Progress } from 'antd';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { IPracticePart,PartCard } from '../components/PartCard';
+import * as S from './styled';
 
 const writingPartsData: Omit<IPracticePart, 'progress'>[] = [
   {

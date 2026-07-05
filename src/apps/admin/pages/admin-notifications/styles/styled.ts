@@ -1,6 +1,5 @@
-import styled from "styled-components";
 import { Card } from "antd";
-import { ADMIN_COLORS } from "../../../constants";
+import styled from "styled-components";
 
 export const Container = styled.div`
   // padding: 1.5rem;

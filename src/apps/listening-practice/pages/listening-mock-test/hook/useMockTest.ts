@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { message, Modal } from 'antd';
+import { message,Modal } from 'antd';
+import { useEffect,useState } from 'react';
 import { correctAnswersBank } from '../services/data';
 
 export const useMockTest = (testId: string) => {
@@ -70,7 +70,7 @@ export const useMockTest = (testId: string) => {
     if (saved) {
       try {
         progressObj = JSON.parse(saved);
-      } catch (e) {}
+      } catch (e) { /* bỏ qua lỗi */ }
     }
     const currentBest = progressObj[testId] ?? 0;
     progressObj[testId] = Math.max(currentBest, totalScore);

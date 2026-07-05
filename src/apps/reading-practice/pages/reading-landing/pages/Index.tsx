@@ -1,21 +1,21 @@
+import {
+BellOutlined,
+ClockCircleOutlined,
+MenuOutlined,
+QuestionCircleOutlined,
+ReadOutlined,
+ThunderboltOutlined,
+TrophyOutlined
+} from '@ant-design/icons';
+import { Link } from '@tanstack/react-router';
+import { Button,Drawer,Progress,Segmented } from 'antd';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
-import {
-  ReadOutlined,
-  BellOutlined,
-  MenuOutlined,
-  ClockCircleOutlined,
-  QuestionCircleOutlined,
-  TrophyOutlined,
-  ThunderboltOutlined
-} from '@ant-design/icons';
-import { PartCard } from '../components/PartCard';
-import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
-import { Drawer, Button, Segmented, Progress } from 'antd';
-import { Link } from '@tanstack/react-router';
-import { mockTestsData } from '../services/data';
+import { PartCard } from '../components/PartCard';
 import { useReadingLanding } from '../hook/useReadingLanding';
+import { mockTestsData } from '../services/data';
+import * as S from '../styles/styled';
 
 export const ReadingPracticePage: React.FC = () => {
   const {

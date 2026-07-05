@@ -11,6 +11,7 @@ import {
   mapQuestionToRow,
 } from "../services/questionMapper";
 import { SKILL_ID, SkillRoute } from "../services/types";
+import { usePagination } from "@/shared/hooks/usePagination";
 
 const SKILL_ROUTES: SkillRoute[] = [
   "grammar",
@@ -46,15 +47,24 @@ export const useQuestions = () => {
   const navigate = useNavigate();
   const skill = normalizeSkill(skillId);
 
+  const { page, pageSize, onChange, reset } = usePagination(10);
+
   const [partTab, setPartTab] = useState(
     skill === "grammar" ? "grammar" : "part1",
   );
-  // Reset partTab khi đổi kỹ năng (điều chỉnh state lúc render thay vì useEffect)
+  // Reset partTab + trang khi đổi kỹ năng (điều chỉnh state lúc render thay vì useEffect)
   const [trackedSkill, setTrackedSkill] = useState(skill);
   if (skill !== trackedSkill) {
     setTrackedSkill(skill);
     setPartTab(skill === "grammar" ? "grammar" : "part1");
+    reset();
   }
+
+  // Đổi part -> về trang 1
+  const changePartTab = (p: string) => {
+    setPartTab(p);
+    reset();
+  };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<ReturnType<
@@ -70,13 +80,15 @@ export const useQuestions = () => {
   const questionsQuery = useQuestionsQuery({
     skillId: SKILL_ID[skill],
     partNumber,
-    limit: 100,
+    page,
+    limit: pageSize,
   });
 
   const questions = useMemo(
-    () => (questionsQuery.data ?? []).map(mapQuestionToRow),
+    () => (questionsQuery.data?.data ?? []).map(mapQuestionToRow),
     [questionsQuery.data],
   );
+  const total = questionsQuery.data?.metaData?.total ?? 0;
 
   const handleCreateQuestion = () => {
     form.resetFields();
@@ -185,8 +197,12 @@ export const useQuestions = () => {
     setSkillTab: (val: string) =>
       navigate({ to: `/admin/questions/${val}` as string }),
     partTab,
-    setPartTab,
+    setPartTab: changePartTab,
     questions,
+    total,
+    page,
+    pageSize,
+    onPageChange: onChange,
     isLoading: questionsQuery.isLoading,
     isModalOpen,
     setIsModalOpen,

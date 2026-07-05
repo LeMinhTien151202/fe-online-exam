@@ -1,6 +1,5 @@
-import styled, { keyframes } from 'styled-components';
-import { Card, Select, Avatar } from 'antd';
 import { Link } from '@tanstack/react-router';
+import styled from 'styled-components';
 
 export const PageContainer = styled.div`
   display: flex;

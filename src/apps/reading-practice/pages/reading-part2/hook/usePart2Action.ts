@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
 import { message } from 'antd';
-import { ISentence, initialSentences, correctOrder } from '../services/data';
+import { useEffect,useState } from 'react';
+import { ISentence,correctOrder,initialSentences } from '../services/data';
 
 export const usePart2Action = () => {
   const [timeLeft, setTimeLeft] = useState(1077); // 17:57 -> 1077 seconds
@@ -119,7 +119,7 @@ export const usePart2Action = () => {
     if (savedProgress) {
       try {
         nextProgress = { ...JSON.parse(savedProgress), r2: progressPercent };
-      } catch (e) {}
+      } catch (e) { /* bỏ qua lỗi */ }
     }
     localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
 

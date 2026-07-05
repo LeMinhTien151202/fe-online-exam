@@ -29,6 +29,25 @@ _Mỗi khi hoàn thành task, phải dùng lệnh /save để cập nhật vắn
 
 ---
 
+- _2026-07-04_: Phân trang đồng bộ toàn bộ trang list admin + fix đổi số dòng/trang:
+  - Hook dùng chung [usePagination.ts] (quản lý `page` + `pageSize`, `onChange(page,size)` khớp `AppPagination`; đổi pageSize tự về trang 1). **Fix lỗi "10/20 mỗi trang chưa ăn"** — trước đây chỉ truyền `setPage` nên bỏ qua tham số pageSize.
+  - Nối phân trang thật (page/limit + `metaData.total`) cho: `admin-questions` (theo skill+part, thêm `questionApi.listPaged` giữ `list` mảng cho ngân hàng dựng đề), `admin-exams` (query theo tab loại đề), `admin-users`, cùng materials/faq/notifications đã làm trước.
+
+- _2026-07-04_: Bổ sung phân trang + endpoint mới (Phase 7 & 8 cập nhật):
+  - **axios**: thêm cờ `_rawEnvelope` + export `IApiEnvelope`/`IPageMeta` — list phân trang lấy nguyên envelope `{ data, metaData }` (mặc định vẫn trả `data` như cũ, không phá code hiện có).
+  - **Notifications admin**: chuyển sang endpoint mới `GET /notifications` (kèm `receiver`), phân trang thật + lọc `audience` (broadcast/personal) + `notificationType`; cột "Phạm vi" hiện email người nhận. Bỏ badge "chưa đọc" ở trang quản lý (không hợp ngữ nghĩa toàn hệ thống).
+  - **Study Materials**, **FAQ admin**: phân trang thật (`page/limit` + `metaData.total` cho `AppPagination`) thay cho đếm `.length`.
+
+- _2026-07-04_: Nối API Users (Phase 1) cho `admin-users` + dọn dashboard admin:
+  - Service (userApi/query/types `IAdminUser`/`IUserRow`) + `GET/POST/PATCH /users` + `PATCH /users/{id}/lock`. Danh sách fetch thật, tạo người dùng (email/password/full_name/role), khoá/mở khoá. Model đồng bộ với các trang khác (role/status/profile.aptisGoal), chỉ **`streak` (chuỗi ngày) tạm fake** theo id vì chưa có API.
+  - Cột bỏ "Gói"/"Tiến độ" (không có dữ liệu), thêm "Vai trò"; drawer chi tiết thay tab progress/history/files giả bằng `Descriptions` model thật; UserModal bỏ Gói/SĐT/ngày sinh, dùng `role`. Xóa `initialStudents` mock.
+  - Dashboard admin (nhóm C): bỏ cột "Gói" (thay "Ngày đăng ký"), dọn timeline khỏi sự kiện tính năng không tồn tại (duyệt tài liệu, nâng gói, giáo viên chấm).
+
+- _2026-07-04_: Nối API Phase 8 — FAQ (admin + học viên):
+  - **Admin** (`admin-faq`): service (faqApi/query/types) + `GET/POST/PATCH/DELETE /faqs`. List dùng `includeInactive=true` (admin thấy cả FAQ ẩn), hook [useFaq.ts] tạo/sửa/xóa mềm. Form + cột chuyển từ mock `status` sang field thật `isActive` (boolean) + `sortOrder`; cột/param type theo `IFaq` (bỏ `any`).
+  - **Học viên** (`apps/faq`): service riêng (chỉ list FAQ đang bật, không gửi `includeInactive`), hook [useFaqList.ts] fetch thật + lọc category/search client-side + trạng thái mở accordion. Thay `mockFaqs`, thêm loading spinner.
+  - **Thông báo học viên** (Sidebar): service [home/services/notification.ts] + hook [home/hook/useNotifications.ts] nối `GET /notifications/me` (chỉ khi đã đăng nhập), `PATCH /{id}/read` (click từng cái, broadcast không đánh dấu riêng), `read-all` (nút "Đánh dấu đã đọc"). Popover chuông bỏ mảng hardcode, group theo ngày (Hôm nay/Hôm qua/Tuần này/Trước đó) + thời gian tương đối; badge số = số chưa đọc (ẩn khi 0), có empty state.
+
 - _2026-07-04_: Chi tiết câu hỏi + Phase 7 (Materials/Notifications/Settings):
   - **Chi tiết câu hỏi** ([QuestionDetailModal.tsx]): viết lại render theo đúng loại câu hỏi từ `raw.extraConfig` — MC, gap-fill, WORD_BANK, ORDERING, SPEAKER_MATCH (Listening & Reading), Man/Woman/Both, HEADING_MATCH, ESSAY, RECORD (kèm audio player / ảnh). Không còn A/B/C/D giả.
   - **Study Materials** ([admin-materials]): service (materialApi/query/types) + `GET/POST/DELETE /study-materials`; form dùng field thật (title, fileUrl, fileType PDF/VIDEO, skillId, durationSeconds); card mở fileUrl.

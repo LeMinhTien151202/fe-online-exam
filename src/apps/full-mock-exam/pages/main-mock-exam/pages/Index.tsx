@@ -1,25 +1,23 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Layout, Button, Modal, Result, Spin, Typography, Progress, Space } from 'antd';
 import {
-    CustomerServiceOutlined,
-    ReadOutlined,
-    EditOutlined,
-    AudioOutlined,
-    MedicineBoxOutlined,
-    RightOutlined,
-    LeftOutlined,
-    ClockCircleOutlined,
-    AlertOutlined,
-    CheckCircleOutlined
+AudioOutlined,
+ClockCircleOutlined,
+CustomerServiceOutlined,
+EditOutlined,
+LeftOutlined,
+MedicineBoxOutlined,
+ReadOutlined,
+RightOutlined
 } from '@ant-design/icons';
-import { useParams, useNavigate } from '@tanstack/react-router';
+import { useNavigate,useParams } from '@tanstack/react-router';
+import { Button,Modal,Result,Space,Spin,Typography } from 'antd';
+import React,{ useCallback,useEffect,useRef,useState } from 'react';
 
 // Import các module kỹ năng tích hợp
-import GrammarVocabSection, { GrammarVocabHandle } from '../components/GrammarVocabSection';
-import ListeningSection, { ListeningHandle } from '../components/ListeningSection';
-import ReadingSection, { ReadingHandle } from '../components/ReadingSection';
-import WritingSection, { WritingHandle } from '../components/WritingSection';
-import SpeakingSection, { SpeakingHandle } from '../components/SpeakingSection';
+import GrammarVocabSection,{ GrammarVocabHandle } from '../components/GrammarVocabSection';
+import ListeningSection,{ ListeningHandle } from '../components/ListeningSection';
+import ReadingSection,{ ReadingHandle } from '../components/ReadingSection';
+import SpeakingSection,{ SpeakingHandle } from '../components/SpeakingSection';
+import WritingSection,{ WritingHandle } from '../components/WritingSection';
 
 import * as S from '../styles/shared.styles';
 

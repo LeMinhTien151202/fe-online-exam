@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Space, Progress, Modal, Typography, Tooltip, message } from 'antd';
-import { useNavigate, useParams } from '@tanstack/react-router';
-import { 
-  LeftOutlined, 
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  RollbackOutlined,
-  AlertOutlined,
-  UnlockOutlined,
-  DownOutlined,
-  UpOutlined,
-  ArrowLeftOutlined,
-  ArrowRightOutlined
+import {
+AlertOutlined,
+ArrowLeftOutlined,
+ArrowRightOutlined,
+CheckCircleOutlined,
+ClockCircleOutlined,
+DownOutlined,
+LeftOutlined,
+RollbackOutlined,
+UnlockOutlined,
+UpOutlined
 } from '@ant-design/icons';
+import { useNavigate,useParams } from '@tanstack/react-router';
+import { Button,Modal,Progress,Space,Tooltip,Typography,message } from 'antd';
+import React,{ useEffect,useState } from 'react';
 import { Sidebar } from '../../../home/components/Sidebar';
 import * as HomeS from '../../../home/pages/styled';
 import { SpeakingController } from '../../components/SpeakingController';
@@ -90,7 +90,7 @@ export const SpeakingMockTestPage: React.FC = () => {
     if (saved) {
       try {
         progressObj = JSON.parse(saved);
-      } catch (e) {}
+      } catch (e) { /* bỏ qua lỗi */ }
     }
     // Since speaking is self-evaluated, we save completed status as 100
     progressObj[testId] = 100;

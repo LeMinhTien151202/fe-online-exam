@@ -1,18 +1,19 @@
 import { Space, Button, Popconfirm, Tooltip, TableProps, Tag } from 'antd';
 import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { IFaq } from '../services/types';
 
 export const useFAQColumns = (
-    handleEdit: (record: any) => void,
-    handleDelete: (id: any) => void,
-    handleView: (record: any) => void
+    handleEdit: (record: IFaq) => void,
+    handleDelete: (id: number) => void,
+    handleView: (record: IFaq) => void
 ) => {
-    const columns: TableProps<any>['columns'] = [
+    const columns: TableProps<IFaq>['columns'] = [
         {
             title: 'TT',
             key: 'index',
             width: 60,
             align: 'center',
-            render: (_: any, __: any, index: number) => index + 1,
+            render: (_, __, index: number) => index + 1,
         },
         {
             title: 'Danh mục',
@@ -37,15 +38,20 @@ export const useFAQColumns = (
             render: (text: string) => <div style={{ color: '#64748b', fontSize: '13px' }}>{text}</div>
         },
         {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
-            width: 150,
+            title: 'Thứ tự',
+            dataIndex: 'sortOrder',
+            key: 'sortOrder',
+            width: 80,
             align: 'center',
-            render: (status: string) => (
-                <div className="custom-status-tag">
-                    {status === 'active' ? 'Đang hiển thị' : 'Đã ẩn'}
-                </div>
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'isActive',
+            key: 'isActive',
+            width: 130,
+            align: 'center',
+            render: (isActive: boolean) => (
+                <Tag color={isActive ? 'success' : 'default'}>{isActive ? 'Đang hiển thị' : 'Đã ẩn'}</Tag>
             )
         },
         {
@@ -53,7 +59,7 @@ export const useFAQColumns = (
             key: 'action',
             width: 140,
             align: 'center' as const,
-            render: (_: any, record: any) => (
+            render: (_, record) => (
                 <Space size={4}>
                     <Tooltip title="Xem chi tiết">
                         <Button

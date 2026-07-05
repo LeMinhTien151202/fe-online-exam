@@ -1,20 +1,28 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Select, Button, notification } from 'antd';
+import { Modal, Form, Input, Select, Button, InputNumber } from 'antd';
+import { ICreateFaqPayload, IFaq } from '../services/types';
 
 interface FaqModalProps {
     visible: boolean;
     onCancel: () => void;
-    onSuccess: (values: any) => void;
-    initialValues?: any;
+    onSuccess: (values: ICreateFaqPayload) => void;
+    initialValues?: IFaq | null;
+    isSaving?: boolean;
 }
 
-const FaqModal: React.FC<FaqModalProps> = ({ visible, onCancel, onSuccess, initialValues }) => {
-    const [form] = Form.useForm();
+const FaqModal: React.FC<FaqModalProps> = ({ visible, onCancel, onSuccess, initialValues, isSaving }) => {
+    const [form] = Form.useForm<ICreateFaqPayload>();
 
     useEffect(() => {
         if (visible && initialValues) {
-            form.setFieldsValue(initialValues);
-        } else {
+            form.setFieldsValue({
+                question: initialValues.question,
+                answer: initialValues.answer,
+                category: initialValues.category,
+                sortOrder: initialValues.sortOrder,
+                isActive: initialValues.isActive,
+            });
+        } else if (visible) {
             form.resetFields();
         }
     }, [visible, initialValues, form]);
@@ -23,10 +31,6 @@ const FaqModal: React.FC<FaqModalProps> = ({ visible, onCancel, onSuccess, initi
         try {
             const values = await form.validateFields();
             onSuccess(values);
-            notification.success({
-                message: initialValues ? 'Cập nhật thành công' : 'Thêm mới thành công',
-                description: 'Câu hỏi đã được lưu vào hệ thống Q&A.'
-            });
         } catch (error) {
             console.log('Validate Failed:', error);
         }
@@ -39,7 +43,7 @@ const FaqModal: React.FC<FaqModalProps> = ({ visible, onCancel, onSuccess, initi
             onCancel={onCancel}
             footer={[
                 <Button key="back" onClick={onCancel}>Hủy</Button>,
-                <Button key="submit" type="primary" style={{ background: '#1a365d' }} onClick={handleSubmit}>
+                <Button key="submit" type="primary" loading={isSaving} style={{ background: '#1a365d' }} onClick={handleSubmit}>
                     {initialValues ? 'Cập nhật' : 'Đăng tải'}
                 </Button>
             ]}
@@ -76,14 +80,14 @@ const FaqModal: React.FC<FaqModalProps> = ({ visible, onCancel, onSuccess, initi
                     <Input.TextArea rows={6} placeholder="Nhập nội dung giải đáp chi tiết" />
                 </Form.Item>
 
-                <Form.Item
-                    name="status"
-                    label="Trạng thái hiển thị"
-                    initialValue="active"
-                >
+                <Form.Item name="sortOrder" label="Thứ tự hiển thị" initialValue={0}>
+                    <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+                </Form.Item>
+
+                <Form.Item name="isActive" label="Trạng thái hiển thị" initialValue={true}>
                     <Select>
-                        <Select.Option value="active">Hiển thị</Select.Option>
-                        <Select.Option value="hidden">Ẩn</Select.Option>
+                        <Select.Option value={true}>Hiển thị</Select.Option>
+                        <Select.Option value={false}>Ẩn</Select.Option>
                     </Select>
                 </Form.Item>
             </Form>

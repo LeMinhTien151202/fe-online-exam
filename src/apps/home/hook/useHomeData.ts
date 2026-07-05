@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { IHomeStats, ILearningModule, IUserInfo } from "../services/types";
+import { useState } from "react";
+import { IHomeStats,ILearningModule,IUserInfo } from "../services/types";
 
 export const useHomeData = () => {
   const [stats, setStats] = useState<IHomeStats>({

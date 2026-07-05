@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from '@tanstack/react-router';
-import { Modal, message } from 'antd';
+import { useNavigate,useParams } from '@tanstack/react-router';
+import { Modal,message } from 'antd';
+import { useEffect,useState } from 'react';
 
 export const useMockTest = () => {
   const { testId } = useParams({ strict: false }) as { testId: string };
@@ -29,7 +29,7 @@ export const useMockTest = () => {
     if (saved) {
       try {
         progressObj = JSON.parse(saved);
-      } catch (e) {}
+      } catch (e) { /* bỏ qua lỗi */ }
     }
     progressObj[testId] = 100;
     localStorage.setItem('aptis_speaking_mock_progress', JSON.stringify(progressObj));

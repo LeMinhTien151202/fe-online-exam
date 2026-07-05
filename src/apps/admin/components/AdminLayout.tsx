@@ -20,9 +20,7 @@ import * as S from '../styles/layout.styled';
 import { ADMIN_THEME, ADMIN_COLORS } from '../constants';
 import { GlobalAdminStyle } from '../styles/GlobalAdminStyle';
 
-interface AdminLayoutProps { }
-
-const AdminLayout: React.FC<AdminLayoutProps> = () => {
+const AdminLayout: React.FC = () => {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const navigate = useNavigate();

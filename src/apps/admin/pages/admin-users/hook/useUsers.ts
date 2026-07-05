@@ -1,40 +1,80 @@
-import { useState } from 'react';
-import { Modal, message } from 'antd';
-import { initialStudents, initialPermissions } from '../services/mockData';
+import { useMemo, useState } from 'react';
+import { message } from 'antd';
+import { initialPermissions } from '../services/mockData';
+import {
+  useCreateUserMutation,
+  useLockUserMutation,
+  useUpdateUserMutation,
+  useUsersQuery,
+} from '../services/userQuery';
+import { IAdminUser, IUserRow, UserRole } from '../services/types';
+import { usePagination } from '@/shared/hooks/usePagination';
+
+// Chuỗi ngày học tập chưa có API -> tạm fake theo id để giá trị ổn định giữa các lần render
+const fakeStreak = (id: number) => (id * 7) % 30;
+
+const mapRow = (u: IAdminUser): IUserRow => ({
+  key: String(u.id),
+  id: u.id,
+  name: u.profile?.fullName || u.email,
+  email: u.email,
+  role: u.role,
+  target: u.profile?.aptisGoal || '—',
+  registeredDate: u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : '',
+  active: u.status === 'ACTIVE',
+  streak: fakeStreak(u.id),
+  raw: u,
+});
+
+interface CreateUserFormValues {
+  fullName: string;
+  email: string;
+  password: string;
+  role: UserRole;
+}
 
 export const useUsers = () => {
   const [activeTab, setActiveTab] = useState('list');
-  const [students, setStudents] = useState(initialStudents);
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [selectedStudent, setSelectedStudent] = useState<IUserRow | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [permissions, setPermissions] = useState(initialPermissions);
 
-  const handleStatusChange = (checked: boolean, key: string) => {
-    setStudents(prev =>
-      prev.map(student => (student.key === key ? { ...student, active: checked } : student))
+  const { page, pageSize, onChange, reset } = usePagination(10);
+  const { data, isLoading } = useUsersQuery({ page, limit: pageSize });
+  const createMutation = useCreateUserMutation();
+  const updateMutation = useUpdateUserMutation();
+  const lockMutation = useLockUserMutation();
+
+  const students = useMemo(() => (data?.data ?? []).map(mapRow), [data]);
+  const total = data?.metaData?.total ?? 0;
+
+  // active=true -> mở khoá (status ACTIVE); active=false -> khoá
+  const handleStatusChange = (active: boolean, key: string) => {
+    const id = Number(key);
+    if (active) {
+      updateMutation.mutate(
+        { id, payload: { status: 'ACTIVE' } },
+        { onSuccess: () => message.success('Đã mở khoá tài khoản.') }
+      );
+    } else {
+      lockMutation.mutate(id, { onSuccess: () => message.success('Đã khoá tài khoản.') });
+    }
+  };
+
+  const handleCreate = (values: CreateUserFormValues, onDone?: () => void) => {
+    createMutation.mutate(
+      { email: values.email, password: values.password, full_name: values.fullName, role: values.role },
+      {
+        onSuccess: () => {
+          reset();
+          message.success('Đã thêm người dùng.');
+          onDone?.();
+        },
+      }
     );
-    message.success('Cập nhật trạng thái người dùng thành công!');
   };
 
-  const handleBulkLock = () => {
-    Modal.confirm({
-      title: `Khóa ${selectedRowKeys.length} học viên đã chọn?`,
-      content: 'Những tài khoản này sẽ tạm thời không đăng nhập được vào hệ thống.',
-      okText: 'Khoá tài khoản',
-      okType: 'danger',
-      cancelText: 'Huỷ',
-      onOk: () => {
-        setStudents(prev =>
-          prev.map(st => (selectedRowKeys.includes(st.key) ? { ...st, active: false } : st))
-        );
-        setSelectedRowKeys([]);
-        message.success('Đã khoá các tài khoản được chọn!');
-      },
-    });
-  };
-
-  const handleOpenDrawer = (record: any) => {
+  const handleOpenDrawer = (record: IUserRow) => {
     setSelectedStudent(record);
     setDrawerOpen(true);
   };
@@ -43,17 +83,19 @@ export const useUsers = () => {
     activeTab,
     setActiveTab,
     students,
-    setStudents,
-    selectedRowKeys,
-    setSelectedRowKeys,
+    isLoading,
+    total,
+    page,
+    pageSize,
+    onPageChange: onChange,
+    isCreating: createMutation.isPending,
     selectedStudent,
-    setSelectedStudent,
     drawerOpen,
     setDrawerOpen,
     permissions,
     setPermissions,
     handleStatusChange,
-    handleBulkLock,
+    handleCreate,
     handleOpenDrawer,
   };
 };

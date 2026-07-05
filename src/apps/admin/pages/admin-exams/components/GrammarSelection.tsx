@@ -8,8 +8,8 @@ const { Text } = Typography;
 const { Panel } = Collapse;
 
 interface Props {
-    selectedQuestions: any[];
-    handleAddQuestion: (record: any) => void;
+    selectedQuestions: IBankQuestion[];
+    handleAddQuestion: (record: IBankQuestion) => void;
     handleRemoveQuestion: (key: string) => void;
     mode?: 'partial' | 'set' | 'full';
     targetPart?: string;
@@ -57,8 +57,8 @@ const GrammarSelection: React.FC<Props> = ({
                                     <List
                                         size="small"
                                         pagination={{ pageSize: 10, size: 'small', simple: true }}
-                                        dataSource={bankQuestions.filter((q: any) => q.type === 'Grammar' && (searchText === '' || q.content.toLowerCase().includes(searchText.toLowerCase())))}
-                                        renderItem={(record: any) => (
+                                        dataSource={bankQuestions.filter((q: IBankQuestion) => q.type === 'Grammar' && (searchText === '' || q.content.toLowerCase().includes(searchText.toLowerCase())))}
+                                        renderItem={(record: IBankQuestion) => (
                                             <List.Item
                                                 style={{ background: '#fff', marginBottom: '4px', borderRadius: '4px', padding: '8px 12px', border: '1px solid #f1f5f9' }}
                                                 actions={[<Button size="small" type="text" style={{ color: ADMIN_COLORS.primary }} icon={<PlusOutlined />} onClick={() => handleAddQuestion(record)} />]}
@@ -72,7 +72,7 @@ const GrammarSelection: React.FC<Props> = ({
 
                             {/* Vocab Sections */}
                             {showVocab && ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5'].map(t => {
-                                const vocabQs = bankQuestions.filter((q: any) => q.type === 'Vocabulary' && q.task === t && (searchText === '' || q.content.toLowerCase().includes(searchText.toLowerCase())));
+                                const vocabQs = bankQuestions.filter((q: IBankQuestion) => q.type === 'Vocabulary' && q.task === t && (searchText === '' || q.content.toLowerCase().includes(searchText.toLowerCase())));
                                 return (
                                     <Panel
                                         key={t}
@@ -84,7 +84,7 @@ const GrammarSelection: React.FC<Props> = ({
                                             pagination={{ pageSize: 6, size: 'small', simple: true }}
                                             dataSource={vocabQs}
 
-                                            renderItem={(record: any) => (
+                                            renderItem={(record: IBankQuestion) => (
                                                 <List.Item
                                                     style={{ background: '#fff', marginBottom: '4px', borderRadius: '4px', padding: '8px 12px', border: '1px solid #f1f5f9' }}
                                                     actions={[<Button size="small" type="text" style={{ color: ADMIN_COLORS.primary }} icon={<PlusOutlined />} onClick={() => handleAddQuestion(record)} />]}
@@ -116,7 +116,7 @@ const GrammarSelection: React.FC<Props> = ({
                                     size="small"
                                     rowKey="id"
                                     dataSource={Array.from({ length: 25 }).map((_, i) => ({ id: i, data: selectedQuestions.filter(q => q && q.part === 'Part 1')[i] || null }))}
-                                    renderItem={(slot: any) => {
+                                    renderItem={(slot: { id: number; data: IBankQuestion | null }) => {
                                         const item = slot.data;
                                         const idx = slot.id;
                                         return (
@@ -142,7 +142,7 @@ const GrammarSelection: React.FC<Props> = ({
                                         size="small"
                                         rowKey="id"
                                         dataSource={Array.from({ length: 5 }).map((_, i) => ({ id: i, data: taskQs[i] || null }))}
-                                        renderItem={(slot: any) => {
+                                        renderItem={(slot: { id: number; data: IBankQuestion | null }) => {
                                             const item = slot.data;
                                             const idx = slot.id;
                                             return (

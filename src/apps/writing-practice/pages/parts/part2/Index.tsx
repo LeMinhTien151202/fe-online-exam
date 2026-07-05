@@ -1,12 +1,12 @@
+import { BulbOutlined,CheckSquareOutlined,ClockCircleOutlined,LeftOutlined } from '@ant-design/icons';
+import { Button,Input,Space } from 'antd';
 import React from 'react';
-import { Space, Button, Input } from 'antd';
-import { LeftOutlined, RightOutlined, BulbOutlined, ClockCircleOutlined, CheckSquareOutlined } from '@ant-design/icons';
-import * as S from '../part1/styled'; // Tái sử dụng styled components chung của Part 1
-import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
-import { usePart2Data } from '../../../hooks/usePart2Data';
-import { usePart2Action } from '../../../hooks/usePart2Action';
+import * as HomeS from '../../../../home/pages/styled';
 import { SampleAnswerModal } from '../../../components/SampleAnswerModal';
+import { usePart2Action } from '../../../hooks/usePart2Action';
+import { usePart2Data } from '../../../hooks/usePart2Data';
+import * as S from '../part1/styled'; // Tái sử dụng styled components chung của Part 1
 
 const { TextArea } = Input;
 

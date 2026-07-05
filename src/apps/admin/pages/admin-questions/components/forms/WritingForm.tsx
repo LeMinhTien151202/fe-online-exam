@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { Form, Input, Select, Space, Row, Col, Button, Card, Tag, Typography, Steps } from 'antd';
 import {
-    EditOutlined,
-    SaveOutlined,
-    MessageOutlined,
-    UserOutlined,
-    MailOutlined,
-    NotificationOutlined,
-    OrderedListOutlined,
-    FlagOutlined,
-    ArrowRightOutlined,
-    ArrowLeftOutlined,
-    CheckCircleOutlined
+ArrowLeftOutlined,
+ArrowRightOutlined,
+CheckCircleOutlined,
+EditOutlined,
+FlagOutlined,
+MailOutlined,
+MessageOutlined,
+NotificationOutlined,
+OrderedListOutlined,
+SaveOutlined,
+UserOutlined
 } from '@ant-design/icons';
+import { Button,Card,Col,Form,Input,Row,Select,Space,Steps,Typography } from 'antd';
+import React,{ useState } from 'react';
 import { ADMIN_COLORS } from '../../../../constants';
 
 const { TextArea } = Input;

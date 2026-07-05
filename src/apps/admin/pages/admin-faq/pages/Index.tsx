@@ -1,64 +1,34 @@
 import React, { useState } from 'react';
-import { Table, Space, Button, Popconfirm, Tag, Tooltip, Modal, Descriptions } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
+import { Table, Button, Tag, Modal, Descriptions } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import * as S from '../styles/faqAdmin.styled';
 import FaqModal from '../components/FaqModal';
 import { AppPagination } from '@/shared/components/Pagination/Index';
 import { AdminTableWrapper, AdminPaginationWrapper } from '../../../styles/admin-shared.styles';
 import { useFAQColumns } from '../hook/useFAQColumns';
-
-const initialData = [
-    {
-        id: 1,
-        category: 'Kỳ thi Aptis',
-        question: 'Aptis ESOL là gì?',
-        answer: 'Aptis ESOL là bài thi đánh giá trình độ tiếng Anh hiện đại được phát triển bởi Hội đồng Anh...',
-        status: 'active'
-    },
-    {
-        id: 2,
-        category: 'Kỳ thi Aptis',
-        question: 'Bao lâu thì có kết quả thi Aptis?',
-        answer: 'Thông thường, kết quả thi Aptis trực tuyến sẽ có sau 2-5 ngày làm việc...',
-        status: 'active'
-    },
-    {
-        id: 3,
-        category: 'Tài khoản',
-        question: 'Làm thế nào để đổi mật khẩu?',
-        answer: 'Bạn có thể vào mục "Cài đặt tài khoản" ở góc dưới bên trái...',
-        status: 'active'
-    },
-];
+import { useFaq } from '../hook/useFaq';
+import { ICreateFaqPayload, IFaq } from '../services/types';
 
 const AdminFaqPage: React.FC = () => {
-    const [data, setData] = useState(initialData);
+    const { faqs, isLoading, total, page, pageSize, onPageChange, isSaving, handleSave, handleDelete } = useFaq();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState<any>(null);
-    const [viewingItem, setViewingItem] = useState<any>(null);
+    const [editingItem, setEditingItem] = useState<IFaq | null>(null);
+    const [viewingItem, setViewingItem] = useState<IFaq | null>(null);
 
-    const handleDelete = (id: number) => {
-        setData(data.filter((item: any) => item.id !== id));
-    };
-
-    const handleEdit = (record: any) => {
+    const handleEdit = (record: IFaq) => {
         setEditingItem(record);
         setIsModalOpen(true);
     };
 
-    const handleView = (record: any) => {
+    const handleView = (record: IFaq) => {
         setViewingItem(record);
         setIsPreviewOpen(true);
     };
 
-    const handleAddOrEdit = (values: any) => {
-        if (editingItem) {
-            setData(data.map((item: any) => item.id === editingItem.id ? { ...item, ...values } : item));
-        } else {
-            setData([...data, { id: Date.now(), ...values }]);
-        }
+    const handleSubmit = (values: ICreateFaqPayload) => {
+        handleSave(values, editingItem?.id);
         setIsModalOpen(false);
         setEditingItem(null);
     };
@@ -88,26 +58,28 @@ const AdminFaqPage: React.FC = () => {
             <AdminTableWrapper>
                 <Table
                     columns={columns}
-                    dataSource={data}
+                    dataSource={faqs}
                     rowKey="id"
+                    loading={isLoading}
                     pagination={false}
                 />
             </AdminTableWrapper>
 
             <AdminPaginationWrapper>
                 <AppPagination
-                    current={1}
-                    total={data.length}
-                    pageSize={10}
-                    onChange={() => { }}
+                    current={page}
+                    total={total}
+                    pageSize={pageSize}
+                    onChange={onPageChange}
                 />
             </AdminPaginationWrapper>
 
             <FaqModal
                 visible={isModalOpen}
                 onCancel={() => setIsModalOpen(false)}
-                onSuccess={handleAddOrEdit}
+                onSuccess={handleSubmit}
                 initialValues={editingItem}
+                isSaving={isSaving}
             />
 
             <Modal
@@ -125,8 +97,8 @@ const AdminFaqPage: React.FC = () => {
                             <Tag color="blue">{viewingItem.category}</Tag>
                         </Descriptions.Item>
                         <Descriptions.Item label="Trạng thái">
-                            <S.StatusBadge $status={viewingItem.status}>
-                                {viewingItem.status === 'active' ? 'Đang hiển thị' : 'Đã ẩn'}
+                            <S.StatusBadge $status={viewingItem.isActive ? 'active' : 'hidden'}>
+                                {viewingItem.isActive ? 'Đang hiển thị' : 'Đã ẩn'}
                             </S.StatusBadge>
                         </Descriptions.Item>
                         <Descriptions.Item label="Câu hỏi">

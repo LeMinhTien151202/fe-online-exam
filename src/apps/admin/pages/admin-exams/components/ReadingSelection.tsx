@@ -8,8 +8,8 @@ const { Text } = Typography;
 const { Panel } = Collapse;
 
 interface Props {
-    selectedQuestions: any[];
-    handleAddQuestion: (record: any) => void;
+    selectedQuestions: IBankQuestion[];
+    handleAddQuestion: (record: IBankQuestion) => void;
     handleRemoveQuestion: (key: string) => void;
     mode?: 'partial' | 'set' | 'full';
     targetPart?: string;
@@ -47,7 +47,7 @@ const ReadingSelection: React.FC<Props> = ({
                 >
                     <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
                         {displayParts.map(p => {
-                            const partQuestions = bankQuestions.filter((q: any) =>
+                            const partQuestions = bankQuestions.filter((q: IBankQuestion) =>
                                 q.type === 'Reading' &&
                                 q.part === p &&
                                 (searchText === '' || q.content.toLowerCase().includes(searchText.toLowerCase()))
@@ -64,7 +64,7 @@ const ReadingSelection: React.FC<Props> = ({
                                             size="small"
                                             pagination={{ pageSize: 6, size: 'small', simple: true }}
                                             dataSource={partQuestions}
-                                            renderItem={(record: any) => (
+                                            renderItem={(record: IBankQuestion) => (
 
 
                                                 <List.Item

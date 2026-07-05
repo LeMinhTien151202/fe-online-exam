@@ -1,18 +1,18 @@
-import React from 'react';
-import { Select, Button, Space, Progress, Alert } from 'antd';
-import { useNavigate } from '@tanstack/react-router';
 import {
-  LeftOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  BulbOutlined,
-  RollbackOutlined
+BulbOutlined,
+CheckCircleOutlined,
+ClockCircleOutlined,
+LeftOutlined,
+RollbackOutlined
 } from '@ant-design/icons';
+import { useNavigate } from '@tanstack/react-router';
+import { Alert,Progress,Select,Space } from 'antd';
+import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
-import * as S from '../styles/styled';
 import { usePart1Action } from '../hook/usePart1Action';
-import { questions, correctAnswers } from '../services/data';
+import { correctAnswers,questions } from '../services/data';
+import * as S from '../styles/styled';
 
 export const Part1Page: React.FC = () => {
   const navigate = useNavigate();

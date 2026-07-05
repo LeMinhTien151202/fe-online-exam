@@ -6,9 +6,9 @@
 ---
 
 ## 1. Danh sách FAQ — `GET /faqs`
-Query: `?category=&search=&includeInactive=`. Học viên chỉ thấy FAQ đang bật (`isActive=true`). ADMIN thêm `includeInactive=true` để thấy cả FAQ ẩn.
+Query: `?page=1&limit=10&category=&search=&includeInactive=`. Học viên chỉ thấy FAQ đang bật (`isActive=true`). ADMIN thêm `includeInactive=true` để thấy cả FAQ ẩn. **Có phân trang.**
 
-**Response `data`** (mảng, sắp theo `sortOrder`):
+**Response** (mảng sắp theo `sortOrder`, kèm `metaData`):
 ```json
 {
   "code": 200,
@@ -28,10 +28,10 @@ Query: `?category=&search=&includeInactive=`. Học viên chỉ thấy FAQ đang
       "deletedAt": null
     }
   ],
-  "metaData": null
+  "metaData": { "page": 1, "pageSize": 10, "total": 22, "totalPage": 3 }
 }
 ```
-> FE có thể **group theo `category`** để hiển thị dạng accordion.
+> FE muốn hiển thị dạng accordion group theo `category`: gọi `?category=...` cho từng nhóm, hoặc `?limit=100` để lấy nhiều rồi tự group.
 
 ## 2. Chi tiết — `GET /faqs/{id}`
 **Response `data`:** 1 object FAQ như trên.

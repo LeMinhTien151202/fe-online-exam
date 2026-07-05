@@ -1,9 +1,12 @@
-import axiosInstance from '@/configs/axios';
+import axiosInstance, { IApiEnvelope } from '@/configs/axios';
 import { ICreateMaterialPayload, IMaterial, IMaterialFilter, IUpdateMaterialPayload } from './types';
 
 export const materialApi = {
   list: (filter: IMaterialFilter = {}) =>
-    axiosInstance.get<IMaterial[], IMaterial[]>('/study-materials', { params: filter }),
+    axiosInstance.get<IApiEnvelope<IMaterial[]>, IApiEnvelope<IMaterial[]>>('/study-materials', {
+      params: filter,
+      _rawEnvelope: true,
+    }),
 
   detail: (id: number) => axiosInstance.get<IMaterial, IMaterial>(`/study-materials/${id}`),
 

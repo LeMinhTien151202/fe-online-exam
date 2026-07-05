@@ -1,13 +1,9 @@
-import React, { useState } from 'react';
-import { Typography, Row, Col, Space, Button, Divider, Select } from 'antd';
-import {
-    LeftOutlined,
-    RightOutlined,
-} from '@ant-design/icons';
-import * as S from '../styles/shared.styles';
+import { Col,Row,Select,Typography } from 'antd';
+import React,{ useState } from 'react';
+import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
+import { mockGrammarQuestions,mockVocabularySets } from '../../../../grammar-practice/pages/grammar-mock-test/services/mockExamData';
 import * as GS from '../styles/grammar.styles';
-import { ExamQuestionNavigator, NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
-import { mockGrammarQuestions, mockVocabularySets } from '../../../../grammar-practice/pages/grammar-mock-test/services/mockExamData';
+import * as S from '../styles/shared.styles';
 
 const { Text } = Typography;
 

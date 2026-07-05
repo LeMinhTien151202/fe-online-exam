@@ -35,6 +35,10 @@ const MaterialsIndex: React.FC = () => {
   const {
     materials,
     isLoading,
+    total,
+    page,
+    pageSize,
+    onPageChange,
     isDrawerOpen,
     setIsDrawerOpen,
     form,
@@ -129,10 +133,10 @@ const MaterialsIndex: React.FC = () => {
 
       <div style={{ marginTop: '2rem' }}>
         <AppPagination
-          current={1}
-          total={materials.length}
-          pageSize={12}
-          onChange={() => { }}
+          current={page}
+          total={total}
+          pageSize={pageSize}
+          onChange={onPageChange}
         />
       </div>
 

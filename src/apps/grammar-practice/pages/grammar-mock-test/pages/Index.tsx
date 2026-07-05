@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Button, Space, Progress, Statistic, message } from 'antd';
-import { useNavigate, useParams } from '@tanstack/react-router';
 import {
-  ClockCircleOutlined,
-  LeftOutlined,
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
-  CheckCircleOutlined,
-  InfoCircleOutlined,
-  UndoOutlined
+ArrowLeftOutlined,
+ArrowRightOutlined,
+CheckCircleOutlined,
+ClockCircleOutlined,
+InfoCircleOutlined,
+LeftOutlined,
+UndoOutlined
 } from '@ant-design/icons';
+import { useNavigate,useParams } from '@tanstack/react-router';
+import { Button,Modal,Progress,Space,Statistic,message } from 'antd';
+import React,{ useState } from 'react';
 
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
-import { mockGrammarQuestions, mockVocabularySets } from '../services/mockExamData';
-import { useMockTest } from '../hook/useMockTest';
 import { GrammarSection } from '../components/GrammarSection';
-import { VocabularySection } from '../components/VocabularySection';
 import { QuestionNav } from '../components/QuestionNav';
+import { VocabularySection } from '../components/VocabularySection';
+import { useMockTest } from '../hook/useMockTest';
+import { mockGrammarQuestions,mockVocabularySets } from '../services/mockExamData';
 import * as S from '../styles/styled';
 
 export const GrammarMockTestPage: React.FC = () => {
@@ -69,7 +69,7 @@ export const GrammarMockTestPage: React.FC = () => {
     if (saved) {
       try {
         progressObj = JSON.parse(saved);
-      } catch (e) {}
+      } catch (e) { /* bỏ qua lỗi */ }
     }
     const currentBest = progressObj[activeTestId] ?? 0;
     progressObj[activeTestId] = Math.max(currentBest, totalScore);

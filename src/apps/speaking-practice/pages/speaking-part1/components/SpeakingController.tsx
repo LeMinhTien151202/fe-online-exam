@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Button, Space, Progress, message } from 'antd';
-import { 
-  AudioFilled, 
-  AudioMutedOutlined,
-  PlayCircleFilled,
-  PauseCircleFilled, 
-  ReloadOutlined,
-  CaretRightOutlined,
-  CheckCircleOutlined
+import {
+AudioFilled,
+CaretRightOutlined,
+CheckCircleOutlined,
+PauseCircleFilled,
+PlayCircleFilled,
+ReloadOutlined
 } from '@ant-design/icons';
-import styled, { keyframes } from 'styled-components';
+import { Button,Progress,Space,message } from 'antd';
+import React,{ useEffect,useRef,useState } from 'react';
+import styled,{ keyframes } from 'styled-components';
 import { AudioWaveform } from './AudioWaveform';
 
 interface SpeakingControllerProps {

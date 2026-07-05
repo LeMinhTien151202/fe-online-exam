@@ -1,13 +1,12 @@
 import React from 'react';
-import { Card, Table, Button, Typography, Row, Col, Tag } from 'antd';
+import { Card, Table, Button, Row, Col } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-
-const { Text } = Typography;
+import { IBankQuestion } from '../services/types';
 
 interface Props {
-    filteredQuestions: any[];
-    selectedQuestions: any[];
-    handleAddQuestion: (record: any) => void;
+    filteredQuestions: IBankQuestion[];
+    selectedQuestions: IBankQuestion[];
+    handleAddQuestion: (record: IBankQuestion) => void;
     handleRemoveQuestion: (key: string) => void;
 }
 
@@ -31,7 +30,7 @@ const GeneralSelection: React.FC<Props> = ({
                                 title: 'Thêm',
                                 key: 'action',
                                 width: 60,
-                                render: (record: any) => (
+                                render: (record: IBankQuestion) => (
                                     <Button size="small" type="text" style={{ color: '#1890ff' }} icon={<PlusOutlined />} onClick={() => handleAddQuestion(record)} />
 
                                 ),
@@ -52,7 +51,7 @@ const GeneralSelection: React.FC<Props> = ({
                                 title: 'Xóa',
                                 key: 'action',
                                 width: 60,
-                                render: (record: any) => (
+                                render: (record: IBankQuestion) => (
                                     <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => handleRemoveQuestion(record.key)} />
                                 ),
                             },

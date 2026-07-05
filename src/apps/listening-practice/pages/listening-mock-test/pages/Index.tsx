@@ -1,33 +1,33 @@
-import React from 'react';
-import { Button, Space, Progress, message, Select, Modal, Typography, Tooltip } from 'antd';
-import { useNavigate, useParams } from '@tanstack/react-router';
 import {
-  LeftOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  RollbackOutlined,
-  AlertOutlined,
-  FileTextOutlined,
-  ArrowLeftOutlined,
-  ArrowRightOutlined
+AlertOutlined,
+ArrowLeftOutlined,
+ArrowRightOutlined,
+CheckCircleOutlined,
+ClockCircleOutlined,
+FileTextOutlined,
+LeftOutlined,
+RollbackOutlined
 } from '@ant-design/icons';
+import { useNavigate,useParams } from '@tanstack/react-router';
+import { Button,Modal,Progress,Space,Typography } from 'antd';
+import React from 'react';
+import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { AudioPlayer } from '../../../components/AudioPlayer';
-import * as S from '../styles/styled';
-import { ExamQuestionNavigator, NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
 import { useMockTest } from '../hook/useMockTest';
 import {
-  correctP1,
-  correctP2,
-  correctP3,
-  correctAnswersBank,
-  p1Questions,
-  p2Options,
-  p3SpeakerOptions,
-  p3Statements,
-  p4Groups
+correctAnswersBank,
+correctP1,
+correctP2,
+correctP3,
+p1Questions,
+p2Options,
+p3SpeakerOptions,
+p3Statements,
+p4Groups
 } from '../services/data';
+import * as S from '../styles/styled';
 
 const { Title, Text } = Typography;
 
@@ -84,7 +84,7 @@ export const ListeningMockTestPage: React.FC = () => {
       const q = p1Questions[activeQuestionNum - 1];
       const answer = answers[activeQuestionNum];
       const correctAns = correctP1[activeQuestionNum];
-      let optionStatus: 'success' | 'error' | 'default' = 'default';
+      const optionStatus: 'success' | 'error' | 'default' = 'default';
 
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -329,7 +329,7 @@ export const ListeningMockTestPage: React.FC = () => {
           {group.subQuestions.map((subQ) => {
             const answer = answers[subQ.num];
             const correctAns = correctAnswersBank[subQ.num];
-            let optionStatus: 'success' | 'error' | 'default' = 'default';
+            const optionStatus: 'success' | 'error' | 'default' = 'default';
 
             return (
               <S.QuestionBlock key={subQ.id}>

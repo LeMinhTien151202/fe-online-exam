@@ -1,34 +1,30 @@
 import React from 'react';
-import { Form, Input, Button, Modal, Select, DatePicker, Space, Divider, Typography, message } from 'antd';
-import { SaveOutlined, UserOutlined, MailOutlined, PhoneOutlined, KeyOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Modal, Select, Space, Divider, Typography } from 'antd';
+import { SaveOutlined, UserOutlined, MailOutlined, KeyOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 
-const { Text, Title } = Typography;
+const { Title } = Typography;
 const { Option } = Select;
 
 interface UserModalProps {
     open: boolean;
     onCancel: () => void;
-    onSuccess: (values: any) => void;
-    initialValues?: any;
+    onSuccess: (values: { fullName: string; email: string; password: string; role: 'ADMIN' | 'TEACHER' | 'STUDENT' }) => void;
+    isSaving?: boolean;
 }
 
-const UserModal: React.FC<UserModalProps> = ({ open, onCancel, onSuccess, initialValues }) => {
+const UserModal: React.FC<UserModalProps> = ({ open, onCancel, onSuccess, isSaving }) => {
     const [form] = Form.useForm();
 
     React.useEffect(() => {
-        if (open) {
-            form.setFieldsValue(initialValues || { package: 'free', status: 'active' });
-        } else {
-            form.resetFields();
-        }
-    }, [open, initialValues, form]);
+        if (open) form.setFieldsValue({ role: 'STUDENT' });
+        else form.resetFields();
+    }, [open, form]);
 
     const handleSubmit = async () => {
         try {
             const values = await form.validateFields();
             onSuccess(values);
-            message.success(initialValues ? 'Cập nhật thành công!' : 'Thêm học viên thành công!');
         } catch (error) {
             console.log('Validate Failed:', error);
         }
@@ -39,7 +35,7 @@ const UserModal: React.FC<UserModalProps> = ({ open, onCancel, onSuccess, initia
             title={
                 <div style={{ paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
                     <Title level={4} style={{ margin: 0, color: '#1e293b' }}>
-                        {initialValues ? 'Chỉnh sửa học viên' : 'Thêm học viên mới'}
+                        Thêm người dùng mới
                     </Title>
                 </div>
             }
@@ -53,13 +49,14 @@ const UserModal: React.FC<UserModalProps> = ({ open, onCancel, onSuccess, initia
                     key="submit"
                     type="primary"
                     icon={<SaveOutlined />}
+                    loading={isSaving}
                     onClick={handleSubmit}
                     style={{ background: ADMIN_COLORS.primary, borderRadius: '6px' }}
                 >
-                    {initialValues ? 'Lưu thay đổi' : 'Thêm mới'}
+                    Thêm mới
                 </Button>
             ]}
-            width={720}
+            width={640}
             centered
             bodyStyle={{ paddingTop: '20px' }}
         >
@@ -70,7 +67,7 @@ const UserModal: React.FC<UserModalProps> = ({ open, onCancel, onSuccess, initia
             >
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     <div style={{ gridColumn: 'span 2' }}>
-                        <Divider orientation={"left" as any} style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#64748b' }}>
+                        <Divider orientation={"left" as never} style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#64748b' }}>
                             <Space><UserOutlined /> THÔNG TIN CÁ NHÂN</Space>
                         </Divider>
                     </div>
@@ -94,63 +91,44 @@ const UserModal: React.FC<UserModalProps> = ({ open, onCancel, onSuccess, initia
                         <Input prefix={<MailOutlined style={{ color: '#94a3b8' }} />} placeholder="example@gmail.com" />
                     </Form.Item>
 
-                    <Form.Item name="phone" label="Số điện thoại">
-                        <Input prefix={<PhoneOutlined style={{ color: '#94a3b8' }} />} placeholder="09xx xxx xxx" />
-                    </Form.Item>
-
-                    <Form.Item name="dob" label="Ngày sinh">
-                        <DatePicker style={{ width: '100%', borderRadius: '6px' }} placeholder="Chọn ngày sinh" />
+                    <Form.Item name="role" label="Vai trò" rules={[{ required: true }]}>
+                        <Select style={{ borderRadius: '6px' }}>
+                            <Option value="STUDENT">Học viên</Option>
+                            <Option value="TEACHER">Giáo viên</Option>
+                            <Option value="ADMIN">Quản trị</Option>
+                        </Select>
                     </Form.Item>
 
                     <div style={{ gridColumn: 'span 2' }}>
-                        <Divider orientation={"left" as any} style={{ margin: '24px 0 16px 0', fontSize: '13px', color: '#64748b' }}>
-                            <Space><KeyOutlined /> TÀI KHOẢN & PHÂN LOẠI</Space>
+                        <Divider orientation={"left" as never} style={{ margin: '24px 0 16px 0', fontSize: '13px', color: '#64748b' }}>
+                            <Space><KeyOutlined /> MẬT KHẨU</Space>
                         </Divider>
                     </div>
 
-                    {!initialValues && (
-                        <>
-                            <Form.Item
-                                name="password"
-                                label="Mật khẩu"
-                                rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }, { min: 6, message: 'Tối thiểu 6 ký tự' }]}
-                            >
-                                <Input.Password placeholder="••••••••" />
-                            </Form.Item>
-                            <Form.Item
-                                name="confirmPassword"
-                                label="Xác nhận mật khẩu"
-                                dependencies={['password']}
-                                rules={[
-                                    { required: true, message: 'Vui lòng xác nhận mật khẩu' },
-                                    ({ getFieldValue }) => ({
-                                        validator(_, value) {
-                                            if (!value || getFieldValue('password') === value) {
-                                                return Promise.resolve();
-                                            }
-                                            return Promise.reject(new Error('Mật khẩu không khớp!'));
-                                        },
-                                    }),
-                                ]}
-                            >
-                                <Input.Password placeholder="••••••••" />
-                            </Form.Item>
-                        </>
-                    )}
-
-                    <Form.Item name="package" label="Gói thành viên" rules={[{ required: true }]}>
-                        <Select style={{ borderRadius: '6px' }}>
-                            <Option value="free">Miễn phí (Free)</Option>
-                            <Option value="pro">Chuyên nghiệp (Pro)</Option>
-                            <Option value="premium">Cao cấp (Premium)</Option>
-                        </Select>
+                    <Form.Item
+                        name="password"
+                        label="Mật khẩu"
+                        rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }, { min: 6, message: 'Tối thiểu 6 ký tự' }]}
+                    >
+                        <Input.Password placeholder="••••••••" />
                     </Form.Item>
-
-                    <Form.Item name="status" label="Trạng thái">
-                        <Select>
-                            <Option value="active">Đang hoạt động</Option>
-                            <Option value="inactive">Đang bị khóa</Option>
-                        </Select>
+                    <Form.Item
+                        name="confirmPassword"
+                        label="Xác nhận mật khẩu"
+                        dependencies={['password']}
+                        rules={[
+                            { required: true, message: 'Vui lòng xác nhận mật khẩu' },
+                            ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                    if (!value || getFieldValue('password') === value) {
+                                        return Promise.resolve();
+                                    }
+                                    return Promise.reject(new Error('Mật khẩu không khớp!'));
+                                },
+                            }),
+                        ]}
+                    >
+                        <Input.Password placeholder="••••••••" />
                     </Form.Item>
                 </div>
             </Form>

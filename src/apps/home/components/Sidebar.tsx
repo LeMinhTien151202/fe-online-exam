@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Badge, Tooltip } from 'antd';
 import {
   DownOutlined
@@ -6,19 +6,11 @@ import {
 import { useRouterState, useNavigate } from '@tanstack/react-router';
 import { useAppSelector } from '@/shared/store/hooks';
 import { useLogout } from '@/shared/hooks/useLogout';
+import { useNotifications } from '../hook/useNotifications';
 import * as S from './Sidebar.styled';
 
 interface SidebarProps {
   onClose?: () => void;
-}
-
-interface Notification {
-  id: number;
-  type: string;
-  icon: string;
-  text: string;
-  time: string;
-  group: 'Hôm nay' | 'Hôm qua' | 'Tuần này';
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
@@ -27,6 +19,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const { logout } = useLogout();
+  const { groupedNotifications, unreadCount, handleMarkRead, handleReadAll } = useNotifications();
 
   const displayName = user?.fullName || user?.profile?.fullName || user?.email || 'Thí sinh';
   const avatarLetter = displayName.charAt(0).toUpperCase();
@@ -111,49 +104,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     navigate({ to: '/login' });
     if (onClose) onClose();
   };
-
-  const notifications: Notification[] = [
-    {
-      id: 1,
-      type: 'streak',
-      icon: 'local_fire_department',
-      text: 'Chuỗi 12 ngày học tập của bạn sắp bị ngắt. Vào ôn luyện ngay để duy trì phong độ!',
-      time: '10 phút trước',
-      group: 'Hôm nay'
-    },
-    {
-      id: 2,
-      type: 'mock-test',
-      icon: 'auto_awesome',
-      text: 'Bộ đề thi thử Aptis tháng 6 vừa được cập nhật! Thử sức ngay để biết trình độ hiện tại.',
-      time: '1 giờ trước',
-      group: 'Hôm nay'
-    },
-    {
-      id: 3,
-      type: 'progress',
-      icon: 'emoji_events',
-      text: 'Chúc mừng! Bạn đã hoàn thành 4/15 học phần tuần này, đạt 26% tiến độ.',
-      time: 'Hôm qua',
-      group: 'Hôm qua'
-    },
-    {
-      id: 4,
-      type: 'question',
-      icon: 'school',
-      text: 'Thầy cô vừa thêm 50 câu hỏi Ngữ pháp mới trong kho tài liệu.',
-      time: '2 ngày trước',
-      group: 'Tuần này'
-    },
-  ];
-
-  const groupedNotifications = useMemo(() => {
-    return notifications.reduce((acc, notif) => {
-      if (!acc[notif.group]) acc[notif.group] = [];
-      acc[notif.group].push(notif);
-      return acc;
-    }, {} as Record<string, Notification[]>);
-  }, []);
 
   return (
     <S.SidebarContainer onClick={(e) => e.stopPropagation()} $collapsed={collapsed}>
@@ -307,28 +257,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         <S.NotificationPopover ref={notifRef} $isOpen={isNotifOpen} $collapsed={collapsed} role="dialog">
           <S.PopoverHeader>
             <h3>Thông báo học tập</h3>
-            <button className="mark-read-btn" onClick={(e) => { e.stopPropagation(); setIsNotifOpen(false); }}>
+            <button className="mark-read-btn" onClick={(e) => { e.stopPropagation(); handleReadAll(); }}>
               Đánh dấu đã đọc
             </button>
           </S.PopoverHeader>
 
           <S.PopoverBody>
-            {Object.entries(groupedNotifications).map(([group, list]) => (
-              <React.Fragment key={group}>
-                <S.TimeGroupTitle>{group}</S.TimeGroupTitle>
-                {list.map(notif => (
-                  <S.NotificationEntry key={notif.id} tabIndex={0}>
-                    <S.IconBox $type={notif.type}>
-                      <span className="material-symbols-outlined">{notif.icon}</span>
-                    </S.IconBox>
-                    <S.EntryContent>
-                      <div className="message">{notif.text}</div>
-                      <div className="time">{notif.time}</div>
-                    </S.EntryContent>
-                  </S.NotificationEntry>
-                ))}
-              </React.Fragment>
-            ))}
+            {Object.keys(groupedNotifications).length === 0 ? (
+              <div style={{ padding: '1.5rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.8125rem' }}>
+                Chưa có thông báo nào.
+              </div>
+            ) : (
+              Object.entries(groupedNotifications).map(([group, list]) => (
+                <React.Fragment key={group}>
+                  <S.TimeGroupTitle>{group}</S.TimeGroupTitle>
+                  {list.map(notif => (
+                    <S.NotificationEntry
+                      key={notif.id}
+                      tabIndex={0}
+                      onClick={() => handleMarkRead(notif.id, notif.receiverId)}
+                      style={{ opacity: notif.isRead ? 0.6 : 1 }}
+                    >
+                      <S.IconBox $type={notif.type}>
+                        <span className="material-symbols-outlined">{notif.icon}</span>
+                      </S.IconBox>
+                      <S.EntryContent>
+                        <div className="message">{notif.text}</div>
+                        <div className="time">{notif.time}</div>
+                      </S.EntryContent>
+                    </S.NotificationEntry>
+                  ))}
+                </React.Fragment>
+              ))
+            )}
           </S.PopoverBody>
 
           <S.PopoverFooter>
@@ -365,7 +326,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 >
                   <div className="avatar-container" onClick={collapsed ? toggleNotif : undefined}>
                     <div className="avatar">{avatarLetter}</div>
-                    {collapsed && <S.CollapsedBadge>4</S.CollapsedBadge>}
+                    {collapsed && unreadCount > 0 && <S.CollapsedBadge>{unreadCount}</S.CollapsedBadge>}
                   </div>
                   <div className="user-info">
                     <div className="name">{displayName}</div>
@@ -377,7 +338,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                       onClick={toggleNotif}
                     >
                       <span className="material-symbols-outlined" style={{ fontSize: '1.25rem' }}>notifications</span>
-                      <S.NotificationBadge>4</S.NotificationBadge>
+                      {unreadCount > 0 && <S.NotificationBadge>{unreadCount}</S.NotificationBadge>}
                     </div>
                   )}
                 </S.UserProfileCard>

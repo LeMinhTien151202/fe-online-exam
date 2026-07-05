@@ -1,6 +1,6 @@
+import { EyeOutlined } from '@ant-design/icons';
+import { Avatar,Button,Card,Space,Table,Tabs,Tag,Typography } from 'antd';
 import React from 'react';
-import { Card, Table, Tag, Space, Button, Tabs, Avatar, Typography, Badge } from 'antd';
-import { CheckCircleOutlined, ClockCircleOutlined, EyeOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useGrading } from '../hook/useGrading';
 import * as S from '../styles/styled';

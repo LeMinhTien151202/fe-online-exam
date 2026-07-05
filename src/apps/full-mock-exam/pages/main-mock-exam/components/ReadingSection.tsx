@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { Typography, Row, Col, Select, Radio, Divider } from 'antd';
-import * as S from '../styles/shared.styles';
-import * as RS from '../styles/reading.styles';
-import { ExamQuestionNavigator, NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
+import { Col,Radio,Row,Select,Typography } from 'antd';
+import React,{ useState } from 'react';
+import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
 import {
-    p1QuestionsData,
-    p2FixedSentence,
-    initialP2Sentences,
-    p3Opinions,
-    p3Questions,
-    p4Paragraphs,
-    p4Headings,
-    ISentence
+initialP2Sentences,
+ISentence,
+p1QuestionsData,
+p2FixedSentence,
+p3Opinions,
+p3Questions,
+p4Headings,
+p4Paragraphs
 } from '../../../../reading-practice/pages/reading-mock-test/services/data';
+import * as RS from '../styles/reading.styles';
+import * as S from '../styles/shared.styles';
 
 const { Text, Paragraph } = Typography;
 

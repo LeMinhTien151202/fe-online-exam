@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
+import { useEffect,useState } from 'react';
 
 export const usePart3Action = () => {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ export const usePart3Action = () => {
     if (saved) {
       try {
         progressObj = JSON.parse(saved);
-      } catch (e) {}
+      } catch (e) { /* bỏ qua lỗi */ }
     }
     progressObj['l3'] = 100;
     localStorage.setItem('aptis_listening_progress', JSON.stringify(progressObj));

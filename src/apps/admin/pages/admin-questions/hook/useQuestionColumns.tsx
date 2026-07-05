@@ -1,6 +1,5 @@
-import React from 'react';
-import { Space, Button, Tag, Tooltip, Progress, Typography, TableProps } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { DeleteOutlined,EditOutlined,EyeOutlined } from '@ant-design/icons';
+import { Button,Progress,Space,TableProps,Tag,Tooltip,Typography } from 'antd';
 import * as S from '../styles/styled';
 
 const { Text } = Typography;

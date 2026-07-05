@@ -4,7 +4,6 @@ import {
   UserOutlined,
   FireOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
   FileOutlined,
   FileTextOutlined,
 } from '@ant-design/icons';
@@ -239,14 +238,10 @@ const DashboardIndex: React.FC = () => {
                   ),
                 },
                 {
-                  title: 'Gói',
-                  dataIndex: 'package',
-                  key: 'package',
-                  render: (pkg: string) => (
-                    <Tag color={pkg === 'Premium' ? 'gold' : pkg === 'Pro' ? 'blue' : 'default'}>
-                      {pkg}
-                    </Tag>
-                  ),
+                  title: 'Ngày đăng ký',
+                  dataIndex: 'date',
+                  key: 'date',
+                  render: (date: string) => <Text type="secondary" style={{ fontSize: '12px' }}>{date}</Text>,
                 },
                 {
                   title: 'Trạng thái',

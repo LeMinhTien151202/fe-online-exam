@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Table, Button, Input, Space, Tag } from 'antd';
-import { PlusOutlined, SearchOutlined, CheckOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Select } from 'antd';
+import { PlusOutlined, CheckOutlined } from '@ant-design/icons';
 import * as S from '../styles/styled';
 import { useNotifications } from '../hook/useNotifications';
 import { useNotificationColumns } from '../hook/useNotificationColumns';
@@ -9,7 +9,21 @@ import { AppPagination } from '@shared/components/Pagination/Index';
 import { AdminTableWrapper, AdminPaginationWrapper } from '../../../styles/admin-shared.styles';
 
 const AdminNotificationsPage: React.FC = () => {
-    const { notifications, loading, unreadCount, handleCreate, handleMarkRead, handleReadAll } = useNotifications();
+    const {
+        notifications,
+        loading,
+        total,
+        page,
+        pageSize,
+        onPageChange,
+        audience,
+        setAudience,
+        notificationType,
+        setNotificationType,
+        handleCreate,
+        handleMarkRead,
+        handleReadAll,
+    } = useNotifications();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const columns = useNotificationColumns(handleMarkRead);
@@ -33,17 +47,32 @@ const AdminNotificationsPage: React.FC = () => {
 
             <S.NotificationCard>
                 <S.FilterBar>
-                    <S.SearchWrapper>
-                        <Input
-                            placeholder="Tìm kiếm thông báo..."
-                            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
-                            style={{ width: 300, borderRadius: '8px' }}
+                    <Space wrap>
+                        <Select
+                            placeholder="Phạm vi"
+                            style={{ width: 160 }}
+                            allowClear
+                            value={audience}
+                            onChange={setAudience}
+                            options={[
+                                { label: 'Toàn hệ thống', value: 'broadcast' },
+                                { label: 'Gửi riêng', value: 'personal' },
+                            ]}
                         />
-                    </S.SearchWrapper>
-                    <Space>
-                        <Tag color="orange">{unreadCount} chưa đọc</Tag>
-                        <Button icon={<CheckOutlined />} style={{ borderRadius: '8px' }} onClick={handleReadAll}>Đọc tất cả</Button>
+                        <Select
+                            placeholder="Loại thông báo"
+                            style={{ width: 180 }}
+                            allowClear
+                            value={notificationType}
+                            onChange={setNotificationType}
+                            options={[
+                                { label: 'Hệ thống', value: 'SYSTEM' },
+                                { label: 'Nhắc lịch thi', value: 'EXAM_REMINDER' },
+                                { label: 'Kết quả chấm', value: 'GRADE_RESULT' },
+                            ]}
+                        />
                     </Space>
+                    <Button icon={<CheckOutlined />} style={{ borderRadius: '8px' }} onClick={handleReadAll}>Đọc tất cả</Button>
                 </S.FilterBar>
 
                 <AdminTableWrapper>
@@ -58,10 +87,10 @@ const AdminNotificationsPage: React.FC = () => {
 
                 <AdminPaginationWrapper>
                     <AppPagination
-                        current={1}
-                        total={notifications.length}
-                        pageSize={10}
-                        onChange={() => { }}
+                        current={page}
+                        total={total}
+                        pageSize={pageSize}
+                        onChange={onPageChange}
                     />
                 </AdminPaginationWrapper>
             </S.NotificationCard>

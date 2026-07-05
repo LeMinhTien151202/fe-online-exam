@@ -1,14 +1,11 @@
 import React from 'react';
-import { Card, Table, Tag, Button, Space, Typography, Tabs } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { Card, Table, Tabs } from 'antd';
 import { useExams } from '../hook/useExams';
 import { useExamColumns } from '../hook/useExamColumns';
 import { ExamsHeader } from '../components/ExamsHeader';
 import * as S from '../styles/styled';
 import { AppPagination } from '@shared/components/Pagination/Index';
 import { AdminTableWrapper, AdminPaginationWrapper } from '../../../styles/admin-shared.styles';
-
-const { Text } = Typography;
 
 const ExamsIndex: React.FC = () => {
   const {
@@ -17,6 +14,10 @@ const ExamsIndex: React.FC = () => {
     partExams,
     setExams,
     fullExams,
+    total,
+    page,
+    pageSize,
+    onPageChange,
     isLoading,
     handleCreateNew,
     handleDelete,
@@ -25,6 +26,23 @@ const ExamsIndex: React.FC = () => {
   } = useExams();
 
   const { columnsPart, columnsSet, columnsFull } = useExamColumns(handleDelete, handleToggle, handleView);
+
+  const renderTab = (columns: typeof columnsPart, dataSource: unknown[]) => (
+    <>
+      <AdminTableWrapper>
+        <Table
+          columns={columns}
+          dataSource={dataSource}
+          size="middle"
+          pagination={false}
+          loading={isLoading}
+        />
+      </AdminTableWrapper>
+      <AdminPaginationWrapper>
+        <AppPagination current={page} total={total} pageSize={pageSize} onChange={onPageChange} />
+      </AdminPaginationWrapper>
+    </>
+  );
 
   return (
     <S.Container>
@@ -35,81 +53,9 @@ const ExamsIndex: React.FC = () => {
           activeKey={activeTab}
           onChange={setActiveTab}
           items={[
-            {
-              key: 'partial',
-              label: 'Đề thi theo phần',
-              children: (
-                <>
-                  <AdminTableWrapper>
-                    <Table
-                      columns={columnsPart}
-                      dataSource={partExams}
-                      size="middle"
-                      pagination={false}
-                      loading={isLoading}
-                    />
-                  </AdminTableWrapper>
-                  <AdminPaginationWrapper>
-                    <AppPagination
-                      current={1}
-                      total={partExams.length}
-                      pageSize={10}
-                      onChange={() => { }}
-                    />
-                  </AdminPaginationWrapper>
-                </>
-              ),
-            },
-            {
-              key: 'set',
-              label: 'Đề thi theo bộ đề',
-              children: (
-                <>
-                  <AdminTableWrapper>
-                    <Table
-                      columns={columnsSet}
-                      dataSource={setExams}
-                      size="middle"
-                      pagination={false}
-                      loading={isLoading}
-                    />
-                  </AdminTableWrapper>
-                  <AdminPaginationWrapper>
-                    <AppPagination
-                      current={1}
-                      total={setExams.length}
-                      pageSize={10}
-                      onChange={() => { }}
-                    />
-                  </AdminPaginationWrapper>
-                </>
-              ),
-            },
-            {
-              key: 'full',
-              label: 'Đề thi thử liên tục (Full Test)',
-              children: (
-                <>
-                  <AdminTableWrapper>
-                    <Table
-                      columns={columnsFull}
-                      dataSource={fullExams}
-                      size="middle"
-                      pagination={false}
-                      loading={isLoading}
-                    />
-                  </AdminTableWrapper>
-                  <AdminPaginationWrapper>
-                    <AppPagination
-                      current={1}
-                      total={fullExams.length}
-                      pageSize={10}
-                      onChange={() => { }}
-                    />
-                  </AdminPaginationWrapper>
-                </>
-              ),
-            },
+            { key: 'partial', label: 'Đề thi theo phần', children: renderTab(columnsPart, partExams) },
+            { key: 'set', label: 'Đề thi theo bộ đề', children: renderTab(columnsSet, setExams) },
+            { key: 'full', label: 'Đề thi thử liên tục (Full Test)', children: renderTab(columnsFull, fullExams) },
           ]}
         />
       </Card>

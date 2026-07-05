@@ -32,11 +32,14 @@ export const useNotificationColumns = (handleMarkRead: (id: number) => void) => 
         },
         {
             title: 'Phạm vi',
-            dataIndex: 'receiverId',
-            key: 'receiverId',
-            render: (receiverId: number | null) =>
-                receiverId == null ? <Tag color="purple">Toàn hệ thống</Tag> : <Tag>Gửi riêng #{receiverId}</Tag>,
-            width: 140,
+            key: 'audience',
+            render: (_, record) =>
+                record.receiverId == null ? (
+                    <Tag color="purple">Toàn hệ thống</Tag>
+                ) : (
+                    <Tag>{record.receiver?.email ? `→ ${record.receiver.email}` : `Gửi riêng #${record.receiverId}`}</Tag>
+                ),
+            width: 180,
         },
         {
             title: 'Trạng thái',

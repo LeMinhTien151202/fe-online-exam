@@ -4,10 +4,11 @@ import { ICreateNotificationPayload, INotificationFilter } from './types';
 
 export const NOTIFICATIONS_KEY = ['admin', 'notifications'];
 
-export const useNotificationsQuery = (filter: INotificationFilter = {}) => {
+// Admin: danh sách quản lý (phân trang) — trả nguyên envelope { data, metaData }
+export const useAdminNotificationsQuery = (filter: INotificationFilter = {}) => {
   return useQuery({
-    queryKey: [...NOTIFICATIONS_KEY, filter],
-    queryFn: () => notificationApi.getMine(filter),
+    queryKey: [...NOTIFICATIONS_KEY, 'all', filter],
+    queryFn: () => notificationApi.getAll(filter),
   });
 };
 

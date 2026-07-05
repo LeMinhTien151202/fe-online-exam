@@ -1,5 +1,4 @@
 import styled from "styled-components";
-import { ArrowRightOutlined } from "@ant-design/icons";
 
 export const Grid = styled.div`
   display: grid;

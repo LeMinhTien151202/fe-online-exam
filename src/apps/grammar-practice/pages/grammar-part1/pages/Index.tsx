@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import { Modal, Button, Space, Progress, Statistic, message } from 'antd';
-import { useNavigate } from '@tanstack/react-router';
 import {
-  ClockCircleOutlined,
-  LeftOutlined,
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
-  CheckCircleOutlined,
-  InfoCircleOutlined,
-  UndoOutlined
+ArrowLeftOutlined,
+ArrowRightOutlined,
+CheckCircleOutlined,
+ClockCircleOutlined,
+InfoCircleOutlined,
+LeftOutlined,
+UndoOutlined
 } from '@ant-design/icons';
+import { useNavigate } from '@tanstack/react-router';
+import { Button,Modal,Progress,Space,Statistic,message } from 'antd';
+import React,{ useState } from 'react';
 
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
-import { mockGrammarQuestions } from '../services/mockExamData';
-import { usePart1Action } from '../hook/usePart1Action';
 import { GrammarSection } from '../components/GrammarSection';
 import { QuestionNav } from '../components/QuestionNav';
+import { usePart1Action } from '../hook/usePart1Action';
+import { mockGrammarQuestions } from '../services/mockExamData';
 import * as S from '../styles/styled';
 
 export const Part1Page: React.FC = () => {
@@ -42,7 +42,7 @@ export const Part1Page: React.FC = () => {
     if (saved) {
       try {
         progressObj = JSON.parse(saved);
-      } catch (e) {}
+      } catch (e) { /* bỏ qua lỗi */ }
     }
     progressObj['g1'] = 100;
     localStorage.setItem('aptis_grammar_progress', JSON.stringify(progressObj));

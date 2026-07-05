@@ -14,6 +14,7 @@ export interface INotification {
   message: string;
   isRead: boolean;
   createdAt: string;
+  receiver?: { id: number; email: string } | null; // kèm khi gọi GET /notifications (admin)
 }
 
 export interface ICreateNotificationPayload {
@@ -23,6 +24,15 @@ export interface ICreateNotificationPayload {
   receiverId?: number; // bỏ trống = broadcast
 }
 
+export type NotificationAudience = 'all' | 'broadcast' | 'personal';
+
+// GET /notifications (admin — quản lý, phân trang + lọc)
 export interface INotificationFilter {
+  page?: number;
+  limit?: number;
+  notificationType?: NotificationType;
   isRead?: boolean;
+  audience?: NotificationAudience;
+  receiverId?: number;
+  search?: string;
 }

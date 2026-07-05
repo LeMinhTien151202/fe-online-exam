@@ -1,5 +1,4 @@
 import styled from "styled-components";
-import { Card, Select, Avatar, Radio, Button } from "antd";
 
 export const TitleArea = styled.div`
   border-bottom: 1px solid #f1f5f9;

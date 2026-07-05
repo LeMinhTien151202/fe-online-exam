@@ -1,5 +1,5 @@
+import { Select,Space } from 'antd';
 import React from 'react';
-import { Select, Space } from 'antd';
 import { IVocabularySet } from '../../../types';
 import * as S from '../styles/styled';
 

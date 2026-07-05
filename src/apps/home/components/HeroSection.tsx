@@ -1,6 +1,5 @@
-import React from 'react';
 import { Typography } from 'antd';
-import { ArrowRightOutlined } from '@ant-design/icons';
+import React from 'react';
 import * as S from './HeroSection.styled';
 
 const { Title, Paragraph } = Typography;

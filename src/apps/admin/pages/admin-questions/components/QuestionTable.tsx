@@ -1,18 +1,23 @@
 import React from 'react';
-import { Table, Card, Input, Select, Button } from 'antd';
+import { Table, Card, Input, Select, Button, TableProps } from 'antd';
 import { SearchOutlined, UploadOutlined } from '@ant-design/icons';
 import { AdminTableWrapper, AdminPaginationWrapper } from '../../../styles/admin-shared.styles';
 import { AppPagination } from '@shared/components/Pagination/Index';
 import * as S from '../styles/styled';
 
+type QuestionRow = Record<string, unknown>;
+
 interface QuestionTableProps {
-    columns: any[];
-    dataSource: any[];
+    columns: TableProps<QuestionRow>['columns'];
+    dataSource: QuestionRow[];
     total: number;
+    page?: number;
+    pageSize?: number;
+    onPageChange?: (page: number, pageSize: number) => void;
     loading?: boolean;
 }
 
-const QuestionTable: React.FC<QuestionTableProps> = ({ columns, dataSource, total, loading }) => {
+const QuestionTable: React.FC<QuestionTableProps> = ({ columns, dataSource, total, page = 1, pageSize = 10, onPageChange, loading }) => {
     return (
         <Card bordered={false} styles={{ body: { padding: 0 } }} style={{ background: 'transparent', boxShadow: 'none' }}>
             <S.FilterBar style={{ marginBottom: '1rem' }}>
@@ -40,10 +45,10 @@ const QuestionTable: React.FC<QuestionTableProps> = ({ columns, dataSource, tota
             </AdminTableWrapper>
             <AdminPaginationWrapper>
                 <AppPagination
-                    current={1}
+                    current={page}
                     total={total}
-                    pageSize={10}
-                    onChange={() => { }}
+                    pageSize={pageSize}
+                    onChange={onPageChange ?? (() => { })}
                 />
             </AdminPaginationWrapper>
         </Card>

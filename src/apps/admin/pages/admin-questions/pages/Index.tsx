@@ -23,6 +23,10 @@ const QuestionsIndex: React.FC = () => {
     partTab,
     setPartTab,
     questions,
+    total,
+    page,
+    pageSize,
+    onPageChange,
     isLoading,
     isModalOpen,
     setIsModalOpen,
@@ -86,7 +90,10 @@ const QuestionsIndex: React.FC = () => {
       <QuestionTable
         columns={columns}
         dataSource={questions}
-        total={questions.length}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        onPageChange={onPageChange}
         loading={isLoading}
       />
 

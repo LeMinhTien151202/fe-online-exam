@@ -1,12 +1,12 @@
-import React from 'react';
-import { Radio, Button, Typography, Space, Progress, Badge, Alert } from 'antd';
+import { CheckCircleOutlined,ClockCircleOutlined,LeftOutlined,RollbackOutlined } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { ClockCircleOutlined, LeftOutlined, CheckCircleOutlined, RollbackOutlined } from '@ant-design/icons';
+import { Alert,Badge,Progress,Radio,Space,Typography } from 'antd';
+import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
-import * as S from '../styles/styled';
 import { usePart3Action } from '../hook/usePart3Action';
-import { opinions, questions, correctAnswers } from '../services/data';
+import { correctAnswers,opinions,questions } from '../services/data';
+import * as S from '../styles/styled';
 
 const { Title, Text, Paragraph } = Typography;
 

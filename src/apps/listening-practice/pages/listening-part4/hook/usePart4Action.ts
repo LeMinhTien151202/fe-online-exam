@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
+import { useEffect,useState } from 'react';
 import { mockGroups } from '../services/data';
 
 export const usePart4Action = () => {
@@ -51,7 +51,7 @@ export const usePart4Action = () => {
     if (saved) {
       try {
         progressObj = JSON.parse(saved);
-      } catch (e) {}
+      } catch (e) { /* bỏ qua lỗi */ }
     }
     progressObj['l4'] = 100;
     localStorage.setItem('aptis_listening_progress', JSON.stringify(progressObj));

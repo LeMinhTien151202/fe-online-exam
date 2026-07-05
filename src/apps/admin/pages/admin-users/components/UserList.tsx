@@ -1,20 +1,28 @@
 import React from 'react';
-import { Table, Button, Input, Select, DatePicker, Space, Card } from 'antd';
+import { Table, Button, Input, Select, DatePicker, Space, Card, TableProps } from 'antd';
 import { SearchOutlined, DownloadOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import * as S from '../styles/styled';
 import { AppPagination } from '@shared/components/Pagination/Index';
 import { AdminTableWrapper, AdminPaginationWrapper } from '../../../styles/admin-shared.styles';
+import { IUserRow } from '../services/types';
 import UserModal from './UserModal';
 
 const { RangePicker } = DatePicker;
 
 interface UserListProps {
-    students: any[];
-    columns: any[];
+    students: IUserRow[];
+    columns: TableProps<IUserRow>['columns'];
+    loading?: boolean;
+    isCreating?: boolean;
+    total?: number;
+    page?: number;
+    pageSize?: number;
+    onPageChange?: (page: number, pageSize: number) => void;
+    onCreate?: (values: { fullName: string; email: string; password: string; role: 'ADMIN' | 'TEACHER' | 'STUDENT' }, onDone?: () => void) => void;
 }
 
-const UserList: React.FC<UserListProps> = ({ students, columns }) => {
+const UserList: React.FC<UserListProps> = ({ students, columns, loading, isCreating, total = 0, page = 1, pageSize = 10, onPageChange, onCreate }) => {
     const [isModalOpen, setIsModalOpen] = React.useState(false);
 
     return (
@@ -26,10 +34,10 @@ const UserList: React.FC<UserListProps> = ({ students, columns }) => {
                         prefix={<SearchOutlined />}
                         style={{ width: 220 }}
                     />
-                    <Select placeholder="Chọn gói" style={{ width: 120 }} allowClear>
-                        <Select.Option value="free">Miễn phí</Select.Option>
-                        <Select.Option value="pro">Pro</Select.Option>
-                        <Select.Option value="premium">Premium</Select.Option>
+                    <Select placeholder="Vai trò" style={{ width: 130 }} allowClear>
+                        <Select.Option value="STUDENT">Học viên</Select.Option>
+                        <Select.Option value="TEACHER">Giáo viên</Select.Option>
+                        <Select.Option value="ADMIN">Quản trị</Select.Option>
                     </Select>
                     <Select placeholder="Trạng thái" style={{ width: 120 }} allowClear>
                         <Select.Option value="active">Hoạt động</Select.Option>
@@ -60,25 +68,24 @@ const UserList: React.FC<UserListProps> = ({ students, columns }) => {
                     dataSource={students}
                     pagination={false}
                     size="middle"
+                    loading={loading}
                 />
             </AdminTableWrapper>
 
             <AdminPaginationWrapper>
                 <AppPagination
-                    current={1}
-                    total={students.length}
-                    pageSize={10}
-                    onChange={() => { }}
+                    current={page}
+                    total={total}
+                    pageSize={pageSize}
+                    onChange={onPageChange ?? (() => { })}
                 />
             </AdminPaginationWrapper>
 
             <UserModal
                 open={isModalOpen}
                 onCancel={() => setIsModalOpen(false)}
-                onSuccess={(values) => {
-                    console.log(values);
-                    setIsModalOpen(false);
-                }}
+                isSaving={isCreating}
+                onSuccess={(values) => onCreate?.(values, () => setIsModalOpen(false))}
             />
         </Card>
     );

@@ -1,18 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Typography, Row, Col, Space, Button, Divider } from 'antd';
-import {
-    LeftOutlined,
-    RightOutlined,
-    InfoCircleOutlined,
-    CheckSquareOutlined
-} from '@ant-design/icons';
-import * as S from '../styles/shared.styles';
-import * as WS from '../styles/writing.styles';
-import { ExamQuestionNavigator, NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
+import { Col,Row,Typography } from 'antd';
+import React,{ useEffect,useState } from 'react';
+import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
 import { mockPart1Questions } from '../../../../writing-practice/pages/writing-part1/services/data';
 import { mockPart2Question } from '../../../../writing-practice/pages/writing-part2/services/data';
 import { mockPart3Messages } from '../../../../writing-practice/pages/writing-part3/services/data';
 import { mockPart4Scenario } from '../../../../writing-practice/pages/writing-part4/services/data';
+import * as S from '../styles/shared.styles';
+import * as WS from '../styles/writing.styles';
 
 const { Text } = Typography;
 

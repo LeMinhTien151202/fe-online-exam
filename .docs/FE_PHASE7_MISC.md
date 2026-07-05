@@ -80,8 +80,47 @@ Không body. **Response `data`:** `{ "message": "Đã xóa tài liệu" }`.
 
 # B. Notifications
 
+## B0. ADMIN — tất cả thông báo (quản lý) — `GET /notifications`
+Query: `?page=1&limit=10&notificationType=&isRead=&audience=&receiverId=&search=`.
+- `audience` ∈ `all` (mặc định) | `broadcast` (gửi mọi người) | `personal` (gửi riêng).
+- `receiverId` = lọc theo 1 người nhận cụ thể.
+
+**Response** (phân trang, kèm `receiver`):
+```json
+{
+  "code": 200,
+  "success": true,
+  "message": "Lấy danh sách thông báo thành công",
+  "messages": [],
+  "data": [
+    {
+      "id": 9,
+      "receiverId": 5,
+      "notificationType": "GRADE_RESULT",
+      "title": "Kết quả bài thi",
+      "message": "Bài thi thử của bạn đã được chấm xong.",
+      "isRead": false,
+      "createdAt": "2026-07-02T09:30:00.000Z",
+      "receiver": { "id": 5, "email": "student@test.com" }
+    },
+    {
+      "id": 8,
+      "receiverId": null,
+      "notificationType": "SYSTEM",
+      "title": "Bảo trì hệ thống",
+      "message": "Hệ thống bảo trì 22h-23h hôm nay.",
+      "isRead": false,
+      "createdAt": "2026-07-02T09:00:00.000Z",
+      "receiver": null
+    }
+  ],
+  "metaData": { "page": 1, "pageSize": 10, "total": 27, "totalPage": 3 }
+}
+```
+> `receiver: null` = broadcast. Dùng cho trang quản trị thông báo (lọc + phân trang).
+
 ## B1. Của tôi — `GET /notifications/me`
-Query: `?isRead=` (`true`/`false`, bỏ trống = tất cả). Trả thông báo gửi riêng cho tôi **+ broadcast** (`receiverId: null`).
+Query: `?page=1&limit=10&isRead=` (`isRead` bỏ trống = tất cả). Trả thông báo gửi riêng cho tôi **+ broadcast** (`receiverId: null`), **có phân trang**.
 
 **Response `data`:**
 ```json
@@ -110,10 +149,10 @@ Query: `?isRead=` (`true`/`false`, bỏ trống = tất cả). Trả thông báo
       "createdAt": "2026-07-02T09:00:00.000Z"
     }
   ],
-  "metaData": null
+  "metaData": { "page": 1, "pageSize": 10, "total": 5, "totalPage": 1 }
 }
 ```
-> `receiverId: null` = broadcast (gửi mọi người). Dùng để badge "chưa đọc": đếm phần tử có `isRead: false`.
+> `receiverId: null` = broadcast (gửi mọi người). Badge "chưa đọc": gọi `?isRead=false` xem `metaData.total`.
 
 ## B2. Đánh dấu đã đọc 1 cái — `PATCH /notifications/{id}/read`
 Không body.
@@ -228,7 +267,8 @@ Upsert — tự tạo nếu key chưa có. `settingValue` luôn là **chuỗi**.
 | POST | `/study-materials` | ADMIN/TEACHER | Tạo tài liệu |
 | PATCH | `/study-materials/{id}` | ADMIN/TEACHER | Sửa |
 | DELETE | `/study-materials/{id}` | ADMIN/TEACHER | Xóa mềm |
-| GET | `/notifications/me` | Đăng nhập | Thông báo của tôi + broadcast |
+| GET | `/notifications` | ADMIN | Tất cả thông báo + bộ lọc (quản lý), phân trang |
+| GET | `/notifications/me` | Đăng nhập | Thông báo của tôi + broadcast (phân trang) |
 | PATCH | `/notifications/{id}/read` | Đăng nhập | Đánh dấu đã đọc |
 | PATCH | `/notifications/read-all` | Đăng nhập | Đọc tất cả |
 | POST | `/notifications` | ADMIN | Gửi thông báo |

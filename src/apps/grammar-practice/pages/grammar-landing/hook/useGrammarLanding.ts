@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
 import { grammarParts } from '../services/data';
 
 export const useGrammarLanding = () => {
@@ -13,7 +13,7 @@ export const useGrammarLanding = () => {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {}
+      } catch (e) { /* bỏ qua lỗi */ }
     }
     return { g1: 0, g2: 0 };
   });
@@ -23,7 +23,7 @@ export const useGrammarLanding = () => {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {}
+      } catch (e) { /* bỏ qua lỗi */ }
     }
     return { m1: 0, m2: 0, m3: 0 };
   });

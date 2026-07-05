@@ -7,9 +7,12 @@ import { IBankQuestion } from '../services/types';
 const { Text } = Typography;
 const { Panel } = Collapse;
 
+// Ô "slot" khi dựng đề: có thể là câu hỏi thật hoặc ô trống placeholder
+type ListeningSlot = Partial<IBankQuestion> & { _slotIndex: number; isPlaceholder?: boolean };
+
 interface Props {
-    selectedQuestions: any[];
-    handleAddQuestion: (record: any) => void;
+    selectedQuestions: IBankQuestion[];
+    handleAddQuestion: (record: IBankQuestion) => void;
     handleRemoveQuestion: (key: string) => void;
     mode?: 'partial' | 'set' | 'full';
     targetPart?: string;
@@ -47,7 +50,7 @@ const ListeningSelection: React.FC<Props> = ({
                     <div style={{ maxHeight: '640px', overflowY: 'auto' }}>
                         <Collapse accordion defaultActiveKey={[displayParts[0]]} ghost expandIconPosition="end">
                             {displayParts.map(p => {
-                                const partQuestions = bankQuestions.filter((q: any) =>
+                                const partQuestions = bankQuestions.filter((q: IBankQuestion) =>
                                     q.type === 'Listening' &&
                                     q.part === p &&
                                     (searchText === '' || q.content.toLowerCase().includes(searchText.toLowerCase()))
@@ -63,9 +66,9 @@ const ListeningSelection: React.FC<Props> = ({
                                             size="small"
                                             pagination={{ pageSize: 6, size: 'small', simple: true }}
                                             dataSource={partQuestions}
-                                            rowKey={(item: any) => item?.id || item?.key}
+                                            rowKey={(item: IBankQuestion) => item?.id || item?.key}
 
-                                            renderItem={(record: any) => (
+                                            renderItem={(record: IBankQuestion) => (
                                                 <List.Item
                                                     style={{ background: '#fff', border: '1px solid #f1f5f9', marginBottom: '4px', borderRadius: '4px', padding: '10px 15px' }}
                                                     actions={[
@@ -109,14 +112,14 @@ const ListeningSelection: React.FC<Props> = ({
                                         <List
                                             size="small"
                                             dataSource={Array.from({ length: totalSlots }).map((_, i) => partQs[i] ? { ...partQs[i], _slotIndex: i } : { _slotIndex: i, isPlaceholder: true })}
-                                            rowKey={(item: any) => item?.id || item?.key || `slot-${item?._slotIndex}`}
-                                            renderItem={(item: any) => (
+                                            rowKey={(item: ListeningSlot) => item?.id || item?.key || `slot-${item?._slotIndex}`}
+                                            renderItem={(item: ListeningSlot) => (
                                                 <div style={{ padding: '8px 12px', background: !item?.isPlaceholder ? '#fff' : '#fafafa', border: '1px solid #f1f5f9', marginBottom: '4px', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <Space>
                                                         <Text type="secondary" style={{ fontSize: '11px' }}>Slot {item?._slotIndex + 1}:</Text>
                                                         {!item?.isPlaceholder ? <Text style={{ fontSize: '13px' }}>{item?.content}</Text> : <Text type="secondary" italic style={{ fontSize: '12px' }}>Trống</Text>}
                                                     </Space>
-                                                    {!item?.isPlaceholder && <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => handleRemoveQuestion(item?.key)} />}
+                                                    {!item?.isPlaceholder && <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => handleRemoveQuestion(item?.key ?? '')} />}
                                                 </div>
                                             )}
                                         />

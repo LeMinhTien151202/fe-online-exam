@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { message } from 'antd';
+import { useEffect,useState } from 'react';
 import { correctAnswers } from '../services/data';
 
 export const usePart1Action = () => {
@@ -48,7 +48,7 @@ export const usePart1Action = () => {
     if (savedProgress) {
       try {
         nextProgress = { ...JSON.parse(savedProgress), r1: progressPercent };
-      } catch (e) {}
+      } catch (e) { /* bỏ qua lỗi */ }
     }
     localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
 

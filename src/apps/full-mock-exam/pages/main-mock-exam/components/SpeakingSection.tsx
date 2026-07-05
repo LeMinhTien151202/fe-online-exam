@@ -1,23 +1,16 @@
-import React, { useState } from 'react';
-import { Typography, Row, Col, Space, Button, Divider, Tooltip } from 'antd';
+import { Col,Row,Typography } from 'antd';
+import React,{ useState } from 'react';
+import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
 import {
-    LeftOutlined,
-    RightOutlined,
-    UnlockOutlined,
-    DownOutlined,
-    UpOutlined
-} from '@ant-design/icons';
+ISpeakingQuestion,
+part1Questions,
+part2Questions,
+part3Questions,
+part4Questions
+} from '../services/speakingData';
 import * as S from '../styles/shared.styles';
 import * as SS from '../styles/speaking.styles';
-import { ExamQuestionNavigator, NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
 import { SpeakingController } from './speaking/SpeakingController';
-import {
-    part1Questions,
-    part2Questions,
-    part3Questions,
-    part4Questions,
-    ISpeakingQuestion
-} from '../services/speakingData';
 
 const { Text, Paragraph } = Typography;
 

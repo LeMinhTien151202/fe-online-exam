@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card, List, Button, Typography, Row, Col, Space, Tag, Collapse, Input, Tooltip } from 'antd';
-import { PlusOutlined, DeleteOutlined, SearchOutlined, AudioOutlined, PictureOutlined } from '@ant-design/icons';
+import { Card, List, Button, Typography, Row, Col, Space, Tag, Collapse, Input } from 'antd';
+import { PlusOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { IBankQuestion } from '../services/types';
 
@@ -8,8 +8,8 @@ const { Text } = Typography;
 const { Panel } = Collapse;
 
 interface Props {
-    selectedQuestions: any[];
-    handleAddQuestion: (record: any) => void;
+    selectedQuestions: IBankQuestion[];
+    handleAddQuestion: (record: IBankQuestion) => void;
     handleRemoveQuestion: (key: string) => void;
     mode?: 'partial' | 'set' | 'full';
     targetPart?: string;
@@ -47,7 +47,7 @@ const SpeakingSelection: React.FC<Props> = ({
                     <div style={{ maxHeight: '640px', overflowY: 'auto' }}>
                         <Collapse accordion defaultActiveKey={[displayParts[0]]} ghost expandIconPosition="end">
                             {displayParts.map(p => {
-                                const partQuestions = bankQuestions.filter((q: any) =>
+                                const partQuestions = bankQuestions.filter((q: IBankQuestion) =>
                                     q.type === 'Speaking' &&
                                     q.part === p &&
                                     (searchText === '' || q.content.toLowerCase().includes(searchText.toLowerCase()))
@@ -73,7 +73,7 @@ const SpeakingSelection: React.FC<Props> = ({
                                             pagination={{ pageSize: 6, size: 'small', simple: true }}
                                             dataSource={partQuestions}
 
-                                            renderItem={(record: any) => (
+                                            renderItem={(record: IBankQuestion) => (
                                                 <List.Item
                                                     style={{ background: '#fff', border: '1px solid #f1f5f9', marginBottom: '4px', borderRadius: '4px', padding: '10px 15px' }}
                                                     actions={[

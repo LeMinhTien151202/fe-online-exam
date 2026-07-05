@@ -1,32 +1,32 @@
-import React from 'react';
-import { Button, Space, Progress, Badge, Select, Radio, Alert, Modal, Typography, Tooltip } from 'antd';
-import { useNavigate, useParams } from '@tanstack/react-router';
 import {
-  LeftOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  RollbackOutlined,
-  AlertOutlined,
-  ArrowLeftOutlined,
-  ArrowRightOutlined
+AlertOutlined,
+ArrowLeftOutlined,
+ArrowRightOutlined,
+CheckCircleOutlined,
+ClockCircleOutlined,
+LeftOutlined,
+RollbackOutlined
 } from '@ant-design/icons';
+import { useNavigate,useParams } from '@tanstack/react-router';
+import { Badge,Button,Modal,Progress,Radio,Select,Space,Tooltip,Typography } from 'antd';
+import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
-import * as S from '../styles/styled';
 import { useMockTest } from '../hook/useMockTest';
 import {
-  p1QuestionsData,
-  p2FixedSentence,
-  initialP2Sentences,
-  p3Opinions,
-  p3Questions,
-  p4Paragraphs,
-  p4Headings,
-  correctP1,
-  correctP2,
-  correctP3,
-  correctP4
+correctP1,
+correctP2,
+correctP3,
+correctP4,
+initialP2Sentences,
+p1QuestionsData,
+p2FixedSentence,
+p3Opinions,
+p3Questions,
+p4Headings,
+p4Paragraphs
 } from '../services/data';
+import * as S from '../styles/styled';
 
 const { Title, Text, Paragraph } = Typography;
 

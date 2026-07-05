@@ -1,75 +1,21 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
+import { Spin } from 'antd';
 import { DashboardLayout } from '../../../../home/components/DashboardLayout';
+import { useFaqList } from '../hook/useFaqList';
 import * as S from '../styles/faq.styled';
 
-interface FAQData {
-    id: number;
-    question: string;
-    answer: string;
-    category: string;
-}
-
-const mockFaqs: FAQData[] = [
-    {
-        id: 1,
-        category: 'Kỳ thi Aptis',
-        question: 'Aptis ESOL là gì?',
-        answer: 'Aptis ESOL là bài thi đánh giá trình độ tiếng Anh hiện đại được phát triển bởi Hội đồng Anh (British Council). Bài thi đánh giá 4 kỹ năng: Nghe, Nói, Đọc, Viết và một phần kiểm tra Từ vựng & Ngữ pháp bắt buộc.'
-    },
-    {
-        id: 2,
-        category: 'Kỳ thi Aptis',
-        question: 'Bao lâu thì có kết quả thi Aptis?',
-        answer: 'Thông thường, kết quả thi Aptis trực tuyến sẽ có sau 2-5 ngày làm việc. Chứng chỉ bản cứng sẽ được gửi về địa chỉ của thí sinh sau khoảng 10-15 ngày làm việc.'
-    },
-    {
-        id: 3,
-        category: 'Tài khoản',
-        question: 'Làm thế nào để đổi mật khẩu?',
-        answer: 'Bạn có thể vào mục "Cài đặt tài khoản" ở góc dưới bên trái (menu cá nhân), chọn "Đổi mật khẩu" và làm theo hướng dẫn của hệ thống.'
-    },
-    {
-        id: 4,
-        category: 'Luyện thi Ngữ pháp',
-        question: 'Phần thi Ngữ pháp & Từ vựng có tính vào tổng điểm không?',
-        answer: 'Phần thi Ngữ pháp & Từ vựng đóng vai trò là "điểm tham chiếu". Nếu điểm của bạn nằm ở ranh giới giữa 2 cấp độ (ví dụ B1 và B2), kết quả phần này sẽ quyết định bạn thuộc cấp độ nào cao hơn.'
-    },
-    {
-        id: 5,
-        category: 'Thi thử',
-        question: 'Tôi có thể làm lại bài thi thử nhiều lần không?',
-        answer: 'Có, bạn có thể thực hiện bài thi thử không giới hạn số lần. Hệ thống sẽ lưu lại lịch sử tất cả các lần thi để bạn theo dõi sự tiến bộ của mình.'
-    },
-    {
-        id: 6,
-        category: 'Học phí & Gói học',
-        question: 'Gói Pro khác gói Miễn phí như thế nào?',
-        answer: 'Gói Pro cung cấp quyền truy cập vào kho đề thi thực tế mới nhất, giải thích chi tiết đáp án, và được chấm chữa bài viết/nói bởi đội ngũ giáo viên bản ngữ.'
-    }
-];
-
 const FAQPage: React.FC = () => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [activeCategory, setActiveCategory] = useState('Tất cả');
-    const [openId, setOpenId] = useState<number | null>(1);
-
-    const categories = useMemo(() => {
-        const cats = new Set(mockFaqs.map(f => f.category));
-        return ['Tất cả', ...Array.from(cats)];
-    }, []);
-
-    const filteredFaqs = useMemo(() => {
-        return mockFaqs.filter(faq => {
-            const matchesSearch = faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesCategory = activeCategory === 'Tất cả' || faq.category === activeCategory;
-            return matchesSearch && matchesCategory;
-        });
-    }, [searchQuery, activeCategory]);
-
-    const toggleOpen = (id: number) => {
-        setOpenId(openId === id ? null : id);
-    };
+    const {
+        isLoading,
+        categories,
+        filteredFaqs,
+        searchQuery,
+        setSearchQuery,
+        activeCategory,
+        setActiveCategory,
+        openId,
+        toggleOpen,
+    } = useFaqList();
 
     return (
         <DashboardLayout>
@@ -105,7 +51,11 @@ const FAQPage: React.FC = () => {
                 </S.CategoryFilter>
 
                 <S.FAQList>
-                    {filteredFaqs.length > 0 ? (
+                    {isLoading ? (
+                        <div style={{ textAlign: 'center', padding: '3rem' }}>
+                            <Spin />
+                        </div>
+                    ) : filteredFaqs.length > 0 ? (
                         filteredFaqs.map(faq => (
                             <S.FAQItem key={faq.id} $isOpen={openId === faq.id}>
                                 <S.QuestionBox onClick={() => toggleOpen(faq.id)}>

@@ -1,4 +1,4 @@
-import axiosInstance from '@/configs/axios';
+import axiosInstance, { IApiEnvelope } from '@/configs/axios';
 import {
   FileFolderType,
   ICreateQuestionPayload,
@@ -8,12 +8,17 @@ import {
   IUploadedFile,
 } from './types';
 
-// Ghi chú: axios interceptor đã tự bóc `res.data.data`, nên các hàm dưới trả thẳng phần data.
-// Riêng list: interceptor trả về mảng `data` (metaData phân trang không đi kèm ở tầng này).
-
 export const questionApi = {
+  // Trả mảng (dùng cho ngân hàng câu hỏi khi dựng đề — lấy nhiều, không cần metaData)
   list: (filter: IQuestionFilter = {}) =>
     axiosInstance.get<IQuestion[], IQuestion[]>('/questions', { params: filter }),
+
+  // Trả nguyên envelope (data + metaData) cho bảng quản lý câu hỏi có phân trang
+  listPaged: (filter: IQuestionFilter = {}) =>
+    axiosInstance.get<IApiEnvelope<IQuestion[]>, IApiEnvelope<IQuestion[]>>('/questions', {
+      params: filter,
+      _rawEnvelope: true,
+    }),
 
   detail: (id: number) => axiosInstance.get<IQuestion, IQuestion>(`/questions/${id}`),
 

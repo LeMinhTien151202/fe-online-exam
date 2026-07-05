@@ -1,21 +1,18 @@
-import React, { useState } from 'react';
-import { Form, Input, Select, Space, Row, Col, Button, Card, Tag, Typography, Steps, Upload, Divider, message } from 'antd';
 import {
-    AudioOutlined,
-    SaveOutlined,
-    CameraOutlined,
-    PictureOutlined,
-    SolutionOutlined,
-    FlagOutlined,
-    ArrowRightOutlined,
-    ArrowLeftOutlined,
-    CheckCircleOutlined,
-    UserOutlined,
-    TeamOutlined,
-    BulbOutlined,
-    UploadOutlined,
-    DeleteOutlined
+ArrowLeftOutlined,
+ArrowRightOutlined,
+AudioOutlined,
+BulbOutlined,
+CameraOutlined,
+DeleteOutlined,
+FlagOutlined,
+PictureOutlined,
+SaveOutlined,
+TeamOutlined,
+UserOutlined
 } from '@ant-design/icons';
+import { Button,Card,Col,Divider,Form,Input,message,Row,Select,Space,Steps,Typography,Upload } from 'antd';
+import React,{ useState } from 'react';
 import { ADMIN_COLORS } from '../../../../constants';
 import { questionApi } from '../../services/questionApi';
 

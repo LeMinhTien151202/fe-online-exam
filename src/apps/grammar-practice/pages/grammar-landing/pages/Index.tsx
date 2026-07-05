@@ -1,21 +1,20 @@
+import {
+BellOutlined,
+ClockCircleOutlined,
+EditOutlined,
+MenuOutlined,
+QuestionCircleOutlined,
+ThunderboltOutlined,
+TrophyOutlined
+} from '@ant-design/icons';
+import { Button,Drawer,Progress,Segmented } from 'antd';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
-import {
-  BellOutlined,
-  MenuOutlined,
-  EditOutlined,
-  QuestionCircleOutlined,
-  ClockCircleOutlined,
-  TrophyOutlined,
-  ThunderboltOutlined
-} from '@ant-design/icons';
-import { PartCard } from '../components/PartCard';
-import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
-import { Drawer, Button, Segmented, Progress } from 'antd';
-import { Link } from '@tanstack/react-router';
-import { mockTestsData } from '../services/data';
+import { PartCard } from '../components/PartCard';
 import { useGrammarLanding } from '../hook/useGrammarLanding';
+import { mockTestsData } from '../services/data';
+import * as S from '../styles/styled';
 
 export const GrammarPracticePage: React.FC = () => {
   const {

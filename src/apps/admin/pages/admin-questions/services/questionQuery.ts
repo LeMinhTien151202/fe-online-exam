@@ -12,7 +12,7 @@ export const QUESTIONS_KEY = ['admin', 'questions'];
 export const useQuestionsQuery = (filter: IQuestionFilter) => {
   return useQuery({
     queryKey: [...QUESTIONS_KEY, filter],
-    queryFn: () => questionApi.list(filter),
+    queryFn: () => questionApi.listPaged(filter),
     enabled: filter.skillId != null,
   });
 };

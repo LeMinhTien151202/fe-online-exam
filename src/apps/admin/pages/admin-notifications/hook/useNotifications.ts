@@ -1,30 +1,52 @@
+import { useState } from 'react';
 import { message } from 'antd';
 import {
+  useAdminNotificationsQuery,
   useCreateNotificationMutation,
   useMarkReadMutation,
-  useNotificationsQuery,
   useReadAllMutation,
 } from '../services/notificationQuery';
-import { ICreateNotificationPayload } from '../services/types';
+import { ICreateNotificationPayload, NotificationAudience, NotificationType } from '../services/types';
+import { usePagination } from '@/shared/hooks/usePagination';
 
 export const useNotifications = () => {
-  const { data, isLoading } = useNotificationsQuery();
+  const { page, pageSize, onChange, reset } = usePagination(10);
+  const [audience, setAudience] = useState<NotificationAudience | undefined>();
+  const [notificationType, setNotificationType] = useState<NotificationType | undefined>();
+
+  const { data, isLoading } = useAdminNotificationsQuery({
+    page,
+    limit: pageSize,
+    audience,
+    notificationType,
+  });
+
   const createMutation = useCreateNotificationMutation();
   const markReadMutation = useMarkReadMutation();
   const readAllMutation = useReadAllMutation();
 
-  const notifications = data ?? [];
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const notifications = data?.data ?? [];
+  const total = data?.metaData?.total ?? 0;
 
   const handleCreate = (payload: ICreateNotificationPayload) => {
     createMutation.mutate(payload, {
-      onSuccess: () => message.success('Đã gửi thông báo.'),
+      onSuccess: () => {
+        reset();
+        message.success('Đã gửi thông báo.');
+      },
     });
   };
 
-  const handleMarkRead = (id: number) => {
-    markReadMutation.mutate(id);
+  const setAudienceFilter = (v?: NotificationAudience) => {
+    setAudience(v);
+    reset();
   };
+  const setTypeFilter = (v?: NotificationType) => {
+    setNotificationType(v);
+    reset();
+  };
+
+  const handleMarkRead = (id: number) => markReadMutation.mutate(id);
 
   const handleReadAll = () => {
     readAllMutation.mutate(undefined, {
@@ -35,7 +57,14 @@ export const useNotifications = () => {
   return {
     notifications,
     loading: isLoading,
-    unreadCount,
+    total,
+    page,
+    pageSize,
+    onPageChange: onChange,
+    audience,
+    setAudience: setAudienceFilter,
+    notificationType,
+    setNotificationType: setTypeFilter,
     isSending: createMutation.isPending,
     handleCreate,
     handleMarkRead,

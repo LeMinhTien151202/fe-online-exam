@@ -6,13 +6,27 @@ import { logout } from '@/shared/store/authSlice';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
-interface IApiEnvelope<T> {
+export interface IPageMeta {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPage: number;
+}
+
+export interface IApiEnvelope<T> {
   code: number;
   success: boolean;
   message: string;
   messages: string[];
   data: T;
-  metaData: unknown;
+  metaData: IPageMeta | null;
+}
+
+// Cho phép list phân trang lấy nguyên envelope (data + metaData) thay vì chỉ data.
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    _rawEnvelope?: boolean;
+  }
 }
 
 interface IRetryableRequestConfig extends AxiosRequestConfig {
@@ -51,9 +65,11 @@ axiosInstance.interceptors.request.use(
 // Response Interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
-    // BE bọc dữ liệu trong { data: {...} }, trả thẳng phần data cho FE dùng
+    // BE bọc dữ liệu trong { data, metaData }. Mặc định trả thẳng `data`.
+    // List phân trang đặt `_rawEnvelope: true` -> trả nguyên envelope để lấy `metaData`.
     const body = response.data as IApiEnvelope<unknown> | undefined;
-    return body && typeof body === 'object' && 'data' in body ? body.data : response.data;
+    if (!body || typeof body !== 'object' || !('data' in body)) return response.data;
+    return response.config?._rawEnvelope ? body : body.data;
   },
   async (error: AxiosError<{ message?: string | string[] }>) => {
     const originalRequest = error.config as IRetryableRequestConfig | undefined;

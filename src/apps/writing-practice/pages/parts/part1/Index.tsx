@@ -1,12 +1,12 @@
+import { BulbOutlined,CheckSquareOutlined,ClockCircleOutlined,LeftOutlined } from '@ant-design/icons';
+import { Button,Space } from 'antd';
 import React from 'react';
-import { Space, Button, Input } from 'antd';
-import { LeftOutlined, RightOutlined, BulbOutlined, ClockCircleOutlined, CheckSquareOutlined } from '@ant-design/icons';
-import * as S from './styled';
-import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
-import { usePart1Data } from '../../../hooks/usePart1Data';
-import { usePart1Action } from '../../../hooks/usePart1Action';
+import * as HomeS from '../../../../home/pages/styled';
 import { SampleAnswerModal } from '../../../components/SampleAnswerModal';
+import { usePart1Action } from '../../../hooks/usePart1Action';
+import { usePart1Data } from '../../../hooks/usePart1Data';
+import * as S from './styled';
 
 export const Part1Page: React.FC = () => {
   const {

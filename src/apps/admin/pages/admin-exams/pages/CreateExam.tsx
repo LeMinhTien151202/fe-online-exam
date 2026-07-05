@@ -1,44 +1,38 @@
-import React from 'react';
 import {
-  Card,
-  Steps,
-  Form,
-  Input,
-  Radio,
-  Select,
-  InputNumber,
-  Switch,
-  Button,
-  Table,
-  Space,
-  Tag,
-  Typography,
-  Row,
-  Col,
-  List,
-  Tabs,
-  Progress,
+Button,
+Card,
+Col,
+Form,
+Input,
+InputNumber,
+List,
+Progress,
+Radio,
+Row,
+Select,
+Space,
+Steps,
+Tabs,
+Tag,
+Typography
 } from 'antd';
+import React from 'react';
 
 import {
-  ArrowLeftOutlined,
-  ThunderboltOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  DeleteOutlined,
-  PlusOutlined,
+ArrowLeftOutlined,
+ThunderboltOutlined
 } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useCreateExam } from '../hook/useCreateExam';
 import * as S from '../styles/styled';
 
 // Selection Components
-import ReadingSelection from '../components/ReadingSelection';
+import GeneralSelection from '../components/GeneralSelection';
 import GrammarSelection from '../components/GrammarSelection';
 import ListeningSelection from '../components/ListeningSelection';
+import ReadingSelection from '../components/ReadingSelection';
 import SpeakingSelection from '../components/SpeakingSelection';
 import WritingSelection from '../components/WritingSelection';
-import GeneralSelection from '../components/GeneralSelection';
 
 
 

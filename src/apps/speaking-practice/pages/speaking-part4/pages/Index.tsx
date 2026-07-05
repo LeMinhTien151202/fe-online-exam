@@ -1,18 +1,18 @@
-import React from 'react';
-import { Space, Progress, Button } from 'antd';
-import { 
-  LeftOutlined, 
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  DownOutlined,
-  UpOutlined,
-  UnlockOutlined
+import {
+CheckCircleOutlined,
+ClockCircleOutlined,
+DownOutlined,
+LeftOutlined,
+UnlockOutlined,
+UpOutlined
 } from '@ant-design/icons';
-import * as S from '../styles/styled';
-import * as HomeS from '../../../../home/pages/styled';
+import { Button,Progress,Space } from 'antd';
+import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
+import * as HomeS from '../../../../home/pages/styled';
 import { SpeakingController } from '../../speaking-part1/components/SpeakingController';
 import { usePart4 } from '../hook/usePart4';
+import * as S from '../styles/styled';
 
 export const Part4Page: React.FC = () => {
   const {

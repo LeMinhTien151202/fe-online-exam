@@ -1,4 +1,4 @@
-import axiosInstance from '@/configs/axios';
+import axiosInstance, { IApiEnvelope } from '@/configs/axios';
 import {
   IAssignQuestion,
   ICreateExamPayload,
@@ -9,10 +9,13 @@ import {
   IUpdateExamPayload,
 } from './types';
 
-// Interceptor đã bóc res.data.data. List trả về mảng (metaData phân trang không đi kèm ở tầng này).
 export const examApi = {
+  // Trả nguyên envelope (data + metaData) để phân trang
   list: (filter: IExamFilter = {}) =>
-    axiosInstance.get<IExamSetListItem[], IExamSetListItem[]>('/exam-sets', { params: filter }),
+    axiosInstance.get<IApiEnvelope<IExamSetListItem[]>, IApiEnvelope<IExamSetListItem[]>>('/exam-sets', {
+      params: filter,
+      _rawEnvelope: true,
+    }),
 
   detail: (id: number) => axiosInstance.get<IExamSetDetail, IExamSetDetail>(`/exam-sets/${id}`),
 

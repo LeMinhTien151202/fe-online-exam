@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
 import { message } from 'antd';
-import { 
-  ISentence, 
-  initialP2Sentences, 
-  correctP1, 
-  correctP2, 
-  correctP3, 
-  correctP4 
+import { useEffect,useState } from 'react';
+import {
+ISentence,
+correctP1,
+correctP2,
+correctP3,
+correctP4,
+initialP2Sentences
 } from '../services/data';
 
 export const useMockTest = (testId: string) => {
@@ -82,7 +82,7 @@ export const useMockTest = (testId: string) => {
     if (saved) {
       try {
         progressObj = JSON.parse(saved);
-      } catch (e) {}
+      } catch (e) { /* bỏ qua lỗi */ }
     }
     const currentBest = progressObj[testId] ?? 0;
     progressObj[testId] = Math.max(currentBest, score);

@@ -71,7 +71,6 @@ export const recentStudents = [
     name: "Nguyễn Văn A",
     email: "nva@gmail.com",
     date: "03/06/2026",
-    package: "Premium",
     status: "Active",
   },
   {
@@ -79,7 +78,6 @@ export const recentStudents = [
     name: "Trần Thị B",
     email: "ttb@gmail.com",
     date: "02/06/2026",
-    package: "Pro",
     status: "Active",
   },
   {
@@ -87,7 +85,6 @@ export const recentStudents = [
     name: "Lê Hoàng C",
     email: "lhc@gmail.com",
     date: "02/06/2026",
-    package: "Miễn phí",
     status: "Active",
   },
   {
@@ -95,7 +92,6 @@ export const recentStudents = [
     name: "Phạm Minh D",
     email: "pmd@gmail.com",
     date: "01/06/2026",
-    package: "Premium",
     status: "Inactive",
   },
   {
@@ -103,7 +99,6 @@ export const recentStudents = [
     name: "Hoàng Văn E",
     email: "hve@gmail.com",
     date: "01/06/2026",
-    package: "Pro",
     status: "Active",
   },
 ];
@@ -154,18 +149,15 @@ export const timelineEvents = [
   },
   {
     color: "blue",
-    children:
-      "Giáo viên Phạm Thị H đã chấm xong bài Writing của Trần Thị B (30 phút trước)",
+    children: "Đã thêm 50 câu hỏi Ngữ pháp mới vào ngân hàng câu hỏi (45 phút trước)",
+  },
+  {
+    color: "cyan",
+    children: 'Tạo bộ đề mới "Luyện Listening P1 - Đề 02" (1 giờ trước)',
   },
   {
     color: "orange",
-    children:
-      "Học viên Lê Hoàng C vừa nâng cấp tài khoản lên gói Premium (1 giờ trước)",
-  },
-  {
-    color: "red",
-    children:
-      'Yêu cầu phê duyệt tài liệu "Bí kíp Speaking C1" từ giáo viên Trần Minh K (2 giờ trước)',
+    children: 'Gửi thông báo "Bảo trì hệ thống" tới toàn bộ học viên (2 giờ trước)',
   },
   {
     color: "green",

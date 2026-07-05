@@ -1,6 +1,6 @@
-import styled from "styled-components";
-import { Card, Select } from "antd";
 import { Link } from "@tanstack/react-router";
+import { Select } from "antd";
+import styled from "styled-components";
 
 export const PageContainer = styled.div`
   display: flex;
