@@ -1,21 +1,14 @@
 import { useMemo } from 'react';
 import { useState } from 'react';
-import { Form, Modal, message } from 'antd';
+import { Modal, message } from 'antd';
 import {
   useCreateMaterialMutation,
   useDeleteMaterialMutation,
   useMaterialsQuery,
 } from '../services/materialQuery';
-import { FE_SKILL_TO_ID, FileType, ID_TO_FE_SKILL, IMaterial } from '../services/types';
+import { FE_SKILL_TO_ID, ID_TO_FE_SKILL, IMaterial } from '../services/types';
 import { usePagination } from '@/shared/hooks/usePagination';
-
-interface MaterialFormValues {
-  title: string;
-  fileUrl: string;
-  fileType: FileType;
-  skill: string;
-  durationSeconds?: number;
-}
+import { MaterialFormValues } from '../components/MaterialModal';
 
 const mapToCard = (m: IMaterial) => ({
   key: String(m.id),
@@ -29,9 +22,8 @@ const mapToCard = (m: IMaterial) => ({
 });
 
 export const useMaterials = () => {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { page, pageSize, onChange, reset } = usePagination(12);
-  const [form] = Form.useForm<MaterialFormValues>();
 
   const { data, isLoading } = useMaterialsQuery({ page, limit: pageSize });
   const createMutation = useCreateMaterialMutation();
@@ -40,10 +32,7 @@ export const useMaterials = () => {
   const materials = useMemo(() => (data?.data ?? []).map(mapToCard), [data]);
   const total = data?.metaData?.total ?? 0;
 
-  const handleUploadClick = () => {
-    form.resetFields();
-    setIsDrawerOpen(true);
-  };
+  const handleUploadClick = () => setIsModalOpen(true);
 
   const handleSaveMaterial = (values: MaterialFormValues) => {
     createMutation.mutate(
@@ -53,12 +42,12 @@ export const useMaterials = () => {
         fileType: values.fileType,
         skillId: FE_SKILL_TO_ID[values.skill],
         ...(values.fileType === 'VIDEO' && values.durationSeconds
-          ? { durationSeconds: values.durationSeconds }
+          ? { durationSeconds: Number(values.durationSeconds) }
           : {}),
       },
       {
         onSuccess: () => {
-          setIsDrawerOpen(false);
+          setIsModalOpen(false);
           reset();
           message.success('Đã thêm tài liệu học tập.');
         },
@@ -87,9 +76,8 @@ export const useMaterials = () => {
     page,
     pageSize,
     onPageChange: onChange,
-    isDrawerOpen,
-    setIsDrawerOpen,
-    form,
+    isModalOpen,
+    setIsModalOpen,
     isSaving: createMutation.isPending,
     handleUploadClick,
     handleSaveMaterial,

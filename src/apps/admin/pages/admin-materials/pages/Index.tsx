@@ -8,8 +8,6 @@ import {
   Button,
   Tag,
   Typography,
-  Drawer,
-  Form,
   Space,
   Spin,
 } from 'antd';
@@ -26,6 +24,7 @@ import {
 } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useMaterials } from '../hook/useMaterials';
+import MaterialModal from '../components/MaterialModal';
 import * as S from '../styles/styled';
 import { AppPagination } from '@shared/components/Pagination/Index';
 
@@ -39,16 +38,13 @@ const MaterialsIndex: React.FC = () => {
     page,
     pageSize,
     onPageChange,
-    isDrawerOpen,
-    setIsDrawerOpen,
-    form,
+    isModalOpen,
+    setIsModalOpen,
     isSaving,
     handleUploadClick,
     handleSaveMaterial,
     handleDelete,
   } = useMaterials();
-
-  const fileTypeValue = Form.useWatch('fileType', form);
 
   const getFormatIcon = (format: string) => {
     const style = { fontSize: '32px' };
@@ -140,56 +136,13 @@ const MaterialsIndex: React.FC = () => {
         />
       </div>
 
-      {/* Upload Drawer */}
-      <Drawer
-        title={<Title level={4} style={{ margin: 0 }}>Đăng tải tài liệu</Title>}
-        placement="right"
-        width={500}
-        onClose={() => setIsDrawerOpen(false)}
-        open={isDrawerOpen}
-      >
-        <Form form={form} layout="vertical" onFinish={handleSaveMaterial}>
-          <Form.Item label="Tên tài liệu" name="title" rules={[{ required: true, message: 'Nhập tên tài liệu!' }]}>
-            <Input placeholder="Tên hiển thị cho học viên..." />
-          </Form.Item>
-
-          <Form.Item label="Loại tệp" name="fileType" initialValue="PDF" rules={[{ required: true }]}>
-            <Select>
-              <Select.Option value="PDF">PDF</Select.Option>
-              <Select.Option value="VIDEO">VIDEO</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item label="Đường dẫn tệp (URL)" name="fileUrl" rules={[{ required: true, message: 'Dán URL tệp!' }]}>
-            <Input placeholder="https://.../grammar.pdf" />
-          </Form.Item>
-
-          {fileTypeValue === 'VIDEO' && (
-            <Form.Item label="Thời lượng video (giây)" name="durationSeconds">
-              <Input type="number" placeholder="Ví dụ: 720" />
-            </Form.Item>
-          )}
-
-          <Form.Item label="Kỹ năng chính" name="skill" rules={[{ required: true, message: 'Chọn kỹ năng liên quan!' }]}>
-            <Select placeholder="Chọn kỹ năng">
-              <Select.Option value="Grammar">Ngữ pháp & Từ vựng</Select.Option>
-              <Select.Option value="Reading">Đọc hiểu</Select.Option>
-              <Select.Option value="Listening">Nghe</Select.Option>
-              <Select.Option value="Speaking">Nói</Select.Option>
-              <Select.Option value="Writing">Viết</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item style={{ marginTop: '2rem' }}>
-            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
-              <Button onClick={() => setIsDrawerOpen(false)}>Huỷ</Button>
-              <Button type="primary" htmlType="submit" loading={isSaving} style={{ background: ADMIN_COLORS.primary }}>
-                Lưu tài liệu
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Drawer>
+      {/* Upload Modal */}
+      <MaterialModal
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        onSuccess={handleSaveMaterial}
+        isSaving={isSaving}
+      />
     </S.Container>
   );
 };
