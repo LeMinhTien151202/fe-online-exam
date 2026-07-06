@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { message } from 'antd';
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import {
   useExamDetailQuery,
   useRemoveQuestionMutation,
@@ -15,6 +15,8 @@ import { IExamPart } from '../services/types';
 export const useExamDetail = () => {
   const navigate = useNavigate();
   const { examId } = useParams({ strict: false }) as { examId?: string };
+  const search = useSearch({ strict: false }) as { mode?: string };
+  const readOnly = search?.mode === 'view';
   const id = examId ? Number(examId) : null;
 
   const { data: exam, isLoading } = useExamDetailQuery(id);
@@ -85,6 +87,7 @@ export const useExamDetail = () => {
   return {
     exam,
     isLoading,
+    readOnly,
     title,
     setTitle,
     description,

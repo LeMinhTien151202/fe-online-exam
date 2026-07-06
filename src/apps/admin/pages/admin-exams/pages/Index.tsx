@@ -23,9 +23,10 @@ const ExamsIndex: React.FC = () => {
     handleDelete,
     handleToggle,
     handleView,
+    handleEdit,
   } = useExams();
 
-  const { columnsPart, columnsSet, columnsFull } = useExamColumns(handleDelete, handleToggle, handleView);
+  const { columnsPart, columnsSet, columnsFull } = useExamColumns(handleDelete, handleToggle, handleView, handleEdit);
 
   const renderTab = (columns: typeof columnsPart, dataSource: unknown[]) => (
     <>

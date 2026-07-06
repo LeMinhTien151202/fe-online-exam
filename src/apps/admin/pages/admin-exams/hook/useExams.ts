@@ -99,7 +99,13 @@ export const useExams = () => {
     });
   };
 
+  // Xem: mở trang chi tiết ở chế độ chỉ đọc (ẩn nút thao tác)
   const handleView = (key: string) => {
+    navigate({ to: `/admin/exams/${key}` as string, search: { mode: 'view' } as never });
+  };
+
+  // Chỉnh sửa: mở trang chi tiết ở chế độ chỉnh sửa (sửa tiêu đề/mô tả/câu hỏi)
+  const handleEdit = (key: string) => {
     navigate({ to: `/admin/exams/${key}` as string });
   };
 
@@ -118,5 +124,6 @@ export const useExams = () => {
     handleDelete,
     handleToggle,
     handleView,
+    handleEdit,
   };
 };

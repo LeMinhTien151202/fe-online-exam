@@ -13,7 +13,7 @@ const ROLE_COLOR: Record<UserRole, string> = {
 };
 
 export const useUserColumns = (
-    handleOpenDrawer: (record: IUserRow) => void,
+    handleOpenDetail: (record: IUserRow) => void,
     handleStatusChange: (checked: boolean, key: string) => void
 ) => {
     const columns: TableProps<IUserRow>['columns'] = [
@@ -93,7 +93,7 @@ export const useUserColumns = (
                     <Button
                         className="action-btn edit"
                         icon={<EyeOutlined />}
-                        onClick={() => handleOpenDrawer(record)}
+                        onClick={() => handleOpenDetail(record)}
                     />
                     <Button
                         className={`action-btn ${record.active ? 'delete' : ''}`}

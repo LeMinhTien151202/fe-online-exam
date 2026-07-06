@@ -8,13 +8,14 @@ const { Text } = Typography;
 
 interface Props {
   section: IExamSection;
+  readOnly?: boolean;
   onSaveDuration: (sectionId: number, durationMinutes: number) => void;
   onSavePart: (partId: number, payload: { instruction?: string; audioUrl?: string }) => void;
   onRemoveQuestion: (partId: number, questionId: number) => void;
   onMoveQuestion: (part: IExamPart, index: number, direction: -1 | 1) => void;
 }
 
-const ExamSectionCard: React.FC<Props> = ({ section, onSaveDuration, onSavePart, onRemoveQuestion, onMoveQuestion }) => {
+const ExamSectionCard: React.FC<Props> = ({ section, readOnly, onSaveDuration, onSavePart, onRemoveQuestion, onMoveQuestion }) => {
   const [loadedId, setLoadedId] = useState<number | null>(null);
   const [duration, setDuration] = useState<number>(0);
 
@@ -30,10 +31,16 @@ const ExamSectionCard: React.FC<Props> = ({ section, onSaveDuration, onSavePart,
     <Card
       title={<Space><Text strong>{skillName}</Text></Space>}
       extra={
-        <Space>
-          <Text type="secondary">Thời gian:</Text>
-          <InputNumber min={1} max={180} value={duration} onChange={(v) => setDuration(v ?? 0)} addonAfter="phút" />
-          <Button size="small" icon={<SaveOutlined />} onClick={() => onSaveDuration(section.id, duration)}>Lưu</Button>
+        <Space size="middle">
+          <Text type="secondary">Thời gian làm bài:</Text>
+          {readOnly ? (
+            <Text strong>{duration} phút</Text>
+          ) : (
+            <>
+              <InputNumber min={1} max={180} value={duration} onChange={(v) => setDuration(v ?? 0)} addonAfter="phút" style={{ width: 130 }} />
+              <Button type="primary" ghost icon={<SaveOutlined />} onClick={() => onSaveDuration(section.id, duration)}>Lưu</Button>
+            </>
+          )}
         </Space>
       }
     >
@@ -43,6 +50,7 @@ const ExamSectionCard: React.FC<Props> = ({ section, onSaveDuration, onSavePart,
           <ExamPartEditor
             key={part.id}
             part={part}
+            readOnly={readOnly}
             showAudio={isListening && (part.partNumber === 3 || part.partNumber === 4)}
             onSavePart={onSavePart}
             onRemoveQuestion={onRemoveQuestion}

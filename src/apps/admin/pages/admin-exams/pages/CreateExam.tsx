@@ -5,7 +5,6 @@ Col,
 Form,
 Input,
 InputNumber,
-List,
 Progress,
 Radio,
 Row,
@@ -13,14 +12,12 @@ Select,
 Space,
 Steps,
 Tabs,
-Tag,
 Typography
 } from 'antd';
 import React from 'react';
 
 import {
-ArrowLeftOutlined,
-ThunderboltOutlined
+ArrowLeftOutlined
 } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useCreateExam } from '../hook/useCreateExam';
@@ -33,13 +30,29 @@ import ListeningSelection from '../components/ListeningSelection';
 import ReadingSelection from '../components/ReadingSelection';
 import SpeakingSelection from '../components/SpeakingSelection';
 import WritingSelection from '../components/WritingSelection';
+import PartPracticeSelection from '../components/PartPracticeSelection';
+import ExamPreview from '../components/ExamPreview';
 
 
 
 
 
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
+
+const SKILL_LABEL: Record<string, string> = {
+  Grammar: 'Grammar & Vocabulary',
+  Reading: 'Đọc hiểu',
+  Listening: 'Nghe',
+  Speaking: 'Nói',
+  Writing: 'Viết',
+};
+
+const TYPE_LABEL: Record<string, string> = {
+  full: 'Full Mock Test',
+  set: 'Full Set',
+  partial: 'Partial Practice',
+};
 
 const CreateExam: React.FC = () => {
   const {
@@ -54,10 +67,8 @@ const CreateExam: React.FC = () => {
     handleNext,
     handleBack,
     handleAddQuestion,
+    handleAddAll,
     handleRemoveQuestion,
-    handleMoveUp,
-    handleMoveDown,
-    handleAddRandom,
     handlePublish,
   } = useCreateExam();
 
@@ -272,6 +283,16 @@ const CreateExam: React.FC = () => {
                     },
                   ]}
                 />
+              ) : typeValue === 'partial' ? (
+                <PartPracticeSelection
+                  skill={skillValue}
+                  targetPart={partValue}
+                  bankQuestions={bankQuestions}
+                  selectedQuestions={selectedQuestions}
+                  handleAddQuestion={handleAddQuestion}
+                  handleRemoveQuestion={handleRemoveQuestion}
+                  handleAddAll={handleAddAll}
+                />
               ) : (
                 <>
                   {skillValue === 'Reading' ? (
@@ -279,7 +300,7 @@ const CreateExam: React.FC = () => {
                       selectedQuestions={selectedQuestions}
                       handleAddQuestion={handleAddQuestion}
                       handleRemoveQuestion={handleRemoveQuestion}
-                      mode={typeValue as any}
+                      mode={typeValue as 'partial' | 'set' | 'full'}
                       targetPart={partValue}
                       bankQuestions={bankQuestions}
                     />
@@ -288,7 +309,7 @@ const CreateExam: React.FC = () => {
                       selectedQuestions={selectedQuestions}
                       handleAddQuestion={handleAddQuestion}
                       handleRemoveQuestion={handleRemoveQuestion}
-                      mode={typeValue as any}
+                      mode={typeValue as 'partial' | 'set' | 'full'}
                       targetPart={partValue}
                       bankQuestions={bankQuestions}
                     />
@@ -297,7 +318,7 @@ const CreateExam: React.FC = () => {
                       selectedQuestions={selectedQuestions}
                       handleAddQuestion={handleAddQuestion}
                       handleRemoveQuestion={handleRemoveQuestion}
-                      mode={typeValue as any}
+                      mode={typeValue as 'partial' | 'set' | 'full'}
                       targetPart={partValue}
                       bankQuestions={bankQuestions}
                     />
@@ -306,7 +327,7 @@ const CreateExam: React.FC = () => {
                       selectedQuestions={selectedQuestions}
                       handleAddQuestion={handleAddQuestion}
                       handleRemoveQuestion={handleRemoveQuestion}
-                      mode={typeValue as any}
+                      mode={typeValue as 'partial' | 'set' | 'full'}
                       targetPart={partValue}
                       bankQuestions={bankQuestions}
                     />
@@ -315,7 +336,7 @@ const CreateExam: React.FC = () => {
                       selectedQuestions={selectedQuestions}
                       handleAddQuestion={handleAddQuestion}
                       handleRemoveQuestion={handleRemoveQuestion}
-                      mode={typeValue as any}
+                      mode={typeValue as 'partial' | 'set' | 'full'}
                       targetPart={partValue}
                       bankQuestions={bankQuestions}
                     />
@@ -334,73 +355,17 @@ const CreateExam: React.FC = () => {
         )}
 
         {currentStep === 2 && (
-          <Row gutter={16}>
-            <Col xs={24} lg={16}>
-              <Card title="Giao diện xem trước bộ đề (Mockup)" bordered={false} style={{ background: '#f8fafc' }}>
-                <div style={{ padding: '1rem', borderBottom: '1px solid #e2e8f0', background: '#ffffff', borderRadius: '8px 8px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text strong style={{ fontSize: '16px' }}>{form.getFieldValue('name')}</Text>
-                  <Tag color="red">00:{form.getFieldValue('duration')}:00</Tag>
-                </div>
-                <div style={{ padding: '1.5rem', background: '#ffffff', borderRadius: '0 0 8px 8px' }}>
-                  <Paragraph style={{ fontStyle: 'italic', color: '#64748b' }}>
-                    {form.getFieldValue('description') || 'Đề luyện tập này không có mô tả chi tiết...'}
-                  </Paragraph>
-                  <List
-                    size="small"
-                    dataSource={selectedQuestions}
-                    renderItem={(item: any, index: number) => (
-                      <List.Item>
-                        <Space direction="vertical" style={{ width: '100%' }}>
-                          <Text strong>Câu {index + 1}: {item.content}</Text>
-                          <Space style={{ paddingLeft: '1rem' }}>
-                            <Radio disabled>Phương án A</Radio>
-                            <Radio disabled>Phương án B</Radio>
-                            <Radio disabled>Phương án C</Radio>
-                            <Radio disabled>Phương án D</Radio>
-                          </Space>
-                        </Space>
-                      </List.Item>
-                    )}
-                  />
-                </div>
-              </Card>
-            </Col>
-            <Col xs={24} lg={8}>
-              <Card title="Thông tin cấu hình đề" bordered={false}>
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <div>
-                    <Text type="secondary">Tên đề: </Text>
-                    <Text strong>{form.getFieldValue('name')}</Text>
-                  </div>
-                  <div>
-                    <Text type="secondary">Thời gian làm bài: </Text>
-                    <Text strong>{form.getFieldValue('duration')} phút</Text>
-                  </div>
-                  <div>
-                    <Text type="secondary">Phân loại: </Text>
-                    <Tag color="cyan">{typeValue === 'full' ? 'Full Mock Test' : (typeValue === 'set' ? 'Full Set' : 'Partial Practice')}</Tag>
-                  </div>
-                  <div>
-                    <Text type="secondary">Số lượng câu: </Text>
-                    <Text strong>{selectedQuestions.length} câu</Text>
-                  </div>
-                </Space>
-                <div style={{ marginTop: '20px' }}>
-                  <Button
-                    type="primary"
-                    icon={<ThunderboltOutlined />}
-                    block
-                    size="large"
-                    loading={isPublishing}
-                    onClick={handlePublish}
-                    style={{ background: ADMIN_COLORS.success, borderColor: ADMIN_COLORS.success }}
-                  >
-                    XUẤT BẢN ĐỀ THI
-                  </Button>
-                </div>
-              </Card>
-            </Col>
-          </Row>
+          <ExamPreview
+            title={form.getFieldValue('name') || `Luyện ${skillValue}${typeValue === 'partial' ? ` ${partValue}` : ''}`.trim()}
+            description={form.getFieldValue('description')}
+            duration={form.getFieldValue('duration')}
+            typeLabel={TYPE_LABEL[typeValue] ?? 'Partial Practice'}
+            skillLabel={typeValue !== 'full' ? (SKILL_LABEL[skillValue] ?? skillValue) : undefined}
+            partLabel={typeValue === 'partial' ? partValue : undefined}
+            questions={selectedQuestions}
+            isPublishing={isPublishing}
+            onPublish={handlePublish}
+          />
         )}
       </Form>
 

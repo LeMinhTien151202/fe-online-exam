@@ -3,6 +3,7 @@ import { Input, Button, Space, Typography, List, Upload, message, Tag } from 'an
 import { SaveOutlined, UploadOutlined, DeleteOutlined, ArrowUpOutlined, ArrowDownOutlined, SoundOutlined } from '@ant-design/icons';
 import { questionApi } from '../../admin-questions/services/questionApi';
 import { IExamPart } from '../services/types';
+import * as S from './ExamPartEditor.styled';
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -10,12 +11,13 @@ const { TextArea } = Input;
 interface Props {
   part: IExamPart;
   showAudio: boolean;
+  readOnly?: boolean;
   onSavePart: (partId: number, payload: { instruction?: string; audioUrl?: string }) => void;
   onRemoveQuestion: (partId: number, questionId: number) => void;
   onMoveQuestion: (part: IExamPart, index: number, direction: -1 | 1) => void;
 }
 
-const ExamPartEditor: React.FC<Props> = ({ part, showAudio, onSavePart, onRemoveQuestion, onMoveQuestion }) => {
+const ExamPartEditor: React.FC<Props> = ({ part, showAudio, readOnly, onSavePart, onRemoveQuestion, onMoveQuestion }) => {
   const [loadedId, setLoadedId] = useState<number | null>(null);
   const [instruction, setInstruction] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
@@ -46,59 +48,66 @@ const ExamPartEditor: React.FC<Props> = ({ part, showAudio, onSavePart, onRemove
   const orderedQuestions = [...part.questions].sort((a, b) => a.orderIndex - b.orderIndex);
 
   return (
-    <div className="mb-4 p-4 rounded-lg" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-      <Space align="center" className="mb-3">
-        <Tag color="blue">Part {part.partNumber}</Tag>
-        <Text type="secondary">{orderedQuestions.length} câu hỏi</Text>
-      </Space>
+    <S.PartWrapper>
+      <S.PartHeader>
+        <Space align="center">
+          <Tag color="blue" style={{ margin: 0 }}>Part {part.partNumber}</Tag>
+          <Text type="secondary">{orderedQuestions.length} câu hỏi</Text>
+        </Space>
+        {!readOnly && (
+          <Button
+            type="primary"
+            ghost
+            icon={<SaveOutlined />}
+            onClick={() => onSavePart(part.id, { instruction, audioUrl: audioUrl || undefined })}
+          >
+            Lưu phần
+          </Button>
+        )}
+      </S.PartHeader>
 
-      <div className="mb-2">
-        <Text strong>Hướng dẫn (instruction)</Text>
+      <S.Block>
+        <S.FieldLabel>Hướng dẫn (instruction)</S.FieldLabel>
         <TextArea
           rows={2}
           value={instruction}
           onChange={(e) => setInstruction(e.target.value)}
-          placeholder="Ví dụ: Listen and choose the correct answer."
-          className="mt-1"
+          placeholder={readOnly ? 'Không có hướng dẫn' : 'Ví dụ: Listen and choose the correct answer.'}
+          readOnly={readOnly}
         />
-      </div>
+      </S.Block>
 
-      {showAudio && (
-        <div className="mb-2">
-          <Text strong>Audio dùng chung cả part (Listening P3/P4)</Text>
-          <Space.Compact className="w-full mt-1">
-            <Input
-              value={audioUrl}
-              onChange={(e) => setAudioUrl(e.target.value)}
-              placeholder="https://.../audio.mp3"
-              prefix={<SoundOutlined />}
-            />
-            <Upload customRequest={handleUploadAudio as never} showUploadList={false} accept="audio/*">
-              <Button icon={<UploadOutlined />} loading={isUploading}>Tải lên</Button>
-            </Upload>
-          </Space.Compact>
-          {audioUrl && <audio src={audioUrl} controls className="w-full mt-2" />}
-        </div>
+      {showAudio && (!readOnly || audioUrl) && (
+        <S.Block>
+          <S.FieldLabel>Audio dùng chung cả part (Listening P3/P4)</S.FieldLabel>
+          {!readOnly && (
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                value={audioUrl}
+                onChange={(e) => setAudioUrl(e.target.value)}
+                placeholder="https://.../audio.mp3"
+                prefix={<SoundOutlined />}
+              />
+              <Upload customRequest={handleUploadAudio as never} showUploadList={false} accept="audio/*">
+                <Button icon={<UploadOutlined />} loading={isUploading}>Tải lên</Button>
+              </Upload>
+            </Space.Compact>
+          )}
+          {audioUrl && <S.AudioPlayer src={audioUrl} controls />}
+        </S.Block>
       )}
 
-      <Button
-        type="dashed"
-        icon={<SaveOutlined />}
-        size="small"
-        onClick={() => onSavePart(part.id, { instruction, audioUrl: audioUrl || undefined })}
-      >
-        Lưu phần
-      </Button>
-
-      <List
-        className="mt-3"
-        size="small"
-        bordered
-        dataSource={orderedQuestions}
-        locale={{ emptyText: 'Chưa gán câu hỏi' }}
-        renderItem={(pq, index) => (
+      <S.Block>
+        <S.FieldLabel>Danh sách câu hỏi</S.FieldLabel>
+        <List
+          size="small"
+          bordered
+          dataSource={orderedQuestions}
+          locale={{ emptyText: 'Chưa gán câu hỏi' }}
+          style={{ background: '#ffffff' }}
+          renderItem={(pq, index) => (
           <List.Item
-            actions={[
+            actions={readOnly ? undefined : [
               <Button key="up" size="small" type="text" icon={<ArrowUpOutlined />} disabled={index === 0} onClick={() => onMoveQuestion(part, index, -1)} />,
               <Button key="down" size="small" type="text" icon={<ArrowDownOutlined />} disabled={index === orderedQuestions.length - 1} onClick={() => onMoveQuestion(part, index, 1)} />,
               <Button key="del" size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => onRemoveQuestion(part.id, pq.questionId)} />,
@@ -111,8 +120,9 @@ const ExamPartEditor: React.FC<Props> = ({ part, showAudio, onSavePart, onRemove
             </Space>
           </List.Item>
         )}
-      />
-    </div>
+        />
+      </S.Block>
+    </S.PartWrapper>
   );
 };
 

@@ -1,6 +1,7 @@
 // ============================================================
 // Exam Sets — Types (khớp FE_PHASE4_EXAM_SETS.md)
 // ============================================================
+import { IQuestion } from '../../admin-questions/services/types';
 
 export type ExamType = 'PART_PRACTICE' | 'SKILL_FULL_SET' | 'MOCK_TEST';
 
@@ -132,4 +133,5 @@ export interface IBankQuestion {
   task?: string; // 'Task 1'..'Task 5' cho Vocabulary
   skillId: number;
   partNumber: number;
+  raw: IQuestion; // câu hỏi gốc từ API (dùng cho bước xem trước: đáp án, media, extraConfig)
 }

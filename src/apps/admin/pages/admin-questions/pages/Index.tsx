@@ -14,6 +14,7 @@ import SkillSubTabs from '../components/SkillSubTabs';
 import QuestionTable from '../components/QuestionTable';
 import QuestionForm from '../components/QuestionForm';
 import QuestionDetailModal from '../components/QuestionDetailModal';
+import QuestionEditModal from '../components/QuestionEditModal';
 
 const { Title } = Typography;
 
@@ -30,19 +31,20 @@ const QuestionsIndex: React.FC = () => {
     isLoading,
     isModalOpen,
     setIsModalOpen,
-    selectedQuestion,
+    isEditOpen,
+    setIsEditOpen,
+    editingQuestion,
+    isUpdating,
     form,
     handleCreateQuestion,
     handleSaveQuestion,
+    handleEditQuestion,
+    handleUpdateQuestion,
     handleDeleteQuestion,
   } = useQuestions();
 
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
   const [viewingQuestion, setViewingQuestion] = React.useState<QuestionRow | null>(null);
-
-  const handleEdit = () => {
-    setIsModalOpen(true);
-  };
 
   const handleView = (record: QuestionRow) => {
     setViewingQuestion(record);
@@ -53,7 +55,7 @@ const QuestionsIndex: React.FC = () => {
     if (record?.id != null) handleDeleteQuestion(record.id);
   };
 
-  const columns = useQuestionColumns(handleEdit, handleView, handleDelete);
+  const columns = useQuestionColumns(handleEditQuestion, handleView, handleDelete);
 
   const skillLabels: Record<string, string> = {
     grammar: 'Ngữ pháp & Từ vựng',
@@ -101,7 +103,7 @@ const QuestionsIndex: React.FC = () => {
         title={
           <div style={{ paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
             <Title level={4} style={{ margin: 0 }}>
-              {selectedQuestion ? 'Cập nhật câu hỏi' : `Thêm mới: ${skillLabels[skillTab]}`}
+              Thêm mới: {skillLabels[skillTab]}
             </Title>
           </div>
         }
@@ -116,6 +118,14 @@ const QuestionsIndex: React.FC = () => {
           <QuestionForm form={form} skill={skillTab} part={partTab} onSubmit={handleSaveQuestion} />
         </div>
       </Modal>
+
+      <QuestionEditModal
+        open={isEditOpen}
+        onCancel={() => setIsEditOpen(false)}
+        question={editingQuestion}
+        isSaving={isUpdating}
+        onSave={handleUpdateQuestion}
+      />
 
       <QuestionDetailModal
         open={isPreviewOpen}

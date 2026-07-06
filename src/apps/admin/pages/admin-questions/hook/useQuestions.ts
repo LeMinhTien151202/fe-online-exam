@@ -5,12 +5,13 @@ import {
   useCreateQuestionsMutation,
   useDeleteQuestionMutation,
   useQuestionsQuery,
+  useUpdateQuestionMutation,
 } from "../services/questionQuery";
 import {
   buildCreatePayloads,
   mapQuestionToRow,
 } from "../services/questionMapper";
-import { SKILL_ID, SkillRoute } from "../services/types";
+import { IUpdateQuestionPayload, SKILL_ID, SkillRoute } from "../services/types";
 import { usePagination } from "@/shared/hooks/usePagination";
 
 const SKILL_ROUTES: SkillRoute[] = [
@@ -70,10 +71,16 @@ export const useQuestions = () => {
   const [selectedQuestion, setSelectedQuestion] = useState<ReturnType<
     typeof mapQuestionToRow
   > | null>(null);
+  // Modal chỉnh sửa 1 câu hỏi (PATCH), tách khỏi form thêm mới dạng "gộp"
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<ReturnType<
+    typeof mapQuestionToRow
+  > | null>(null);
 
   const [form] = Form.useForm();
 
   const createMutation = useCreateQuestionsMutation();
+  const updateMutation = useUpdateQuestionMutation();
   const deleteMutation = useDeleteQuestionMutation();
 
   const partNumber = partTabToNumber(skill, partTab);
@@ -186,6 +193,24 @@ export const useQuestions = () => {
     });
   };
 
+  const handleEditQuestion = (record: ReturnType<typeof mapQuestionToRow>) => {
+    setEditingQuestion(record);
+    setIsEditOpen(true);
+  };
+
+  const handleUpdateQuestion = (id: number, payload: IUpdateQuestionPayload) => {
+    updateMutation.mutate(
+      { id, payload },
+      {
+        onSuccess: () => {
+          setIsEditOpen(false);
+          setEditingQuestion(null);
+          message.success("Đã cập nhật câu hỏi.");
+        },
+      }
+    );
+  };
+
   const handleDeleteQuestion = (id: number) => {
     deleteMutation.mutate(id, {
       onSuccess: () => message.success("Đã xóa câu hỏi."),
@@ -208,10 +233,16 @@ export const useQuestions = () => {
     setIsModalOpen,
     selectedQuestion,
     setSelectedQuestion,
+    isEditOpen,
+    setIsEditOpen,
+    editingQuestion,
     form,
     isSaving: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
     handleCreateQuestion,
     handleSaveQuestion,
+    handleEditQuestion,
+    handleUpdateQuestion,
     handleDeleteQuestion,
     navigate,
   };

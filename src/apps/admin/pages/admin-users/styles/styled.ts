@@ -37,9 +37,3 @@ export const BulkActionBar = styled.div`
   align-items: center;
   justify-content: space-between;
 `;
-
-export const DrawerHeader = styled.div`
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-`;

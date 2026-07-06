@@ -20,6 +20,7 @@ const ExamDetail: React.FC = () => {
   const {
     exam,
     isLoading,
+    readOnly,
     title,
     setTitle,
     description,
@@ -59,31 +60,57 @@ const ExamDetail: React.FC = () => {
         <Space size="middle">
           <Button icon={<ArrowLeftOutlined />} onClick={goBack} />
           <Title level={3} style={{ margin: 0, color: ADMIN_COLORS.textPrimary }}>
-            Chi tiết đề thi
+            {readOnly ? 'Xem chi tiết đề thi' : 'Chỉnh sửa đề thi'}
           </Title>
           <Tag color="cyan">{UI_TYPE_LABEL[API_TYPE_TO_UI[exam.type]]}</Tag>
-          <Tag
-            color={exam.isActive ? 'success' : 'default'}
-            style={{ cursor: 'pointer' }}
-            onClick={handleToggleActive}
-          >
-            {exam.isActive ? 'Công khai' : 'Nháp'} (bấm để đổi)
-          </Tag>
+          {readOnly ? (
+            <Tag color={exam.isActive ? 'success' : 'default'}>
+              {exam.isActive ? 'Công khai' : 'Nháp'}
+            </Tag>
+          ) : (
+            <Tag
+              color={exam.isActive ? 'success' : 'default'}
+              style={{ cursor: 'pointer' }}
+              onClick={handleToggleActive}
+            >
+              {exam.isActive ? 'Công khai' : 'Nháp'} (bấm để đổi)
+            </Tag>
+          )}
         </Space>
       </S.Header>
 
       <Card title="Thông tin đề">
-        <div className="mb-3">
-          <Text strong>Tiêu đề</Text>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} className="mt-1" />
-        </div>
-        <div className="mb-3">
-          <Text strong>Mô tả</Text>
-          <TextArea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1" />
-        </div>
-        <Button type="primary" icon={<SaveOutlined />} loading={isSavingInfo} onClick={handleSaveInfo}>
-          Lưu thông tin
-        </Button>
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <div>
+            <Text strong>Tiêu đề</Text>
+            <Input
+              size="large"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Nhập tiêu đề đề thi"
+              className="mt-2"
+              readOnly={readOnly}
+            />
+          </div>
+          <div>
+            <Text strong>Mô tả</Text>
+            <TextArea
+              rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={readOnly ? 'Không có mô tả' : 'Mô tả ngắn về mục tiêu, nội dung của đề thi (tuỳ chọn)'}
+              className="mt-2"
+              readOnly={readOnly}
+            />
+          </div>
+          {!readOnly && (
+            <div style={{ textAlign: 'right' }}>
+              <Button type="primary" icon={<SaveOutlined />} loading={isSavingInfo} onClick={handleSaveInfo}>
+                Lưu thông tin
+              </Button>
+            </div>
+          )}
+        </Space>
       </Card>
 
       {[...exam.sections]
@@ -92,6 +119,7 @@ const ExamDetail: React.FC = () => {
           <ExamSectionCard
             key={section.id}
             section={section}
+            readOnly={readOnly}
             onSaveDuration={handleSaveDuration}
             onSavePart={handleSavePart}
             onRemoveQuestion={handleRemoveQuestion}

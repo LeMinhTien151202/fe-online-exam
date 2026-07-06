@@ -35,36 +35,36 @@ export const useQuestionColumns = (
             render: (type: string) => <Tag color="geekblue" style={{ borderRadius: '4px' }}>{type}</Tag>,
             width: 100,
         },
-        {
-            title: 'Độ khó',
-            dataIndex: 'difficulty',
-            key: 'difficulty',
-            render: (diff: string) => {
-                const colors: Record<string, string> = { easy: 'success', medium: 'warning', hard: 'error' };
-                const label: Record<string, string> = { easy: 'Dễ', medium: 'Trung bình', hard: 'Khó' };
-                return <Tag color={colors[diff]} style={{ borderRadius: '12px', padding: '0 10px' }}>{label[diff]}</Tag>;
-            },
-            width: 120,
-        },
-        {
-            title: 'Hiệu suất',
-            key: 'performance',
-            render: (_: any, record: any) => (
-                <div style={{ width: 120 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '11px', color: '#64748b' }}>Đúng: {record.successRate}%</span>
-                        <span style={{ fontSize: '11px', color: '#64748b' }}>n={record.useCount}</span>
-                    </div>
-                    <Progress
-                        percent={record.successRate}
-                        size="small"
-                        showInfo={false}
-                        strokeColor={record.successRate < 40 ? '#ef4444' : '#10b981'}
-                    />
-                </div>
-            ),
-            width: 150,
-        },
+        // {
+        //     title: 'Độ khó',
+        //     dataIndex: 'difficulty',
+        //     key: 'difficulty',
+        //     render: (diff: string) => {
+        //         const colors: Record<string, string> = { easy: 'success', medium: 'warning', hard: 'error' };
+        //         const label: Record<string, string> = { easy: 'Dễ', medium: 'Trung bình', hard: 'Khó' };
+        //         return <Tag color={colors[diff]} style={{ borderRadius: '12px', padding: '0 10px' }}>{label[diff]}</Tag>;
+        //     },
+        //     width: 120,
+        // },
+        // {
+        //     title: 'Hiệu suất',
+        //     key: 'performance',
+        //     render: (_: any, record: any) => (
+        //         <div style={{ width: 120 }}>
+        //             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+        //                 <span style={{ fontSize: '11px', color: '#64748b' }}>Đúng: {record.successRate}%</span>
+        //                 <span style={{ fontSize: '11px', color: '#64748b' }}>n={record.useCount}</span>
+        //             </div>
+        //             <Progress
+        //                 percent={record.successRate}
+        //                 size="small"
+        //                 showInfo={false}
+        //                 strokeColor={record.successRate < 40 ? '#ef4444' : '#10b981'}
+        //             />
+        //         </div>
+        //     ),
+        //     width: 150,
+        // },
         {
             title: 'Trạng thái',
             dataIndex: 'status',

@@ -65,6 +65,8 @@ export const useCreateExam = () => {
       return;
     }
 
+    const currentType = (form.getFieldValue("type") as string) || (examConfig.type as string);
+
     const isSingleSlotPart = (skill: string, part: string) => {
       if (skill === "Speaking" || skill === "Writing") return true;
       if (skill === "Reading" && part !== "Part 2") return true;
@@ -73,12 +75,25 @@ export const useCreateExam = () => {
     };
 
     let newSelected = [...selectedQuestions];
-    if (record.type === "Vocabulary") {
-      newSelected = newSelected.filter((q) => !(q?.type === "Vocabulary" && q?.task === record.task));
-    } else if (isSingleSlotPart(record.type, record.part)) {
-      newSelected = newSelected.filter((q) => !(q?.type === record.type && q?.part === record.part));
+    // Luyện theo phần (partial): cho phép thêm rất nhiều câu (tất cả câu của phần) -> không giới hạn 1 slot
+    if (currentType !== "partial") {
+      if (record.type === "Vocabulary") {
+        newSelected = newSelected.filter((q) => !(q?.type === "Vocabulary" && q?.task === record.task));
+      } else if (isSingleSlotPart(record.type, record.part)) {
+        newSelected = newSelected.filter((q) => !(q?.type === record.type && q?.part === record.part));
+      }
     }
     setSelectedQuestions([...newSelected, record]);
+  };
+
+  const handleAddAll = (questions: IBankQuestion[]) => {
+    const toAdd = questions.filter((q) => !selectedQuestions.some((s) => s?.key === q.key));
+    if (toAdd.length === 0) {
+      message.info("Đã thêm hết câu hỏi của phần này.");
+      return;
+    }
+    setSelectedQuestions([...selectedQuestions, ...toAdd]);
+    message.success(`Đã thêm ${toAdd.length} câu hỏi.`);
   };
 
   const handleRemoveQuestion = (key: string) => {
@@ -195,6 +210,7 @@ export const useCreateExam = () => {
     handleNext,
     handleBack,
     handleAddQuestion,
+    handleAddAll,
     handleRemoveQuestion,
     handleMoveUp,
     handleMoveDown,

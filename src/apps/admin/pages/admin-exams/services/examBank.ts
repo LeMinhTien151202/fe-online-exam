@@ -29,5 +29,6 @@ export const mapQuestionToBank = (q: IQuestion): IBankQuestion => {
     task,
     skillId: q.skillId,
     partNumber: q.partNumber,
+    raw: q,
   };
 };

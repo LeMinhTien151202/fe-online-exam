@@ -1,8 +1,11 @@
 import React from 'react';
 import { Space, Button, Tag, Typography, TableProps, Tooltip } from 'antd';
-import { DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
+
+// Dòng dữ liệu bảng đề thi (shape khác nhau theo tab, chỉ chắc chắn có `key`)
+type ExamRow = { key: string; [field: string]: unknown };
 
 const renderStatus = (handleToggle: (key: string) => void) => (status: string, record: { key: string }) => (
     <Tooltip title="Bấm để bật/tắt hiển thị cho học viên">
@@ -16,17 +19,36 @@ const renderStatus = (handleToggle: (key: string) => void) => (status: string, r
     </Tooltip>
 );
 
+const renderActions = (
+    handleDelete: (key: string) => void,
+    handleView?: (key: string) => void,
+    handleEdit?: (key: string) => void,
+) => (record: { key: string }) => (
+    <Space size="middle">
+        <Tooltip title="Xem chi tiết">
+            <Button className="action-btn" icon={<EyeOutlined />} onClick={() => handleView?.(record.key)} />
+        </Tooltip>
+        <Tooltip title="Chỉnh sửa đề thi">
+            <Button className="action-btn edit" icon={<EditOutlined />} onClick={() => handleEdit?.(record.key)} />
+        </Tooltip>
+        <Tooltip title="Xoá đề thi">
+            <Button className="action-btn delete" icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
+        </Tooltip>
+    </Space>
+);
+
 export const useExamColumns = (
     handleDelete: (key: string) => void,
     handleToggle: (key: string) => void,
-    handleView?: (key: string) => void
+    handleView?: (key: string) => void,
+    handleEdit?: (key: string) => void,
 ) => {
-    const columnsPart: TableProps<any>['columns'] = [
+    const columnsPart: TableProps<ExamRow>['columns'] = [
         {
             title: 'TT',
             key: 'index',
             width: 60,
-            render: (_: any, __: any, index: number) => index + 1,
+            render: (_: unknown, __: ExamRow, index: number) => index + 1,
         },
         {
             title: 'Tên bộ đề',
@@ -87,21 +109,16 @@ export const useExamColumns = (
             title: 'Thao tác',
             key: 'actions',
             align: 'center',
-            render: (record: any) => (
-                <Space>
-                    <Button className="action-btn" icon={<EyeOutlined />} onClick={() => handleView?.(record.key)} />
-                    <Button className="action-btn delete" icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
-                </Space>
-            ),
+            render: renderActions(handleDelete, handleView, handleEdit),
         },
     ];
 
-    const columnsSet: TableProps<any>['columns'] = [
+    const columnsSet: TableProps<ExamRow>['columns'] = [
         {
             title: 'TT',
             key: 'index',
             width: 60,
-            render: (_: any, __: any, index: number) => index + 1,
+            render: (_: unknown, __: ExamRow, index: number) => index + 1,
         },
         {
             title: 'Tên bộ đề',
@@ -168,21 +185,16 @@ export const useExamColumns = (
             title: 'Thao tác',
             key: 'actions',
             align: 'center',
-            render: (record: any) => (
-                <Space>
-                    <Button className="action-btn" icon={<EyeOutlined />} onClick={() => handleView?.(record.key)} />
-                    <Button className="action-btn delete" icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
-                </Space>
-            ),
+            render: renderActions(handleDelete, handleView, handleEdit),
         },
     ];
 
-    const columnsFull: TableProps<any>['columns'] = [
+    const columnsFull: TableProps<ExamRow>['columns'] = [
         {
             title: 'TT',
             key: 'index',
             width: 60,
-            render: (_: any, __: any, index: number) => index + 1,
+            render: (_: unknown, __: ExamRow, index: number) => index + 1,
         },
         {
             title: 'Tên đề thi thử',
@@ -222,12 +234,7 @@ export const useExamColumns = (
             title: 'Thao tác',
             key: 'actions',
             align: 'center',
-            render: (record: any) => (
-                <Space>
-                    <Button className="action-btn" icon={<EyeOutlined />} onClick={() => handleView?.(record.key)} />
-                    <Button className="action-btn delete" icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
-                </Space>
-            ),
+            render: renderActions(handleDelete, handleView, handleEdit),
         },
     ];
 

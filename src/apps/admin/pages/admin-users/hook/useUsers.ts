@@ -36,7 +36,7 @@ interface CreateUserFormValues {
 export const useUsers = () => {
   const [activeTab, setActiveTab] = useState('list');
   const [selectedStudent, setSelectedStudent] = useState<IUserRow | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [permissions, setPermissions] = useState(initialPermissions);
 
   const { page, pageSize, onChange, reset } = usePagination(10);
@@ -74,9 +74,9 @@ export const useUsers = () => {
     );
   };
 
-  const handleOpenDrawer = (record: IUserRow) => {
+  const handleOpenDetail = (record: IUserRow) => {
     setSelectedStudent(record);
-    setDrawerOpen(true);
+    setDetailOpen(true);
   };
 
   return {
@@ -90,12 +90,12 @@ export const useUsers = () => {
     onPageChange: onChange,
     isCreating: createMutation.isPending,
     selectedStudent,
-    drawerOpen,
-    setDrawerOpen,
+    detailOpen,
+    setDetailOpen,
     permissions,
     setPermissions,
     handleStatusChange,
     handleCreate,
-    handleOpenDrawer,
+    handleOpenDetail,
   };
 };
