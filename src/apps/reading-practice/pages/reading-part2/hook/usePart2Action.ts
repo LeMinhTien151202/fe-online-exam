@@ -1,29 +1,56 @@
 import { message } from 'antd';
-import { useEffect,useState } from 'react';
-import { ISentence,correctOrder,initialSentences } from '../services/data';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useReadingQuestionsQuery } from '../../../services/readingQuery';
+import { mapPart2, Part2Data, Part2Sentence } from '../../../services/mappers';
 
 export const usePart2Action = () => {
-  const [timeLeft, setTimeLeft] = useState(1077); // 17:57 -> 1077 seconds
-  const [version, setVersion] = useState('v3');
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [pool, setPool] = useState<ISentence[]>(initialSentences);
-  const [slots, setSlots] = useState<Record<number, ISentence | null>>({
-    1: null,
-    2: null,
-    3: null,
-    4: null,
-    5: null
-  });
+  const { data: res, isLoading } = useReadingQuestionsQuery(2);
+  const list = useMemo(() => res?.data ?? [], [res]);
+  const total = list.length;
+  const [index, setIndex] = useState(0);
+  const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
+  const data: Part2Data | null = useMemo(() => {
+    const q = list[safeIndex];
+    return q ? mapPart2(q) : null;
+  }, [list, safeIndex]);
 
-  const [draggedItem, setDraggedItem] = useState<ISentence | null>(null);
+  const slotCount = data?.correctOrder.length ?? 0;
+  const emptySlots = () =>
+    Object.fromEntries(Array.from({ length: slotCount }, (_, i) => [i + 1, null])) as Record<number, Part2Sentence | null>;
+
+  const [timeLeft, setTimeLeft] = useState(1077);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [pool, setPool] = useState<Part2Sentence[]>([]);
+  const [slots, setSlots] = useState<Record<number, Part2Sentence | null>>({});
+
+  // Nạp lại pool/slots khi bộ câu hỏi đổi (kèm index để phân biệt câu trùng thứ tự)
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const currentKey = data ? `${safeIndex}:${data.correctOrder.join('|')}` : null;
+  if (currentKey && currentKey !== loadedKey) {
+    setLoadedKey(currentKey);
+    setPool(data!.initialSentences);
+    setSlots(emptySlots());
+    setIsSubmitted(false);
+  }
+
+  const handleNext = () => {
+    if (safeIndex >= total - 1) return;
+    setIndex(safeIndex + 1);
+    setTimeLeft(1077);
+  };
+  const handlePrev = () => {
+    if (safeIndex <= 0) return;
+    setIndex(safeIndex - 1);
+    setTimeLeft(1077);
+  };
+
+  const [draggedItem, setDraggedItem] = useState<Part2Sentence | null>(null);
   const [draggedFromSlot, setDraggedFromSlot] = useState<number | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
 
   useEffect(() => {
     if (timeLeft <= 0 || isSubmitted) return;
-    const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
+    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearInterval(timer);
   }, [timeLeft, isSubmitted]);
 
@@ -33,7 +60,7 @@ export const usePart2Action = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleDragStart = (item: ISentence, fromSlot: number | null = null) => {
+  const handleDragStart = (item: Part2Sentence, fromSlot: number | null = null) => {
     if (isSubmitted) return;
     setDraggedItem(item);
     setDraggedFromSlot(fromSlot);
@@ -45,106 +72,91 @@ export const usePart2Action = () => {
     setDragOverSlot(slotId);
   };
 
-  const handleDragLeave = () => {
-    setDragOverSlot(null);
-  };
+  const handleDragLeave = () => setDragOverSlot(null);
 
   const handleDrop = (slotId: number) => {
     if (isSubmitted || !draggedItem) return;
-
-    setSlots(prev => {
+    setSlots((prev) => {
       const nextSlots = { ...prev };
       const currentInSlot = nextSlots[slotId];
-      if (currentInSlot) {
-        setPool(prevPool => [...prevPool, currentInSlot]);
-      }
-
-      if (draggedFromSlot !== null) {
-        nextSlots[draggedFromSlot] = null;
-      } else {
-        setPool(prevPool => prevPool.filter(item => item.id !== draggedItem.id));
-      }
-
+      if (currentInSlot) setPool((prevPool) => [...prevPool, currentInSlot]);
+      if (draggedFromSlot !== null) nextSlots[draggedFromSlot] = null;
+      else setPool((prevPool) => prevPool.filter((item) => item.id !== draggedItem.id));
       nextSlots[slotId] = draggedItem;
       return nextSlots;
     });
-
     setDraggedItem(null);
     setDraggedFromSlot(null);
     setDragOverSlot(null);
   };
 
-  const handleRemoveFromSlot = (slotId: number, item: ISentence) => {
+  const handleRemoveFromSlot = (slotId: number, item: Part2Sentence) => {
     if (isSubmitted) return;
-    setSlots(prev => ({
-      ...prev,
-      [slotId]: null
-    }));
-    setPool(prevPool => [...prevPool, item]);
+    setSlots((prev) => ({ ...prev, [slotId]: null }));
+    setPool((prevPool) => [...prevPool, item]);
   };
 
-  const handleAutoPlace = (item: ISentence) => {
+  const handleAutoPlace = (item: Part2Sentence) => {
     if (isSubmitted) return;
-    const firstEmptySlot = Object.keys(slots).find(key => !slots[Number(key)]);
+    const firstEmptySlot = Object.keys(slots).find((key) => !slots[Number(key)]);
     if (firstEmptySlot) {
       const slotNum = Number(firstEmptySlot);
-      setSlots(prev => ({
-        ...prev,
-        [slotNum]: item
-      }));
-      setPool(prevPool => prevPool.filter(p => p.id !== item.id));
+      setSlots((prev) => ({ ...prev, [slotNum]: item }));
+      setPool((prevPool) => prevPool.filter((p) => p.id !== item.id));
     } else {
       message.warning('Tất cả các ô trống đã đầy! Hãy kéo bớt item ra.');
     }
   };
 
-  const handleSubmit = () => {
-    const filledCount = Object.values(slots).filter(s => s !== null).length;
-    if (filledCount < 5) {
-      message.warning(`Vui lòng hoàn thành sắp xếp tất cả 5 ô trống! (Hiện tại: ${filledCount}/5)`);
-      return;
-    }
-
-    setIsSubmitted(true);
-    const correctCount = Object.keys(slots).filter(key => {
+  const countCorrect = () =>
+    Object.keys(slots).filter((key) => {
       const idx = Number(key);
       const slotItem = slots[idx];
-      return slotItem && slotItem.id === correctOrder[idx - 1];
+      return slotItem && data && slotItem.id === data.correctOrder[idx - 1];
     }).length;
 
-    // Save progress to local storage
-    const progressPercent = Math.round((correctCount / 5) * 100);
+  const handleSubmit = () => {
+    const filledCount = Object.values(slots).filter((s) => s !== null).length;
+    if (filledCount < slotCount) {
+      message.warning(`Vui lòng hoàn thành sắp xếp tất cả ${slotCount} ô trống! (Hiện tại: ${filledCount}/${slotCount})`);
+      return;
+    }
+    setIsSubmitted(true);
+    const correct = countCorrect();
+    const progressPercent = slotCount ? Math.round((correct / slotCount) * 100) : 0;
     const savedProgress = localStorage.getItem('aptis_reading_progress');
     let nextProgress = { r2: progressPercent };
     if (savedProgress) {
       try {
         nextProgress = { ...JSON.parse(savedProgress), r2: progressPercent };
-      } catch (e) { /* bỏ qua lỗi */ }
+      } catch { /* bỏ qua lỗi */ }
     }
     localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
-
-    message.success(`Chúc mừng! Bạn đã hoàn thành Part 2. Kết quả: ${correctCount}/5 câu đúng.`);
+    message.success(`Chúc mừng! Bạn đã hoàn thành Part 2. Kết quả: ${correct}/${slotCount} câu đúng.`);
   };
 
   const handleRetry = () => {
-    setSlots({ 1: null, 2: null, 3: null, 4: null, 5: null });
-    setPool(initialSentences);
+    setSlots(emptySlots());
+    setPool(data?.initialSentences ?? []);
     setIsSubmitted(false);
     setTimeLeft(1077);
   };
 
   const placedCount = Object.values(slots).filter(Boolean).length;
-  const progressPercent = Math.round((placedCount / 5) * 100);
-  const correctCount = Object.keys(slots).filter(key => {
-    const idx = Number(key);
-    const slotItem = slots[idx];
-    return slotItem && slotItem.id === correctOrder[idx - 1];
-  }).length;
+  const progressPercent = slotCount ? Math.round((placedCount / slotCount) * 100) : 0;
+  const correctCount = countCorrect();
 
   return {
+    isLoading,
+    data,
+    slotCount,
+    total,
+    currentNumber: total > 0 ? safeIndex + 1 : 0,
+    hasNext: safeIndex < total - 1,
+    hasPrev: safeIndex > 0,
+    handleNext,
+    handlePrev,
     timeLeft,
-    version,
-    setVersion,
     isSubmitted,
     pool,
     slots,

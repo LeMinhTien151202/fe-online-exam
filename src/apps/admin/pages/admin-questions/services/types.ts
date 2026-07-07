@@ -116,14 +116,32 @@ export interface HeadingMatchConfig {
 }
 
 export type EssayRegister = 'FORMAL' | 'INFORMAL';
-export interface EssayConfig {
+// Câu con trong Writing P1 (chỉ question) / P3 (kèm speaker_name)
+export interface EssayPrompt {
+  question: string;
+  speaker_name?: string;
+  sample_answer?: string; // đáp án mẫu cho câu con (P1/P3)
+}
+// Task trong Writing P4 (mỗi part 1 bản ghi, gói 2 task Informal/Formal)
+export interface EssayTask {
+  task_label: string;
+  instruction: string;
+  register_type: EssayRegister;
   word_limit_min: number;
   word_limit_max: number;
-  speaker_name?: string; // Writing P3
-  register_type?: EssayRegister; // Writing P4
-  task_label?: string; // Writing P4
-  question_group_id?: string; // Writing P4
-  context?: string; // Writing P4
+  sample_answer?: string; // bài mẫu cho task (P4)
+}
+export interface EssayConfig {
+  word_limit_min?: number; // P1/P2/P3 (P4 giới hạn nằm trong từng task)
+  word_limit_max?: number;
+  speaker_name?: string; // (cũ) Writing P3
+  register_type?: EssayRegister; // (cũ) Writing P4
+  task_label?: string; // (cũ) Writing P4
+  question_group_id?: string; // (cũ) Writing P4
+  context?: string; // Writing P4 (Notice dùng chung)
+  sample_answer?: string; // bài mẫu (P2 top-level)
+  prompts?: EssayPrompt[]; // Writing P1 (5 câu) / P3 (3 câu)
+  tasks?: EssayTask[]; // Writing P4 (2 task)
 }
 
 export interface RecordConfig {

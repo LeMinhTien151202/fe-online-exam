@@ -1,25 +1,32 @@
 import {
-BulbOutlined,
-CheckCircleOutlined,
-ClockCircleOutlined,
-LeftOutlined,
-RollbackOutlined
+  BulbOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  LeftOutlined,
+  RightOutlined,
+  RollbackOutlined
 } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { Alert,Badge,Progress,Select,Space } from 'antd';
+import { Badge, Button, Empty, Progress, Space, Spin, Tag } from 'antd';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { usePart2Action } from '../hook/usePart2Action';
-import { correctOrder,fixedSentence,initialSentences } from '../services/data';
 import * as S from '../styles/styled';
 
 export const Part2Page: React.FC = () => {
   const navigate = useNavigate();
   const {
+    isLoading,
+    data,
+    slotCount,
+    total,
+    currentNumber,
+    hasNext,
+    hasPrev,
+    handleNext,
+    handlePrev,
     timeLeft,
-    version,
-    setVersion,
     isSubmitted,
     pool,
     slots,
@@ -38,6 +45,8 @@ export const Part2Page: React.FC = () => {
     correctCount
   } = usePart2Action();
 
+  const slotIds = Array.from({ length: slotCount }, (_, i) => i + 1);
+
   return (
     <HomeS.MainLayout>
       <Sidebar />
@@ -51,27 +60,24 @@ export const Part2Page: React.FC = () => {
               <S.HeaderTitle>
                 Part 2: Text Cohesion
               </S.HeaderTitle>
-              <S.HeaderSelect 
-                value={version} 
-                onChange={(val) => setVersion(val as string)}
-                size="small"
-                dropdownMatchSelectWidth={false}
-                disabled={isSubmitted}
-              >
-                <Select.Option value="v3">v3</Select.Option>
-                <Select.Option value="v2">v2</Select.Option>
-                <Select.Option value="v1">v1</Select.Option>
-              </S.HeaderSelect>
+              {total > 0 && (
+                <Tag color="blue" style={{ fontWeight: 600 }}>Câu {currentNumber}/{total}</Tag>
+              )}
+              {isSubmitted && slotCount > 0 && (
+                <Tag color={correctCount === slotCount ? 'success' : 'warning'} style={{ fontWeight: 600 }}>
+                  Kết quả: {correctCount}/{slotCount}
+                </Tag>
+              )}
             </Space>
 
             <Space size="large" className="flex items-center">
-              <Progress 
-                type="circle" 
-                percent={progressPercent} 
-                size={40} 
-                strokeColor="#10b981" 
+              <Progress
+                type="circle"
+                percent={progressPercent}
+                size={40}
+                strokeColor="#10b981"
                 trailColor="rgba(255,255,255,0.2)"
-                format={() => <S.ProgressText>{placedCount}/5</S.ProgressText>}
+                format={() => <S.ProgressText>{placedCount}/{slotCount || 0}</S.ProgressText>}
               />
               <S.TimerWrapper>
                 <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
@@ -80,54 +86,45 @@ export const Part2Page: React.FC = () => {
             </Space>
           </S.Header>
 
-          {isSubmitted && (
-            <S.AlertOuterWrapper>
-              <S.AlertWrapper>
-                <Alert
-                  message={
-                    <span className="font-semibold">
-                      Kết quả sắp xếp: {correctCount}/5 vị trí đúng ({Math.round(correctCount / 5 * 100)}%)
-                    </span>
-                  }
-                  description="Các câu đúng có viền xanh lá. Các câu sai có viền đỏ. Bạn có thể xem thứ tự đúng bên dưới."
-                  type={correctCount === 5 ? "success" : "warning"}
-                  showIcon
-                  closable
-                />
-              </S.AlertWrapper>
-            </S.AlertOuterWrapper>
-          )}
-
+          {isLoading ? (
+            <div style={{ textAlign: 'center', padding: '3rem' }}><Spin size="large" /></div>
+          ) : !data ? (
+            <div style={{ padding: '3rem' }}>
+              <Empty description="Chưa có câu hỏi cho phần này. Vui lòng quay lại sau." />
+            </div>
+          ) : (
           <S.MainContent>
             <S.Column>
               <div className="flex items-center gap-2 mb-2">
                 <Badge status="processing" text={<span className="font-bold text-[#0f172a] text-[0.95rem]">Sắp xếp các đáp án theo đúng thứ tự</span>} />
               </div>
               <S.ColumnHeader>
-                A new café in town (Version 3)
+                Sắp xếp đoạn văn
               </S.ColumnHeader>
               <S.StoryContainer>
                 {/* Fixed first sentence */}
-                <S.FixedSentenceCard>
-                  {fixedSentence}
-                </S.FixedSentenceCard>
+                {data.fixedSentence && (
+                  <S.FixedSentenceCard>
+                    {data.fixedSentence}
+                  </S.FixedSentenceCard>
+                )}
 
                 {/* Drop slots */}
-                {[1, 2, 3, 4, 5].map((idx) => {
+                {slotIds.map((idx) => {
                   const item = slots[idx];
                   const isOver = dragOverSlot === idx;
-                  const isCorrect = item && item.id === correctOrder[idx - 1];
-                  
+                  const isCorrect = item && item.id === data.correctOrder[idx - 1];
+
                   return (
-                    <div 
+                    <div
                       key={idx}
                       onDragOver={(e) => handleDragOver(e, idx)}
                       onDragLeave={handleDragLeave}
                       onDrop={() => handleDrop(idx)}
                     >
                       {item ? (
-                        <S.PlacedItemCard 
-                          draggable={!isSubmitted} 
+                        <S.PlacedItemCard
+                          draggable={!isSubmitted}
                           onDragStart={() => handleDragStart(item, idx)}
                           $status={isSubmitted ? (isCorrect ? 'success' : 'error') : 'default'}
                         >
@@ -136,8 +133,8 @@ export const Part2Page: React.FC = () => {
                             {item.text}
                           </span>
                           {!isSubmitted && (
-                            <button 
-                              className="btn-remove" 
+                            <button
+                              className="btn-remove"
                               onClick={() => handleRemoveFromSlot(idx, item)}
                             >
                               ✕
@@ -174,7 +171,7 @@ export const Part2Page: React.FC = () => {
                   {isSubmitted ? 'Đáp án đúng' : '← Kéo hoặc click để chọn câu'}
                 </span>
                 <span className="text-[0.75rem] text-[#64748b] font-semibold">
-                  {isSubmitted ? 'Bảng đáp án' : `${placedCount}/5 Đã xếp`}
+                  {isSubmitted ? 'Bảng đáp án' : `${placedCount}/${slotCount} Đã xếp`}
                 </span>
               </div>
               <S.ColumnHeader className="invisible select-none">
@@ -183,8 +180,8 @@ export const Part2Page: React.FC = () => {
               <S.OptionsPool>
                 {isSubmitted ? (
                   <S.OptionsWrapper>
-                    {correctOrder.map((id, index) => {
-                      const text = initialSentences.find(s => s.id === id)?.text;
+                    {data.correctOrder.map((id, index) => {
+                      const text = data.initialSentences.find(s => s.id === id)?.text;
                       return (
                         <S.CorrectAnswerRow key={id}>
                           <S.CorrectBadgeNumber>
@@ -216,16 +213,22 @@ export const Part2Page: React.FC = () => {
               </S.OptionsPool>
             </S.Column>
           </S.MainContent>
+          )}
 
           <S.Footer>
-            <S.FooterButton 
-              type="default" 
-              icon={<LeftOutlined />} 
-              size="large"
-              onClick={() => navigate({ to: '/reading' })}
-            >
-              Quay lại danh sách
-            </S.FooterButton>
+            <Space size="middle">
+              <S.FooterButton
+                type="default"
+                icon={<LeftOutlined />}
+                size="large"
+                onClick={() => navigate({ to: '/reading' })}
+              >
+                Quay lại danh sách
+              </S.FooterButton>
+              {hasPrev && (
+                <Button size="large" onClick={handlePrev}>Câu trước</Button>
+              )}
+            </Space>
 
             <Space size="middle">
               {isSubmitted ? (
@@ -238,14 +241,20 @@ export const Part2Page: React.FC = () => {
                   Làm lại
                 </S.RetryButton>
               ) : (
-                <S.SubmitButton 
-                  type="primary" 
-                  icon={<CheckCircleOutlined />} 
+                <S.SubmitButton
+                  type="primary"
+                  icon={<CheckCircleOutlined />}
                   size="large"
                   onClick={handleSubmit}
+                  disabled={!data}
                 >
                   Nộp bài
                 </S.SubmitButton>
+              )}
+              {hasNext && (
+                <Button type="primary" size="large" icon={<RightOutlined />} onClick={handleNext}>
+                  Câu tiếp theo
+                </Button>
               )}
             </Space>
           </S.Footer>

@@ -1,70 +1,89 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
 import { countWords } from '../../../utils/wordCounter';
 import { useWritingTimer } from '../../writing-part1/hook/useWritingTimer';
-import { mockPart3Messages } from '../services/data';
+import { useWritingQuestionsQuery } from '../../../services/writingQuery';
+import { mapWPart3 } from '../../../services/mappers';
 
 export const usePart3Action = () => {
   const navigate = useNavigate();
-  const timer = useWritingTimer(10 * 60); // 10 minutes
-  const [showSampleModal, setShowSampleModal] = useState(false);
-  const [answers, setAnswers] = useState<Record<number, string>>({
-    1: '',
-    2: '',
-    3: ''
-  });
+  const timer = useWritingTimer(10 * 60);
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+
+  const { data: res, isLoading } = useWritingQuestionsQuery(3);
+  const list = useMemo(() => res?.data ?? [], [res]);
+  const total = list.length;
+  const [index, setIndex] = useState(0);
+  const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
+  const data = useMemo(() => {
+    const q = list[safeIndex];
+    return q ? mapWPart3(q) : null;
+  }, [list, safeIndex]);
+
+  const messages = data?.messages ?? [];
+  const wordMin = data?.wordMin ?? 30;
+  const wordMax = data?.wordMax ?? 40;
 
   const getWordCount = (text: string) => countWords(text);
-
   const isWordCountValid = (text: string) => {
     const wc = getWordCount(text);
-    return wc >= 30 && wc <= 40;
+    return wc >= wordMin && wc <= wordMax;
   };
 
   const handleAnswerChange = (id: number, value: string) => {
-    setAnswers(prev => ({
-      ...prev,
-      [id]: value
-    }));
+    setAnswers((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleSubmit = () => {
-    const keys = Object.keys(answers).map(Number);
-    const hasEmpty = keys.some(k => !answers[k].trim());
-    const hasInvalid = keys.some(k => {
-      const wc = countWords(answers[k]);
-      return wc < 30 || wc > 40;
+    if (!messages.length) return;
+    const hasEmpty = messages.some((m) => !(answers[m.id] || '').trim());
+    const hasInvalid = messages.some((m) => {
+      const wc = getWordCount(answers[m.id] || '');
+      return wc < wordMin || wc > wordMax;
     });
-
     if (hasEmpty) {
-      message.warning("Vui lòng trả lời đầy đủ cả 3 tin nhắn trong đoạn chat!");
+      message.warning(`Vui lòng trả lời đầy đủ cả ${messages.length} tin nhắn trong đoạn chat!`);
       return;
     }
-
     if (hasInvalid) {
-      message.error("Có câu trả lời chưa đạt giới hạn 30-40 từ! Vui lòng kiểm tra lại.");
+      message.error(`Có câu trả lời chưa đạt giới hạn ${wordMin}-${wordMax} từ! Vui lòng kiểm tra lại.`);
       return;
     }
-
-    message.success("Đã hoàn thành luyện tập Part 3!");
-    navigate({ to: '/writing/part/4' });
+    message.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
   };
 
-  const handleBack = () => {
-    navigate({ to: '/writing/part/2' });
+  const handleBack = () => navigate({ to: '/writing' });
+
+  const handleNext = () => {
+    if (safeIndex >= total - 1) return;
+    setIndex(safeIndex + 1);
+    setAnswers({});
+  };
+  const handlePrev = () => {
+    if (safeIndex <= 0) return;
+    setIndex(safeIndex - 1);
+    setAnswers({});
   };
 
   return {
+    isLoading,
+    hasData: !!data,
+    wordMin,
+    wordMax,
     answers,
     timer,
-    showSampleModal,
-    setShowSampleModal,
     handleAnswerChange,
     isWordCountValid,
     getWordCount,
     handleSubmit,
     handleBack,
-    messages: mockPart3Messages
+    messages,
+    total,
+    currentNumber: total > 0 ? safeIndex + 1 : 0,
+    hasNext: safeIndex < total - 1,
+    hasPrev: safeIndex > 0,
+    handleNext,
+    handlePrev,
   };
 };

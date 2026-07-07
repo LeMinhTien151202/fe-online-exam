@@ -133,12 +133,13 @@ export const useQuestions = () => {
         initialValues.headings = Array(8).fill({});
       }
     } else if (skill === "writing") {
-      if (partTab === "part1") initialValues.p1Questions = Array(5).fill("");
+      if (partTab === "part1")
+        initialValues.p1Questions = Array.from({ length: 5 }, () => ({ question: "", sample: "" }));
       else if (partTab === "part3")
         initialValues.p3MemberQuestions = [
-          { member: "Member A", question: "" },
-          { member: "Member B", question: "" },
-          { member: "Member C", question: "" },
+          { member: "Member A", question: "", sample: "" },
+          { member: "Member B", question: "", sample: "" },
+          { member: "Member C", question: "", sample: "" },
         ];
     } else if (skill === "speaking") {
       if (partTab === "part1") initialValues.p1Questions = Array(3).fill("");

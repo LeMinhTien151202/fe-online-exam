@@ -17,6 +17,7 @@
 - **Xem trước bản Build**: `yarn preview` hoặc `npm run preview`
 
 ## 🎨 Quy chuẩn UI/UX
+
 - Luôn ưu tiên Ant Design components.
-- Sử dụng Tailwind CSS cho layout nhanh và Styled-components cho custom logic.
+- Sử dụng Styled-components cho custom logic.
 - Đảm bảo tính responsive và hỗ trợ đa ngôn ngữ qua `i18n`.

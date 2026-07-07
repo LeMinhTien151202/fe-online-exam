@@ -12,6 +12,7 @@ TeamOutlined,
 UserOutlined
 } from '@ant-design/icons';
 import { Button,Card,Col,Divider,Form,Input,message,Row,Select,Space,Steps,Typography,Upload } from 'antd';
+import type { FormInstance } from 'antd';
 import React,{ useState } from 'react';
 import { ADMIN_COLORS } from '../../../../constants';
 import { questionApi } from '../../services/questionApi';
@@ -20,33 +21,36 @@ const { TextArea } = Input;
 const { Text } = Typography;
 
 interface SpeakingFormProps {
-    form: any;
+    form: FormInstance;
     part: string;
     onSubmit: () => void;
 }
 
+interface UploadOpts {
+    file: unknown;
+    onSuccess?: (body: unknown, file?: unknown) => void;
+    onError?: (err: unknown) => void;
+}
+
 const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => {
     const [currentStep, setCurrentStep] = useState(0);
-    const [isUploading, setIsUploading] = useState(false);
     const watchedPart = Form.useWatch('part', form);
     const p2ImageUrl = Form.useWatch('p2ImageUrl', form);
     const p3ImageUrlA = Form.useWatch('p3ImageUrlA', form);
     const p3ImageUrlB = Form.useWatch('p3ImageUrlB', form);
     const p4ImageUrl = Form.useWatch('p4ImageUrl', form);
 
-    const handleUpload = async (options: any, folderType: 'images' | 'audio', formKey: string) => {
+    const handleUpload = async (options: UploadOpts, folderType: 'images' | 'audio', formKey: string) => {
         const { file, onSuccess, onError } = options;
         try {
-            setIsUploading(true);
             const res = await questionApi.upload(file as File, folderType);
             form.setFieldValue(formKey, res.url);
-            onSuccess(res, file);
+            onSuccess?.(res, file);
             message.success('Upload file thành công!');
-        } catch (err: any) {
-            onError(err);
-            message.error(err.response?.data?.message || 'Upload file thất bại.');
-        } finally {
-            setIsUploading(false);
+        } catch (err) {
+            onError?.(err);
+            const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            message.error(msg || 'Upload file thất bại.');
         }
     };
 
@@ -60,9 +64,6 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
     const activePart = watchedPart || part;
 
     const isPart1 = activePart === 'part1';
-    const isPart2 = activePart === 'part2';
-    const isPart3 = activePart === 'part3';
-    const isPart4 = activePart === 'part4';
 
     // Initialize fields when part changes
     React.useEffect(() => {
@@ -104,7 +105,7 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
         <Card className="premium-card" title={<Space><CameraOutlined /> Part 2: Describe & Opinion (Mô tả tranh)</Space>}>
             <Row gutter={24}>
                 <Col span={8}>
-                    <Form.Item name="p2ImageUrl" label="Bức tranh Part 2" rules={[{ required: true, message: 'Vui lòng tải ảnh lên!' }]}>
+                    <Form.Item label="Bức tranh Part 2" required>
                         {p2ImageUrl ? (
                             <div style={{ position: 'relative', border: '1px dashed #d9d9d9', borderRadius: '12px', padding: '8px', background: '#f8fafc' }}>
                                 <img src={p2ImageUrl} alt="Preview" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '8px' }} />
@@ -129,6 +130,9 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
                                 <p className="ant-upload-text" style={{ fontSize: '13px' }}>Kéo thả hoặc Click để tải ảnh</p>
                             </Upload.Dragger>
                         )}
+                    </Form.Item>
+                    <Form.Item name="p2ImageUrl" hidden rules={[{ required: true, message: 'Vui lòng tải ảnh lên!' }]}>
+                        <Input />
                     </Form.Item>
                     <Form.Item name="p2ImageDesc" label="Mô tả tranh (Cho AI)">
                         <TextArea rows={2} placeholder="Mô tả nội dung bức tranh để làm dữ liệu..." />
@@ -155,7 +159,7 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
         <Card className="premium-card" title={<Space><TeamOutlined /> Part 3: Compare & Contrast (So sánh 2 tranh)</Space>}>
             <Row gutter={24} style={{ marginBottom: '24px' }}>
                 <Col span={12}>
-                    <Form.Item name="p3ImageUrlA" label="Bức tranh A (Trái)" rules={[{ required: true, message: 'Vui lòng tải ảnh A lên!' }]}>
+                    <Form.Item label="Bức tranh A (Trái)" required>
                         {p3ImageUrlA ? (
                             <div style={{ position: 'relative', border: '1px dashed #d9d9d9', borderRadius: '12px', padding: '8px', background: '#f8fafc' }}>
                                 <img src={p3ImageUrlA} alt="Preview A" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '8px' }} />
@@ -183,7 +187,7 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
                     </Form.Item>
                 </Col>
                 <Col span={12}>
-                    <Form.Item name="p3ImageUrlB" label="Bức tranh B (Phải)" rules={[{ required: true, message: 'Vui lòng tải ảnh B lên!' }]}>
+                    <Form.Item label="Bức tranh B (Phải)" required>
                         {p3ImageUrlB ? (
                             <div style={{ position: 'relative', border: '1px dashed #d9d9d9', borderRadius: '12px', padding: '8px', background: '#f8fafc' }}>
                                 <img src={p3ImageUrlB} alt="Preview B" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '8px' }} />
@@ -211,7 +215,13 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
                     </Form.Item>
                 </Col>
             </Row>
-            <Divider orientation={"left" as any} plain><Text type="secondary">Câu hỏi (45s mỗi câu)</Text></Divider>
+            <Form.Item name="p3ImageUrlA" hidden rules={[{ required: true, message: 'Vui lòng tải ảnh A lên!' }]}>
+                <Input />
+            </Form.Item>
+            <Form.Item name="p3ImageUrlB" hidden rules={[{ required: true, message: 'Vui lòng tải ảnh B lên!' }]}>
+                <Input />
+            </Form.Item>
+            <Divider orientation={"left" as never} plain><Text type="secondary">Câu hỏi (45s mỗi câu)</Text></Divider>
             <Space direction="vertical" style={{ width: '100%' }} size="middle">
                 <Form.Item name="p3Q1" label="Câu 1: Comparison (So sánh 2 tranh)" initialValue="Tell me, what can you see in the two pictures?" rules={[{ required: true }]}>
                     <Input />
@@ -230,7 +240,7 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
         <Card className="premium-card" title={<Space><BulbOutlined /> Part 4: Abstract Topic (Thảo luận trừu tượng)</Space>}>
             <Row gutter={24}>
                 <Col span={8}>
-                    <Form.Item name="p4ImageUrl" label="Ảnh gợi ý (Tùy chọn)">
+                    <Form.Item label="Ảnh gợi ý (Tùy chọn)">
                         {p4ImageUrl ? (
                             <div style={{ position: 'relative', border: '1px dashed #d9d9d9', borderRadius: '12px', padding: '8px', background: '#f8fafc' }}>
                                 <img src={p4ImageUrl} alt="Preview Suggestions" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '8px' }} />
@@ -255,6 +265,9 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
                                 <p className="ant-upload-text" style={{ fontSize: '13px' }}>Kéo thả hoặc Click</p>
                             </Upload.Dragger>
                         )}
+                    </Form.Item>
+                    <Form.Item name="p4ImageUrl" hidden>
+                        <Input />
                     </Form.Item>
                 </Col>
                 <Col span={16}>

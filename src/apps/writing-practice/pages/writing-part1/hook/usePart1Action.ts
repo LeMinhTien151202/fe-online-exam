@@ -1,72 +1,87 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
 import { countWords } from '../../../utils/wordCounter';
 import { useWritingTimer } from './useWritingTimer';
-import { mockPart1Questions } from '../services/data';
+import { useWritingQuestionsQuery } from '../../../services/writingQuery';
+import { mapWPart1 } from '../../../services/mappers';
 
 export const usePart1Action = () => {
   const navigate = useNavigate();
-  const timer = useWritingTimer(3 * 60); // 3 minutes recommended
-  const [showSampleModal, setShowSampleModal] = useState(false);
-  const [answers, setAnswers] = useState<Record<number, string>>({
-    1: '',
-    2: '',
-    3: '',
-    4: '',
-    5: ''
-  });
+  const timer = useWritingTimer(3 * 60);
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+
+  const { data: res, isLoading } = useWritingQuestionsQuery(1);
+  const list = useMemo(() => res?.data ?? [], [res]);
+  const total = list.length;
+  const [index, setIndex] = useState(0);
+  const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
+  const data = useMemo(() => {
+    const q = list[safeIndex];
+    return q ? mapWPart1(q) : null;
+  }, [list, safeIndex]);
+
+  const questions = data?.questions ?? [];
+  const wordMin = data?.wordMin ?? 1;
+  const wordMax = data?.wordMax ?? 5;
 
   const getWordCount = (text: string) => countWords(text);
-
   const isWordCountValid = (text: string) => {
     const wc = getWordCount(text);
-    return wc >= 1 && wc <= 5;
+    return wc >= wordMin && wc <= wordMax;
   };
 
   const handleAnswerChange = (id: number, value: string) => {
-    setAnswers(prev => ({
-      ...prev,
-      [id]: value
-    }));
+    setAnswers((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleSubmit = () => {
-    const keys = Object.keys(answers).map(Number);
-    const hasEmpty = keys.some(k => !answers[k].trim());
-    const hasInvalid = keys.some(k => {
-      const wc = countWords(answers[k]);
-      return wc > 5;
-    });
-
+    if (!questions.length) return;
+    const hasEmpty = questions.some((q) => !(answers[q.id] || '').trim());
+    const hasInvalid = questions.some((q) => getWordCount(answers[q.id] || '') > wordMax);
     if (hasEmpty) {
-      message.warning("Vui lòng trả lời đầy đủ tất cả 5 câu hỏi!");
+      message.warning(`Vui lòng trả lời đầy đủ tất cả ${questions.length} câu hỏi!`);
       return;
     }
-
     if (hasInvalid) {
-      message.error("Có câu hỏi vượt quá giới hạn 5 từ! Vui lòng chỉnh sửa lại.");
+      message.error(`Có câu hỏi vượt quá giới hạn ${wordMax} từ! Vui lòng chỉnh sửa lại.`);
       return;
     }
-
-    message.success("Đã hoàn thành luyện tập Part 1!");
-    navigate({ to: '/writing/part/2' });
+    message.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
   };
 
-  const handleBack = () => {
-    navigate({ to: '/writing' });
+  const handleBack = () => navigate({ to: '/writing' });
+
+  const handleNext = () => {
+    if (safeIndex >= total - 1) return;
+    setIndex(safeIndex + 1);
+    setAnswers({});
+  };
+  const handlePrev = () => {
+    if (safeIndex <= 0) return;
+    setIndex(safeIndex - 1);
+    setAnswers({});
   };
 
   return {
+    isLoading,
+    hasData: !!data,
+    instruction: data?.instruction ?? '',
+    wordMin,
+    wordMax,
     answers,
     timer,
-    showSampleModal,
-    setShowSampleModal,
     handleAnswerChange,
     isWordCountValid,
     getWordCount,
     handleSubmit,
     handleBack,
-    questions: mockPart1Questions
+    questions,
+    total,
+    currentNumber: total > 0 ? safeIndex + 1 : 0,
+    hasNext: safeIndex < total - 1,
+    hasPrev: safeIndex > 0,
+    handleNext,
+    handlePrev,
   };
 };

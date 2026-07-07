@@ -228,21 +228,71 @@ const renderConfig = (q: IQuestion): React.ReactNode => {
     );
   }
 
-  // ESSAY (Writing)
-  if (cfg && (cfg as unknown as EssayConfig).word_limit_max != null) {
+  // ESSAY (Writing): P4 có tasks[], P1/P3 có prompts[], còn lại chỉ giới hạn từ
+  if (cfg && ((cfg as unknown as EssayConfig).word_limit_max != null
+    || Array.isArray((cfg as unknown as EssayConfig).prompts)
+    || Array.isArray((cfg as unknown as EssayConfig).tasks))) {
     const es = cfg as unknown as EssayConfig;
     return (
       <>
         {sectionTitle(<InfoCircleOutlined />, 'YÊU CẦU BÀI VIẾT')}
-        <div style={box}>
-          <Space direction="vertical">
+        {es.context && (
+          <div style={{ ...box, marginBottom: 12 }}>
+            <Text strong>Bối cảnh (Notice): </Text>{es.context}
+          </div>
+        )}
+        {es.word_limit_max != null && (
+          <div style={{ ...box, marginBottom: 12 }}>
             <Text>Giới hạn từ: <Text strong>{es.word_limit_min} - {es.word_limit_max}</Text></Text>
-            {es.register_type && <Text>Văn phong: <Tag>{es.register_type}</Tag></Text>}
-            {es.task_label && <Text>Nhiệm vụ: <Tag>{es.task_label}</Tag></Text>}
-            {es.speaker_name && <Text>Người hỏi: <Tag>{es.speaker_name}</Tag></Text>}
-            {es.context && <Text>Bối cảnh: {es.context}</Text>}
+          </div>
+        )}
+
+        {/* P2: bài mẫu top-level */}
+        {es.sample_answer && (
+          <div style={{ ...box, marginBottom: 12, background: '#f0fdf4', borderColor: '#bbf7d0', whiteSpace: 'pre-wrap' }}>
+            <Text strong style={{ color: '#166534' }}>Đáp án mẫu: </Text>{es.sample_answer}
+          </div>
+        )}
+
+        {/* P1/P3: danh sách câu con */}
+        {Array.isArray(es.prompts) && es.prompts.length > 0 && (
+          <Space direction="vertical" style={{ width: '100%' }}>
+            {es.prompts.map((p, i) => (
+              <div key={i} style={box}>
+                {p.speaker_name && <Tag color="purple">{p.speaker_name}</Tag>}
+                <Text>{p.question}</Text>
+                {p.sample_answer && (
+                  <div style={{ marginTop: 6 }}>
+                    <Text type="secondary">Đáp án mẫu: </Text>
+                    <Text style={{ color: '#166534' }}>{p.sample_answer}</Text>
+                  </div>
+                )}
+              </div>
+            ))}
           </Space>
-        </div>
+        )}
+
+        {/* P4: 2 task Informal/Formal */}
+        {Array.isArray(es.tasks) && es.tasks.length > 0 && (
+          <Space direction="vertical" style={{ width: '100%' }}>
+            {es.tasks.map((t, i) => (
+              <div key={i} style={box}>
+                <Space wrap style={{ marginBottom: 6 }}>
+                  <Tag color="blue">{t.task_label}</Tag>
+                  <Tag>{t.register_type}</Tag>
+                  <Tag>{t.word_limit_min} - {t.word_limit_max} từ</Tag>
+                </Space>
+                <div><Text>{t.instruction}</Text></div>
+                {t.sample_answer && (
+                  <div style={{ marginTop: 6, whiteSpace: 'pre-wrap' }}>
+                    <Text type="secondary">Bài mẫu: </Text>
+                    <Text style={{ color: '#166534' }}>{t.sample_answer}</Text>
+                  </div>
+                )}
+              </div>
+            ))}
+          </Space>
+        )}
       </>
     );
   }

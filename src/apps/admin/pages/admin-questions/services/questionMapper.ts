@@ -225,71 +225,82 @@ const buildReading = (v: FormValues): ICreateQuestionPayload[] => {
   ];
 };
 
-// ---------- WRITING (skillId 4) ----------
+// ---------- WRITING (skillId 4) — mỗi part = 1 bản ghi, câu con gói trong extraConfig ----------
 const buildWriting = (v: FormValues): ICreateQuestionPayload[] => {
   const part = str(v.part) || 'part1';
+  const title = str(v.title);
 
+  // P1: 5 câu -> prompts[{ question, sample_answer? }]
   if (part === 'part1') {
-    return arr<string>(v.p1Questions)
-      .filter((q) => q)
-      .map((q) => ({
+    const prompts = arr<{ question: string; sample: string }>(v.p1Questions)
+      .filter((q) => q && q.question)
+      .map((q) => ({ question: q.question, ...(q.sample ? { sample_answer: q.sample } : {}) }));
+    return [
+      {
         skillId: SKILL_ID.writing,
         partNumber: 1,
-        content: q,
-        extraConfig: { word_limit_min: 1, word_limit_max: 5 },
-      }));
+        content: title || 'Word-level Writing',
+        extraConfig: { word_limit_min: 1, word_limit_max: 5, prompts },
+      },
+    ];
   }
 
+  // P2: 1 đề duy nhất (+ sample_answer top-level)
   if (part === 'part2') {
+    const sample = str(v.p2Sample);
     return [
       {
         skillId: SKILL_ID.writing,
         partNumber: 2,
         content: str(v.p2Prompt),
-        extraConfig: { word_limit_min: 20, word_limit_max: 30 },
+        extraConfig: { word_limit_min: 20, word_limit_max: 30, ...(sample ? { sample_answer: sample } : {}) },
       },
     ];
   }
 
+  // P3: 3 câu Member A/B/C -> prompts[{ speaker_name, question, sample_answer? }]
   if (part === 'part3') {
-    return arr<{ member: string; question: string }>(v.p3MemberQuestions)
+    const prompts = arr<{ member: string; question: string; sample: string }>(v.p3MemberQuestions)
       .filter((m) => m && m.question)
-      .map((m) => ({
+      .map((m) => ({ speaker_name: m.member, question: m.question, ...(m.sample ? { sample_answer: m.sample } : {}) }));
+    return [
+      {
         skillId: SKILL_ID.writing,
         partNumber: 3,
-        content: m.question,
-        extraConfig: { word_limit_min: 30, word_limit_max: 40, speaker_name: m.member },
-      }));
+        content: title || 'Social Media Chat',
+        extraConfig: { word_limit_min: 30, word_limit_max: 40, prompts },
+      },
+    ];
   }
 
-  // part4: 2 task (Informal + Formal) cùng question_group_id + context
-  const gid = `wp4-${Date.now()}`;
-  const context = str(v.p4Notice);
+  // P4: 1 bản ghi, context (Notice) chung + tasks[2] (Informal + Formal, kèm sample_answer?)
+  const infSample = str(v.p4InformalSample);
+  const formSample = str(v.p4FormalSample);
   return [
     {
       skillId: SKILL_ID.writing,
       partNumber: 4,
-      content: str(v.p4InformalPrompt),
+      content: title || 'Formal & Informal Writing',
       extraConfig: {
-        question_group_id: gid,
-        context,
-        task_label: 'Task 1',
-        register_type: 'INFORMAL',
-        word_limit_min: 50,
-        word_limit_max: 75,
-      },
-    },
-    {
-      skillId: SKILL_ID.writing,
-      partNumber: 4,
-      content: str(v.p4FormalPrompt),
-      extraConfig: {
-        question_group_id: gid,
-        context,
-        task_label: 'Task 2',
-        register_type: 'FORMAL',
-        word_limit_min: 120,
-        word_limit_max: 150,
+        context: str(v.p4Notice),
+        tasks: [
+          {
+            task_label: 'Task 1',
+            instruction: str(v.p4InformalPrompt),
+            register_type: 'INFORMAL',
+            word_limit_min: 50,
+            word_limit_max: 75,
+            ...(infSample ? { sample_answer: infSample } : {}),
+          },
+          {
+            task_label: 'Task 2',
+            instruction: str(v.p4FormalPrompt),
+            register_type: 'FORMAL',
+            word_limit_min: 120,
+            word_limit_max: 150,
+            ...(formSample ? { sample_answer: formSample } : {}),
+          },
+        ],
       },
     },
   ];

@@ -103,7 +103,7 @@ export const QuestionSlot = styled(Card)<{ $isAnswered: boolean; $status?: 'succ
   border: 1px solid ${props => {
     if (props.$status === 'success') return '#10b981';
     if (props.$status === 'error') return '#ef4444';
-    return props.$isAnswered ? '#2563eb' : 'rgba(0, 0, 0, 0.06)';
+    return props.$isAnswered ? '#1a365d' : 'rgba(0, 0, 0, 0.06)';
   }};
   background: ${props => {
     if (props.$status === 'success') return '#f6fdfa';
@@ -116,7 +116,7 @@ export const QuestionSlot = styled(Card)<{ $isAnswered: boolean; $status?: 'succ
     border-color: ${props => {
       if (props.$status === 'success') return '#10b981';
       if (props.$status === 'error') return '#ef4444';
-      return '#2563eb';
+      return '#1a365d';
     }};
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   }
@@ -198,6 +198,16 @@ export const QuestionLabel = styled.span`
   color: #334155;
   font-weight: 700;
   font-size: 0.95rem;
+`;
+
+export const SlotInner = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+
+  .ant-select {
+    width: 100%;
+  }
 `;
 
 export const CorrectAnswerText = styled.div`

@@ -138,7 +138,7 @@ export const PlacedItemCard = styled.div<{ $status?: 'success' | 'error' | 'defa
   border: 1px solid ${props => {
     if (props.$status === 'success') return '#10b981';
     if (props.$status === 'error') return '#ef4444';
-    return '#3b82f6';
+    return '#1a365d';
   }};
   border-radius: 0.5rem;
   padding: 1rem 1.25rem;
@@ -149,7 +149,7 @@ export const PlacedItemCard = styled.div<{ $status?: 'success' | 'error' | 'defa
   box-shadow: 0 4px 10px rgba(${props => {
     if (props.$status === 'success') return '16, 185, 129';
     if (props.$status === 'error') return '239, 68, 68';
-    return '59, 130, 246';
+    return '26, 54, 93';
   }}, 0.02);
   min-height: 56px;
   cursor: grab;

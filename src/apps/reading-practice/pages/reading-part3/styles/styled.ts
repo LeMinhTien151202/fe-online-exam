@@ -102,7 +102,7 @@ export const StatementCard = styled(Card)<{ $isAnswered: boolean; $status?: 'suc
   border: 1px solid ${props => {
     if (props.$status === 'success') return '#10b981';
     if (props.$status === 'error') return '#ef4444';
-    return props.$isAnswered ? '#2563eb' : 'rgba(0, 0, 0, 0.06)';
+    return props.$isAnswered ? '#1a365d' : 'rgba(0, 0, 0, 0.06)';
   }};
   background: ${props => {
     if (props.$status === 'success') return '#f6fdfa';
@@ -117,7 +117,7 @@ export const StatementCard = styled(Card)<{ $isAnswered: boolean; $status?: 'suc
     border-color: ${props => {
       if (props.$status === 'success') return '#10b981';
       if (props.$status === 'error') return '#ef4444';
-      return '#2563eb';
+      return '#1a365d';
     }};
   }
 
@@ -147,16 +147,16 @@ export const StyledRadioGroup = styled(Radio.Group)`
     }
 
     &:hover {
-      color: #2563eb;
-      border-color: #2563eb !important;
+      color: #1a365d;
+      border-color: #1a365d !important;
     }
   }
 
   .ant-radio-button-wrapper-checked {
-    background-color: #eff6ff !important;
-    color: #2563eb !important;
-    border-color: #2563eb !important;
-    box-shadow: 0 0 0 1px #2563eb;
+    background-color: #eef2f7 !important;
+    color: #1a365d !important;
+    border-color: #1a365d !important;
+    box-shadow: 0 0 0 1px #1a365d;
   }
 `;
 

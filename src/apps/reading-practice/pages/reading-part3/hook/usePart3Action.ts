@@ -1,17 +1,45 @@
 import { message } from 'antd';
-import { useEffect,useState } from 'react';
-import { correctAnswers } from '../services/data';
+import { useEffect, useMemo, useState } from 'react';
+import { useReadingQuestionsQuery } from '../../../services/readingQuery';
+import { mapPart3, Part3Data } from '../../../services/mappers';
 
 export const usePart3Action = () => {
-  const [timeLeft, setTimeLeft] = useState(900); // 15 minutes
+  const { data: res, isLoading } = useReadingQuestionsQuery(3);
+  const list = useMemo(() => res?.data ?? [], [res]);
+  const total = list.length;
+  const [index, setIndex] = useState(0);
+  const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
+  const data: Part3Data | null = useMemo(() => {
+    const q = list[safeIndex];
+    return q ? mapPart3(q) : null;
+  }, [list, safeIndex]);
+
+  const questionCount = data?.questions.length ?? 0;
+  const correctAnswers = data?.correctAnswers ?? {};
+
+  const [timeLeft, setTimeLeft] = useState(900);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const resetForNewQuestion = () => {
+    setAnswers({});
+    setIsSubmitted(false);
+    setTimeLeft(900);
+  };
+  const handleNext = () => {
+    if (safeIndex >= total - 1) return;
+    setIndex(safeIndex + 1);
+    resetForNewQuestion();
+  };
+  const handlePrev = () => {
+    if (safeIndex <= 0) return;
+    setIndex(safeIndex - 1);
+    resetForNewQuestion();
+  };
+
   useEffect(() => {
     if (timeLeft <= 0 || isSubmitted) return;
-    const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
+    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearInterval(timer);
   }, [timeLeft, isSubmitted]);
 
@@ -23,16 +51,14 @@ export const usePart3Action = () => {
 
   const handleRadioChange = (questionId: number, val: string) => {
     if (isSubmitted) return;
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: val
-    }));
+    setAnswers((prev) => ({ ...prev, [questionId]: val }));
   };
 
   const handleSubmit = () => {
     const answeredCount = Object.keys(answers).length;
-    if (answeredCount < 7) {
-      message.warning(`Bạn đã trả lời ${answeredCount}/7 ý kiến. Vui lòng chọn đáp án cho tất cả các câu!`);
+    if (questionCount === 0) return;
+    if (answeredCount < questionCount) {
+      message.warning(`Bạn đã trả lời ${answeredCount}/${questionCount} ý kiến. Vui lòng chọn đáp án cho tất cả các câu!`);
       return;
     }
 
@@ -41,33 +67,38 @@ export const usePart3Action = () => {
       (id) => answers[Number(id)] === correctAnswers[Number(id)]
     ).length;
 
-    // Save progress to local storage
-    const progressPercent = Math.round((correctCount / 7) * 100);
+    const progressPercent = Math.round((correctCount / questionCount) * 100);
     const savedProgress = localStorage.getItem('aptis_reading_progress');
     let nextProgress = { r3: progressPercent };
     if (savedProgress) {
       try {
         nextProgress = { ...JSON.parse(savedProgress), r3: progressPercent };
-      } catch (e) { /* bỏ qua lỗi */ }
+      } catch { /* bỏ qua lỗi */ }
     }
     localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
 
-    message.success(`Chúc mừng! Bạn đã hoàn thành Part 3. Kết quả: ${correctCount}/7 câu đúng.`);
+    message.success(`Chúc mừng! Bạn đã hoàn thành Part 3. Kết quả: ${correctCount}/${questionCount} câu đúng.`);
   };
 
-  const handleRetry = () => {
-    setAnswers({});
-    setIsSubmitted(false);
-    setTimeLeft(900);
-  };
+  const handleRetry = () => resetForNewQuestion();
 
   const answeredCount = Object.keys(answers).length;
-  const progressPercent = Math.round((answeredCount / 7) * 100);
+  const progressPercent = questionCount ? Math.round((answeredCount / questionCount) * 100) : 0;
   const correctCount = Object.keys(correctAnswers).filter(
     (id) => answers[Number(id)] === correctAnswers[Number(id)]
   ).length;
 
   return {
+    isLoading,
+    data,
+    questionCount,
+    correctAnswers,
+    total,
+    currentNumber: total > 0 ? safeIndex + 1 : 0,
+    hasNext: safeIndex < total - 1,
+    hasPrev: safeIndex > 0,
+    handleNext,
+    handlePrev,
     timeLeft,
     answers,
     isSubmitted,

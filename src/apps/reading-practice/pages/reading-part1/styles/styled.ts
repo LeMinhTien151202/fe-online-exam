@@ -145,20 +145,20 @@ export const InlineSentenceSelect = styled(Select)<{ $hasValue?: boolean; $statu
     border-color: ${props => {
       if (props.$status === 'success') return '#10b981';
       if (props.$status === 'error') return '#ef4444';
-      return props.$hasValue ? '#2563eb' : '#cbd5e1';
+      return props.$hasValue ? '#1a365d' : '#cbd5e1';
     }} !important;
-    
+
     background: ${props => {
       if (props.$status === 'success') return '#ecfdf5';
       if (props.$status === 'error') return '#fef2f2';
-      return props.$hasValue ? '#eff6ff' : '#ffffff';
+      return props.$hasValue ? '#eef2f7' : '#ffffff';
     }} !important;
-    
+
     &:hover {
       border-color: ${props => {
         if (props.$status === 'success') return '#059669';
         if (props.$status === 'error') return '#dc2626';
-        return props.$hasValue ? '#1d4ed8' : '#6366f1';
+        return props.$hasValue ? '#0d2245' : '#94a3b8';
       }} !important;
     }
   }
@@ -191,7 +191,7 @@ export const InlineSentenceSelect = styled(Select)<{ $hasValue?: boolean; $statu
     color: ${props => {
       if (props.$status === 'success') return '#059669';
       if (props.$status === 'error') return '#dc2626';
-      return props.$hasValue ? '#2563eb' : '#94a3b8';
+      return props.$hasValue ? '#1a365d' : '#94a3b8';
     }} !important;
     transition: color 0.2s !important;
     pointer-events: none !important;

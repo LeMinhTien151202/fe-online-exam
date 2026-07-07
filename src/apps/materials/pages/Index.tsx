@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
-import { Typography, Drawer, Button } from 'antd';
+import { Typography, Drawer, Button, Spin } from 'antd';
 import {
   FilePdfOutlined,
   FileWordOutlined,
+  FileExcelOutlined,
+  FilePptOutlined,
+  FileImageOutlined,
+  FileZipOutlined,
+  FileTextOutlined,
+  FileOutlined,
+  PlayCircleOutlined,
+  SoundOutlined,
   DownloadOutlined,
   SearchOutlined,
   BellOutlined,
@@ -23,16 +31,32 @@ const { Title, Text } = Typography;
 export const MaterialsPage: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const {
+    isLoading,
     searchQuery,
     setSearchQuery,
     fileTypeFilter,
     setFileTypeFilter,
     activeTab,
     setActiveTab,
+    formatOptions,
     filteredMaterials,
   } = useMaterials();
 
   const tabs = ['Tất cả', 'Ngữ pháp & Từ vựng', 'Đọc', 'Nghe', 'Nói', 'Viết'];
+
+  // Icon theo nhóm định dạng file
+  const kindIcon: Record<string, React.ReactNode> = {
+    pdf: <FilePdfOutlined />,
+    word: <FileWordOutlined />,
+    excel: <FileExcelOutlined />,
+    ppt: <FilePptOutlined />,
+    video: <PlayCircleOutlined />,
+    image: <FileImageOutlined />,
+    audio: <SoundOutlined />,
+    archive: <FileZipOutlined />,
+    text: <FileTextOutlined />,
+    file: <FileOutlined />,
+  };
 
   return (
     <S.MainLayout>
@@ -99,9 +123,10 @@ export const MaterialsPage: React.FC = () => {
                 value={fileTypeFilter}
                 onChange={(value) => setFileTypeFilter(value as string)}
               >
-                <SelectOption value="all">Định dạng file</SelectOption>
-                <SelectOption value="pdf">PDF</SelectOption>
-                <SelectOption value="docx">DOCX (Word)</SelectOption>
+                <SelectOption value="all">Tất cả định dạng</SelectOption>
+                {formatOptions.map((opt) => (
+                  <SelectOption key={opt.value} value={opt.value}>{opt.label}</SelectOption>
+                ))}
               </M.StyledSelect>
             </M.FilterSection>
 
@@ -119,17 +144,17 @@ export const MaterialsPage: React.FC = () => {
             </M.TabBar>
 
             {/* Materials Grid list */}
-            {filteredMaterials.length > 0 ? (
+            {isLoading ? (
+              <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                <Spin size="large" />
+              </div>
+            ) : filteredMaterials.length > 0 ? (
               <M.MaterialsGrid>
                 {filteredMaterials.map((doc) => (
                   <M.MaterialCard key={doc.key}>
                     <M.CardHeader>
-                      <M.FileIconWrapper $format={doc.format === 'pdf' ? 'pdf' : 'word'}>
-                        {doc.format === 'pdf' ? (
-                          <FilePdfOutlined />
-                        ) : (
-                          <FileWordOutlined />
-                        )}
+                      <M.FileIconWrapper $bg={doc.bg} $color={doc.color}>
+                        {kindIcon[doc.kind] ?? <FileOutlined />}
                       </M.FileIconWrapper>
                       <M.CardContent>
                         <M.DocTitle title={doc.name}>{doc.name}</M.DocTitle>
@@ -139,12 +164,15 @@ export const MaterialsPage: React.FC = () => {
 
                     <M.TagRow>
                       <M.SkillTag $skill={doc.skill}>{doc.skill}</M.SkillTag>
-                      <M.FormatTag>{doc.format === 'pdf' ? 'pdf' : 'docx'}</M.FormatTag>
+                      <M.FormatTag>{doc.formatLabel}</M.FormatTag>
                     </M.TagRow>
 
                     <M.CardFooter>
                       <M.FileSize>{doc.size}</M.FileSize>
-                      <M.DownloadBtn title="Tải xuống tài liệu" onClick={(e) => e.stopPropagation()}>
+                      <M.DownloadBtn
+                        title={doc.kind === 'video' ? 'Xem video' : 'Mở / tải tài liệu'}
+                        onClick={() => window.open(doc.fileUrl, '_blank', 'noopener,noreferrer')}
+                      >
                         <DownloadOutlined />
                       </M.DownloadBtn>
                     </M.CardFooter>

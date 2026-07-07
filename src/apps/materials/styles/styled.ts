@@ -138,7 +138,7 @@ export const CardHeader = styled.div`
   margin-bottom: 1rem;
 `;
 
-export const FileIconWrapper = styled.div<{ $format: 'pdf' | 'word' }>`
+export const FileIconWrapper = styled.div<{ $bg: string; $color: string }>`
   width: 2.75rem;
   height: 2.75rem;
   border-radius: 0.5rem;
@@ -146,8 +146,8 @@ export const FileIconWrapper = styled.div<{ $format: 'pdf' | 'word' }>`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: ${(props) => (props.$format === 'pdf' ? '#fef2f2' : '#eff6ff')};
-  color: ${(props) => (props.$format === 'pdf' ? '#ef4444' : '#1a365d')}; /* Màu Navy thay thế màu xanh dương nhạt */
+  background: ${(props) => props.$bg};
+  color: ${(props) => props.$color};
   font-size: 1.5rem;
 `;
 

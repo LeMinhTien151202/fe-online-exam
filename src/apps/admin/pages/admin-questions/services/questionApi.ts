@@ -32,12 +32,14 @@ export const questionApi = {
     axiosInstance.delete<{ message: string }, { message: string }>(`/questions/${id}`),
 
   // multipart/form-data, field `file`; query folder_type=images|audio
+  // KHÔNG tự set 'Content-Type': để null cho axios tự sinh 'multipart/form-data; boundary=...'
+  // (nếu ép 'multipart/form-data' thủ công sẽ thiếu boundary -> server trả 400).
   upload: (file: File, folderType: FileFolderType, prefix?: string) => {
     const formData = new FormData();
     formData.append('file', file);
     return axiosInstance.post<IUploadedFile, IUploadedFile>('/files/upload', formData, {
       params: { folder_type: folderType, ...(prefix ? { prefix } : {}) },
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': null },
     });
   },
 

@@ -1,20 +1,27 @@
-import { CheckCircleOutlined,ClockCircleOutlined,LeftOutlined,RollbackOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined,ClockCircleOutlined,LeftOutlined,RightOutlined,RollbackOutlined } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { Alert,Badge,Progress,Select,Space,Typography } from 'antd';
+import { Badge,Button,Empty,Progress,Select,Space,Spin,Tag } from 'antd';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { usePart4Action } from '../hook/usePart4Action';
-import { correctAnswers,headings,paragraphs } from '../services/data';
 import * as S from '../styles/styled';
-
-const { Title, Text, Paragraph } = Typography;
 
 export const Part4Page: React.FC = () => {
   const navigate = useNavigate();
   const {
-    timeLeft,
+    isLoading,
+    data,
+    paragraphCount,
+    correctAnswers,
+    total,
+    currentNumber,
+    hasNext,
+    hasPrev,
+    handleNext,
+    handlePrev,
     answers,
+    timeLeft,
     isSubmitted,
     handleSelectChange,
     handleSubmit,
@@ -24,6 +31,9 @@ export const Part4Page: React.FC = () => {
     correctCount,
     formatTime
   } = usePart4Action();
+
+  const paragraphs = data?.paragraphs ?? [];
+  const headings = data?.headings ?? [];
 
   return (
     <HomeS.MainLayout>
@@ -36,16 +46,24 @@ export const Part4Page: React.FC = () => {
                 <LeftOutlined /> Quay lại danh sách
               </S.BackLink>
               <S.HeaderTitle>Part 4: Long Text Comprehension</S.HeaderTitle>
+              {total > 0 && (
+                <Tag color="blue" style={{ fontWeight: 600 }}>Câu {currentNumber}/{total}</Tag>
+              )}
+              {isSubmitted && paragraphCount > 0 && (
+                <Tag color={correctCount >= Math.ceil(paragraphCount * 0.7) ? 'success' : 'warning'} style={{ fontWeight: 600 }}>
+                  Kết quả: {correctCount}/{paragraphCount}
+                </Tag>
+              )}
             </Space>
-            
+
             <Space size="large" className="flex items-center">
-              <Progress 
-                type="circle" 
-                percent={progressPercent} 
-                size={40} 
-                strokeColor="#10b981" 
+              <Progress
+                type="circle"
+                percent={progressPercent}
+                size={40}
+                strokeColor="#10b981"
                 trailColor="rgba(255,255,255,0.2)"
-                format={() => <S.ProgressText>{answeredCount}/7</S.ProgressText>}
+                format={() => <S.ProgressText>{answeredCount}/{paragraphCount || 0}</S.ProgressText>}
               />
               <S.TimerWrapper>
                 <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
@@ -54,28 +72,17 @@ export const Part4Page: React.FC = () => {
             </Space>
           </S.Header>
 
-          {isSubmitted && (
-            <S.AlertOuterWrapper>
-              <S.AlertWrapper>
-                <Alert
-                  message={
-                    <span className="font-semibold">
-                      Kết quả làm bài: {correctCount}/7 câu đúng ({Math.round(correctCount / 7 * 100)}%)
-                    </span>
-                  }
-                  description="Các tiêu đề đúng có viền xanh lá. Các tiêu đề sai có viền đỏ kèm đáp án đúng."
-                  type={correctCount >= 5 ? "success" : "warning"}
-                  showIcon
-                  closable
-                />
-              </S.AlertWrapper>
-            </S.AlertOuterWrapper>
-          )}
-
+          {isLoading ? (
+            <div style={{ textAlign: 'center', padding: '3rem' }}><Spin size="large" /></div>
+          ) : !data ? (
+            <div style={{ padding: '3rem' }}>
+              <Empty description="Chưa có câu hỏi cho phần này. Vui lòng quay lại sau." />
+            </div>
+          ) : (
           <S.MainContent>
             <S.ScrollableColumn>
               <S.SectionHeader>
-                <Badge status="processing" text={<S.SectionTitle>VĂN BẢN ĐỌC HIỂU (7 ĐOẠN VĂN)</S.SectionTitle>} />
+                <Badge status="processing" text={<S.SectionTitle>VĂN BẢN ĐỌC HIỂU ({paragraphCount} ĐOẠN VĂN)</S.SectionTitle>} />
               </S.SectionHeader>
 
               {paragraphs.map(p => (
@@ -91,25 +98,25 @@ export const Part4Page: React.FC = () => {
             <S.ScrollableColumn>
               <S.QuestionHeader>
                 <S.SectionTitle>GÁN TIÊU ĐỀ CHO TỪNG ĐOẠN VĂN</S.SectionTitle>
-                <S.SectionSubtitle>{answeredCount}/7 Đã gán</S.SectionSubtitle>
+                <S.SectionSubtitle>{answeredCount}/{paragraphCount} Đã gán</S.SectionSubtitle>
               </S.QuestionHeader>
 
-              {[1, 2, 3, 4, 5, 6, 7].map((num) => {
+              {paragraphs.map(({ num }) => {
                 const isAnswered = !!answers[num];
                 const isCorrect = answers[num] === correctAnswers[num];
                 return (
-                  <S.QuestionSlot 
-                    key={num} 
+                  <S.QuestionSlot
+                    key={num}
                     $isAnswered={isAnswered}
                     $status={isSubmitted ? (isCorrect ? 'success' : 'error') : 'default'}
                   >
-                    <div className="flex flex-col gap-2">
+                    <S.SlotInner>
                       <S.QuestionLabel>
                         Đoạn văn {num}:
                       </S.QuestionLabel>
                       <Select
                         placeholder="Chọn tiêu đề phù hợp từ Heading Bank..."
-                        className="w-full"
+                        style={{ width: '100%' }}
                         value={answers[num]}
                         onChange={(val) => handleSelectChange(num, val as string)}
                         size="large"
@@ -128,22 +135,28 @@ export const Part4Page: React.FC = () => {
                           Đáp án đúng: {headings.find(h => h.value === correctAnswers[num])?.label}
                         </S.CorrectAnswerText>
                       )}
-                    </div>
+                    </S.SlotInner>
                   </S.QuestionSlot>
                 );
               })}
             </S.ScrollableColumn>
           </S.MainContent>
+          )}
 
           <S.Footer>
-            <S.FooterButton 
-              type="default" 
-              icon={<LeftOutlined />} 
-              size="large"
-              onClick={() => navigate({ to: '/reading' })}
-            >
-              Quay lại danh sách
-            </S.FooterButton>
+            <Space size="middle">
+              <S.FooterButton
+                type="default"
+                icon={<LeftOutlined />}
+                size="large"
+                onClick={() => navigate({ to: '/reading' })}
+              >
+                Quay lại danh sách
+              </S.FooterButton>
+              {hasPrev && (
+                <Button size="large" onClick={handlePrev}>Câu trước</Button>
+              )}
+            </Space>
 
             <Space size="middle">
               {isSubmitted ? (
@@ -156,14 +169,20 @@ export const Part4Page: React.FC = () => {
                   Làm lại
                 </S.RetryButton>
               ) : (
-                <S.SubmitButton 
-                  type="primary" 
-                  icon={<CheckCircleOutlined />} 
+                <S.SubmitButton
+                  type="primary"
+                  icon={<CheckCircleOutlined />}
                   size="large"
                   onClick={handleSubmit}
+                  disabled={!data}
                 >
                   Nộp bài
                 </S.SubmitButton>
+              )}
+              {hasNext && (
+                <Button type="primary" size="large" icon={<RightOutlined />} onClick={handleNext}>
+                  Câu tiếp theo
+                </Button>
               )}
             </Space>
           </S.Footer>

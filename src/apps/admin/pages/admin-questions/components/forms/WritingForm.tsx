@@ -12,6 +12,7 @@ SaveOutlined,
 UserOutlined
 } from '@ant-design/icons';
 import { Button,Card,Col,Form,Input,Row,Select,Space,Steps,Typography } from 'antd';
+import type { FormInstance } from 'antd';
 import React,{ useState } from 'react';
 import { ADMIN_COLORS } from '../../../../constants';
 
@@ -19,7 +20,7 @@ const { TextArea } = Input;
 const { Text } = Typography;
 
 interface WritingFormProps {
-    form: any;
+    form: FormInstance;
     part: string;
     onSubmit: () => void;
 }
@@ -38,21 +39,19 @@ const WritingForm: React.FC<WritingFormProps> = ({ form, part, onSubmit }) => {
     const activePart = watchedPart || part;
 
     const isPart1 = activePart === 'part1';
-    const isPart2 = activePart === 'part2';
     const isPart3 = activePart === 'part3';
-    const isPart4 = activePart === 'part4';
 
     // Initialize fields when part changes
     React.useEffect(() => {
         const values = form.getFieldsValue();
         if (isPart1 && (!values.p1Questions || values.p1Questions.length !== 5)) {
-            form.setFieldsValue({ p1Questions: Array(5).fill('') });
+            form.setFieldsValue({ p1Questions: Array.from({ length: 5 }, () => ({ question: '', sample: '' })) });
         } else if (isPart3 && (!values.p3MemberQuestions || values.p3MemberQuestions.length !== 3)) {
             form.setFieldsValue({
                 p3MemberQuestions: [
-                    { member: 'Member A', question: '' },
-                    { member: 'Member B', question: '' },
-                    { member: 'Member C', question: '' }
+                    { member: 'Member A', question: '', sample: '' },
+                    { member: 'Member B', question: '', sample: '' },
+                    { member: 'Member C', question: '', sample: '' }
                 ]
             });
         }
@@ -77,9 +76,14 @@ const WritingForm: React.FC<WritingFormProps> = ({ form, part, onSubmit }) => {
                     <Row gutter={[16, 0]}>
                         {fields.map(({ key, name, ...restField }) => (
                             <Col span={24} key={key}>
-                                <Form.Item {...restField} name={name} label={`Câu hỏi #${name + 1}`} rules={[{ required: true }]}>
-                                    <Input placeholder="Ví dụ: What is your favorite time of the year?" />
-                                </Form.Item>
+                                <div style={{ padding: '12px 16px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '12px' }}>
+                                    <Form.Item {...restField} name={[name, 'question']} label={`Câu hỏi #${name + 1}`} rules={[{ required: true, message: 'Nhập câu hỏi' }]} style={{ marginBottom: 8 }}>
+                                        <Input placeholder="Ví dụ: What is your favorite time of the year?" />
+                                    </Form.Item>
+                                    <Form.Item {...restField} name={[name, 'sample']} label="Đáp án mẫu (tuỳ chọn)" style={{ marginBottom: 0 }}>
+                                        <Input placeholder="Ví dụ: autumn" />
+                                    </Form.Item>
+                                </div>
                             </Col>
                         ))}
                     </Row>
@@ -95,6 +99,9 @@ const WritingForm: React.FC<WritingFormProps> = ({ form, part, onSubmit }) => {
             </Text>
             <Form.Item name="p2Prompt" label="Đề bài Part 2" rules={[{ required: true }]}>
                 <TextArea rows={5} placeholder="Ví dụ: Please write about your interests and why you want to join our Travel Club." />
+            </Form.Item>
+            <Form.Item name="p2Sample" label="Đáp án mẫu (tuỳ chọn)">
+                <TextArea rows={4} placeholder="Nhập bài mẫu tham khảo (20-30 từ)..." />
             </Form.Item>
         </Card>
     );
@@ -116,8 +123,11 @@ const WritingForm: React.FC<WritingFormProps> = ({ form, part, onSubmit }) => {
                                             <Input disabled style={{ width: '120px', fontWeight: 'bold' }} />
                                         </Form.Item>
                                     </Space>
-                                    <Form.Item {...restField} name={[name, 'question']} label="Câu hỏi thảo luận" rules={[{ required: true }]} style={{ marginBottom: 0 }}>
+                                    <Form.Item {...restField} name={[name, 'question']} label="Câu hỏi thảo luận" rules={[{ required: true }]} style={{ marginBottom: 8 }}>
                                         <TextArea autoSize={{ minRows: 2 }} placeholder="Nhập câu hỏi từ thành viên này..." />
+                                    </Form.Item>
+                                    <Form.Item {...restField} name={[name, 'sample']} label="Đáp án mẫu (tuỳ chọn)" style={{ marginBottom: 0 }}>
+                                        <TextArea autoSize={{ minRows: 2 }} placeholder="Nhập câu trả lời mẫu (30-40 từ)..." />
                                     </Form.Item>
                                 </div>
                             </Col>
@@ -143,6 +153,9 @@ const WritingForm: React.FC<WritingFormProps> = ({ form, part, onSubmit }) => {
                         <Form.Item name="p4InformalPrompt" label="Yêu cầu cụ thể cho Task 1" rules={[{ required: true }]}>
                             <TextArea rows={4} placeholder="Ví dụ: Write an email to your friend..." />
                         </Form.Item>
+                        <Form.Item name="p4InformalSample" label="Bài mẫu (tuỳ chọn)">
+                            <TextArea rows={4} placeholder="Nhập bài email thân mật mẫu (50-75 từ)..." />
+                        </Form.Item>
                     </Card>
                 </Col>
                 <Col span={12}>
@@ -150,6 +163,9 @@ const WritingForm: React.FC<WritingFormProps> = ({ form, part, onSubmit }) => {
                         <Text type="secondary" style={{ display: 'block', marginBottom: '16px' }}>Formal (120-150 từ).</Text>
                         <Form.Item name="p4FormalPrompt" label="Yêu cầu cụ thể cho Task 2" rules={[{ required: true }]}>
                             <TextArea rows={4} placeholder="Ví dụ: Write an email to the club manager..." />
+                        </Form.Item>
+                        <Form.Item name="p4FormalSample" label="Bài mẫu (tuỳ chọn)">
+                            <TextArea rows={4} placeholder="Nhập bài email trang trọng mẫu (120-150 từ)..." />
                         </Form.Item>
                     </Card>
                 </Col>
