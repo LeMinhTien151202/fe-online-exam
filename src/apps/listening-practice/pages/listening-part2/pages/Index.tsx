@@ -1,27 +1,30 @@
 import React from 'react';
-import { Space, Progress, Button } from 'antd';
-import { useNavigate } from '@tanstack/react-router';
-import { 
-  LeftOutlined, 
+import { Space, Progress, Button, Spin, Empty, Tag } from 'antd';
+import {
+  LeftOutlined,
   RightOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
-  FileTextOutlined
+  ClockCircleOutlined
 } from '@ant-design/icons';
 import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import { AudioPlayer } from '../../../components/AudioPlayer';
 import { usePart2Action } from '../hook/usePart2Action';
-import { options, transcriptText } from '../services/data';
 
 export const Part2Page: React.FC = () => {
-  const navigate = useNavigate();
   const {
+    isLoading,
+    hasData,
+    setCount,
+    currentSetNumber,
+    hasNext,
+    hasPrev,
+    handleNext,
+    handlePrev,
     timeLeft,
-    showTranscript,
-    setShowTranscript,
-    answers,
+    currentSet,
+    getAnswer,
     handleSelectChange,
     handleSubmit,
     answeredCount,
@@ -40,8 +43,11 @@ export const Part2Page: React.FC = () => {
                 <LeftOutlined /> Quay lại
               </S.BackLink>
               <span style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white' }}>
-                Part 2: Question 14
+                Part 2: Information Matching
               </span>
+              {setCount > 1 && (
+                <Tag color="blue" style={{ fontWeight: 600 }}>Bài {currentSetNumber}/{setCount}</Tag>
+              )}
             </Space>
 
             <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
@@ -51,7 +57,7 @@ export const Part2Page: React.FC = () => {
                 size={40}
                 strokeColor="#10b981"
                 trailColor="rgba(255,255,255,0.2)"
-                format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{answeredCount}/4</span>}
+                format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{answeredCount}/{currentSet.speakerCount || 0}</span>}
               />
               <S.TimerWrapper>
                 <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
@@ -61,51 +67,48 @@ export const Part2Page: React.FC = () => {
           </S.Header>
 
           <S.MainContent>
+            {isLoading ? (
+              <div style={{ textAlign: 'center', padding: '3rem', width: '100%' }}><Spin size="large" /></div>
+            ) : !hasData ? (
+              <div style={{ padding: '3rem', width: '100%' }}>
+                <Empty description="Chưa có câu hỏi cho phần này. Vui lòng quay lại sau." />
+              </div>
+            ) : (
             <S.ContentCard>
               <S.TitleArea>
-                <h2>Listening To Music</h2>
+                <h2>Information Matching</h2>
                 <div className="subtitle">
-                  Part 2 • Question 1 of 14
+                  Part 2 • {currentSet.speakerCount} người
                 </div>
               </S.TitleArea>
 
-              <AudioPlayer />
+              <AudioPlayer src={currentSet.mediaUrl} />
 
               <S.InstructionText>
-                Four people are talking about music habits. Complete the sentences below.
+                {currentSet.instruction}
               </S.InstructionText>
 
               <div style={{ marginTop: '2rem' }}>
-                {['Person 1', 'Person 2', 'Person 3', 'Person 4'].map((person, index) => (
-                  <S.PersonRow key={index}>
-                    <div className="person-label">{person}</div>
-                    <div className="person-select">
-                      <S.StyledSelect
-                        placeholder="Select option"
-                        onChange={(val) => handleSelectChange(person, val as string)}
-                        value={answers[person]}
-                        $hasValue={!!answers[person]}
-                        options={options}
-                      />
-                    </div>
-                  </S.PersonRow>
-                ))}
+                {Array.from({ length: currentSet.speakerCount }, (_, i) => {
+                  const speaker = i + 1;
+                  return (
+                    <S.PersonRow key={speaker}>
+                      <div className="person-label">Người {speaker}</div>
+                      <div className="person-select">
+                        <S.StyledSelect
+                          placeholder="Chọn đáp án"
+                          onChange={(val) => handleSelectChange(speaker, val as string)}
+                          value={getAnswer(speaker)}
+                          $hasValue={!!getAnswer(speaker)}
+                          options={currentSet.options}
+                        />
+                      </div>
+                    </S.PersonRow>
+                  );
+                })}
               </div>
-
-              <S.TranscriptButtonWrapper>
-                <Button 
-                  icon={<FileTextOutlined />} 
-                  onClick={() => setShowTranscript(!showTranscript)}
-                >
-                  {showTranscript ? 'Ẩn Transcript' : 'Hiện Transcript'}
-                </Button>
-              </S.TranscriptButtonWrapper>
-
-              {showTranscript && (
-                <S.TranscriptBox dangerouslySetInnerHTML={{ __html: transcriptText }} />
-              )}
-
             </S.ContentCard>
+            )}
           </S.MainContent>
 
           <S.Footer>
@@ -114,9 +117,9 @@ export const Part2Page: React.FC = () => {
               icon={<LeftOutlined />}
               size="large"
               style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', border: '1px solid #e2e8f0', color: '#64748b' }}
-              onClick={() => navigate({ to: '/listening/part/1' })}
+              onClick={handlePrev}
             >
-              Quay lại (Part 1)
+              {hasPrev ? 'Bài trước' : 'Danh sách'}
             </Button>
 
             <Space size="middle">
@@ -136,21 +139,23 @@ export const Part2Page: React.FC = () => {
               >
                 Nộp bài
               </Button>
-              <Button
-                type="primary"
-                size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#2563eb',
-                  borderColor: '#2563eb',
-                  padding: '0 1.5rem',
-                  boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
-                }}
-                onClick={() => navigate({ to: '/listening/part/3' })}
-              >
-                Tiếp theo (Part 3) <RightOutlined style={{ fontSize: '12px' }} />
-              </Button>
+              {hasNext && (
+                <Button
+                  type="primary"
+                  size="large"
+                  style={{
+                    borderRadius: '2rem',
+                    fontWeight: 600,
+                    background: '#2563eb',
+                    borderColor: '#2563eb',
+                    padding: '0 1.5rem',
+                    boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
+                  }}
+                  onClick={handleNext}
+                >
+                  Bài tiếp theo <RightOutlined style={{ fontSize: '12px' }} />
+                </Button>
+              )}
             </Space>
           </S.Footer>
         </S.PageContainer>

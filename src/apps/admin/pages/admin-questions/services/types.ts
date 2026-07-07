@@ -157,12 +157,17 @@ export interface EssayConfig {
   tasks?: EssayTask[]; // Writing P4 (2 task)
 }
 
+// Speaking: câu con trong P2/P3/P4 (gói cả part vào 1 bản ghi)
+export interface RecordQuestion {
+  question: string;
+  sample_answer?: string;
+}
 export interface RecordConfig {
   response_time_seconds: 30 | 45 | 120;
   prep_time_seconds: 0 | 60;
   image_count: 0 | 1 | 2;
   image_urls?: string[];
-  question_group_id?: string;
+  questions?: RecordQuestion[]; // Speaking P2/P3/P4 (P1 không có → tách lẻ)
 }
 
 export type QuestionExtraConfig =

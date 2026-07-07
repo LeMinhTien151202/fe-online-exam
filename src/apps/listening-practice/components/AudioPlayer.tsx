@@ -39,14 +39,26 @@ const StatusText = styled.span`
   }
 `;
 
-export const AudioPlayer: React.FC = () => {
+interface AudioPlayerProps {
+  src?: string | null;
+}
+
+export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src }) => {
+  // Có URL thật -> phát audio thật; không có -> giữ nút giả (mock)
+  if (src) {
+    return (
+      <PlayerWrapper>
+        <audio src={src} controls style={{ width: '100%' }} />
+      </PlayerWrapper>
+    );
+  }
   return (
     <PlayerWrapper>
       <PlayButton icon={<CaretRightOutlined />}>
         Play
       </PlayButton>
       <StatusText>
-        Press Play to listen <strong>(Listened: 0/2 times)</strong>
+        Press Play to listen <strong>(Chưa có audio)</strong>
       </StatusText>
     </PlayerWrapper>
   );

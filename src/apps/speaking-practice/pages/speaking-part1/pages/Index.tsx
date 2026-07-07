@@ -1,5 +1,5 @@
 import React from 'react';
-import { Space, Progress, Button, Select } from 'antd';
+import { Space, Progress, Button, Select, Spin, Empty } from 'antd';
 import { 
   LeftOutlined, 
   RightOutlined,
@@ -17,6 +17,9 @@ import { usePart1 } from '../hook/usePart1';
 
 export const Part1Page: React.FC = () => {
   const {
+    isLoading,
+    hasData,
+    hasNext,
     timeLeft,
     currentQuestionIndex,
     setCurrentQuestionIndex,
@@ -68,6 +71,13 @@ export const Part1Page: React.FC = () => {
           </S.Header>
 
           <S.MainContent>
+            {isLoading ? (
+              <div style={{ textAlign: 'center', padding: '3rem', width: '100%' }}><Spin size="large" /></div>
+            ) : !hasData ? (
+              <div style={{ padding: '3rem', width: '100%' }}>
+                <Empty description="Chưa có câu hỏi cho phần này. Vui lòng quay lại sau." />
+              </div>
+            ) : (
             <S.ContentGrid>
               <S.LeftColumn>
                 <S.ContentCard>
@@ -102,7 +112,7 @@ export const Part1Page: React.FC = () => {
                               </div>
                             )
                           }))}
-                          optionRender={(option) => (option.data as any).labelNode}
+                          optionRender={(option) => (option.data as { labelNode?: React.ReactNode }).labelNode}
                         />
                       </div>
                     </div>
@@ -124,6 +134,7 @@ export const Part1Page: React.FC = () => {
                   onCompleted={handleRecordComplete}
                 />
                 {/* Collapsible Sample Answer */}
+                {currentQuestion.sampleAnswers.length > 0 && (
                 <S.CollapsibleWrapper>
                   <S.CollapsibleHeader onClick={() => setShowSampleAnswer(!showSampleAnswer)}>
                     <span>
@@ -158,8 +169,10 @@ export const Part1Page: React.FC = () => {
                     </S.CollapsibleBody>
                   )}
                 </S.CollapsibleWrapper>
+                )}
               </S.RightColumn>
             </S.ContentGrid>
+            )}
           </S.MainContent>
 
           <S.Footer>
@@ -190,21 +203,23 @@ export const Part1Page: React.FC = () => {
               >
                 Nộp bài
               </Button>
-              <Button
-                type="primary"
-                size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#2563eb',
-                  borderColor: '#2563eb',
-                  padding: '0 1.5rem',
-                  boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
-                }}
-                onClick={handleNext}
-              >
-                {currentQuestionIndex < mockQuestions.length ? 'Câu tiếp theo' : 'Tiếp theo (Part 2)'} <RightOutlined style={{ fontSize: '12px' }} />
-              </Button>
+              {hasNext && (
+                <Button
+                  type="primary"
+                  size="large"
+                  style={{
+                    borderRadius: '2rem',
+                    fontWeight: 600,
+                    background: '#2563eb',
+                    borderColor: '#2563eb',
+                    padding: '0 1.5rem',
+                    boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
+                  }}
+                  onClick={handleNext}
+                >
+                  Câu tiếp theo <RightOutlined style={{ fontSize: '12px' }} />
+                </Button>
+              )}
             </Space>
           </S.Footer>
         </S.PageContainer>

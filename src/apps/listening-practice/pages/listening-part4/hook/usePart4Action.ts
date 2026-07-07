@@ -1,19 +1,21 @@
-import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
-import { useEffect,useState } from 'react';
-import { mockGroups } from '../services/data';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { useListeningQuestionsQuery } from '../../../services/listeningQuery';
+import { mapLPart4 } from '../../../services/mappers';
 
 export const usePart4Action = () => {
   const navigate = useNavigate();
-  const [timeLeft, setTimeLeft] = useState(9 * 60 + 15); // 09:15 mock
-  const [showTranscript, setShowTranscript] = useState(false);
-  const [activeQuestion, setActiveQuestion] = useState<number>(16);
+  const [timeLeft, setTimeLeft] = useState(9 * 60 + 15);
+  const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
+  const { data: res, isLoading } = useListeningQuestionsQuery(4);
+  const groups = useMemo(() => mapLPart4(res?.data ?? []), [res]);
+  const groupCount = groups.length;
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
+    const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -23,59 +25,45 @@ export const usePart4Action = () => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  const safeGroup = groupCount > 0 ? Math.min(currentGroupIndex, groupCount - 1) : 0;
+  const currentGroup = groups[safeGroup] ?? { id: 0, title: '', instruction: '', mediaUrl: null, subQuestions: [] };
+
   const handleSelectAnswer = (subQuestionId: string, answer: string) => {
-    setAnswers(prev => ({ ...prev, [subQuestionId]: answer }));
+    setAnswers((prev) => ({ ...prev, [subQuestionId]: answer }));
   };
 
-  const handleNext = () => {
-    if (activeQuestion === 16) {
-      setActiveQuestion(17);
-      setShowTranscript(false);
-    } else {
-      handleSubmit();
-    }
-  };
-
-  const handleBack = () => {
-    if (activeQuestion === 17) {
-      setActiveQuestion(16);
-      setShowTranscript(false);
-    } else {
-      navigate({ to: '/listening/part/3' });
-    }
-  };
+  const handleNext = () => { if (safeGroup < groupCount - 1) setCurrentGroupIndex(safeGroup + 1); };
+  const handlePrev = () => { if (safeGroup > 0) setCurrentGroupIndex(safeGroup - 1); else navigate({ to: '/listening' }); };
 
   const handleSubmit = () => {
     const saved = localStorage.getItem('aptis_listening_progress');
     let progressObj: Record<string, number> = {};
-    if (saved) {
-      try {
-        progressObj = JSON.parse(saved);
-      } catch (e) { /* bỏ qua lỗi */ }
-    }
+    if (saved) { try { progressObj = JSON.parse(saved); } catch { /* bỏ qua lỗi */ } }
     progressObj['l4'] = 100;
     localStorage.setItem('aptis_listening_progress', JSON.stringify(progressObj));
-
-    message.success('Đã nộp bài Part 4 và hoàn thành Listening!');
-    navigate({ to: '/listening' });
+    message.success('Đã ghi nhận câu trả lời! Bạn có thể luyện bài tiếp theo.');
   };
 
-  const answeredCount = Object.keys(answers).length;
-  const progressPercent = (answeredCount / 4) * 100;
-  const currentGroup = mockGroups.find(g => g.id === activeQuestion) || mockGroups[0];
+  const totalSub = currentGroup.subQuestions.length;
+  let answeredCount = 0;
+  currentGroup.subQuestions.forEach((sq) => { if (answers[sq.id]) answeredCount++; });
+  const progressPercent = totalSub > 0 ? (answeredCount / totalSub) * 100 : 0;
 
   return {
+    isLoading,
+    hasData: groupCount > 0,
+    groupCount,
+    currentGroupNumber: safeGroup + 1,
+    hasNext: safeGroup < groupCount - 1,
+    hasPrev: safeGroup > 0,
+    handleNext,
+    handlePrev,
     timeLeft,
-    showTranscript,
-    setShowTranscript,
-    activeQuestion,
-    setActiveQuestion,
     answers,
     handleSelectAnswer,
-    handleNext,
-    handleBack,
     handleSubmit,
     answeredCount,
+    totalSub,
     progressPercent,
     currentGroup,
     formatTime

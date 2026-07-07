@@ -3,10 +3,11 @@ CheckCircleOutlined,
 ClockCircleOutlined,
 DownOutlined,
 LeftOutlined,
+RightOutlined,
 UnlockOutlined,
 UpOutlined
 } from '@ant-design/icons';
-import { Button,Progress,Space } from 'antd';
+import { Button,Empty,Progress,Space,Spin,Tag } from 'antd';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
@@ -16,13 +17,18 @@ import * as S from '../styles/styled';
 
 export const Part4Page: React.FC = () => {
   const {
+    isLoading,
+    hasData,
+    hasNext,
+    setCount,
+    currentSetNumber,
     timeLeft,
-    answers,
     showSampleAnswer,
     setShowSampleAnswer,
     activeSampleIdx,
     setActiveSampleIdx,
     formatTime,
+    handleNext,
     handleBack,
     handleSubmit,
     handleRecordComplete,
@@ -44,6 +50,9 @@ export const Part4Page: React.FC = () => {
               <span style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white' }}>
                 Part 4: Abstract Topic (Band B2 Decisive)
               </span>
+              {setCount > 1 && (
+                <Tag color="blue" style={{ fontWeight: 600 }}>Bộ {currentSetNumber}/{setCount}</Tag>
+              )}
             </Space>
 
             <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
@@ -63,6 +72,13 @@ export const Part4Page: React.FC = () => {
           </S.Header>
 
           <S.MainContent>
+            {isLoading ? (
+              <div style={{ textAlign: 'center', padding: '3rem', width: '100%' }}><Spin size="large" /></div>
+            ) : !hasData ? (
+              <div style={{ padding: '3rem', width: '100%' }}>
+                <Empty description="Chưa có câu hỏi cho phần này. Vui lòng quay lại sau." />
+              </div>
+            ) : (
             <S.ContentGrid>
               <S.LeftColumn>
                 <S.ContentCard>
@@ -101,6 +117,7 @@ export const Part4Page: React.FC = () => {
                   onCompleted={handleRecordComplete}
                 />
                 {/* Collapsible Sample Answer */}
+                {currentSet.sampleAnswers.length > 0 && (
                 <S.CollapsibleWrapper>
                   <S.CollapsibleHeader onClick={() => setShowSampleAnswer(!showSampleAnswer)}>
                     <span>
@@ -135,8 +152,10 @@ export const Part4Page: React.FC = () => {
                     </S.CollapsibleBody>
                   )}
                 </S.CollapsibleWrapper>
+                )}
               </S.RightColumn>
             </S.ContentGrid>
+            )}
           </S.MainContent>
 
           <S.Footer>
@@ -165,8 +184,25 @@ export const Part4Page: React.FC = () => {
                 }}
                 onClick={handleSubmit}
               >
-                Nộp toàn bộ bài thi
+                Nộp bài
               </Button>
+              {hasNext && (
+                <Button
+                  type="primary"
+                  size="large"
+                  style={{
+                    borderRadius: '2rem',
+                    fontWeight: 600,
+                    background: '#2563eb',
+                    borderColor: '#2563eb',
+                    padding: '0 1.5rem',
+                    boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
+                  }}
+                  onClick={handleNext}
+                >
+                  Bộ tiếp theo <RightOutlined style={{ fontSize: '12px' }} />
+                </Button>
+              )}
             </Space>
           </S.Footer>
         </S.PageContainer>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Space, Progress, Button } from 'antd';
+import { Space, Progress, Button, Spin, Empty, Tag } from 'antd';
 import { 
   LeftOutlined, 
   RightOutlined,
@@ -17,9 +17,14 @@ import { usePart2 } from '../hook/usePart2';
 
 export const Part2Page: React.FC = () => {
   const {
+    isLoading,
+    hasData,
+    hasNext,
+    setCount,
+    currentSetNumber,
+    isSubDone,
     timeLeft,
     currentSubIndex,
-    answers,
     showSampleAnswer,
     setShowSampleAnswer,
     activeSampleIdx,
@@ -50,6 +55,9 @@ export const Part2Page: React.FC = () => {
               <span style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white' }}>
                 Part 2: Describe, Express Opinion & Explain
               </span>
+              {setCount > 1 && (
+                <Tag color="blue" style={{ fontWeight: 600 }}>Bộ {currentSetNumber}/{setCount}</Tag>
+              )}
             </Space>
 
             <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
@@ -69,14 +77,21 @@ export const Part2Page: React.FC = () => {
           </S.Header>
 
           <S.MainContent>
+            {isLoading ? (
+              <div style={{ textAlign: 'center', padding: '3rem', width: '100%' }}><Spin size="large" /></div>
+            ) : !hasData ? (
+              <div style={{ padding: '3rem', width: '100%' }}>
+                <Empty description="Chưa có câu hỏi cho phần này. Vui lòng quay lại sau." />
+              </div>
+            ) : (
             <S.ContentGrid>
               <S.LeftColumn>
                 <S.ContentCard>
                   <S.TitleArea>
                     <div>
-                      <h2>Miêu tả tranh và trả lời 2 câu hỏi</h2>
+                      <h2>Miêu tả tranh và trả lời câu hỏi</h2>
                       <div className="subtitle">
-                        Speaking Part 2 • 3 Questions
+                        Speaking Part 2 • {totalSubQuestions} Questions
                       </div>
                     </div>
                   </S.TitleArea>
@@ -88,16 +103,16 @@ export const Part2Page: React.FC = () => {
 
                   {/* Sub-tabs inside the Set */}
                   <S.SubTabContainer>
-                    {[1, 2, 3].map((idx) => {
-                      const isTabDone = !!answers[`1-${idx}`];
+                    {currentSet.questions.map((_, i) => {
+                      const idx = i + 1;
                       return (
-                        <S.SubTab 
+                        <S.SubTab
                           key={idx}
                           $active={currentSubIndex === idx}
                           $color="#059669"
                           onClick={() => handleSubTabChange(idx)}
                         >
-                          Câu {idx} {isTabDone && '✓'}
+                          Câu {idx} {isSubDone(idx) && '✓'}
                         </S.SubTab>
                       );
                     })}
@@ -121,6 +136,7 @@ export const Part2Page: React.FC = () => {
                   onCompleted={handleRecordComplete}
                 />
                 {/* Collapsible Sample Answer */}
+                {activeQuestion.sampleAnswers.length > 0 && (
                 <S.CollapsibleWrapper>
                   <S.CollapsibleHeader onClick={() => setShowSampleAnswer(!showSampleAnswer)}>
                     <span>
@@ -155,8 +171,10 @@ export const Part2Page: React.FC = () => {
                     </S.CollapsibleBody>
                   )}
                 </S.CollapsibleWrapper>
+                )}
               </S.RightColumn>
             </S.ContentGrid>
+            )}
           </S.MainContent>
 
           <S.Footer>
@@ -187,21 +205,23 @@ export const Part2Page: React.FC = () => {
               >
                 Nộp bài
               </Button>
-              <Button
-                type="primary"
-                size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#2563eb',
-                  borderColor: '#2563eb',
-                  padding: '0 1.5rem',
-                  boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
-                }}
-                onClick={handleNext}
-              >
-                Tiếp theo <RightOutlined style={{ fontSize: '12px' }} />
-              </Button>
+              {hasNext && (
+                <Button
+                  type="primary"
+                  size="large"
+                  style={{
+                    borderRadius: '2rem',
+                    fontWeight: 600,
+                    background: '#2563eb',
+                    borderColor: '#2563eb',
+                    padding: '0 1.5rem',
+                    boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
+                  }}
+                  onClick={handleNext}
+                >
+                  Câu tiếp theo <RightOutlined style={{ fontSize: '12px' }} />
+                </Button>
+              )}
             </Space>
           </S.Footer>
         </S.PageContainer>

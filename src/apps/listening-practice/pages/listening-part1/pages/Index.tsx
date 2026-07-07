@@ -1,24 +1,24 @@
 import React from 'react';
-import { Space, Progress, Button, Select } from 'antd';
-import { 
-  LeftOutlined, 
+import { Space, Progress, Button, Select, Spin, Empty } from 'antd';
+import {
+  LeftOutlined,
   RightOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
-  FileTextOutlined
+  ClockCircleOutlined
 } from '@ant-design/icons';
 import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import { AudioPlayer } from '../../../components/AudioPlayer';
-import { mockQuestions } from '../services/data';
 import { usePart1Action } from '../hook/usePart1Action';
 
 export const Part1Page: React.FC = () => {
   const {
+    isLoading,
+    hasData,
+    hasNext,
+    total,
     timeLeft,
-    showTranscript,
-    setShowTranscript,
     currentQuestionIndex,
     setCurrentQuestionIndex,
     answers,
@@ -29,6 +29,7 @@ export const Part1Page: React.FC = () => {
     answeredCount,
     progressPercent,
     currentQuestion,
+    mockQuestions,
     formatTime
   } = usePart1Action();
 
@@ -43,7 +44,7 @@ export const Part1Page: React.FC = () => {
                 <LeftOutlined /> Quay lại
               </S.BackLink>
               <span style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white' }}>
-                Part 1: Questions 1 - 13
+                Part 1: Information Recognition
               </span>
             </Space>
 
@@ -54,7 +55,7 @@ export const Part1Page: React.FC = () => {
                 size={40}
                 strokeColor="#10b981"
                 trailColor="rgba(255,255,255,0.2)"
-                format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{answeredCount}/13</span>}
+                format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{answeredCount}/{total || 0}</span>}
               />
               <S.TimerWrapper>
                 <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
@@ -64,23 +65,27 @@ export const Part1Page: React.FC = () => {
           </S.Header>
 
           <S.MainContent>
+            {isLoading ? (
+              <div style={{ textAlign: 'center', padding: '3rem', width: '100%' }}><Spin size="large" /></div>
+            ) : !hasData ? (
+              <div style={{ padding: '3rem', width: '100%' }}>
+                <Empty description="Chưa có câu hỏi cho phần này. Vui lòng quay lại sau." />
+              </div>
+            ) : (
             <S.ContentCard>
               <S.TitleArea>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                   <div>
                     <h2>Listening</h2>
                     <div className="subtitle">
-                      Part 1 • Question {currentQuestionIndex} of 13
+                      Part 1 • Question {currentQuestionIndex} of {total}
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ fontWeight: 600, color: '#475569', fontSize: '0.9rem' }}>Chọn câu:</span>
                     <Select
                       value={currentQuestionIndex}
-                      onChange={(val) => {
-                        setCurrentQuestionIndex(val as number);
-                        setShowTranscript(false);
-                      }}
+                      onChange={(val) => setCurrentQuestionIndex(val as number)}
                       style={{ width: 150 }}
                       dropdownStyle={{ maxHeight: 300, overflowY: 'auto' }}
                       showSearch
@@ -95,13 +100,13 @@ export const Part1Page: React.FC = () => {
                           </div>
                         )
                       }))}
-                      optionRender={(option) => (option.data as any).labelNode}
+                      optionRender={(option) => (option.data as { labelNode?: React.ReactNode }).labelNode}
                     />
                   </div>
                 </div>
               </S.TitleArea>
 
-              <AudioPlayer />
+              <AudioPlayer src={currentQuestion.mediaUrl} />
 
               <S.InstructionText>
                 {currentQuestion.questionText}
@@ -109,11 +114,11 @@ export const Part1Page: React.FC = () => {
 
               <div style={{ marginTop: '1.5rem' }}>
                 {currentQuestion.options.map((option, idx) => {
-                  const letter = String.fromCharCode(65 + idx); // A, B, C...
+                  const letter = String.fromCharCode(65 + idx);
                   const isSelected = answers[currentQuestionIndex] === option;
                   return (
-                    <S.OptionCard 
-                      key={idx} 
+                    <S.OptionCard
+                      key={idx}
                       onClick={() => handleSelectAnswer(option)}
                       style={{
                         borderColor: isSelected ? '#2563eb' : '#e2e8f0',
@@ -126,23 +131,8 @@ export const Part1Page: React.FC = () => {
                   );
                 })}
               </div>
-
-              <S.TranscriptButtonWrapper>
-                <Button 
-                  icon={<FileTextOutlined />} 
-                  onClick={() => setShowTranscript(!showTranscript)}
-                >
-                  {showTranscript ? 'Ẩn Transcript' : 'Hiện Transcript'}
-                </Button>
-              </S.TranscriptButtonWrapper>
-
-              {showTranscript && (
-                <S.TranscriptBox>
-                  {currentQuestion.transcript}
-                </S.TranscriptBox>
-              )}
-
             </S.ContentCard>
+            )}
           </S.MainContent>
 
           <S.Footer>
@@ -153,7 +143,7 @@ export const Part1Page: React.FC = () => {
               style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', border: '1px solid #e2e8f0', color: '#64748b' }}
               onClick={handleBack}
             >
-              {currentQuestionIndex === 1 ? 'Trở lại Bảng điều khiển' : 'Quay lại câu trước'}
+              {currentQuestionIndex === 1 ? 'Danh sách' : 'Câu trước'}
             </Button>
 
             <Space size="middle">
@@ -173,21 +163,23 @@ export const Part1Page: React.FC = () => {
               >
                 Nộp bài
               </Button>
-              <Button
-                type="primary"
-                size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#2563eb',
-                  borderColor: '#2563eb',
-                  padding: '0 1.5rem',
-                  boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
-                }}
-                onClick={handleNext}
-              >
-                {currentQuestionIndex < 13 ? 'Câu tiếp theo' : 'Tiếp theo (Part 2)'} <RightOutlined style={{ fontSize: '12px' }} />
-              </Button>
+              {hasNext && (
+                <Button
+                  type="primary"
+                  size="large"
+                  style={{
+                    borderRadius: '2rem',
+                    fontWeight: 600,
+                    background: '#2563eb',
+                    borderColor: '#2563eb',
+                    padding: '0 1.5rem',
+                    boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
+                  }}
+                  onClick={handleNext}
+                >
+                  Câu tiếp theo <RightOutlined style={{ fontSize: '12px' }} />
+                </Button>
+              )}
             </Space>
           </S.Footer>
         </S.PageContainer>

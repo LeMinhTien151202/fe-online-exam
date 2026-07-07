@@ -481,7 +481,10 @@
 
 ## Kỹ năng 5 — Speaking (tất cả RECORD)
 
-### Part 1 — Personal Info (3 câu, 30s, không chuẩn bị)
+> **P1 tách lẻ (mỗi câu 1 bản ghi); P2/P3/P4 GÓI toàn bộ câu hỏi vào 1 bản ghi** qua `extra_config.questions[]`.
+> `sample_answer` trong mỗi câu là TUỲ CHỌN (làm chuẩn cho AI chấm), bị ẩn khỏi đề khi học viên làm.
+
+### Part 1 — Personal Info (3 câu ĐỘC LẬP, mỗi câu 1 bản ghi, 30s, không chuẩn bị)
 ```json
 {
   "skillId": 5,
@@ -491,29 +494,34 @@
 }
 ```
 
-### Part 2 — Describe a picture (1 ảnh, 45s)
-> Ảnh lưu ở `extra_config.image_urls` (số phần tử = `image_count`).
+### Part 2 — Describe a picture (1 ảnh, 45s) → GÓI câu hỏi vào 1 bản ghi
+> Ảnh lưu ở `extra_config.image_urls` (số phần tử = `image_count`). Các câu con trong `questions[]`.
 ```json
 {
   "skillId": 5,
   "partNumber": 2,
-  "content": "Describe this picture.",
+  "content": "Look at the picture and answer the questions.",
   "extraConfig": {
     "response_time_seconds": 45,
     "prep_time_seconds": 0,
     "image_count": 1,
-    "image_urls": ["https://cdn.example.com/img/speaking-p2.jpg"]
+    "image_urls": ["https://cdn.example.com/img/speaking-p2.jpg"],
+    "questions": [
+      { "question": "Describe this picture." },
+      { "question": "What is the person on the left doing?" },
+      { "question": "Have you ever been to a place like this?" }
+    ]
   }
 }
 ```
 
-### Part 3 — Compare two pictures (2 ẢNH, 45s)
+### Part 3 — Compare two pictures (2 ẢNH, 45s) → GÓI câu hỏi vào 1 bản ghi
 > `image_count: 2` → `image_urls` phải có **đúng 2** ảnh.
 ```json
 {
   "skillId": 5,
   "partNumber": 3,
-  "content": "Compare these two pictures.",
+  "content": "Look at the two pictures and answer the questions.",
   "extraConfig": {
     "response_time_seconds": 45,
     "prep_time_seconds": 0,
@@ -521,22 +529,32 @@
     "image_urls": [
       "https://cdn.example.com/img/speaking-p3-a.jpg",
       "https://cdn.example.com/img/speaking-p3-b.jpg"
+    ],
+    "questions": [
+      { "question": "Compare these two pictures." },
+      { "question": "Which place would you prefer to visit and why?" },
+      { "question": "What are the advantages of each?" }
     ]
   }
 }
 ```
 
-### Part 4 — Abstract Topic (1 phút chuẩn bị + 2 phút nói)
+### Part 4 — Abstract Topic (1 phút chuẩn bị + 2 phút nói) → GÓI câu hỏi vào 1 bản ghi
 ```json
 {
   "skillId": 5,
   "partNumber": 4,
-  "content": "Tell me about a time you felt grateful. Why is gratitude important? How can we encourage it?",
+  "content": "Talk about gratitude.",
   "extraConfig": {
     "response_time_seconds": 120,
     "prep_time_seconds": 60,
     "image_count": 1,
-    "image_urls": ["https://cdn.example.com/img/speaking-p4.jpg"]
+    "image_urls": ["https://cdn.example.com/img/speaking-p4.jpg"],
+    "questions": [
+      { "question": "Tell me about a time you felt grateful." },
+      { "question": "Why is gratitude important?" },
+      { "question": "How can we encourage gratitude in society?" }
+    ]
   }
 }
 ```
@@ -550,3 +568,4 @@
 - **Khóa đáp án phải tồn tại**: `correct_answer`/`correct_opinion`/`correct_person`/`correct_heading` phải nằm trong pool/keys tương ứng; `correct_index` trong [0..2].
 - **Giá trị enum cố định**: RECORD `response_time_seconds`∈{30,45,120}, `prep_time_seconds`∈{0,60}, `image_count`∈{0,1,2} và `image_urls` phải có ĐÚNG `image_count` phần tử (Speaking P3 = 2 ảnh); Listening P3 mỗi `statements[i].correct`∈{MAN,WOMAN,BOTH}; WORD_BANK `task_variant`∈{DEFINITION,COLLOCATION,SENTENCE,SYNONYM,ANTONYM}.
 - **Listening gói cả cụm trong 1 bản ghi**: Listening P3 gói TẤT CẢ nhận định vào `extra_config.statements[]` (1 audio chung ở `mediaUrl`) — 1 bản ghi/part. Listening P4 gói các câu MC của CÙNG 1 bài nghe vào `extra_config.questions[]` (audio riêng ở `mediaUrl`) — mỗi bài nghe = 1 bản ghi (P4 có 2 bài → 2 bản ghi). Không còn tách mỗi nhận định/câu thành 1 dòng, và bỏ `audio_group_id`.
+- **Speaking gói cả part trong 1 bản ghi (trừ P1)**: Speaking P1 tách 3 câu độc lập (mỗi câu 1 bản ghi). P2/P3/P4 gói TOÀN BỘ câu hỏi của part vào `extra_config.questions[]` (`questions[i].question` bắt buộc, `sample_answer` tuỳ chọn). Ảnh vẫn ở `image_urls` khớp `image_count`.

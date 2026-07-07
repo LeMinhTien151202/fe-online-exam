@@ -1,7 +1,8 @@
 import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
-import { useEffect,useState } from 'react';
-import { mockQuestions } from '../services/data';
+import { useEffect, useMemo, useState } from 'react';
+import { useListeningQuestionsQuery } from '../../../services/listeningQuery';
+import { mapLPart1 } from '../../../services/mappers';
 
 export const usePart1Action = () => {
   const navigate = useNavigate();
@@ -10,10 +11,12 @@ export const usePart1Action = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(1);
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
+  const { data: res, isLoading } = useListeningQuestionsQuery(1);
+  const questions = useMemo(() => mapLPart1(res?.data ?? []), [res]);
+  const total = questions.length;
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
+    const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -23,22 +26,22 @@ export const usePart1Action = () => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  const safeIndex = total > 0 ? Math.min(currentQuestionIndex, total) : 1;
+
   const handleSelectAnswer = (option: string) => {
-    setAnswers(prev => ({ ...prev, [currentQuestionIndex]: option }));
+    setAnswers((prev) => ({ ...prev, [safeIndex]: option }));
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < 13) {
-      setCurrentQuestionIndex(prev => prev + 1);
+    if (safeIndex < total) {
+      setCurrentQuestionIndex(safeIndex + 1);
       setShowTranscript(false);
-    } else {
-      navigate({ to: '/listening/part/2' });
     }
   };
 
   const handleBack = () => {
-    if (currentQuestionIndex > 1) {
-      setCurrentQuestionIndex(prev => prev - 1);
+    if (safeIndex > 1) {
+      setCurrentQuestionIndex(safeIndex - 1);
       setShowTranscript(false);
     } else {
       navigate({ to: '/listening' });
@@ -46,30 +49,28 @@ export const usePart1Action = () => {
   };
 
   const handleSubmit = () => {
-    // Save progress to local storage
     const saved = localStorage.getItem('aptis_listening_progress');
     let progressObj: Record<string, number> = {};
     if (saved) {
-      try {
-        progressObj = JSON.parse(saved);
-      } catch (e) { /* bỏ qua lỗi */ }
+      try { progressObj = JSON.parse(saved); } catch { /* bỏ qua lỗi */ }
     }
     progressObj['l1'] = 100;
     localStorage.setItem('aptis_listening_progress', JSON.stringify(progressObj));
-
-    message.success('Đã nộp bài Part 1!');
-    navigate({ to: '/listening/part/2' });
+    message.success('Đã ghi nhận câu trả lời! Bạn có thể luyện câu tiếp theo.');
   };
 
   const answeredCount = Object.keys(answers).length;
-  const progressPercent = (answeredCount / 13) * 100;
-  const currentQuestion = mockQuestions[currentQuestionIndex - 1];
+  const progressPercent = total > 0 ? (answeredCount / total) * 100 : 0;
+  const currentQuestion = questions[safeIndex - 1] ?? { id: 0, questionText: '', options: [], correctIndex: -1, mediaUrl: null };
 
   return {
+    isLoading,
+    hasData: total > 0,
+    total,
     timeLeft,
     showTranscript,
     setShowTranscript,
-    currentQuestionIndex,
+    currentQuestionIndex: safeIndex,
     setCurrentQuestionIndex,
     answers,
     handleSelectAnswer,
@@ -79,6 +80,8 @@ export const usePart1Action = () => {
     answeredCount,
     progressPercent,
     currentQuestion,
-    formatTime
+    mockQuestions: questions,
+    hasNext: safeIndex < total,
+    formatTime,
   };
 };

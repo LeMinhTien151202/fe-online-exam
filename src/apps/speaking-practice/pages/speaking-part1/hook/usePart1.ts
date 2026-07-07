@@ -1,23 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
-import { mockQuestions } from '../services/mockData';
+import { useSpeakingQuestionsQuery } from '../../../services/speakingQuery';
+import { mapSpeakingP1, SpeakingP1Item } from '../../../services/mappers';
 
 export const usePart1 = () => {
   const navigate = useNavigate();
-  const [timeLeft, setTimeLeft] = useState(12 * 60); // 12 phút tổng thời gian Speaking
+  const [timeLeft, setTimeLeft] = useState(12 * 60);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(1);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
-  
   const [showTips, setShowTips] = useState(false);
   const [showSampleAnswer, setShowSampleAnswer] = useState(false);
   const [activeSampleIdx, setActiveSampleIdx] = useState(0);
 
-  // Global countdown timer
+  const { data: res, isLoading } = useSpeakingQuestionsQuery(1);
+  const questions = useMemo<SpeakingP1Item[]>(() => mapSpeakingP1(res?.data ?? []), [res]);
+  const total = questions.length;
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
+    const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -27,19 +28,19 @@ export const usePart1 = () => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  const safeIndex = total > 0 ? Math.min(currentQuestionIndex, total) : 1;
+
   const handleNext = () => {
-    if (currentQuestionIndex < mockQuestions.length) {
-      setCurrentQuestionIndex(prev => prev + 1);
+    if (safeIndex < total) {
+      setCurrentQuestionIndex(safeIndex + 1);
       setShowSampleAnswer(false);
       setActiveSampleIdx(0);
-    } else {
-      navigate({ to: '/speaking/part/2' });
     }
   };
 
   const handleBack = () => {
-    if (currentQuestionIndex > 1) {
-      setCurrentQuestionIndex(prev => prev - 1);
+    if (safeIndex > 1) {
+      setCurrentQuestionIndex(safeIndex - 1);
       setShowSampleAnswer(false);
       setActiveSampleIdx(0);
     } else {
@@ -48,25 +49,23 @@ export const usePart1 = () => {
   };
 
   const handleSubmit = () => {
-    message.success('Đã hoàn thành luyện tập Part 1!');
-    navigate({ to: '/speaking/part/2' });
+    message.success('Đã ghi nhận phần trả lời của bạn! Bạn có thể luyện câu tiếp theo.');
   };
 
   const handleRecordComplete = (audioUrl: string | null) => {
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestionIndex]: audioUrl || 'recorded_mock'
-    }));
+    setAnswers((prev) => ({ ...prev, [safeIndex]: audioUrl || 'recorded_mock' }));
   };
 
-  const currentQuestion = mockQuestions[currentQuestionIndex - 1];
+  const currentQuestion = questions[safeIndex - 1] ?? { id: 0, questionText: '', sampleAnswers: [] };
   const answeredCount = Object.keys(answers).length;
-  const progressPercent = Math.round((answeredCount / mockQuestions.length) * 100);
+  const progressPercent = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
 
   return {
     navigate,
+    isLoading,
+    hasData: total > 0,
     timeLeft,
-    currentQuestionIndex,
+    currentQuestionIndex: safeIndex,
     setCurrentQuestionIndex,
     answers,
     showTips,
@@ -83,6 +82,9 @@ export const usePart1 = () => {
     currentQuestion,
     answeredCount,
     progressPercent,
-    mockQuestions,
+    mockQuestions: questions,
+    total,
+    hasNext: safeIndex < total,
+    hasPrev: safeIndex > 1,
   };
 };

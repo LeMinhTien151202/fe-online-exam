@@ -32,7 +32,7 @@ const ExamsIndex: React.FC = () => {
     <>
       <AdminTableWrapper>
         <Table
-          columns={columns}
+          columns={columns as React.ComponentProps<typeof Table>['columns']}
           dataSource={dataSource}
           size="middle"
           pagination={false}

@@ -64,6 +64,7 @@ interface EditFormValues {
   // RECORD
   responseTime?: 30 | 45 | 120;
   prepTime?: 0 | 60;
+  recordQuestions?: { question: string; sample_answer?: string }[]; // Speaking P2/P3/P4
 }
 
 // extraConfig -> giá trị form phẳng
@@ -82,7 +83,10 @@ const toFormValues = (q: IQuestion): EditFormValues => {
       statement: s.statement,
       correct: s.correct,
     }));
-  } else if (Array.isArray((cfg as unknown as MonologueConfig).questions)) {
+  } else if (
+    (cfg as unknown as RecordConfig).response_time_seconds == null &&
+    Array.isArray((cfg as unknown as MonologueConfig).questions)
+  ) {
     values.monoQuestions = (cfg as unknown as MonologueConfig).questions.map((q) => ({
       question: q.question,
       options: q.options.map((o) => o.content),
@@ -124,6 +128,9 @@ const toFormValues = (q: IQuestion): EditFormValues => {
     const rc = cfg as unknown as RecordConfig;
     values.responseTime = rc.response_time_seconds;
     values.prepTime = rc.prep_time_seconds;
+    if (Array.isArray(rc.questions)) {
+      values.recordQuestions = rc.questions.map((q) => ({ question: q.question, sample_answer: q.sample_answer }));
+    }
   }
   return values;
 };
@@ -205,6 +212,14 @@ const toExtraConfig = (q: IQuestion, v: EditFormValues): QuestionExtraConfig => 
       ...old,
       response_time_seconds: v.responseTime,
       prep_time_seconds: v.prepTime,
+      ...(v.recordQuestions
+        ? {
+            questions: v.recordQuestions.map((q) => ({
+              question: q.question,
+              ...(q.sample_answer ? { sample_answer: q.sample_answer } : {}),
+            })),
+          }
+        : {}),
     } as unknown as QuestionExtraConfig;
   }
   return q.extraConfig;
@@ -275,7 +290,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
           {/* MC — 3 phương án, chọn 1 đúng */}
           {initialValues.mcOptions && (
             <>
-              <Divider orientation="left" plain>Phương án trả lời</Divider>
+              <Divider titlePlacement="left" plain>Phương án trả lời</Divider>
               <Form.Item name="mcCorrectIndex" label="Đáp án đúng" rules={requiredRule}>
                 <Radio.Group>
                   {initialValues.mcOptions.map((_, i) => (
@@ -294,7 +309,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
           {/* Listening P3 — Man/Woman/Both: nhiều nhận định trong 1 bản ghi */}
           {initialValues.agreementStatements && (
             <>
-              <Divider orientation="left" plain>Các nhận định & đáp án</Divider>
+              <Divider titlePlacement="left" plain>Các nhận định & đáp án</Divider>
               {initialValues.agreementStatements.map((_, si) => (
                 <div key={si} style={{ marginBottom: 12, padding: 12, background: '#f8fafc', borderRadius: 8 }}>
                   <Form.Item name={['agreementStatements', si, 'statement']} label={`Nhận định ${si + 1}`} rules={requiredRule}>
@@ -315,7 +330,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
           {/* Listening P4 — Monologue: nhiều câu MC / 1 bài nghe */}
           {initialValues.monoQuestions && (
             <>
-              <Divider orientation="left" plain>Các câu hỏi trong bài nghe</Divider>
+              <Divider titlePlacement="left" plain>Các câu hỏi trong bài nghe</Divider>
               {initialValues.monoQuestions.map((q, qi) => (
                 <div key={qi} style={{ marginBottom: 16, padding: 12, background: '#f8fafc', borderRadius: 8 }}>
                   <Form.Item name={['monoQuestions', qi, 'question']} label={`Câu ${qi + 1}`} rules={requiredRule}>
@@ -341,7 +356,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
           {/* Reading P1 — gap fill */}
           {initialValues.gaps && (
             <>
-              <Divider orientation="left" plain>Đáp án các chỗ trống</Divider>
+              <Divider titlePlacement="left" plain>Đáp án các chỗ trống</Divider>
               {initialValues.gaps.map((g, gi) => (
                 <div key={gi} style={{ marginBottom: 12, padding: 12, background: '#f8fafc', borderRadius: 8 }}>
                   <Space align="baseline" wrap>
@@ -363,7 +378,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
           {/* ORDERING — nhập theo thứ tự đúng */}
           {initialValues.orderedSentences && (
             <>
-              <Divider orientation="left" plain>Các câu theo thứ tự đúng</Divider>
+              <Divider titlePlacement="left" plain>Các câu theo thứ tự đúng</Divider>
               {initialValues.orderedSentences.map((_, i) => (
                 <Form.Item key={i} name={['orderedSentences', i]} label={`Câu ${i + 1}${i === 0 ? ' (cố định đầu)' : ''}`} rules={requiredRule}>
                   <Input />
@@ -375,7 +390,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
           {/* WORD_BANK */}
           {initialValues.wbPool && (
             <>
-              <Divider orientation="left" plain>Ngân hàng từ (10)</Divider>
+              <Divider titlePlacement="left" plain>Ngân hàng từ (10)</Divider>
               <Space wrap>
                 {initialValues.wbPool.map((_, i) => (
                   <Form.Item key={i} name={['wbPool', i]} rules={requiredRule} style={{ marginBottom: 8 }}>
@@ -383,7 +398,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
                   </Form.Item>
                 ))}
               </Space>
-              <Divider orientation="left" plain>Các câu hỏi (5)</Divider>
+              <Divider titlePlacement="left" plain>Các câu hỏi (5)</Divider>
               {initialValues.wbSlots?.map((_, i) => (
                 <Space key={i} align="baseline" style={{ display: 'flex', marginBottom: 4 }}>
                   <Form.Item name={['wbSlots', i, 'prompt']} rules={requiredRule} style={{ marginBottom: 8, width: 380 }}>
@@ -400,13 +415,13 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
           {/* Listening P2 — SPEAKER_MATCH */}
           {initialValues.lsPool && (
             <>
-              <Divider orientation="left" plain>Ngân hàng ý kiến (6)</Divider>
+              <Divider titlePlacement="left" plain>Ngân hàng ý kiến (6)</Divider>
               {initialValues.lsPool.map((_, i) => (
                 <Form.Item key={i} name={['lsPool', i]} rules={requiredRule} style={{ marginBottom: 8 }}>
                   <Input />
                 </Form.Item>
               ))}
-              <Divider orientation="left" plain>Đáp án từng người (4)</Divider>
+              <Divider titlePlacement="left" plain>Đáp án từng người (4)</Divider>
               {initialValues.lsSpeakers?.map((_, i) => (
                 <Form.Item key={i} name={['lsSpeakers', i, 'correct_answer']} label={`Người ${i + 1}`} rules={requiredRule}>
                   <Input placeholder="Đáp án (thuộc ngân hàng ý kiến)" />
@@ -418,13 +433,13 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
           {/* Reading P4 — SPEAKER_MATCH */}
           {initialValues.rsPeople && (
             <>
-              <Divider orientation="left" plain>Đoạn văn từng người</Divider>
+              <Divider titlePlacement="left" plain>Đoạn văn từng người</Divider>
               {initialValues.rsPeople.map((p, i) => (
                 <Form.Item key={i} name={['rsPeople', i, 'passage']} label={`Người ${p.key}`} rules={requiredRule}>
                   <TextArea autoSize={{ minRows: 2, maxRows: 5 }} />
                 </Form.Item>
               ))}
-              <Divider orientation="left" plain>Câu hỏi & đáp án (7)</Divider>
+              <Divider titlePlacement="left" plain>Câu hỏi & đáp án (7)</Divider>
               {initialValues.rsQuestions?.map((_, i) => (
                 <Space key={i} align="baseline" style={{ display: 'flex', marginBottom: 4 }}>
                   <Form.Item name={['rsQuestions', i, 'statement']} rules={requiredRule} style={{ marginBottom: 8, width: 430 }}>
@@ -441,13 +456,13 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
           {/* HEADING_MATCH */}
           {initialValues.hmHeadings && (
             <>
-              <Divider orientation="left" plain>Ngân hàng tiêu đề (8)</Divider>
+              <Divider titlePlacement="left" plain>Ngân hàng tiêu đề (8)</Divider>
               {initialValues.hmHeadings.map((_, i) => (
                 <Form.Item key={i} name={['hmHeadings', i]} rules={requiredRule} style={{ marginBottom: 8 }}>
                   <Input />
                 </Form.Item>
               ))}
-              <Divider orientation="left" plain>Các đoạn văn & tiêu đề đúng (7)</Divider>
+              <Divider titlePlacement="left" plain>Các đoạn văn & tiêu đề đúng (7)</Divider>
               {initialValues.hmParagraphs?.map((p, i) => (
                 <div key={i} style={{ marginBottom: 12, padding: 12, background: '#f8fafc', borderRadius: 8 }}>
                   <Form.Item name={['hmParagraphs', i, 'text']} label={`Đoạn ${p.label}`} rules={requiredRule} style={{ marginBottom: 8 }}>
@@ -464,7 +479,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
           {/* ESSAY */}
           {initialValues.wordLimitMax != null && (
             <>
-              <Divider orientation="left" plain>Yêu cầu bài viết</Divider>
+              <Divider titlePlacement="left" plain>Yêu cầu bài viết</Divider>
               <Space size="large">
                 <Form.Item name="wordLimitMin" label="Số từ tối thiểu" rules={requiredRule}>
                   <InputNumber min={1} max={500} />
@@ -484,7 +499,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
           {/* RECORD */}
           {initialValues.responseTime != null && (
             <>
-              <Divider orientation="left" plain>Cấu hình ghi âm</Divider>
+              <Divider titlePlacement="left" plain>Cấu hình ghi âm</Divider>
               <Space size="large">
                 <Form.Item name="responseTime" label="Thời gian trả lời" rules={requiredRule}>
                   <Select
@@ -506,6 +521,23 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
                   />
                 </Form.Item>
               </Space>
+
+              {/* Speaking P2/P3/P4 — các câu hỏi gói trong 1 bản ghi */}
+              {initialValues.recordQuestions && (
+                <>
+                  <Divider titlePlacement="left" plain>Các câu hỏi</Divider>
+                  {initialValues.recordQuestions.map((_, qi) => (
+                    <div key={qi} style={{ marginBottom: 12, padding: 12, background: '#f8fafc', borderRadius: 8 }}>
+                      <Form.Item name={['recordQuestions', qi, 'question']} label={`Câu ${qi + 1}`} rules={requiredRule}>
+                        <Input />
+                      </Form.Item>
+                      <Form.Item name={['recordQuestions', qi, 'sample_answer']} label="Đáp án mẫu (tuỳ chọn)" style={{ marginBottom: 0 }}>
+                        <TextArea autoSize={{ minRows: 1, maxRows: 4 }} />
+                      </Form.Item>
+                    </div>
+                  ))}
+                </>
+              )}
             </>
           )}
         </Form>

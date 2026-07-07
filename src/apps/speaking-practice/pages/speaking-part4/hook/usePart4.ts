@@ -1,22 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
-import { mockAbstractSets } from '../services/mockData';
+import { useSpeakingQuestionsQuery } from '../../../services/speakingQuery';
+import { mapSpeakingSets } from '../../../services/mappers';
 
 export const usePart4 = () => {
   const navigate = useNavigate();
   const [timeLeft, setTimeLeft] = useState(12 * 60);
-  const [currentSetIndex, setCurrentSetIndex] = useState(1);
+  const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
-
   const [showTips, setShowTips] = useState(false);
   const [showSampleAnswer, setShowSampleAnswer] = useState(false);
   const [activeSampleIdx, setActiveSampleIdx] = useState(0);
 
+  const { data: res, isLoading } = useSpeakingQuestionsQuery(4);
+  const sets = useMemo(() => mapSpeakingSets(res?.data ?? []), [res]);
+  const setCount = sets.length;
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
+    const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -26,39 +28,55 @@ export const usePart4 = () => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  const safeSet = setCount > 0 ? Math.min(currentSetIndex, setCount - 1) : 0;
+  const raw = sets[safeSet];
+  // Gộp đáp án mẫu của từng câu thành 1 bài mẫu chung (P4 nói liên tục cả 3 câu)
+  const combinedSample = (raw?.questions ?? [])
+    .filter((q) => q.sampleAnswers[0])
+    .map((q, i) => `${i + 1}. ${q.questionText}\n→ ${q.sampleAnswers[0]}`)
+    .join('\n\n');
+  const currentSet = {
+    title: `Bộ ${safeSet + 1}`,
+    imageUrl: raw?.imageUrls?.[0] ?? '',
+    questions: (raw?.questions ?? []).map((q) => q.questionText),
+    sampleAnswers: combinedSample ? [combinedSample] : [],
+  };
+
   const handleNext = () => {
-    if (currentSetIndex < mockAbstractSets.length) {
-      setCurrentSetIndex(prev => prev + 1);
+    if (safeSet < setCount - 1) {
+      setCurrentSetIndex(safeSet + 1);
       setShowSampleAnswer(false);
-    } else {
-      message.info('Bạn đã hoàn thành bộ đề Speaking Practice!');
+      setActiveSampleIdx(0);
     }
   };
 
   const handleBack = () => {
-    navigate({ to: '/speaking/part/3' });
+    if (safeSet > 0) {
+      setCurrentSetIndex(safeSet - 1);
+      setShowSampleAnswer(false);
+      setActiveSampleIdx(0);
+    } else {
+      navigate({ to: '/speaking' });
+    }
   };
 
   const handleSubmit = () => {
-    message.success('Xin chúc mừng! Bạn đã hoàn thành toàn bộ bài thi thử Speaking.');
-    navigate({ to: '/speaking' });
+    message.success('Đã ghi nhận phần trả lời của bạn! Bạn có thể luyện bộ câu hỏi tiếp theo.');
   };
 
   const handleRecordComplete = (audioUrl: string | null) => {
-    setAnswers(prev => ({
-      ...prev,
-      [1]: audioUrl || 'recorded_mock'
-    }));
+    setAnswers((prev) => ({ ...prev, [safeSet]: audioUrl || 'recorded_mock' }));
   };
 
-  const currentSet = mockAbstractSets[0];
-  const answeredCount = Object.keys(answers).length;
-  const progressPercent = Math.round((answeredCount / mockAbstractSets.length) * 100);
+  const answeredCount = answers[safeSet] ? 1 : 0;
+  const progressPercent = answeredCount * 100;
 
   return {
     navigate,
+    isLoading,
+    hasData: setCount > 0,
     timeLeft,
-    currentSetIndex,
+    currentSetIndex: safeSet,
     setCurrentSetIndex,
     answers,
     showTips,
@@ -75,5 +93,9 @@ export const usePart4 = () => {
     currentSet,
     answeredCount,
     progressPercent,
+    setCount,
+    currentSetNumber: safeSet + 1,
+    hasNext: safeSet < setCount - 1,
+    hasPrev: safeSet > 0,
   };
 };

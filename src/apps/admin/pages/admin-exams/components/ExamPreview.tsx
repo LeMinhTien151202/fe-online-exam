@@ -68,7 +68,11 @@ const renderAnswer = (q: IQuestion): React.ReactNode => {
   }
 
   // Listening P4 — Monologue: 1 bài nghe, nhiều câu MC
-  if (Array.isArray((cfg as unknown as MonologueConfig).questions)) {
+  // (loại trừ Speaking RECORD: cũng có questions[] nhưng không có options)
+  if (
+    (cfg as unknown as RecordConfig).response_time_seconds == null &&
+    Array.isArray((cfg as unknown as MonologueConfig).questions)
+  ) {
     const mono = cfg as unknown as MonologueConfig;
     return (
       <Space direction="vertical" size={8} style={{ width: '100%' }}>
@@ -178,6 +182,13 @@ const renderAnswer = (q: IQuestion): React.ReactNode => {
           {plainTag(`Chuẩn bị ${rc.prep_time_seconds}s`)}
           {plainTag(`${rc.image_count} ảnh`)}
         </Space>
+        {!!rc.questions?.length && (
+          <Space direction="vertical" size={4} style={{ width: '100%' }}>
+            {rc.questions.map((q, i) => (
+              <div key={i}><Text strong>Câu {i + 1}: </Text><Text>{q.question}</Text></div>
+            ))}
+          </Space>
+        )}
         {!!rc.image_urls?.length && (
           <Space wrap>
             {rc.image_urls.map((u) => (

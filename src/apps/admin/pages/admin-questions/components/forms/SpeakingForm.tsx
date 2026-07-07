@@ -13,6 +13,7 @@ UserOutlined
 } from '@ant-design/icons';
 import { Button,Card,Col,Divider,Form,Input,message,Row,Select,Space,Steps,Typography,Upload } from 'antd';
 import type { FormInstance } from 'antd';
+import type { UploadRequestOption } from '@rc-component/upload/lib/interface';
 import React,{ useState } from 'react';
 import { ADMIN_COLORS } from '../../../../constants';
 import { questionApi } from '../../services/questionApi';
@@ -26,11 +27,6 @@ interface SpeakingFormProps {
     onSubmit: () => void;
 }
 
-interface UploadOpts {
-    file: unknown;
-    onSuccess?: (body: unknown, file?: unknown) => void;
-    onError?: (err: unknown) => void;
-}
 
 const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => {
     const [currentStep, setCurrentStep] = useState(0);
@@ -40,15 +36,15 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
     const p3ImageUrlB = Form.useWatch('p3ImageUrlB', form);
     const p4ImageUrl = Form.useWatch('p4ImageUrl', form);
 
-    const handleUpload = async (options: UploadOpts, folderType: 'images' | 'audio', formKey: string) => {
+    const handleUpload = async (options: UploadRequestOption, folderType: 'images' | 'audio', formKey: string) => {
         const { file, onSuccess, onError } = options;
         try {
             const res = await questionApi.upload(file as File, folderType);
             form.setFieldValue(formKey, res.url);
-            onSuccess?.(res, file);
+            onSuccess?.(res, file as unknown as XMLHttpRequest);
             message.success('Upload file thành công!');
         } catch (err) {
-            onError?.(err);
+            onError?.(err as Error);
             const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
             message.error(msg || 'Upload file thất bại.');
         }

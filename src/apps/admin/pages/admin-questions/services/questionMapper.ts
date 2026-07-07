@@ -342,47 +342,63 @@ const buildSpeaking = (v: FormValues): ICreateQuestionPayload[] => {
       }));
   }
 
+  // P2: 1 ảnh, 45s — gói toàn bộ câu hỏi vào 1 bản ghi
   if (part === 'part2') {
     const imageUrls = str(v.p2ImageUrl) ? [str(v.p2ImageUrl)] : [];
-    return [str(v.p2Q1), str(v.p2Q2), str(v.p2Q3)]
-      .filter((q) => q)
-      .map((q) => ({
+    const questions = [str(v.p2Q1), str(v.p2Q2), str(v.p2Q3)].filter((q) => q);
+    return [
+      {
         skillId: SKILL_ID.speaking,
         partNumber: 2,
-        content: q,
-        extraConfig: { response_time_seconds: 45, prep_time_seconds: 0, image_count: 1, image_urls: imageUrls },
-      }));
+        content: str(v.content) || str(v.title) || 'Look at the picture and answer the questions.',
+        extraConfig: {
+          response_time_seconds: 45,
+          prep_time_seconds: 0,
+          image_count: 1,
+          image_urls: imageUrls,
+          questions: questions.map((q) => ({ question: q })),
+        },
+      },
+    ];
   }
 
+  // P3: 2 ảnh, 45s — gói toàn bộ câu hỏi vào 1 bản ghi
   if (part === 'part3') {
     const imageUrls = [str(v.p3ImageUrlA), str(v.p3ImageUrlB)].filter((u) => u);
-    return [str(v.p3Q1), str(v.p3Q2), str(v.p3Q3)]
-      .filter((q) => q)
-      .map((q) => ({
+    const questions = [str(v.p3Q1), str(v.p3Q2), str(v.p3Q3)].filter((q) => q);
+    return [
+      {
         skillId: SKILL_ID.speaking,
         partNumber: 3,
-        content: q,
-        extraConfig: { response_time_seconds: 45, prep_time_seconds: 0, image_count: 2, image_urls: imageUrls },
-      }));
+        content: str(v.content) || str(v.title) || 'Look at the two pictures and answer the questions.',
+        extraConfig: {
+          response_time_seconds: 45,
+          prep_time_seconds: 0,
+          image_count: 2,
+          image_urls: imageUrls,
+          questions: questions.map((q) => ({ question: q })),
+        },
+      },
+    ];
   }
 
-  // part4: 1 phút chuẩn bị + 2 phút nói
-  const gid = `sp4-${Date.now()}`;
+  // P4: 1 phút chuẩn bị + 2 phút nói — gói toàn bộ câu hỏi vào 1 bản ghi
   const imageUrls = str(v.p4ImageUrl) ? [str(v.p4ImageUrl)] : [];
-  return [str(v.p4Q1), str(v.p4Q2), str(v.p4Q3)]
-    .filter((q) => q)
-    .map((q) => ({
+  const questions = [str(v.p4Q1), str(v.p4Q2), str(v.p4Q3)].filter((q) => q);
+  return [
+    {
       skillId: SKILL_ID.speaking,
       partNumber: 4,
-      content: q,
+      content: str(v.content) || str(v.title) || 'Talk about the topic below.',
       extraConfig: {
         response_time_seconds: 120,
         prep_time_seconds: 60,
         image_count: imageUrls.length === 1 ? 1 : 0,
         image_urls: imageUrls,
-        question_group_id: gid,
+        questions: questions.map((q) => ({ question: q })),
       },
-    }));
+    },
+  ];
 };
 
 export const buildCreatePayloads = (skill: SkillRoute, values: FormValues): ICreateQuestionPayload[] => {

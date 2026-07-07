@@ -109,7 +109,12 @@ const renderConfig = (q: IQuestion): React.ReactNode => {
   }
 
   // Listening P4 — Monologue: 1 bài nghe, nhiều câu MC trong extraConfig.questions
-  if (cfg && Array.isArray((cfg as unknown as MonologueConfig).questions)) {
+  // (loại trừ Speaking RECORD: cũng có questions[] nhưng không có options -> để nhánh RECORD render)
+  if (
+    cfg &&
+    (cfg as unknown as RecordConfig).response_time_seconds == null &&
+    Array.isArray((cfg as unknown as MonologueConfig).questions)
+  ) {
     const mono = cfg as unknown as MonologueConfig;
     return (
       <>
@@ -331,6 +336,25 @@ const renderConfig = (q: IQuestion): React.ReactNode => {
             <Text>Số ảnh: <Text strong>{rc.image_count}</Text></Text>
           </Space>
         </div>
+        {!!rc.questions?.length && (
+          <>
+            {sectionTitle(<CheckCircleOutlined />, 'CÁC CÂU HỎI')}
+            <Space direction="vertical" style={{ width: '100%' }}>
+              {rc.questions.map((q, i) => (
+                <div key={i} style={box}>
+                  <Text strong>Câu {i + 1}: </Text>
+                  <Text>{q.question}</Text>
+                  {q.sample_answer && (
+                    <div style={{ marginTop: 6 }}>
+                      <Text type="secondary">Đáp án mẫu: </Text>
+                      <Text style={{ color: '#166534' }}>{q.sample_answer}</Text>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </Space>
+          </>
+        )}
         {!!rc.image_urls?.length && (
           <Space wrap>
             {rc.image_urls.map((u) => (
