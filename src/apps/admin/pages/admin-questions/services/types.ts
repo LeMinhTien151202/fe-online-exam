@@ -37,7 +37,15 @@ export interface McOption {
 }
 export interface McConfig {
   options: McOption[];
-  audio_group_id?: string; // Listening P4
+}
+
+// Listening P4 — Monologue: mỗi bài nghe = 1 bản ghi, gói các câu MC trong questions[]
+export interface MonologueQuestion {
+  question: string;
+  options: McOption[];
+}
+export interface MonologueConfig {
+  questions: MonologueQuestion[];
 }
 
 export interface GapFillGap {
@@ -77,9 +85,14 @@ export interface ListeningSpeakerMatchConfig {
 }
 
 export type AgreementChoice = 'MAN' | 'WOMAN' | 'BOTH';
+// Listening P3 — Opinion Matching: gom cả part vào 1 bản ghi, mỗi nhận định 1 statement
+export interface AgreementStatement {
+  statement: string;
+  correct: AgreementChoice;
+}
 export interface SpeakerAgreementConfig {
   choice_kind: 'SPEAKER_AGREEMENT';
-  correct: AgreementChoice;
+  statements: AgreementStatement[];
 }
 
 export interface ReadingPerson {
@@ -154,6 +167,7 @@ export interface RecordConfig {
 
 export type QuestionExtraConfig =
   | McConfig
+  | MonologueConfig
   | GapFillConfig
   | OrderingConfig
   | WordBankConfig

@@ -97,6 +97,15 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
             <Divider orientation={"left" as any}>
                 <Space><QuestionCircleOutlined /> {label}</Space>
             </Divider>
+            {isPart4 && (
+                <Form.Item
+                    name="content"
+                    label="Đề bài chung (hiển thị 1 lần cho cả bài nghe)"
+                    rules={[{ required: true }]}
+                >
+                    <Input placeholder="Ví dụ: Listen to the lecture and answer the questions." />
+                </Form.Item>
+            )}
             <Form.List name="questions">
                 {(fields, { add, remove }) => (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -225,6 +234,13 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
 
     const renderPart3Matching = () => (
         <div className="animate-fade-in">
+            <Form.Item
+                name="content"
+                label="Đề bài chung (hiển thị 1 lần cho cả hội thoại)"
+                rules={[{ required: true }]}
+            >
+                <Input placeholder="Ví dụ: Listen to the conversation. Who expresses each opinion?" />
+            </Form.Item>
             <Divider orientation={"left" as any}>
                 <Space><CheckCircleOutlined /> XÁC ĐỊNH QUAN ĐIỂM (4 NHẬN ĐỊNH)</Space>
             </Divider>

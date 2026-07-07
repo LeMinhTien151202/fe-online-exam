@@ -9,6 +9,7 @@ import {
   IQuestion,
   ListeningSpeakerMatchConfig,
   McConfig,
+  MonologueConfig,
   OrderingConfig,
   ReadingSpeakerMatchConfig,
   RecordConfig,
@@ -89,29 +90,49 @@ const renderConfig = (q: IQuestion): React.ReactNode => {
     );
   }
 
-  // Listening P3 — Man/Woman/Both
+  // Listening P3 — Man/Woman/Both: gói nhiều nhận định trong 1 bản ghi
   if (cfg && (cfg as unknown as SpeakerAgreementConfig).choice_kind === 'SPEAKER_AGREEMENT') {
+    const sa = cfg as unknown as SpeakerAgreementConfig;
     return (
       <>
-        {sectionTitle(<CheckCircleOutlined />, 'ĐÁP ÁN')}
-        <div style={box}>
-          <Text>Đáp án đúng: </Text>
-          <Tag color="success">{(cfg as unknown as SpeakerAgreementConfig).correct}</Tag>
-        </div>
+        {sectionTitle(<CheckCircleOutlined />, 'NHẬN ĐỊNH & ĐÁP ÁN')}
+        <Space direction="vertical" style={{ width: '100%' }}>
+          {sa.statements.map((s, i) => (
+            <div key={i} style={box}>
+              <Text>{i + 1}. {s.statement} → </Text>
+              <Tag color="success">{s.correct}</Tag>
+            </div>
+          ))}
+        </Space>
       </>
     );
   }
 
-  // MC (Grammar P1, Listening P1/P4): extraConfig.options
+  // Listening P4 — Monologue: 1 bài nghe, nhiều câu MC trong extraConfig.questions
+  if (cfg && Array.isArray((cfg as unknown as MonologueConfig).questions)) {
+    const mono = cfg as unknown as MonologueConfig;
+    return (
+      <>
+        {sectionTitle(<CheckCircleOutlined />, 'CÁC CÂU HỎI & ĐÁP ÁN')}
+        <Space direction="vertical" style={{ width: '100%' }} size={16}>
+          {mono.questions.map((q, qi) => (
+            <div key={qi} style={box}>
+              <Text strong>Câu {qi + 1}: {q.question}</Text>
+              <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
+                {q.options.map((o, i) => optionRow(String.fromCharCode(65 + i), o.content, o.is_correct))}
+              </Space>
+            </div>
+          ))}
+        </Space>
+      </>
+    );
+  }
+
+  // MC (Grammar P1, Listening P1): extraConfig.options
   if (cfg && Array.isArray((cfg as unknown as McConfig).options)) {
     const mc = cfg as unknown as McConfig;
     return (
       <>
-        {mc.audio_group_id && (
-          <div style={{ marginBottom: 12 }}>
-            <Tag color="purple">Nhóm audio: {mc.audio_group_id}</Tag>
-          </div>
-        )}
         {sectionTitle(<CheckCircleOutlined />, 'ĐÁP ÁN')}
         <Space direction="vertical" style={{ width: '100%' }}>
           {mc.options.map((o, i) => optionRow(String.fromCharCode(65 + i), o.content, o.is_correct))}

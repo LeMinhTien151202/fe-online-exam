@@ -10,6 +10,7 @@ import {
   IQuestion,
   ListeningSpeakerMatchConfig,
   McConfig,
+  MonologueConfig,
   OrderingConfig,
   ReadingSpeakerMatchConfig,
   RecordConfig,
@@ -54,12 +55,36 @@ const renderAnswer = (q: IQuestion): React.ReactNode => {
     );
   }
 
-  // Listening P3 — Man/Woman/Both
+  // Listening P3 — Man/Woman/Both: nhiều nhận định trong 1 bản ghi
   if ((cfg as unknown as SpeakerAgreementConfig).choice_kind === 'SPEAKER_AGREEMENT') {
-    return <div><Text type="secondary">Đáp án: </Text>{answerTag((cfg as unknown as SpeakerAgreementConfig).correct)}</div>;
+    const sa = cfg as unknown as SpeakerAgreementConfig;
+    return (
+      <Space direction="vertical" size={4} style={{ width: '100%' }}>
+        {sa.statements.map((s, i) => (
+          <div key={i}><Text>{i + 1}. {s.statement} → </Text>{answerTag(s.correct)}</div>
+        ))}
+      </Space>
+    );
   }
 
-  // MC — Grammar P1, Listening P1/P4
+  // Listening P4 — Monologue: 1 bài nghe, nhiều câu MC
+  if (Array.isArray((cfg as unknown as MonologueConfig).questions)) {
+    const mono = cfg as unknown as MonologueConfig;
+    return (
+      <Space direction="vertical" size={8} style={{ width: '100%' }}>
+        {mono.questions.map((q, qi) => (
+          <div key={qi}>
+            <Text strong>Câu {qi + 1}: {q.question}</Text>
+            <Space wrap size={4} style={{ display: 'flex', marginTop: 4 }}>
+              {q.options.map((o, i) => (o.is_correct ? answerTag(o.content) : plainTag(`${String.fromCharCode(65 + i)}. ${o.content}`)))}
+            </Space>
+          </div>
+        ))}
+      </Space>
+    );
+  }
+
+  // MC — Grammar P1, Listening P1
   if (Array.isArray((cfg as unknown as McConfig).options)) {
     const mc = cfg as unknown as McConfig;
     return (

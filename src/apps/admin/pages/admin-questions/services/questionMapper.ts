@@ -84,24 +84,41 @@ const buildListening = (v: FormValues): ICreateQuestionPayload[] => {
   const part = str(v.part) || 'part1';
   const mediaUrl = str(v.audioUrl) || undefined;
 
-  if (part === 'part1' || part === 'part4') {
+  // P1: mỗi câu = 1 bản ghi MC (audio riêng từng câu)
+  if (part === 'part1') {
     const questions = arr<{ title: string; optA: string; optB: string; optC: string; correctAnswer: string }>(
       v.questions
     );
-    // P4: 1 audio dùng chung cho 2 câu -> cùng mediaUrl + cùng audio_group_id (mỗi lần lưu 1 group riêng)
-    const audioGroupId = `g-${Date.now()}`;
     return questions
       .filter((q) => q && q.title)
       .map((q) => ({
         skillId: SKILL_ID.listening,
-        partNumber: part === 'part1' ? 1 : 4,
+        partNumber: 1,
         content: q.title,
         mediaUrl,
-        extraConfig: {
-          options: buildMcOptions(q.optA, q.optB, q.optC, q.correctAnswer),
-          ...(part === 'part4' ? { audio_group_id: audioGroupId } : {}),
-        },
+        extraConfig: { options: buildMcOptions(q.optA, q.optB, q.optC, q.correctAnswer) },
       }));
+  }
+
+  // P4: 1 bài nghe (1 audio dùng chung) = 1 bản ghi, gói các câu MC trong extraConfig.questions
+  if (part === 'part4') {
+    const questions = arr<{ title: string; optA: string; optB: string; optC: string; correctAnswer: string }>(
+      v.questions
+    ).filter((q) => q && q.title);
+    return [
+      {
+        skillId: SKILL_ID.listening,
+        partNumber: 4,
+        content: str(v.content) || str(v.transcript) || 'Listen to the recording and answer the questions.',
+        mediaUrl,
+        extraConfig: {
+          questions: questions.map((q) => ({
+            question: q.title,
+            options: buildMcOptions(q.optA, q.optB, q.optC, q.correctAnswer),
+          })),
+        },
+      },
+    ];
   }
 
   if (part === 'part2') {
@@ -124,16 +141,20 @@ const buildListening = (v: FormValues): ICreateQuestionPayload[] => {
     ];
   }
 
-  // part3: 4 nhận định -> 4 bản ghi MC agreement (audio dùng chung ở part, không gắn media từng câu)
-  const opinions = arr<{ text: string; answer: string }>(v.opinions);
-  return opinions
-    .filter((o) => o && o.text)
-    .map((o) => ({
+  // part3: 1 hội thoại (audio chung) = 1 bản ghi, gom các nhận định vào extraConfig.statements
+  const opinions = arr<{ text: string; answer: string }>(v.opinions).filter((o) => o && o.text);
+  return [
+    {
       skillId: SKILL_ID.listening,
       partNumber: 3,
-      content: o.text,
-      extraConfig: { choice_kind: 'SPEAKER_AGREEMENT' as const, correct: AGREEMENT[o.answer] },
-    }));
+      content: str(v.content) || 'Listen to the conversation. Who expresses each opinion?',
+      mediaUrl,
+      extraConfig: {
+        choice_kind: 'SPEAKER_AGREEMENT' as const,
+        statements: opinions.map((o) => ({ statement: o.text, correct: AGREEMENT[o.answer] })),
+      },
+    },
+  ];
 };
 
 // ---------- READING (skillId 3) ----------

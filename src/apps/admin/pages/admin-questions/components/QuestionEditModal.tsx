@@ -10,6 +10,7 @@ import {
   IUpdateQuestionPayload,
   ListeningSpeakerMatchConfig,
   McConfig,
+  MonologueConfig,
   OrderingConfig,
   QuestionExtraConfig,
   ReadingSpeakerMatchConfig,
@@ -36,8 +37,10 @@ interface EditFormValues {
   // MC
   mcOptions?: string[];
   mcCorrectIndex?: number;
-  // SPEAKER_AGREEMENT
-  agreementCorrect?: 'MAN' | 'WOMAN' | 'BOTH';
+  // SPEAKER_AGREEMENT (Listening P3) — nhiều nhận định
+  agreementStatements?: { statement: string; correct: 'MAN' | 'WOMAN' | 'BOTH' }[];
+  // Monologue (Listening P4) — nhiều câu MC / 1 bài nghe
+  monoQuestions?: { question: string; options: string[]; correctIndex: number }[];
   // Gap fill
   gaps?: { options: string[]; correct_index: number }[];
   // ORDERING (hiển thị theo đúng thứ tự chuẩn)
@@ -75,7 +78,16 @@ const toFormValues = (q: IQuestion): EditFormValues => {
       correct_index: g.correct_index,
     }));
   } else if ((cfg as unknown as SpeakerAgreementConfig).choice_kind === 'SPEAKER_AGREEMENT') {
-    values.agreementCorrect = (cfg as unknown as SpeakerAgreementConfig).correct;
+    values.agreementStatements = (cfg as unknown as SpeakerAgreementConfig).statements.map((s) => ({
+      statement: s.statement,
+      correct: s.correct,
+    }));
+  } else if (Array.isArray((cfg as unknown as MonologueConfig).questions)) {
+    values.monoQuestions = (cfg as unknown as MonologueConfig).questions.map((q) => ({
+      question: q.question,
+      options: q.options.map((o) => o.content),
+      correctIndex: q.options.findIndex((o) => o.is_correct),
+    }));
   } else if (Array.isArray((cfg as unknown as McConfig).options)) {
     const mc = cfg as unknown as McConfig;
     values.mcOptions = mc.options.map((o) => o.content);
@@ -125,8 +137,19 @@ const toExtraConfig = (q: IQuestion, v: EditFormValues): QuestionExtraConfig => 
       gaps: v.gaps.map((g, i) => ({ gap_id: i + 1, options: g.options, correct_index: g.correct_index })),
     } as QuestionExtraConfig;
   }
-  if (v.agreementCorrect) {
-    return { choice_kind: 'SPEAKER_AGREEMENT', correct: v.agreementCorrect } as QuestionExtraConfig;
+  if (v.agreementStatements) {
+    return {
+      choice_kind: 'SPEAKER_AGREEMENT',
+      statements: v.agreementStatements.map((s) => ({ statement: s.statement, correct: s.correct })),
+    } as QuestionExtraConfig;
+  }
+  if (v.monoQuestions) {
+    return {
+      questions: v.monoQuestions.map((q) => ({
+        question: q.question,
+        options: q.options.map((content, i) => ({ content, is_correct: i === q.correctIndex })),
+      })),
+    } as QuestionExtraConfig;
   }
   if (v.mcOptions) {
     return {
@@ -268,15 +291,51 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ open, onCancel, q
             </>
           )}
 
-          {/* Listening P3 — Man/Woman/Both */}
-          {initialValues.agreementCorrect && (
-            <Form.Item name="agreementCorrect" label="Đáp án đúng" rules={requiredRule}>
-              <Radio.Group>
-                <Radio.Button value="MAN">Man</Radio.Button>
-                <Radio.Button value="WOMAN">Woman</Radio.Button>
-                <Radio.Button value="BOTH">Both</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
+          {/* Listening P3 — Man/Woman/Both: nhiều nhận định trong 1 bản ghi */}
+          {initialValues.agreementStatements && (
+            <>
+              <Divider orientation="left" plain>Các nhận định & đáp án</Divider>
+              {initialValues.agreementStatements.map((_, si) => (
+                <div key={si} style={{ marginBottom: 12, padding: 12, background: '#f8fafc', borderRadius: 8 }}>
+                  <Form.Item name={['agreementStatements', si, 'statement']} label={`Nhận định ${si + 1}`} rules={requiredRule}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name={['agreementStatements', si, 'correct']} label="Đáp án đúng" rules={requiredRule} style={{ marginBottom: 0 }}>
+                    <Radio.Group>
+                      <Radio.Button value="MAN">Man</Radio.Button>
+                      <Radio.Button value="WOMAN">Woman</Radio.Button>
+                      <Radio.Button value="BOTH">Both</Radio.Button>
+                    </Radio.Group>
+                  </Form.Item>
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Listening P4 — Monologue: nhiều câu MC / 1 bài nghe */}
+          {initialValues.monoQuestions && (
+            <>
+              <Divider orientation="left" plain>Các câu hỏi trong bài nghe</Divider>
+              {initialValues.monoQuestions.map((q, qi) => (
+                <div key={qi} style={{ marginBottom: 16, padding: 12, background: '#f8fafc', borderRadius: 8 }}>
+                  <Form.Item name={['monoQuestions', qi, 'question']} label={`Câu ${qi + 1}`} rules={requiredRule}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name={['monoQuestions', qi, 'correctIndex']} label="Đáp án đúng" rules={requiredRule}>
+                    <Radio.Group>
+                      {q.options.map((_, oi) => (
+                        <Radio key={oi} value={oi}>{String.fromCharCode(65 + oi)}</Radio>
+                      ))}
+                    </Radio.Group>
+                  </Form.Item>
+                  {q.options.map((_, oi) => (
+                    <Form.Item key={oi} name={['monoQuestions', qi, 'options', oi]} label={`Phương án ${String.fromCharCode(65 + oi)}`} rules={requiredRule}>
+                      <Input />
+                    </Form.Item>
+                  ))}
+                </div>
+              ))}
+            </>
           )}
 
           {/* Reading P1 — gap fill */}
