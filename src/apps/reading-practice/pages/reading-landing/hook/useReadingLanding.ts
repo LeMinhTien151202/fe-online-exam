@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { readingParts } from '../services/data';
+import { useReadingSetsQuery } from '../../../services/readingExamQuery';
 
 export const useReadingLanding = () => {
   const navigate = useNavigate();
@@ -9,27 +10,19 @@ export const useReadingLanding = () => {
 
   const [readingProgress] = useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('aptis_reading_progress');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        // ignore
-      }
-    }
+    if (saved) { try { return JSON.parse(saved); } catch { /* ignore */ } }
     return { r1: 0, r2: 0, r3: 0, r4: 0 };
   });
 
   const [mockProgress] = useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('aptis_reading_mock_progress');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        // ignore
-      }
-    }
-    return { m1: 0, m2: 0, m3: 0 };
+    if (saved) { try { return JSON.parse(saved); } catch { /* ignore */ } }
+    return {} as Record<string, number>;
   });
+
+  // Fetch đề thi Reading đã publish
+  const { data: examRes, isLoading: isExamsLoading } = useReadingSetsQuery();
+  const examSets = useMemo(() => examRes?.data ?? [], [examRes]);
 
   const parts = readingParts.map((part) => ({
     ...part,
@@ -39,19 +32,14 @@ export const useReadingLanding = () => {
   const completedCount = Object.values(readingProgress).filter((prog) => prog === 100).length;
 
   const handlePartClick = (partId: string) => {
-    if (partId === 'r1') {
-      navigate({ to: '/reading/part/1' });
-    } else if (partId === 'r2') {
-      navigate({ to: '/reading/part/2' });
-    } else if (partId === 'r3') {
-      navigate({ to: '/reading/part/3' });
-    } else if (partId === 'r4') {
-      navigate({ to: '/reading/part/4' });
-    }
+    if (partId === 'r1') navigate({ to: '/reading/part/1' });
+    else if (partId === 'r2') navigate({ to: '/reading/part/2' });
+    else if (partId === 'r3') navigate({ to: '/reading/part/3' });
+    else if (partId === 'r4') navigate({ to: '/reading/part/4' });
   };
 
-  const handleMockClick = (mockId: string) => {
-    navigate({ to: `/reading/mock-test/${mockId}` as any });
+  const handleMockClick = (examId: number) => {
+    navigate({ to: '/reading/mock-test/$testId', params: { testId: String(examId) } });
   };
 
   return {
@@ -63,6 +51,8 @@ export const useReadingLanding = () => {
     completedCount,
     mockProgress,
     handlePartClick,
-    handleMockClick
+    handleMockClick,
+    examSets,
+    isExamsLoading,
   };
 };

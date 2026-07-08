@@ -31,15 +31,28 @@ export const usePart1Action = (
 
   const [isFinished, setIsFinished] = useState(false);
 
+  const clearStorage = () => {
+    localStorage.removeItem(EXAM_ANSWERS_KEY);
+    localStorage.removeItem(EXAM_TIME_KEY);
+  };
+
+  const handleAutoSubmit = () => {
+    setIsFinished(true);
+    message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
+    clearStorage();
+    onSubmit(answers);
+  };
+
   // Sync answers to localStorage
   useEffect(() => {
     localStorage.setItem(EXAM_ANSWERS_KEY, JSON.stringify(answers));
-  }, [answers]);
+  }, [answers, EXAM_ANSWERS_KEY]);
 
   // Countdown timer logic
   useEffect(() => {
     if (timeLeft <= 0 || isFinished) {
       if (timeLeft <= 0 && !isFinished) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         handleAutoSubmit();
       }
       return;
@@ -54,19 +67,8 @@ export const usePart1Action = (
     }, 1000);
 
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, isFinished]);
-
-  const handleAutoSubmit = () => {
-    setIsFinished(true);
-    message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
-    clearStorage();
-    onSubmit(answers);
-  };
-
-  const clearStorage = () => {
-    localStorage.removeItem(EXAM_ANSWERS_KEY);
-    localStorage.removeItem(EXAM_TIME_KEY);
-  };
 
   const selectAnswer = (questionNumber: number, value: string) => {
     setAnswers(prev => ({

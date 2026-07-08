@@ -109,10 +109,11 @@ const renderConfig = (q: IQuestion): React.ReactNode => {
   }
 
   // Listening P4 — Monologue: 1 bài nghe, nhiều câu MC trong extraConfig.questions
-  // (loại trừ Speaking RECORD: cũng có questions[] nhưng không có options -> để nhánh RECORD render)
+  // Loại trừ Speaking RECORD (có response_time_seconds) và Reading SPEAKER_MATCH (có people[])
   if (
     cfg &&
     (cfg as unknown as RecordConfig).response_time_seconds == null &&
+    !Array.isArray((cfg as unknown as ReadingSpeakerMatchConfig).people) &&
     Array.isArray((cfg as unknown as MonologueConfig).questions)
   ) {
     const mono = cfg as unknown as MonologueConfig;
@@ -124,7 +125,7 @@ const renderConfig = (q: IQuestion): React.ReactNode => {
             <div key={qi} style={box}>
               <Text strong>Câu {qi + 1}: {q.question}</Text>
               <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
-                {q.options.map((o, i) => optionRow(String.fromCharCode(65 + i), o.content, o.is_correct))}
+                {q.options?.map((o, i) => optionRow(String.fromCharCode(65 + i), o.content, o.is_correct))}
               </Space>
             </div>
           ))}
@@ -187,7 +188,12 @@ const renderConfig = (q: IQuestion): React.ReactNode => {
   }
 
   // Reading P4 — SPEAKER_MATCH (people + questions)
-  if (cfg && Array.isArray((cfg as unknown as ReadingSpeakerMatchConfig).people)) {
+  // Guard: kiểm tra cả people và questions trước khi map
+  if (
+    cfg &&
+    Array.isArray((cfg as unknown as ReadingSpeakerMatchConfig).people) &&
+    Array.isArray((cfg as unknown as ReadingSpeakerMatchConfig).questions)
+  ) {
     const rm = cfg as unknown as ReadingSpeakerMatchConfig;
     return (
       <>

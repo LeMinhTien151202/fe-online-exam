@@ -43,12 +43,13 @@ const renderAnswer = (q: IQuestion): React.ReactNode => {
   // Reading P1 — gap fill
   if (Array.isArray((cfg as unknown as GapFillConfig).gaps)) {
     const gaps = (cfg as unknown as GapFillConfig).gaps;
+    if (!gaps?.length) return null;
     return (
       <Space direction="vertical" size={4} style={{ width: '100%' }}>
         {gaps.map((g) => (
           <div key={g.gap_id}>
             <Text type="secondary">Chỗ ({g.gap_id}): </Text>
-            {g.options.map((opt, i) => (i === g.correct_index ? answerTag(opt) : plainTag(opt)))}
+            {g.options?.map((opt, i) => (i === g.correct_index ? answerTag(opt) : plainTag(opt)))}
           </div>
         ))}
       </Space>
@@ -58,6 +59,7 @@ const renderAnswer = (q: IQuestion): React.ReactNode => {
   // Listening P3 — Man/Woman/Both: nhiều nhận định trong 1 bản ghi
   if ((cfg as unknown as SpeakerAgreementConfig).choice_kind === 'SPEAKER_AGREEMENT') {
     const sa = cfg as unknown as SpeakerAgreementConfig;
+    if (!Array.isArray(sa.statements)) return null;
     return (
       <Space direction="vertical" size={4} style={{ width: '100%' }}>
         {sa.statements.map((s, i) => (
@@ -68,9 +70,10 @@ const renderAnswer = (q: IQuestion): React.ReactNode => {
   }
 
   // Listening P4 — Monologue: 1 bài nghe, nhiều câu MC
-  // (loại trừ Speaking RECORD: cũng có questions[] nhưng không có options)
+  // Loại trừ Speaking RECORD (có response_time_seconds) và Reading SPEAKER_MATCH (có people[])
   if (
     (cfg as unknown as RecordConfig).response_time_seconds == null &&
+    !Array.isArray((cfg as unknown as ReadingSpeakerMatchConfig).people) &&
     Array.isArray((cfg as unknown as MonologueConfig).questions)
   ) {
     const mono = cfg as unknown as MonologueConfig;
@@ -80,7 +83,7 @@ const renderAnswer = (q: IQuestion): React.ReactNode => {
           <div key={qi}>
             <Text strong>Câu {qi + 1}: {q.question}</Text>
             <Space wrap size={4} style={{ display: 'flex', marginTop: 4 }}>
-              {q.options.map((o, i) => (o.is_correct ? answerTag(o.content) : plainTag(`${String.fromCharCode(65 + i)}. ${o.content}`)))}
+              {q.options?.map((o, i) => (o.is_correct ? answerTag(o.content) : plainTag(`${String.fromCharCode(65 + i)}. ${o.content}`)))}
             </Space>
           </div>
         ))}
@@ -103,7 +106,7 @@ const renderAnswer = (q: IQuestion): React.ReactNode => {
     const wb = cfg as unknown as WordBankConfig;
     return (
       <Space direction="vertical" size={4} style={{ width: '100%' }}>
-        <Text type="secondary">Ngân hàng từ: {wb.options_pool.join(', ')}</Text>
+        <Text type="secondary">Ngân hàng từ: {wb.options_pool?.join(', ')}</Text>
         {wb.slots.map((s) => (
           <div key={s.slot_id}><Text>{s.prompt} → </Text>{answerTag(s.correct_answer)}</div>
         ))}
@@ -117,14 +120,17 @@ const renderAnswer = (q: IQuestion): React.ReactNode => {
     return (
       <Space direction="vertical" size={4} style={{ width: '100%' }}>
         {ord.correct_order.map((poolIdx, pos) => (
-          <div key={pos}>{plainTag(String(pos + 1))}{ord.options_pool[poolIdx]}</div>
+          <div key={pos}>{plainTag(String(pos + 1))}{ord.options_pool?.[poolIdx]}</div>
         ))}
       </Space>
     );
   }
 
   // Reading P4 — SPEAKER_MATCH (people + questions)
-  if (Array.isArray((cfg as unknown as ReadingSpeakerMatchConfig).people)) {
+  if (
+    Array.isArray((cfg as unknown as ReadingSpeakerMatchConfig).people) &&
+    Array.isArray((cfg as unknown as ReadingSpeakerMatchConfig).questions)
+  ) {
     const rm = cfg as unknown as ReadingSpeakerMatchConfig;
     return (
       <Space direction="vertical" size={4} style={{ width: '100%' }}>
@@ -182,14 +188,14 @@ const renderAnswer = (q: IQuestion): React.ReactNode => {
           {plainTag(`Chuẩn bị ${rc.prep_time_seconds}s`)}
           {plainTag(`${rc.image_count} ảnh`)}
         </Space>
-        {!!rc.questions?.length && (
+        {Array.isArray(rc.questions) && rc.questions.length > 0 && (
           <Space direction="vertical" size={4} style={{ width: '100%' }}>
             {rc.questions.map((q, i) => (
               <div key={i}><Text strong>Câu {i + 1}: </Text><Text>{q.question}</Text></div>
             ))}
           </Space>
         )}
-        {!!rc.image_urls?.length && (
+        {Array.isArray(rc.image_urls) && rc.image_urls.length > 0 && (
           <Space wrap>
             {rc.image_urls.map((u) => (
               <img key={u} src={u} alt="speaking" style={{ width: 120, height: 90, objectFit: 'cover', borderRadius: 6, border: '1px solid #e2e8f0' }} />

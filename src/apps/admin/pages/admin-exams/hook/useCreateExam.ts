@@ -68,9 +68,14 @@ export const useCreateExam = () => {
     const currentType = (form.getFieldValue("type") as string) || (examConfig.type as string);
 
     const isSingleSlotPart = (skill: string, part: string) => {
-      if (skill === "Speaking" || skill === "Writing") return true;
-      if (skill === "Reading" && part !== "Part 2") return true;
-      if (skill === "Listening" && part !== "Part 1") return true;
+      // Speaking P1: 3 câu độc lập; Writing P1: 5 câu, Writing P3: 3 câu
+      if (skill === 'Speaking' && part === 'Part 1') return false;
+      if (skill === 'Writing' && (part === 'Part 1' || part === 'Part 3')) return false;
+      // Listening P4: 2 bài nghe (2 bản ghi gộp)
+      if (skill === 'Listening' && part === 'Part 4') return false;
+      if (skill === 'Speaking' || skill === 'Writing') return true;
+      if (skill === 'Reading' && part !== 'Part 2') return true;
+      if (skill === 'Listening' && part !== 'Part 1') return true;
       return false;
     };
 

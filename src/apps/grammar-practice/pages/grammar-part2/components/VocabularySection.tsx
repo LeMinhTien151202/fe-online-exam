@@ -8,7 +8,7 @@ interface VocabularySectionProps {
   answers: Record<number, string>;
   currentQuestionIndex: number;
   onSelectAnswer: (qNum: number, value: string) => void;
-  onQuestionFocus: (qNum: number) => void;
+  onQuestionFocus?: (qNum: number) => void;
 }
 
 export const VocabularySection: React.FC<VocabularySectionProps> = ({
@@ -16,7 +16,6 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
   answers,
   currentQuestionIndex,
   onSelectAnswer,
-  onQuestionFocus,
 }) => {
   // Find which set contains the currentQuestionIndex
   const activeSet = sets.find(set => 

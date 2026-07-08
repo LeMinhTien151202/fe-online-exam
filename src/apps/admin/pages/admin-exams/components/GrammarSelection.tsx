@@ -110,12 +110,12 @@ const GrammarSelection: React.FC<Props> = ({
                             <div style={{ marginBottom: '20px', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
                                 <div style={{ background: '#f8fafc', padding: '10px 15px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between' }}>
                                     <Text strong>1. NGỮ PHÁP (25 CÂU)</Text>
-                                    <Tag color="blue">{selectedQuestions.filter(q => q && q.part === 'Part 1').length}/25</Tag>
+                                    <Tag color="blue">{selectedQuestions.filter(q => q && q.part === 'Part 1' && q.type === 'Grammar').length}/25</Tag>
                                 </div>
                                 <List
                                     size="small"
                                     rowKey="id"
-                                    dataSource={Array.from({ length: 25 }).map((_, i) => ({ id: i, data: selectedQuestions.filter(q => q && q.part === 'Part 1')[i] || null }))}
+                                    dataSource={Array.from({ length: 25 }).map((_, i) => ({ id: i, data: selectedQuestions.filter(q => q && q.part === 'Part 1' && q.type === 'Grammar')[i] || null }))}
                                     renderItem={(slot: { id: number; data: IBankQuestion | null }) => {
                                         const item = slot.data;
                                         const idx = slot.id;

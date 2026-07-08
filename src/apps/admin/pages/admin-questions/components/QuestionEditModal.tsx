@@ -85,6 +85,7 @@ const toFormValues = (q: IQuestion): EditFormValues => {
     }));
   } else if (
     (cfg as unknown as RecordConfig).response_time_seconds == null &&
+    !Array.isArray((cfg as unknown as ReadingSpeakerMatchConfig).people) &&
     Array.isArray((cfg as unknown as MonologueConfig).questions)
   ) {
     values.monoQuestions = (cfg as unknown as MonologueConfig).questions.map((q) => ({

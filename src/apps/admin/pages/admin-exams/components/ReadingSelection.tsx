@@ -100,7 +100,7 @@ const ReadingSelection: React.FC<Props> = ({
 
                     <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
                         {displayParts.map(p => {
-                            const selectedInPart = selectedQuestions.find(q => q && q.part === p);
+                            const selectedInPart = selectedQuestions.find(q => q && q.part === p && q.type === 'Reading');
 
                             return (
                                 <div key={p} style={{ marginBottom: '1.5rem', padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>

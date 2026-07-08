@@ -98,9 +98,9 @@ const ListeningSelection: React.FC<Props> = ({
                 <Card title={mode === 'partial' ? `Cấu hình ${targetPart}` : "Cấu trúc Listening chuẩn (4 Parts)"} bordered={false}>
                     <div style={{ maxHeight: '640px', overflowY: 'auto' }}>
                         {displayParts.map(p => {
-                            const partQs = selectedQuestions.filter(q => q && q.part === p);
+                            const partQs = selectedQuestions.filter(q => q && q.part === p && q.type === 'Listening');
 
-                            const totalSlots = p === 'Part 1' ? 13 : 4;
+                            const totalSlots = p === 'Part 1' ? 13 : p === 'Part 4' ? 2 : 1;
 
                             return (
                                 <div key={p} style={{ marginBottom: '16px', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>

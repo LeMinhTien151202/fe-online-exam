@@ -1,47 +1,126 @@
 import { message } from 'antd';
-import { useEffect,useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useReadingExamDetailQuery } from '../../../services/readingExamQuery';
+import { flattenExam, ExamPartData } from '../../../services/readingExamMapper';
 import {
-ISentence,
-correctP1,
-correctP2,
-correctP3,
-correctP4,
-initialP2Sentences
-} from '../services/data';
+  mapPart1,
+  mapPart2,
+  mapPart3,
+  mapPart4,
+  Part1Data,
+  Part2Data,
+  Part2Sentence,
+  Part3Data,
+  Part4Data,
+} from '../../../services/mappers';
 
+// Bộ đề Reading đầy đủ = 5 phần theo API:
+//  P1 gap-fill | P2 ordering | P3 ordering (cùng dạng P2) | P4 speaker-match | P5 heading-match
 export const useMockTest = (testId: string) => {
+  const examId = Number(testId);
+  const { data: examDetail, isLoading, isError } = useReadingExamDetailQuery(examId || null);
+
+  // ==================== DERIVED DATA FROM API ====================
+
+  const examParts = useMemo<ExamPartData[]>(() => {
+    if (!examDetail) return [];
+    return flattenExam(examDetail);
+  }, [examDetail]);
+
+  const getPart = (n: number) => examParts.find((ep) => ep.partNumber === n);
+
+  // P1: gap-fill — có thể nhiều đoạn văn, mỗi đoạn 1 bản ghi
+  const part1Data = useMemo<Part1Data[]>(() => {
+    const p = getPart(1);
+    if (!p) return [];
+    return p.questions.map(mapPart1).filter(Boolean) as Part1Data[];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [examParts]);
+
+  // P2 & P3: ordering (cùng dạng)
+  const orderingP2 = useMemo<Part2Data | null>(() => {
+    const p = getPart(2);
+    if (!p || p.questions.length === 0) return null;
+    return mapPart2(p.questions[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [examParts]);
+
+  const orderingP3 = useMemo<Part2Data | null>(() => {
+    const p = getPart(3);
+    if (!p || p.questions.length === 0) return null;
+    return mapPart2(p.questions[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [examParts]);
+
+  // P4: speaker-match
+  const speakerP4 = useMemo<Part3Data | null>(() => {
+    const p = getPart(4);
+    if (!p || p.questions.length === 0) return null;
+    return mapPart3(p.questions[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [examParts]);
+
+  // P5: heading-match
+  const headingP5 = useMemo<Part4Data | null>(() => {
+    const p = getPart(5);
+    if (!p || p.questions.length === 0) return null;
+    return mapPart4(p.questions[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [examParts]);
+
+  // Đáp án đúng
+  const correctP1 = useMemo(() => {
+    const map: Record<number, string> = {};
+    part1Data.forEach((pd) => {
+      Object.entries(pd.correctAnswers).forEach(([id, ans]) => {
+        map[Number(id)] = ans;
+      });
+    });
+    return map;
+  }, [part1Data]);
+
+  const correctP2 = useMemo(() => orderingP2?.correctOrder ?? [], [orderingP2]);
+  const correctP3 = useMemo(() => orderingP3?.correctOrder ?? [], [orderingP3]);
+  const correctP4 = useMemo(() => speakerP4?.correctAnswers ?? {}, [speakerP4]);
+  const correctP5 = useMemo(() => headingP5?.correctAnswers ?? {}, [headingP5]);
+
+  // ==================== STATE ====================
+
   const [p1Answers, setP1Answers] = useState<Record<number, string>>({});
-  const [p2Slots, setP2Slots] = useState<Record<number, ISentence | null>>({
-    1: null, 2: null, 3: null, 4: null, 5: null
-  });
-  const [p3Answers, setP3Answers] = useState<Record<number, string>>({});
+  const [p2Slots, setP2Slots] = useState<Record<number, Part2Sentence | null>>({});
+  const [p2Pool, setP2Pool] = useState<Part2Sentence[]>([]);
+  const [p3Slots, setP3Slots] = useState<Record<number, Part2Sentence | null>>({});
+  const [p3Pool, setP3Pool] = useState<Part2Sentence[]>([]);
   const [p4Answers, setP4Answers] = useState<Record<number, string>>({});
-
-  const [p2Pool, setP2Pool] = useState<ISentence[]>(initialP2Sentences);
-
-  const [draggedItem, setDraggedItem] = useState<ISentence | null>(null);
-  const [draggedFromSlot, setDraggedFromSlot] = useState<number | null>(null);
-  const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
-
+  const [p5Answers, setP5Answers] = useState<Record<number, string>>({});
   const [activeQuestionNum, setActiveQuestionNum] = useState<number>(1);
-  const activePart = activeQuestionNum <= 5 ? 1 : activeQuestionNum <= 10 ? 2 : activeQuestionNum <= 17 ? 3 : 4;
-
-  const [timeLeft, setTimeLeft] = useState(35 * 60); // 35 minutes
+  const [timeLeft, setTimeLeft] = useState(35 * 60);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showReport, setShowReport] = useState(false);
 
+  // ==================== INIT ORDERING POOLS ====================
+
   useEffect(() => {
-    if (timeLeft <= 0 || isSubmitted) {
-      if (timeLeft <= 0 && !isSubmitted) {
-        handleAutoSubmit();
-      }
-      return;
+    if (orderingP2 && orderingP2.initialSentences.length > 0) {
+      const slots: Record<number, Part2Sentence | null> = {};
+      orderingP2.initialSentences.forEach((_, i) => { slots[i + 1] = null; });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setP2Pool([...orderingP2.initialSentences]);
+      setP2Slots(slots);
     }
-    const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft, isSubmitted]);
+  }, [orderingP2]);
+
+  useEffect(() => {
+    if (orderingP3 && orderingP3.initialSentences.length > 0) {
+      const slots: Record<number, Part2Sentence | null> = {};
+      orderingP3.initialSentences.forEach((_, i) => { slots[i + 1] = null; });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setP3Pool([...orderingP3.initialSentences]);
+      setP3Slots(slots);
+    }
+  }, [orderingP3]);
+
+  // ==================== COUNTS ====================
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -49,45 +128,133 @@ export const useMockTest = (testId: string) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const p1QuestionCount = useMemo(
+    () => part1Data.reduce((sum, pd) => sum + pd.questions.length, 0),
+    [part1Data]
+  );
+  const p2QuestionCount = orderingP2?.initialSentences.length ?? 0;
+  const p3QuestionCount = orderingP3?.initialSentences.length ?? 0;
+  const p4QuestionCount = speakerP4?.questions.length ?? 0;
+  const p5QuestionCount = headingP5?.paragraphs.length ?? 0;
+  const totalQuestions =
+    p1QuestionCount + p2QuestionCount + p3QuestionCount + p4QuestionCount + p5QuestionCount;
+
+  // Phần nào đang có dữ liệu (để render nav + nút điều hướng)
+  const availableParts = useMemo(() => {
+    const arr: number[] = [];
+    if (p1QuestionCount > 0) arr.push(1);
+    if (p2QuestionCount > 0) arr.push(2);
+    if (p3QuestionCount > 0) arr.push(3);
+    if (p4QuestionCount > 0) arr.push(4);
+    if (p5QuestionCount > 0) arr.push(5);
+    return arr;
+  }, [p1QuestionCount, p2QuestionCount, p3QuestionCount, p4QuestionCount, p5QuestionCount]);
+
+  // Offset câu bắt đầu của mỗi phần
+  const partOffset = (partNum: number): number => {
+    let off = 0;
+    if (partNum > 1) off += p1QuestionCount;
+    if (partNum > 2) off += p2QuestionCount;
+    if (partNum > 3) off += p3QuestionCount;
+    if (partNum > 4) off += p4QuestionCount;
+    return off;
+  };
+
+  const firstQNumForPart = (partNum: number) => partOffset(partNum) + 1;
+
+  const getPartForQuestion = (qNum: number): number => {
+    if (qNum <= p1QuestionCount) return 1;
+    if (qNum <= p1QuestionCount + p2QuestionCount) return 2;
+    if (qNum <= p1QuestionCount + p2QuestionCount + p3QuestionCount) return 3;
+    if (qNum <= p1QuestionCount + p2QuestionCount + p3QuestionCount + p4QuestionCount) return 4;
+    return 5;
+  };
+
+  const activePart = getPartForQuestion(activeQuestionNum);
+
   const p1AnsweredCount = Object.keys(p1Answers).length;
   const p2AnsweredCount = Object.values(p2Slots).filter(Boolean).length;
-  const p3AnsweredCount = Object.keys(p3Answers).length;
+  const p3AnsweredCount = Object.values(p3Slots).filter(Boolean).length;
   const p4AnsweredCount = Object.keys(p4Answers).length;
-  const totalAnsweredCount = p1AnsweredCount + p2AnsweredCount + p3AnsweredCount + p4AnsweredCount;
+  const p5AnsweredCount = Object.keys(p5Answers).length;
+  const totalAnsweredCount =
+    p1AnsweredCount + p2AnsweredCount + p3AnsweredCount + p4AnsweredCount + p5AnsweredCount;
+
+  // ==================== SCORING ====================
 
   const calculateScores = () => {
-    const scoreP1 = Object.keys(correctP1).filter(id => p1Answers[Number(id)] === correctP1[Number(id)]).length;
-    const scoreP2 = Object.keys(p2Slots).filter(key => {
-      const idx = Number(key);
-      const slotItem = p2Slots[idx];
-      return slotItem && slotItem.id === correctP2[idx - 1];
-    }).length;
-    const scoreP3 = Object.keys(correctP3).filter(id => p3Answers[Number(id)] === correctP3[Number(id)]).length;
-    const scoreP4 = Object.keys(correctP4).filter(id => p4Answers[Number(id)] === correctP4[Number(id)]).length;
-    const totalScore = scoreP1 + scoreP2 + scoreP3 + scoreP4;
-
-    return { scoreP1, scoreP2, scoreP3, scoreP4, totalScore };
+    let scoreP1 = 0;
+    Object.entries(correctP1).forEach(([id, ans]) => {
+      if (p1Answers[Number(id)] === ans) scoreP1++;
+    });
+    let scoreP2 = 0;
+    Object.entries(p2Slots).forEach(([key, item]) => {
+      if (item && item.id === correctP2[Number(key) - 1]) scoreP2++;
+    });
+    let scoreP3 = 0;
+    Object.entries(p3Slots).forEach(([key, item]) => {
+      if (item && item.id === correctP3[Number(key) - 1]) scoreP3++;
+    });
+    let scoreP4 = 0;
+    Object.entries(correctP4).forEach(([id, person]) => {
+      if (p4Answers[Number(id)] === person) scoreP4++;
+    });
+    let scoreP5 = 0;
+    Object.entries(correctP5).forEach(([num, heading]) => {
+      if (p5Answers[Number(num)] === heading) scoreP5++;
+    });
+    const totalScore = scoreP1 + scoreP2 + scoreP3 + scoreP4 + scoreP5;
+    return { scoreP1, scoreP2, scoreP3, scoreP4, scoreP5, totalScore };
   };
 
   const getAptisLevel = (score: number) => {
-    if (score < 8) return 'A1/A2 (Dưới trung bình)';
-    if (score < 15) return 'B1 (Trung cấp)';
-    if (score < 21) return 'B2 (Trung cao cấp)';
+    const ratio = totalQuestions > 0 ? score / totalQuestions : 0;
+    if (ratio < 0.34) return 'A1/A2 (Dưới trung bình)';
+    if (ratio < 0.6) return 'B1 (Trung cấp)';
+    if (ratio < 0.85) return 'B2 (Trung cao cấp)';
     return 'C (Cao cấp)';
   };
+
+  // ==================== PERSISTENCE ====================
 
   const saveProgressToLocalStorage = (score: number) => {
     const saved = localStorage.getItem('aptis_reading_mock_progress');
     let progressObj: Record<string, number> = {};
     if (saved) {
-      try {
-        progressObj = JSON.parse(saved);
-      } catch (e) { /* bỏ qua lỗi */ }
+      try { progressObj = JSON.parse(saved); } catch { /* ignore */ }
     }
     const currentBest = progressObj[testId] ?? 0;
     progressObj[testId] = Math.max(currentBest, score);
     localStorage.setItem('aptis_reading_mock_progress', JSON.stringify(progressObj));
   };
+
+  // ==================== TIMER (refs to avoid stale closures) ====================
+
+  const isSubmittedRef = useRef(isSubmitted);
+  const calculateScoresRef = useRef(calculateScores);
+  const saveProgressRef = useRef(saveProgressToLocalStorage);
+
+  useEffect(() => {
+    isSubmittedRef.current = isSubmitted;
+    calculateScoresRef.current = calculateScores;
+    saveProgressRef.current = saveProgressToLocalStorage;
+  });
+
+  useEffect(() => {
+    if (timeLeft <= 0 || isSubmittedRef.current) {
+      if (timeLeft <= 0 && !isSubmittedRef.current) {
+        isSubmittedRef.current = true;
+        message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
+        const { totalScore } = calculateScoresRef.current();
+        saveProgressRef.current(totalScore);
+      }
+      return;
+    }
+    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  // ==================== SUBMIT ====================
 
   const handleAutoSubmit = () => {
     setIsSubmitted(true);
@@ -105,20 +272,44 @@ export const useMockTest = (testId: string) => {
     saveProgressToLocalStorage(totalScore);
   };
 
+  const resetOrdering = (
+    data: Part2Data | null,
+    setSlots: (s: Record<number, Part2Sentence | null>) => void,
+    setPool: (p: Part2Sentence[]) => void
+  ) => {
+    if (!data) return;
+    const slots: Record<number, Part2Sentence | null> = {};
+    data.initialSentences.forEach((_, i) => { slots[i + 1] = null; });
+    setSlots(slots);
+    setPool([...data.initialSentences]);
+  };
+
   const handleRetry = () => {
     setP1Answers({});
-    setP2Slots({ 1: null, 2: null, 3: null, 4: null, 5: null });
-    setP2Pool(initialP2Sentences);
-    setP3Answers({});
+    resetOrdering(orderingP2, setP2Slots, setP2Pool);
+    resetOrdering(orderingP3, setP3Slots, setP3Pool);
     setP4Answers({});
+    setP5Answers({});
     setTimeLeft(35 * 60);
     setIsSubmitted(false);
     setShowReport(false);
     setActiveQuestionNum(1);
   };
 
-  const handleDragStart = (item: ISentence, fromSlot: number | null = null) => {
+  // ==================== DRAG & DROP (dùng chung cho P2 & P3) ====================
+
+  const [draggedItem, setDraggedItem] = useState<Part2Sentence | null>(null);
+  const [draggedFromSlot, setDraggedFromSlot] = useState<number | null>(null);
+  const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
+  const [dragPart, setDragPart] = useState<number>(2);
+
+  const slotsSetterFor = (part: number) => (part === 2 ? setP2Slots : setP3Slots);
+  const poolSetterFor = (part: number) => (part === 2 ? setP2Pool : setP3Pool);
+  const slotsFor = (part: number) => (part === 2 ? p2Slots : p3Slots);
+
+  const handleDragStart = (part: number, item: Part2Sentence, fromSlot: number | null = null) => {
     if (isSubmitted) return;
+    setDragPart(part);
     setDraggedItem(item);
     setDraggedFromSlot(fromSlot);
   };
@@ -129,24 +320,20 @@ export const useMockTest = (testId: string) => {
     setDragOverSlot(slotId);
   };
 
-  const handleDragLeave = () => {
-    setDragOverSlot(null);
-  };
+  const handleDragLeave = () => setDragOverSlot(null);
 
-  const handleDrop = (slotId: number) => {
-    if (isSubmitted || !draggedItem) return;
-    setP2Slots(prev => {
+  const handleDrop = (part: number, slotId: number) => {
+    if (isSubmitted || !draggedItem || dragPart !== part) return;
+    const item = draggedItem;
+    const fromSlot = draggedFromSlot;
+    const setPool = poolSetterFor(part);
+    slotsSetterFor(part)((prev) => {
       const nextSlots = { ...prev };
       const currentInSlot = nextSlots[slotId];
-      if (currentInSlot) {
-        setP2Pool(prevPool => [...prevPool, currentInSlot]);
-      }
-      if (draggedFromSlot !== null) {
-        nextSlots[draggedFromSlot] = null;
-      } else {
-        setP2Pool(prevPool => prevPool.filter(item => item.id !== draggedItem.id));
-      }
-      nextSlots[slotId] = draggedItem;
+      if (currentInSlot) setPool((prevPool) => [...prevPool, currentInSlot]);
+      if (fromSlot !== null) nextSlots[fromSlot] = null;
+      else setPool((prevPool) => prevPool.filter((it) => it.id !== item.id));
+      nextSlots[slotId] = item;
       return nextSlots;
     });
     setDraggedItem(null);
@@ -154,82 +341,115 @@ export const useMockTest = (testId: string) => {
     setDragOverSlot(null);
   };
 
-  const handleRemoveFromSlot = (slotId: number, item: ISentence) => {
+  const handleRemoveFromSlot = (part: number, slotId: number, item: Part2Sentence) => {
     if (isSubmitted) return;
-    setP2Slots(prev => ({ ...prev, [slotId]: null }));
-    setP2Pool(prevPool => [...prevPool, item]);
+    slotsSetterFor(part)((prev) => ({ ...prev, [slotId]: null }));
+    poolSetterFor(part)((prevPool) => [...prevPool, item]);
   };
 
-  const handleAutoPlace = (item: ISentence) => {
+  const handleAutoPlace = (part: number, item: Part2Sentence) => {
     if (isSubmitted) return;
-    const firstEmptySlot = Object.keys(p2Slots).find(key => !p2Slots[Number(key)]);
+    const slots = slotsFor(part);
+    const firstEmptySlot = Object.keys(slots).find((key) => !slots[Number(key)]);
     if (firstEmptySlot) {
       const slotNum = Number(firstEmptySlot);
-      setP2Slots(prev => ({ ...prev, [slotNum]: item }));
-      setP2Pool(prevPool => prevPool.filter(p => p.id !== item.id));
+      slotsSetterFor(part)((prev) => ({ ...prev, [slotNum]: item }));
+      poolSetterFor(part)((prevPool) => prevPool.filter((p) => p.id !== item.id));
     }
   };
 
-  const handleNavigateQuestion = (qNum: number) => {
-    setActiveQuestionNum(qNum);
-  };
+  // ==================== NAVIGATION (chỉ giữa các phần có dữ liệu) ====================
+
+  const handleNavigateQuestion = (qNum: number) => setActiveQuestionNum(qNum);
 
   const handlePrevQuestion = () => {
-    if (activePart === 2) {
-      handleNavigateQuestion(1);
-    } else if (activePart === 3) {
-      handleNavigateQuestion(6);
-    } else if (activePart === 4) {
-      handleNavigateQuestion(11);
-    }
+    const idx = availableParts.indexOf(activePart);
+    if (idx > 0) setActiveQuestionNum(firstQNumForPart(availableParts[idx - 1]));
   };
 
   const handleNextQuestion = () => {
-    if (activePart === 1) {
-      handleNavigateQuestion(6);
-    } else if (activePart === 2) {
-      handleNavigateQuestion(11);
-    } else if (activePart === 3) {
-      handleNavigateQuestion(18);
+    const idx = availableParts.indexOf(activePart);
+    if (idx >= 0 && idx < availableParts.length - 1) {
+      setActiveQuestionNum(firstQNumForPart(availableParts[idx + 1]));
     }
   };
 
+  const isFirstPart = availableParts.indexOf(activePart) <= 0;
+  const isLastPart = availableParts.indexOf(activePart) === availableParts.length - 1;
+
+  // ==================== RETURN ====================
+
   return {
+    isLoading,
+    isError,
+    examTitle: examDetail?.title ?? 'Đề thi Đọc hiểu',
+
+    part1Data,
+    orderingP2,
+    orderingP3,
+    speakerP4,
+    headingP5,
+
+    correctP1,
+    correctP2,
+    correctP3,
+    correctP4,
+    correctP5,
+
     p1Answers,
     setP1Answers,
     p2Slots,
-    setP2Slots,
-    p3Answers,
-    setP3Answers,
+    p2Pool,
+    p3Slots,
+    p3Pool,
     p4Answers,
     setP4Answers,
-    p2Pool,
-    activeQuestionNum,
-    setActiveQuestionNum,
-    activePart,
-    timeLeft,
-    isSubmitted,
-    showReport,
-    setShowReport,
+    p5Answers,
+    setP5Answers,
+
     dragOverSlot,
-    formatTime,
-    p1AnsweredCount,
-    p2AnsweredCount,
-    p3AnsweredCount,
-    p4AnsweredCount,
-    totalAnsweredCount,
-    calculateScores,
-    getAptisLevel,
-    handleManualSubmit,
-    handleRetry,
+    dragPart,
     handleDragStart,
     handleDragOver,
     handleDragLeave,
     handleDrop,
     handleRemoveFromSlot,
     handleAutoPlace,
+
+    activePart,
+    availableParts,
+    isFirstPart,
+    isLastPart,
+    firstQNumForPart,
+    setActiveQuestionNum,
     handleNavigateQuestion,
     handlePrevQuestion,
-    handleNextQuestion
+    handleNextQuestion,
+
+    timeLeft,
+    formatTime,
+
+    isSubmitted,
+    showReport,
+    setShowReport,
+    handleManualSubmit,
+    handleAutoSubmit,
+    handleRetry,
+
+    p1QuestionCount,
+    p2QuestionCount,
+    p3QuestionCount,
+    p4QuestionCount,
+    p5QuestionCount,
+    totalQuestions,
+    p1AnsweredCount,
+    p2AnsweredCount,
+    p3AnsweredCount,
+    p4AnsweredCount,
+    p5AnsweredCount,
+    totalAnsweredCount,
+
+    calculateScores,
+    getAptisLevel,
   };
 };

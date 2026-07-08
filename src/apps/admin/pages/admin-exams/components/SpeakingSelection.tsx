@@ -27,6 +27,9 @@ const SpeakingSelection: React.FC<Props> = ({
     const [searchText, setSearchText] = useState('');
     const displayParts = mode === 'partial' ? [targetPart] : ['Part 1', 'Part 2', 'Part 3', 'Part 4'];
 
+    // Speaking P1: 3 câu độc lập (mỗi câu 1 bản ghi); P2/P3/P4: 1 bản ghi gộp
+    const slotCount = (p: string) => p === 'Part 1' ? 3 : 1;
+
     return (
         <Row gutter={16}>
             {/* Left Bank */}
@@ -110,8 +113,8 @@ const SpeakingSelection: React.FC<Props> = ({
                 >
                     <div style={{ maxHeight: '640px', overflowY: 'auto', paddingRight: '4px' }}>
                         {displayParts.map(p => {
-                            const selectedTask = selectedQuestions.find(q => q && q.part === p);
-
+                            const partQs = selectedQuestions.filter(q => q && q.part === p && q.type === 'Speaking');
+                            const totalSlots = slotCount(p);
 
                             return (
                                 <div key={p} style={{ marginBottom: '16px', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
@@ -122,33 +125,42 @@ const SpeakingSelection: React.FC<Props> = ({
                                             </div>
                                             <Text strong>{p}</Text>
                                         </Space>
-                                        <Tag color={selectedTask ? 'success' : 'default'}>
-                                            {selectedTask ? 'Đã chọn' : 'Trống'}
-                                        </Tag>
+                                        <Text type={partQs.length === totalSlots ? 'success' : 'warning'} style={{ fontSize: '12px' }}>{partQs.length}/{totalSlots} slots</Text>
                                     </div>
-                                    <div style={{ padding: '16px', background: '#fff' }}>
-                                        {selectedTask ? (
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <Text style={{ fontSize: '14px' }}>{selectedTask.content}</Text>
-                                                <Button
-                                                    size="small"
-                                                    type="text"
-                                                    danger
-                                                    icon={<DeleteOutlined />}
-                                                    onClick={() => handleRemoveQuestion(selectedTask.key)}
-                                                />
+                                    <div style={{ padding: '8px' }}>
+                                        {totalSlots === 1 ? (
+                                            // P2/P3/P4: 1 bản ghi gộp → hiển thị 1 ô
+                                            <div style={{ padding: '12px', background: partQs[0] ? '#fff' : '#fafafa', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                                {partQs[0] ? (
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <Text style={{ fontSize: '13px' }}>{partQs[0].content}</Text>
+                                                        <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => handleRemoveQuestion(partQs[0].key)} />
+                                                    </div>
+                                                ) : (
+                                                    <Text type="secondary" italic style={{ fontSize: '12px' }}>Chưa có câu hỏi cho {p}</Text>
+                                                )}
                                             </div>
                                         ) : (
-                                            <div style={{ textAlign: 'center' }}>
-                                                <Text type="secondary" italic style={{ fontSize: '12px' }}>Chưa có câu hỏi cho {p}</Text>
-                                            </div>
+                                            // P1: 3 câu độc lập → hiển thị nhiều ô
+                                            <List
+                                                size="small"
+                                                dataSource={Array.from({ length: totalSlots }).map((_, i) => partQs[i] ? { ...partQs[i], _slotIndex: i } : { _slotIndex: i, isPlaceholder: true })}
+                                                rowKey={(item: any) => item?.id || item?.key || `slot-${item?._slotIndex}`}
+                                                renderItem={(item: any) => (
+                                                    <div style={{ padding: '8px 12px', background: !item?.isPlaceholder ? '#fff' : '#fafafa', border: '1px solid #f1f5f9', marginBottom: '4px', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <Space>
+                                                            <Text type="secondary" style={{ fontSize: '11px' }}>Slot {item?._slotIndex + 1}:</Text>
+                                                            {!item?.isPlaceholder ? <Text style={{ fontSize: '13px' }}>{item?.content}</Text> : <Text type="secondary" italic style={{ fontSize: '12px' }}>Trống</Text>}
+                                                        </Space>
+                                                        {!item?.isPlaceholder && <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => handleRemoveQuestion(item?.key ?? '')} />}
+                                                    </div>
+                                                )}
+                                            />
                                         )}
                                     </div>
                                 </div>
                             );
                         })}
-
-
                     </div>
                 </Card>
             </Col>
