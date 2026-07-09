@@ -1,19 +1,18 @@
 import {
-BellOutlined,
-ClockCircleOutlined,
-EditOutlined,
-MenuOutlined,
-QuestionCircleOutlined,
-ThunderboltOutlined,
-TrophyOutlined
+  BellOutlined,
+  ClockCircleOutlined,
+  EditOutlined,
+  MenuOutlined,
+  QuestionCircleOutlined,
+  ThunderboltOutlined,
+  TrophyOutlined,
 } from '@ant-design/icons';
-import { Button,Drawer,Progress,Segmented } from 'antd';
+import { Button, Drawer, Empty, Progress, Segmented, Spin } from 'antd';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { PartCard } from '../components/PartCard';
 import { useGrammarLanding } from '../hook/useGrammarLanding';
-import { mockTestsData } from '../services/data';
 import * as S from '../styles/styled';
 
 export const GrammarPracticePage: React.FC = () => {
@@ -23,10 +22,11 @@ export const GrammarPracticePage: React.FC = () => {
     activeTab,
     setActiveTab,
     parts,
-    completedCount,
     mockProgress,
+    examSets,
+    isExamsLoading,
     handlePartClick,
-    handleMockClick
+    handleMockClick,
   } = useGrammarLanding();
 
   return (
@@ -46,10 +46,7 @@ export const GrammarPracticePage: React.FC = () => {
 
       <HomeS.RightColumn>
         <HomeS.MobileHeader>
-          <S.MobileHeaderLink
-            to="/"
-            className="gap-2"
-          >
+          <S.MobileHeaderLink to="/" className="gap-2">
             <HomeS.HeaderLogo src="/image.png" alt="Logo" />
             <HomeS.HeaderTitle>Aptis Prep</HomeS.HeaderTitle>
           </S.MobileHeaderLink>
@@ -71,7 +68,7 @@ export const GrammarPracticePage: React.FC = () => {
                   <EditOutlined /> KỸ NĂNG NGỮ PHÁP & TỪ VỰNG
                 </S.CategoryTag>
                 <S.PageTitle>Học theo câu hỏi - Grammar & Vocabulary</S.PageTitle>
-                <S.SubTitle>Mô phỏng chính xác cấu trúc bài thi thực tế. Chọn ôn luyện riêng từng phần hoặc kiểm tra năng lực với bộ đề thi thử đầy đủ.</S.SubTitle>
+                <S.SubTitle>Mô phỏng chính xác cấu trúc bài thi thực tế. Chọn ôn luyện riêng từng phần hoặc kiểm tra năng lực với bộ đề đầy đủ.</S.SubTitle>
               </S.HeaderContent>
               <S.StatsContainer>
                 <S.StatPill>
@@ -81,18 +78,16 @@ export const GrammarPracticePage: React.FC = () => {
                     <span>5 Ngày</span>
                   </div>
                 </S.StatPill>
-
               </S.StatsContainer>
             </S.HeaderSection>
 
-            {/* Tab selector for Parts vs Test Sets vs Mock Tests */}
             <S.TabSectionWrapper>
               <Segmented
                 value={activeTab}
-                onChange={(value) => setActiveTab(value as any)}
+                onChange={(value) => setActiveTab(value as 'parts' | 'mock-tests')}
                 options={[
                   { label: 'Luyện tập theo phần', value: 'parts' },
-                  { label: 'Luyện tập theo bộ đề', value: 'mock-tests' }
+                  { label: 'Luyện tập theo bộ đề', value: 'mock-tests' },
                 ]}
                 size="large"
               />
@@ -112,56 +107,66 @@ export const GrammarPracticePage: React.FC = () => {
 
             {activeTab === 'mock-tests' && (
               <S.MockTestGrid>
-                {mockTestsData.map((mock) => {
-                  const score = mockProgress[mock.id] ?? 0;
+                {isExamsLoading ? (
+                  <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem' }}>
+                    <Spin size="large" />
+                  </div>
+                ) : examSets.length === 0 ? (
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <Empty description="Chưa có đề Grammar & Vocabulary nào" />
+                  </div>
+                ) : (
+                  examSets.map((exam) => {
+                    const score = mockProgress[String(exam.id)] ?? 0;
 
-                  return (
-                    <S.MockTestCard key={mock.id}>
-                      <S.MockTestTitle>{mock.title}</S.MockTestTitle>
+                    return (
+                      <S.MockTestCard key={exam.id}>
+                        <S.MockTestTitle>{exam.title}</S.MockTestTitle>
 
-                      <S.MockTestMeta>
-                        <S.MetaItem>
-                          <QuestionCircleOutlined />
-                          <span>Số câu hỏi: {mock.questions} câu</span>
-                        </S.MetaItem>
-                        <S.MetaItem>
-                          <ClockCircleOutlined />
-                          <span>Thời gian: {mock.duration} phút</span>
-                        </S.MetaItem>
-                        <S.MetaItem>
-                          <TrophyOutlined />
-                          <span>
-                            Kết quả tốt nhất:{' '}
-                            {score > 0 ? (
-                              <S.TrophyScoreText>{score}/50 ({Math.round(score / 50 * 100)}%)</S.TrophyScoreText>
-                            ) : (
-                              <S.TrophyEmptyText>Chưa làm</S.TrophyEmptyText>
-                            )}
-                          </span>
-                        </S.MetaItem>
-                      </S.MockTestMeta>
+                        <S.MockTestMeta>
+                          <S.MetaItem>
+                            <QuestionCircleOutlined />
+                            <span>Số phần: {exam._count?.sections ?? 0} phần</span>
+                          </S.MetaItem>
+                          <S.MetaItem>
+                            <ClockCircleOutlined />
+                            <span>Thời gian: 25 phút</span>
+                          </S.MetaItem>
+                          <S.MetaItem>
+                            <TrophyOutlined />
+                            <span>
+                              Kết quả tốt nhất:{' '}
+                              {score > 0 ? (
+                                <S.TrophyScoreText>{score}%</S.TrophyScoreText>
+                              ) : (
+                                <S.TrophyEmptyText>Chưa làm</S.TrophyEmptyText>
+                              )}
+                            </span>
+                          </S.MetaItem>
+                        </S.MockTestMeta>
 
-                      {score > 0 && (
-                        <S.ScoreProgressWrapper>
-                          <S.ScoreProgressHeader>
-                            <span>Điểm số</span>
-                            <span>{Math.round(score / 50 * 100)}%</span>
-                          </S.ScoreProgressHeader>
-                          <Progress percent={Math.round(score / 50 * 100)} size="small" strokeColor="#10b981" showInfo={false} />
-                        </S.ScoreProgressWrapper>
-                      )}
+                        {score > 0 && (
+                          <S.ScoreProgressWrapper>
+                            <S.ScoreProgressHeader>
+                              <span>Điểm số</span>
+                              <span>{score}%</span>
+                            </S.ScoreProgressHeader>
+                            <Progress percent={score} size="small" strokeColor="#10b981" showInfo={false} />
+                          </S.ScoreProgressWrapper>
+                        )}
 
-                      <S.MockStartButton
-                        type="primary"
-                        icon={<ThunderboltOutlined />}
-                        $hasScore={score > 0}
-                        onClick={() => handleMockClick(mock.id)}
-                      >
-                        {score > 0 ? 'Làm lại đề thi' : 'Bắt đầu làm đề'}
-                      </S.MockStartButton>
-                    </S.MockTestCard>
-                  );
-                })}
+                        <S.MockStartButton
+                          type="primary"
+                          icon={<ThunderboltOutlined />}
+                          $hasScore={score > 0}
+                          onClick={() => handleMockClick(exam.id)}
+                        >
+                          {score > 0 ? 'Làm lại đề thi' : 'Bắt đầu làm đề'}
+                        </S.MockStartButton>
+                      </S.MockTestCard>
+                    );
+                  })
+                )}
               </S.MockTestGrid>
             )}
           </S.Container>

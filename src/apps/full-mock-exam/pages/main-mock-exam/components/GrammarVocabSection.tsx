@@ -1,11 +1,9 @@
-import { Col,Row,Select,Typography } from 'antd';
-import React,{ useState } from 'react';
+import { Col,Row,Select } from 'antd';
+import React,{ useMemo,useState } from 'react';
 import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
-import { mockGrammarQuestions,mockVocabularySets } from '../../../../grammar-practice/pages/grammar-mock-test/services/mockExamData';
+import { GrammarExamData } from '../../../../grammar-practice/services/grammarExamMapper';
 import * as GS from '../styles/grammar.styles';
 import * as S from '../styles/shared.styles';
-
-const { Text } = Typography;
 
 export interface GrammarVocabHandle {
     next: () => boolean;
@@ -13,51 +11,74 @@ export interface GrammarVocabHandle {
 }
 
 interface GrammarVocabSectionProps {
+    data: GrammarExamData;
     onProgressUpdate?: (answered: number, part: number, question: number) => void;
 }
 
-const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSectionProps>(({ onProgressUpdate }, ref) => {
-    const [activePart, setActivePart] = useState(1); // 1: Grammar, 2: Vocabulary
-    const [currentIndex, setCurrentIndex] = useState(1);
-    const [answers, setAnswers] = useState<Record<number, string>>({});
+const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSectionProps>(({ data, onProgressUpdate }, ref) => {
+    const grammarQuestions = data.grammarQuestions;
+    const vocabularySets = data.vocabularySets;
+
+    const grammarCount = grammarQuestions.length;
+    // Đơn vị hiển thị: grammar mỗi câu 1 số; vocab mỗi task (bản ghi) 1 số
+    const totalUnits = grammarCount + vocabularySets.length;
+
+    const [activeUnit, setActiveUnit] = useState(1);
+    const [answers, setAnswers] = useState<Record<number, string>>({}); // key = questionNumber toàn cục
+
+    const activePart = activeUnit <= grammarCount ? 1 : 2;
 
     React.useImperativeHandle(ref, () => ({
         next: () => {
-            if (currentIndex < 50) {
-                handleNavigateQuestion(currentIndex + 1);
+            if (activeUnit < totalUnits) {
+                setActiveUnit(activeUnit + 1);
                 return true;
             }
             return false;
         },
         prev: () => {
-            if (currentIndex > 1) {
-                handleNavigateQuestion(currentIndex - 1);
+            if (activeUnit > 1) {
+                setActiveUnit(activeUnit - 1);
                 return true;
             }
             return false;
         }
-    }), [currentIndex]);
+    }), [activeUnit, totalUnits]);
 
-    const navSections: NavSection[] = [
-        { label: 'Ngữ pháp (1 - 25)', questions: Array.from({ length: 25 }, (_, i) => i + 1) },
-        { label: 'Từ vựng (26 - 50)', questions: Array.from({ length: 25 }, (_, i) => i + 26) }
-    ];
+    // Bảng câu hỏi: vocab mỗi task 1 ô, tô "đã trả lời" khi đủ hết ý
+    const navAnswers = useMemo(() => {
+        const map: Record<number, string> = {};
+        grammarQuestions.forEach((q, i) => {
+            if (answers[q.questionNumber]) map[i + 1] = 'answered';
+        });
+        vocabularySets.forEach((set, i) => {
+            const done = set.subQuestions.length > 0 && set.subQuestions.every((sub) => !!answers[sub.questionNumber]);
+            if (done) map[grammarCount + i + 1] = 'answered';
+        });
+        return map;
+    }, [answers, grammarQuestions, vocabularySets, grammarCount]);
 
-    const handleSelect = (qId: number, val: string) => {
-        const newAnswers = { ...answers, [qId]: val };
-        setAnswers(newAnswers);
+    const navSections: NavSection[] = useMemo(() => {
+        const sections: NavSection[] = [];
+        if (grammarCount > 0) {
+            sections.push({ label: `Ngữ pháp (1 - ${grammarCount})`, questions: Array.from({ length: grammarCount }, (_, i) => i + 1) });
+        }
+        if (vocabularySets.length > 0) {
+            sections.push({
+                label: `Từ vựng (${grammarCount + 1} - ${totalUnits}) — mỗi số 1 task`,
+                questions: Array.from({ length: vocabularySets.length }, (_, i) => grammarCount + i + 1),
+            });
+        }
+        return sections;
+    }, [grammarCount, vocabularySets.length, totalUnits]);
+
+    const handleSelect = (questionNumber: number, val: string) => {
+        setAnswers(prev => ({ ...prev, [questionNumber]: val }));
     };
 
     React.useEffect(() => {
-        const answeredCount = Object.keys(answers).length;
-        onProgressUpdate?.(answeredCount, activePart, currentIndex);
-    }, [answers, activePart, currentIndex]);
-
-    const handleNavigateQuestion = (qNum: number) => {
-        setCurrentIndex(qNum);
-        if (qNum <= 25) setActivePart(1);
-        else setActivePart(2);
-    };
+        onProgressUpdate?.(Object.keys(answers).length, activePart, activeUnit);
+    }, [answers, activePart, activeUnit, onProgressUpdate]);
 
     const renderSentenceWithGap = (sentence: string, selectedValue?: string) => {
         const parts = sentence.split('_______');
@@ -72,16 +93,16 @@ const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSec
     };
 
     const renderGrammarPart = () => {
-        const activeQuestion = mockGrammarQuestions.find(q => q.questionNumber === currentIndex);
+        const activeQuestion = grammarQuestions[activeUnit - 1];
         if (!activeQuestion) return <div>Không tìm thấy câu hỏi.</div>;
 
-        const answer = answers[currentIndex];
+        const answer = answers[activeQuestion.questionNumber];
 
         return (
             <GS.GrammarSectionWrapper>
                 <GS.GrammarQuestionText>
                     <GS.QuestionNumberBadge $answered={!!answer}>
-                        {currentIndex}
+                        {activeUnit}
                     </GS.QuestionNumberBadge>
                     <span>
                         {renderSentenceWithGap(activeQuestion.sentence, answer)}
@@ -97,7 +118,7 @@ const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSec
                             <GS.OptionLabel
                                 key={opt}
                                 $selected={isSelected}
-                                onClick={() => handleSelect(currentIndex, opt)}
+                                onClick={() => handleSelect(activeQuestion.questionNumber, opt)}
                             >
                                 <span className="prefix">{optionLabel}</span>
                                 {opt}
@@ -110,19 +131,23 @@ const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSec
     };
 
     const renderVocabPart = () => {
-        const activeSet = mockVocabularySets.find(set =>
-            set.subQuestions.some(subQ => subQ.questionNumber === currentIndex)
-        ) || mockVocabularySets[0];
+        const activeSet = vocabularySets[activeUnit - grammarCount - 1] ?? vocabularySets[0];
+        if (!activeSet) return <div>Không có task từ vựng.</div>;
 
-        const getUsedWordsInSet = () => {
-            const used = new Set<string>();
-            activeSet.subQuestions.forEach(sq => {
-                if (answers[sq.questionNumber]) used.add(answers[sq.questionNumber]);
+        const usedWords = new Set<string>();
+        activeSet.subQuestions.forEach(sq => {
+            if (answers[sq.questionNumber]) usedWords.add(answers[sq.questionNumber]);
+        });
+
+        const renderOptions = (answer?: string) =>
+            activeSet.optionsList.map(opt => {
+                const isUsed = usedWords.has(opt) && answer !== opt;
+                return (
+                    <Select.Option key={opt} value={opt} disabled={isUsed}>
+                        {opt} {isUsed && <GS.UsedOptionText>(đã dùng)</GS.UsedOptionText>}
+                    </Select.Option>
+                );
             });
-            return used;
-        };
-
-        const usedWords = getUsedWordsInSet();
 
         return (
             <GS.VocabularySectionWrapper>
@@ -136,19 +161,19 @@ const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSec
                 </div>
 
                 <GS.VocabGrid>
-                    {activeSet.subQuestions.map((subQ) => {
+                    {activeSet.subQuestions.map((subQ, subIdx) => {
                         const answer = answers[subQ.questionNumber];
-                        const isActive = subQ.questionNumber === currentIndex;
 
                         return (
-                            <GS.VocabQuestionCard key={subQ.id} $isActive={isActive}>
+                            <GS.VocabQuestionCard key={subQ.id} $isActive={false}>
                                 {activeSet.type === 'context' ? (
                                     <div style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', lineHeight: 1.6 }}>
                                         <GS.VocabQuestionNumberBadge $answered={!!answer}>
-                                            {subQ.questionNumber}
+                                            {subIdx + 1}
                                         </GS.VocabQuestionNumberBadge>
                                         {(() => {
                                             const parts = subQ.leftLabel.split('_______');
+                                            if (parts.length < 2) return subQ.leftLabel;
                                             return (
                                                 <>
                                                     {parts[0]}
@@ -158,16 +183,9 @@ const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSec
                                                             style={{ width: '100%' }}
                                                             value={answer || undefined}
                                                             onChange={(val) => handleSelect(subQ.questionNumber, val)}
-                                                            onFocus={() => setCurrentIndex(subQ.questionNumber)}
+                                                            dropdownMatchSelectWidth={false}
                                                         >
-                                                            {activeSet.optionsList.map(opt => {
-                                                                const isUsed = usedWords.has(opt) && answer !== opt;
-                                                                return (
-                                                                    <Select.Option key={opt} value={opt} disabled={isUsed}>
-                                                                        {opt} {isUsed && <GS.UsedOptionText>(đã dùng)</GS.UsedOptionText>}
-                                                                    </Select.Option>
-                                                                );
-                                                            })}
+                                                            {renderOptions(answer)}
                                                         </Select>
                                                     </GS.ContextDropdownInlineWrapper>
                                                     {parts[1]}
@@ -179,7 +197,7 @@ const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSec
                                     <GS.VocabRow>
                                         <GS.VocabLabel>
                                             <GS.VocabQuestionNumberBadge $answered={!!answer}>
-                                                {subQ.questionNumber}
+                                                {subIdx + 1}
                                             </GS.VocabQuestionNumberBadge>
                                             <span>{subQ.leftLabel}</span>
                                         </GS.VocabLabel>
@@ -188,16 +206,9 @@ const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSec
                                             style={{ width: '280px' }}
                                             value={answer || undefined}
                                             onChange={(val) => handleSelect(subQ.questionNumber, val)}
-                                            onFocus={() => setCurrentIndex(subQ.questionNumber)}
+                                            dropdownMatchSelectWidth={false}
                                         >
-                                            {activeSet.optionsList.map(opt => {
-                                                const isUsed = usedWords.has(opt) && answer !== opt;
-                                                return (
-                                                    <Select.Option key={opt} value={opt} disabled={isUsed}>
-                                                        {opt} {isUsed && <GS.UsedOptionText>(đã dùng)</GS.UsedOptionText>}
-                                                    </Select.Option>
-                                                );
-                                            })}
+                                            {renderOptions(answer)}
                                         </Select>
                                     </GS.VocabRow>
                                 )}
@@ -218,8 +229,8 @@ const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSec
                             <h2>Grammar & Vocabulary</h2>
                             <div className="subtitle">
                                 {activePart === 1
-                                    ? 'Part 1: Grammar (Questions 1 - 25)'
-                                    : 'Part 2: Vocabulary (Questions 26 - 50)'}
+                                    ? `Part 1: Grammar (Câu 1 - ${grammarCount})`
+                                    : `Part 2: Vocabulary (Câu ${grammarCount + 1} - ${totalUnits}, mỗi câu 1 task)`}
                             </div>
                         </S.TitleArea>
 
@@ -230,9 +241,9 @@ const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSec
                 <Col lg={5} md={24}>
                     <ExamQuestionNavigator
                         sections={navSections}
-                        answers={answers}
-                        currentQuestion={currentIndex}
-                        onNavigate={handleNavigateQuestion}
+                        answers={navAnswers}
+                        currentQuestion={activeUnit}
+                        onNavigate={setActiveUnit}
                     />
                 </Col>
             </Row>

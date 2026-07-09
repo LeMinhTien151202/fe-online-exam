@@ -128,31 +128,22 @@ const GrammarSelection: React.FC<Props> = ({
                                 />
                             </div>
                         )}
-                        {/* Vocab slots */}
+                        {/* Vocab slots: mỗi Task = 1 bản ghi WORD_BANK (đã gộp 5 câu trong extraConfig.slots) */}
                         {showVocab && ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5'].map(t => {
-                            const taskQs = selectedQuestions.filter(q => q && (q.part === 'Part 2' || q.type === 'Vocabulary') && q.task === t);
+                            const item = selectedQuestions.find(q => q && (q.part === 'Part 2' || q.type === 'Vocabulary') && q.task === t) || null;
 
                             return (
                                 <div key={t} style={{ border: '1px solid #f1f5f9', borderRadius: '8px', marginBottom: '10px', overflow: 'hidden' }}>
                                     <div style={{ background: '#f8fafc', padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9' }}>
                                         <Text strong style={{ color: ADMIN_COLORS.primary }}>{t}</Text>
-                                        <Text type={taskQs.length === 5 ? 'success' : 'warning'} style={{ fontSize: '11px' }}>{taskQs.length}/5</Text>
+                                        <Text type={item ? 'success' : 'warning'} style={{ fontSize: '11px' }}>{item ? '1/1 (bộ 5 câu)' : '0/1'}</Text>
                                     </div>
-                                    <List
-                                        size="small"
-                                        rowKey="id"
-                                        dataSource={Array.from({ length: 5 }).map((_, i) => ({ id: i, data: taskQs[i] || null }))}
-                                        renderItem={(slot: { id: number; data: IBankQuestion | null }) => {
-                                            const item = slot.data;
-                                            const idx = slot.id;
-                                            return (
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 15px', background: item ? '#fff' : '#fafafa' }}>
-                                                    <Space><Text type="secondary" style={{ fontSize: '10px' }}>S{idx + 1}:</Text>{item ? <Text ellipsis style={{ fontSize: '11px', maxWidth: '180px' }}>{item.content}</Text> : <Text type="secondary" italic style={{ fontSize: '10px', opacity: 0.5 }}>Trống</Text>}</Space>
-                                                    {item && <Button size="small" type="text" danger icon={<DeleteOutlined style={{ fontSize: '10px' }} />} onClick={() => handleRemoveQuestion(item.key)} />}
-                                                </div>
-                                            );
-                                        }}
-                                    />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 15px', background: item ? '#fff' : '#fafafa' }}>
+                                        {item
+                                            ? <Text ellipsis style={{ fontSize: '11px', maxWidth: '220px' }}>{item.content}</Text>
+                                            : <Text type="secondary" italic style={{ fontSize: '10px', opacity: 0.5 }}>Trống — chọn 1 bản ghi (bộ 5 câu) cho task này</Text>}
+                                        {item && <Button size="small" type="text" danger icon={<DeleteOutlined style={{ fontSize: '10px' }} />} onClick={() => handleRemoveQuestion(item.key)} />}
+                                    </div>
                                 </div>
                             );
                         })}

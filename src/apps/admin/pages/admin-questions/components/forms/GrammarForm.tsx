@@ -8,15 +8,14 @@ FontSizeOutlined,
 KeyOutlined,
 SaveOutlined
 } from '@ant-design/icons';
-import { Button,Card,Col,Divider,Form,Input,Radio,Row,Select,Space,Steps,Tag,Typography } from 'antd';
+import { Button,Card,Col,Divider,Form,FormInstance,Input,Radio,Row,Select,Space,Steps,Tag,Typography } from 'antd';
 import React,{ useState } from 'react';
 import { ADMIN_COLORS } from '../../../../constants';
 
-const { TextArea } = Input;
 const { Text } = Typography;
 
 interface GrammarFormProps {
-    form: any;
+    form: FormInstance;
     part: string;
     onSubmit: () => void;
 }
@@ -120,19 +119,30 @@ const GrammarForm: React.FC<GrammarFormProps> = ({ form, part, onSubmit }) => {
 
         const getQuestionLabel = () => {
             switch (activePart) {
-                case 'vocab_task1': return 'Định nghĩa / Khái niệm';
-                case 'vocab_task2': return 'Từ gốc (Prefix)';
-                case 'vocab_task3': return 'Câu văn chứa chỗ trống';
-                case 'vocab_task4': return 'Từ cần tìm đồng nghĩa';
+                case 'vocab_task1': return 'Định nghĩa (VD: To get better at something is to)';
+                case 'vocab_task2': return 'Từ bên trái (VD: reduced, sentimental...)';
+                case 'vocab_task3': return 'Câu chứa chỗ trống _______';
+                case 'vocab_task4': return 'Từ cần tìm đồng nghĩa (VD: argue, swap...)';
                 case 'vocab_task5': return 'Từ cần tìm trái nghĩa';
                 default: return 'Câu hỏi';
+            }
+        };
+
+        const getQuestionPlaceholder = (idx: number) => {
+            switch (activePart) {
+                case 'vocab_task1': return `VD: To choose something is to`;
+                case 'vocab_task2': return `VD: white-water (học viên chọn từ hay đi kèm)`;
+                case 'vocab_task3': return `VD: After it rained, the path was all _______ and my trainers got dirty.`;
+                case 'vocab_task4': return `VD: collapse (học viên chọn từ đồng nghĩa)`;
+                case 'vocab_task5': return `VD: artificial (học viên chọn từ trái nghĩa)`;
+                default: return `Nhập nội dung cho câu #${idx + 1}...`;
             }
         };
 
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <Card className="premium-card" title={<Space><KeyOutlined /> {getVocabLabel()}</Space>}>
-                    <Divider orientation={"left" as any}><Text type="secondary">Ngân hàng 10 từ vựng cho Task này</Text></Divider>
+                    <Divider titlePlacement="left"><Text type="secondary">Ngân hàng 10 từ vựng cho Task này (5 từ đúng + 5 từ gây nhiễu)</Text></Divider>
                     <Form.List name="vocabPool">
                         {(fields) => (
                             <Row gutter={[8, 8]}>
@@ -155,8 +165,22 @@ const GrammarForm: React.FC<GrammarFormProps> = ({ form, part, onSubmit }) => {
                                 {fields.map(({ key, name, ...restField }) => (
                                     <Row gutter={16} key={key} align="middle">
                                         <Col span={18}>
-                                            <Form.Item {...restField} name={[name, 'question']} label={`${getQuestionLabel()} #${name + 1}`} rules={[{ required: true }]}>
-                                                <Input placeholder={`Nhập nội dung cho câu #${name + 1}...`} />
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'question']}
+                                                label={`${getQuestionLabel()} — Câu #${name + 1}`}
+                                                rules={[
+                                                    { required: true },
+                                                    // Task 3 (SENTENCE): câu phải chứa chỗ trống ___ để FE render dropdown inline
+                                                    ...(activePart === 'vocab_task3'
+                                                        ? [{
+                                                            pattern: /_{2,}/,
+                                                            message: 'Câu phải chứa chỗ trống dạng "_______" (ít nhất 2 dấu gạch dưới)',
+                                                        }]
+                                                        : []),
+                                                ]}
+                                            >
+                                                <Input placeholder={getQuestionPlaceholder(name)} />
                                             </Form.Item>
                                         </Col>
                                         <Col span={6}>

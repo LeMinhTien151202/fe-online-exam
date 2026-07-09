@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useListeningSetsQuery } from '../../../services/listeningExamQuery';
 import { listeningPartsData } from '../services/data';
 
 export const useListeningLanding = () => {
@@ -12,7 +13,7 @@ export const useListeningLanding = () => {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
@@ -24,12 +25,15 @@ export const useListeningLanding = () => {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
     return { m1: 0, m2: 0, m3: 0 };
   });
+
+  const { data: examRes, isLoading: isExamsLoading } = useListeningSetsQuery();
+  const examSets = examRes?.data ?? [];
 
   const parts = listeningPartsData.map((part) => ({
     ...part,
@@ -50,8 +54,8 @@ export const useListeningLanding = () => {
     }
   };
 
-  const handleMockClick = (mockId: string) => {
-    navigate({ to: `/listening/mock-test/${mockId}` as any });
+  const handleMockClick = (examId: number) => {
+    navigate({ to: '/listening/mock-test/$testId', params: { testId: String(examId) } });
   };
 
   return {
@@ -62,6 +66,8 @@ export const useListeningLanding = () => {
     parts,
     completedCount,
     mockProgress,
+    examSets,
+    isExamsLoading,
     handlePartClick,
     handleMockClick
   };

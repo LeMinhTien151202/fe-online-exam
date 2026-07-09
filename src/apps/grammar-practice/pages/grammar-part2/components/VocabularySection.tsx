@@ -80,7 +80,7 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
         </S.SetInstructionBase>
 
         <S.VocabGrid>
-          {activeSet.subQuestions.map((subQ) => {
+          {activeSet.subQuestions.map((subQ, subIdx) => {
             const answer = answers[subQ.questionNumber];
 
             return (
@@ -91,8 +91,9 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
               >
                 {activeSet.type === 'context' ? (
                   <S.VocabContextQuestionText>
+                    {/* Badge = số ý trong task (1..5) — cả task chỉ là 1 câu trên bảng */}
                     <S.VocabQuestionNumberBadge $answered={!!answer}>
-                      {subQ.questionNumber}
+                      {subIdx + 1}
                     </S.VocabQuestionNumberBadge>
                     {renderContextQuestion(subQ.leftLabel, subQ.questionNumber, answer, activeSet.optionsList, usedWords)}
                   </S.VocabContextQuestionText>
@@ -100,7 +101,7 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
                   <S.VocabRow>
                     <S.VocabLabelBase>
                       <S.VocabQuestionNumberBadge $answered={!!answer}>
-                        {subQ.questionNumber}
+                        {subIdx + 1}
                       </S.VocabQuestionNumberBadge>
                       <span>{subQ.leftLabel}</span>
                     </S.VocabLabelBase>

@@ -1,33 +1,283 @@
 import { useNavigate } from '@tanstack/react-router';
-import { message,Modal } from 'antd';
-import { useEffect,useState } from 'react';
-import { correctAnswersBank } from '../services/data';
+import { Modal, message } from 'antd';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useListeningExamDetailQuery } from '../../../services/listeningExamQuery';
+import { ListeningExamData, buildListeningExam } from '../../../services/listeningExamMapper';
+
+export interface ListeningNavItem {
+  qNum: number;
+  partNumber: number;
+  itemIndex: number;
+}
+
+const partLabelMap: Record<number, string> = {
+  1: 'Part 1',
+  2: 'Part 2',
+  3: 'Part 3',
+  4: 'Part 4',
+};
+
+export const keyForP1 = (qNum: number) => String(qNum);
+export const keyForP2 = (qNum: number, speaker: number) => `${qNum}-speaker-${speaker}`;
+export const keyForP3 = (qNum: number, statementId: number) => `${qNum}-statement-${statementId}`;
+export const keyForP4 = (qNum: number, subQuestionId: string) => `${qNum}-sub-${subQuestionId}`;
+
+const buildNavItems = (examData: ListeningExamData | null): ListeningNavItem[] => {
+  if (!examData) return [];
+  const items: ListeningNavItem[] = [];
+
+  examData.part1.forEach((_, index) => {
+    items.push({ qNum: items.length + 1, partNumber: 1, itemIndex: index });
+  });
+
+  examData.part2.forEach((_, index) => {
+    items.push({ qNum: items.length + 1, partNumber: 2, itemIndex: index });
+  });
+
+  examData.part3.forEach((_, index) => {
+    items.push({ qNum: items.length + 1, partNumber: 3, itemIndex: index });
+  });
+
+  examData.part4.forEach((_, index) => {
+    items.push({ qNum: items.length + 1, partNumber: 4, itemIndex: index });
+  });
+
+  return items;
+};
 
 export const useMockTest = (testId: string) => {
   const navigate = useNavigate();
-  const totalQuestions = 25;
+  const examId = Number(testId);
+  const { data: examDetail, isLoading, isError } = useListeningExamDetailQuery(examId || null);
 
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [timeLeft, setTimeLeft] = useState(40 * 60); // 40 minutes
+  const examData = useMemo(() => (examDetail ? buildListeningExam(examDetail) : null), [examDetail]);
+  const navItems = useMemo(() => buildNavItems(examData), [examData]);
+  const totalQuestions = navItems.length;
+
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [timeLeft, setTimeLeft] = useState(40 * 60);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showReport, setShowReport] = useState(false);
-  const [showTranscript, setShowTranscript] = useState(false);
-  const [activeQuestionNum, setActiveQuestionNum] = useState<number>(1);
+  const [activeQuestionNum, setActiveQuestionNum] = useState(1);
 
-  const activePart = activeQuestionNum <= 13 ? 1 : activeQuestionNum <= 17 ? 2 : activeQuestionNum <= 21 ? 3 : 4;
+  const activeNavItem = useMemo(
+    () => navItems.find((item) => item.qNum === activeQuestionNum) ?? navItems[0] ?? null,
+    [activeQuestionNum, navItems]
+  );
+
+  const activePart = activeNavItem?.partNumber ?? 1;
+  const activeNavIndex = activeNavItem ? navItems.findIndex((item) => item.qNum === activeNavItem.qNum) : -1;
+  const prevNavItem = activeNavIndex > 0 ? navItems[activeNavIndex - 1] : null;
+  const nextNavItem = activeNavIndex >= 0 && activeNavIndex < navItems.length - 1 ? navItems[activeNavIndex + 1] : null;
+  const prevStepIsSamePart = !!prevNavItem && prevNavItem.partNumber === activePart;
+  const nextStepIsSamePart = !!nextNavItem && nextNavItem.partNumber === activePart;
+
+  const navSections = useMemo(
+    () =>
+      [1, 2, 3, 4]
+        .map((partNumber) => {
+          const questions = navItems
+            .filter((item) => item.partNumber === partNumber)
+            .map((item) => item.qNum);
+          return questions.length
+            ? {
+                label: `${partLabelMap[partNumber]}: ${
+                  questions.length === 1
+                    ? `Câu ${questions[0]}`
+                    : `Câu ${questions[0]} - ${questions[questions.length - 1]}`
+                }`,
+                questions,
+              }
+            : null;
+        })
+        .filter(Boolean) as { label: string; questions: number[] }[],
+    [navItems]
+  );
+
+  const isNavItemAnswered = useCallback(
+    (item: ListeningNavItem) => {
+      if (!examData) return false;
+
+      if (item.partNumber === 1) {
+        return !!answers[keyForP1(item.qNum)];
+      }
+
+      if (item.partNumber === 2) {
+        const set = examData.part2[item.itemIndex];
+        if (!set) return false;
+        return Array.from({ length: set.speakerCount }, (_, i) => i + 1).every(
+          (speaker) => !!answers[keyForP2(item.qNum, speaker)]
+        );
+      }
+
+      if (item.partNumber === 3) {
+        const set = examData.part3[item.itemIndex];
+        if (!set) return false;
+        return set.statements.every((statement) => !!answers[keyForP3(item.qNum, statement.id)]);
+      }
+
+      const group = examData.part4[item.itemIndex];
+      if (!group) return false;
+      return group.subQuestions.every((subQuestion) => !!answers[keyForP4(item.qNum, subQuestion.id)]);
+    },
+    [answers, examData]
+  );
+
+  const isNavItemCorrect = useCallback(
+    (item: ListeningNavItem) => {
+      if (!examData || !isNavItemAnswered(item)) return false;
+
+      if (item.partNumber === 1) {
+        const question = examData.part1[item.itemIndex];
+        return question ? answers[keyForP1(item.qNum)] === question.options[question.correctIndex] : false;
+      }
+
+      if (item.partNumber === 2) {
+        const set = examData.part2[item.itemIndex];
+        if (!set) return false;
+        return Array.from({ length: set.speakerCount }, (_, i) => i + 1).every(
+          (speaker) => answers[keyForP2(item.qNum, speaker)] === set.correctBySpeaker[speaker]
+        );
+      }
+
+      if (item.partNumber === 3) {
+        const set = examData.part3[item.itemIndex];
+        if (!set) return false;
+        return set.statements.every(
+          (statement) => answers[keyForP3(item.qNum, statement.id)] === statement.correct
+        );
+      }
+
+      const group = examData.part4[item.itemIndex];
+      if (!group) return false;
+      return group.subQuestions.every(
+        (subQuestion) => answers[keyForP4(item.qNum, subQuestion.id)] === subQuestion.options[subQuestion.correctIndex]
+      );
+    },
+    [answers, examData, isNavItemAnswered]
+  );
+
+  const navAnswers = useMemo(() => {
+    const result: Record<number, string> = {};
+    navItems.forEach((item) => {
+      if (isNavItemAnswered(item)) {
+        result[item.qNum] = isNavItemCorrect(item) ? 'correct' : 'answered';
+      }
+    });
+    return result;
+  }, [isNavItemAnswered, isNavItemCorrect, navItems]);
+
+  const navCorrectAnswers = useMemo(() => {
+    const result: Record<number, string> = {};
+    navItems.forEach((item) => {
+      result[item.qNum] = 'correct';
+    });
+    return result;
+  }, [navItems]);
+
+  const answeredCount = useMemo(
+    () => navItems.filter((item) => isNavItemAnswered(item)).length,
+    [isNavItemAnswered, navItems]
+  );
+
+  const calculateScores = useCallback(() => {
+    let scoreP1 = 0;
+    let scoreP2 = 0;
+    let scoreP3 = 0;
+    let scoreP4 = 0;
+    let maxP1 = 0;
+    let maxP2 = 0;
+    let maxP3 = 0;
+    let maxP4 = 0;
+
+    if (!examData) {
+      return { scoreP1, scoreP2, scoreP3, scoreP4, maxP1, maxP2, maxP3, maxP4, totalScore: 0, totalMax: 0 };
+    }
+
+    examData.part1.forEach((question, index) => {
+      const qNum = navItems.find((item) => item.partNumber === 1 && item.itemIndex === index)?.qNum;
+      if (!qNum) return;
+      maxP1 += 1;
+      if (answers[keyForP1(qNum)] === question.options[question.correctIndex]) scoreP1 += 1;
+    });
+
+    examData.part2.forEach((set, index) => {
+      const qNum = navItems.find((item) => item.partNumber === 2 && item.itemIndex === index)?.qNum;
+      if (!qNum) return;
+      for (let speaker = 1; speaker <= set.speakerCount; speaker += 1) {
+        maxP2 += 1;
+        if (answers[keyForP2(qNum, speaker)] === set.correctBySpeaker[speaker]) scoreP2 += 1;
+      }
+    });
+
+    examData.part3.forEach((set, index) => {
+      const qNum = navItems.find((item) => item.partNumber === 3 && item.itemIndex === index)?.qNum;
+      if (!qNum) return;
+      set.statements.forEach((statement) => {
+        maxP3 += 1;
+        if (answers[keyForP3(qNum, statement.id)] === statement.correct) scoreP3 += 1;
+      });
+    });
+
+    examData.part4.forEach((group, index) => {
+      const qNum = navItems.find((item) => item.partNumber === 4 && item.itemIndex === index)?.qNum;
+      if (!qNum) return;
+      group.subQuestions.forEach((subQuestion) => {
+        maxP4 += 1;
+        if (answers[keyForP4(qNum, subQuestion.id)] === subQuestion.options[subQuestion.correctIndex]) scoreP4 += 1;
+      });
+    });
+
+    const totalScore = scoreP1 + scoreP2 + scoreP3 + scoreP4;
+    const totalMax = maxP1 + maxP2 + maxP3 + maxP4;
+    return { scoreP1, scoreP2, scoreP3, scoreP4, maxP1, maxP2, maxP3, maxP4, totalScore, totalMax };
+  }, [answers, examData, navItems]);
+
+  const getAptisLevel = (score: number, maxScore: number) => {
+    const percent = maxScore > 0 ? (score / maxScore) * 100 : 0;
+    if (percent < 36) return 'A1/A2 (Dưới trung bình)';
+    if (percent < 64) return 'B1 (Trung cấp)';
+    if (percent < 88) return 'B2 (Trung cao cấp)';
+    return 'C (Cao cấp)';
+  };
+
+  const saveProgressToLocalStorage = useCallback((totalScore: number, totalMax: number) => {
+    const saved = localStorage.getItem('aptis_listening_mock_progress');
+    let progressObj: Record<string, number> = {};
+    if (saved) {
+      try {
+        progressObj = JSON.parse(saved);
+      } catch {
+        progressObj = {};
+      }
+    }
+    const percent = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
+    const currentBest = progressObj[testId] ?? 0;
+    progressObj[testId] = Math.max(currentBest, percent);
+    localStorage.setItem('aptis_listening_mock_progress', JSON.stringify(progressObj));
+  }, [testId]);
+
+  const handleAutoSubmit = useCallback(() => {
+    setIsSubmitted(true);
+    setShowReport(true);
+    message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
+    const { totalScore, totalMax } = calculateScores();
+    saveProgressToLocalStorage(totalScore, totalMax);
+  }, [calculateScores, saveProgressToLocalStorage]);
 
   useEffect(() => {
-    if (timeLeft <= 0 || isSubmitted) {
-      if (timeLeft <= 0 && !isSubmitted) {
-        handleAutoSubmit();
-      }
-      return;
-    }
+    if (timeLeft <= 0 || isSubmitted) return;
     const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          window.setTimeout(handleAutoSubmit, 0);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, isSubmitted]);
+  }, [handleAutoSubmit, isSubmitted, timeLeft]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -35,62 +285,42 @@ export const useMockTest = (testId: string) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const answeredCount = Object.keys(answers).length;
-
-  const calculateScores = () => {
-    let scoreP1 = 0;
-    let scoreP2 = 0;
-    let scoreP3 = 0;
-    let scoreP4 = 0;
-
-    Object.keys(correctAnswersBank).forEach((key) => {
-      const qNum = Number(key);
-      if (answers[qNum] === correctAnswersBank[qNum]) {
-        if (qNum <= 13) scoreP1++;
-        else if (qNum <= 17) scoreP2++;
-        else if (qNum <= 21) scoreP3++;
-        else scoreP4++;
-      }
-    });
-
-    const totalScore = scoreP1 + scoreP2 + scoreP3 + scoreP4;
-    return { scoreP1, scoreP2, scoreP3, scoreP4, totalScore };
+  const handleNavigateQuestion = (qNum: number) => {
+    setActiveQuestionNum(qNum);
   };
 
-  const getAptisLevel = (score: number) => {
-    if (score < 9) return 'A1/A2 (Dưới trung bình)';
-    if (score < 16) return 'B1 (Trung cấp)';
-    if (score < 22) return 'B2 (Trung cao cấp)';
-    return 'C (Cao cấp)';
+  const handlePrevQuestion = () => {
+    if (prevNavItem) setActiveQuestionNum(prevNavItem.qNum);
   };
 
-  const saveProgressToLocalStorage = (totalScore: number) => {
-    const saved = localStorage.getItem('aptis_listening_mock_progress');
-    let progressObj: Record<string, number> = {};
-    if (saved) {
-      try {
-        progressObj = JSON.parse(saved);
-      } catch (e) { /* bỏ qua lỗi */ }
-    }
-    const currentBest = progressObj[testId] ?? 0;
-    progressObj[testId] = Math.max(currentBest, totalScore);
-    localStorage.setItem('aptis_listening_mock_progress', JSON.stringify(progressObj));
+  const handleNextQuestion = () => {
+    if (nextNavItem) setActiveQuestionNum(nextNavItem.qNum);
   };
 
-  const handleAutoSubmit = () => {
-    setIsSubmitted(true);
-    setShowReport(true);
-    message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
-    const { totalScore } = calculateScores();
-    saveProgressToLocalStorage(totalScore);
+  const handleSelectAnswer = (answerKey: string, option: string) => {
+    if (isSubmitted) return;
+    setAnswers((prev) => ({ ...prev, [answerKey]: option }));
   };
 
   const handleManualSubmit = () => {
     setIsSubmitted(true);
     setShowReport(true);
-    message.success('Bạn đã nộp bài thi thành công!');
-    const { totalScore } = calculateScores();
-    saveProgressToLocalStorage(totalScore);
+    message.success('Bạn đã nộp bài nghe thành công!');
+    const { totalScore, totalMax } = calculateScores();
+    saveProgressToLocalStorage(totalScore, totalMax);
+  };
+
+  const handleSubmitClick = () => {
+    const unansweredCount = totalQuestions - answeredCount;
+    Modal.confirm({
+      title: 'Xác nhận nộp bài thi?',
+      content: unansweredCount > 0
+        ? `Bạn còn ${unansweredCount} câu/bài nghe chưa hoàn thành. Bạn có muốn nộp bài ngay bây giờ không?`
+        : `Bạn đã hoàn thành toàn bộ ${totalQuestions} câu/bài nghe. Bạn có chắc chắn muốn nộp bài không?`,
+      okText: 'Nộp bài',
+      cancelText: 'Làm tiếp',
+      onOk: handleManualSubmit,
+    });
   };
 
   const handleRetry = () => {
@@ -98,8 +328,7 @@ export const useMockTest = (testId: string) => {
     setTimeLeft(40 * 60);
     setIsSubmitted(false);
     setShowReport(false);
-    setActiveQuestionNum(1);
-    setShowTranscript(false);
+    setActiveQuestionNum(navItems[0]?.qNum ?? 1);
   };
 
   const handleBackToLanding = (onConfirmBack: () => void) => {
@@ -112,61 +341,43 @@ export const useMockTest = (testId: string) => {
       content: 'Tiến độ làm bài của bạn sẽ không được lưu nếu bạn thoát ra lúc này.',
       okText: 'Thoát ra',
       cancelText: 'Làm tiếp',
-      onOk: onConfirmBack
+      onOk: onConfirmBack,
     });
   };
 
-  const handleNavigateQuestion = (qNum: number) => {
-    setActiveQuestionNum(qNum);
-    setShowTranscript(false);
-  };
-
-  const handlePrevQuestion = () => {
-    if (activePart === 2) {
-      handleNavigateQuestion(1);
-    } else if (activePart === 3) {
-      handleNavigateQuestion(14);
-    } else if (activePart === 4) {
-      handleNavigateQuestion(18);
-    }
-  };
-
-  const handleNextQuestion = () => {
-    if (activePart === 1) {
-      handleNavigateQuestion(14);
-    } else if (activePart === 2) {
-      handleNavigateQuestion(18);
-    } else if (activePart === 3) {
-      handleNavigateQuestion(22);
-    }
-  };
-
-  const handleSelectAnswer = (questionNum: number, option: string) => {
-    if (isSubmitted) return;
-    setAnswers(prev => ({ ...prev, [questionNum]: option }));
-  };
-
   return {
+    isLoading,
+    isError,
+    testTitle: examDetail?.title ?? 'Đề Nghe hiểu',
+    examData,
+    navItems,
+    navSections,
+    navAnswers,
+    navCorrectAnswers,
+    totalQuestions,
     answers,
     timeLeft,
     isSubmitted,
     showReport,
     setShowReport,
-    showTranscript,
-    setShowTranscript,
-    activeQuestionNum,
-    setActiveQuestionNum,
+    activeQuestionNum: activeNavItem?.qNum ?? activeQuestionNum,
     activePart,
+    activeNavItem,
     answeredCount,
+    prevStepIsSamePart,
+    nextStepIsSamePart,
+    hasPrevStep: !!prevNavItem,
+    hasNextStep: !!nextNavItem,
     formatTime,
     calculateScores,
     getAptisLevel,
-    handleManualSubmit,
     handleRetry,
     handleBackToLanding,
     handleNavigateQuestion,
     handlePrevQuestion,
     handleNextQuestion,
-    handleSelectAnswer
+    handleSelectAnswer,
+    handleSubmitClick,
+    navigate,
   };
 };

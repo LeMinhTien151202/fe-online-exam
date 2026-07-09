@@ -9,8 +9,8 @@ ReadOutlined,
 RightOutlined
 } from '@ant-design/icons';
 import { useNavigate,useParams } from '@tanstack/react-router';
-import { Button,Modal,Result,Space,Spin,Typography } from 'antd';
-import React,{ useCallback,useEffect,useRef,useState } from 'react';
+import { Button,Empty,Modal,Result,Space,Spin } from 'antd';
+import React,{ useCallback,useEffect,useMemo,useRef,useState } from 'react';
 
 // Import các module kỹ năng tích hợp
 import GrammarVocabSection,{ GrammarVocabHandle } from '../components/GrammarVocabSection';
@@ -19,54 +19,117 @@ import ReadingSection,{ ReadingHandle } from '../components/ReadingSection';
 import SpeakingSection,{ SpeakingHandle } from '../components/SpeakingSection';
 import WritingSection,{ WritingHandle } from '../components/WritingSection';
 
+import { useMockExamDetailQuery } from '../../../services/mockExamQuery';
+import { buildFullMockExam,FullMockExamData } from '../../../services/mockExamMapper';
 import * as S from '../styles/shared.styles';
 
-const { Title, Text } = Typography;
+interface SkillStep {
+    id: 'speaking' | 'listening' | 'grammar' | 'reading' | 'writing';
+    title: string;
+    icon: React.ReactNode;
+    duration: number; // phút
+    totalParts: number;
+    totalQuestions: number;
+}
 
-const mockSkills = [
-    { id: 'speaking', title: 'Nói', icon: <AudioOutlined />, duration: 12, color: '#3b82f6', totalParts: 4, totalQuestions: 12 },
-    { id: 'listening', title: 'Nghe hiểu', icon: <CustomerServiceOutlined />, duration: 40, color: '#10b981', totalParts: 4, totalQuestions: 25 },
-    { id: 'grammar', title: 'Ngôn ngữ', icon: <MedicineBoxOutlined />, duration: 25, color: '#f59e0b', totalParts: 2, totalQuestions: 50 },
-    { id: 'reading', title: 'Đọc hiểu', icon: <ReadOutlined />, duration: 35, color: '#8b5cf6', totalParts: 4, totalQuestions: 24 },
-    { id: 'writing', title: 'Viết', icon: <EditOutlined />, duration: 50, color: '#ef4444', totalParts: 4, totalQuestions: 4 },
+// Thứ tự thi chuẩn APTIS: Nói -> Nghe -> Ngôn ngữ -> Đọc -> Viết
+const SKILL_ORDER: { id: SkillStep['id']; title: string; icon: React.ReactNode; skillId: number; defaultDuration: number }[] = [
+    { id: 'speaking', title: 'Nói', icon: <AudioOutlined />, skillId: 5, defaultDuration: 12 },
+    { id: 'listening', title: 'Nghe hiểu', icon: <CustomerServiceOutlined />, skillId: 2, defaultDuration: 40 },
+    { id: 'grammar', title: 'Ngôn ngữ', icon: <MedicineBoxOutlined />, skillId: 1, defaultDuration: 25 },
+    { id: 'reading', title: 'Đọc hiểu', icon: <ReadOutlined />, skillId: 3, defaultDuration: 35 },
+    { id: 'writing', title: 'Viết', icon: <EditOutlined />, skillId: 4, defaultDuration: 50 },
 ];
+
+// Đếm số câu/số phần từng kỹ năng từ dữ liệu đề thật
+const countSkill = (data: FullMockExamData, id: SkillStep['id']): { questions: number; parts: number } => {
+    switch (id) {
+        case 'grammar': {
+            const g = data.grammar.grammarQuestions.length;
+            const v = data.grammar.vocabularySets.length;
+            return { questions: g + v, parts: (g > 0 ? 1 : 0) + (v > 0 ? 1 : 0) };
+        }
+        case 'listening': {
+            const q = data.listening.part1.length
+                + data.listening.part2.reduce((s, x) => s + x.speakerCount, 0)
+                + data.listening.part3.reduce((s, x) => s + x.statements.length, 0)
+                + data.listening.part4.reduce((s, x) => s + x.subQuestions.length, 0);
+            const parts = [data.listening.part1, data.listening.part2, data.listening.part3, data.listening.part4]
+                .filter((p) => p.length > 0).length;
+            return { questions: q, parts };
+        }
+        case 'reading': {
+            const r = data.reading;
+            const q = r.part1.reduce((s, p) => s + p.questions.length, 0)
+                + (r.orderingP2?.initialSentences.length ?? 0)
+                + (r.orderingP3?.initialSentences.length ?? 0)
+                + (r.speakerP4?.questions.length ?? 0)
+                + (r.headingP5?.paragraphs.length ?? 0);
+            const parts = [r.part1.length > 0, !!r.orderingP2, !!r.orderingP3, !!r.speakerP4, !!r.headingP5]
+                .filter(Boolean).length;
+            return { questions: q, parts };
+        }
+        case 'writing': {
+            const parts = new Set(data.writing.map((w) => w.partNumber)).size;
+            return { questions: data.writing.length, parts };
+        }
+        case 'speaking': {
+            const s = data.speaking;
+            const q = s.part1.length
+                + s.part2.reduce((t, x) => t + x.questions.length, 0)
+                + s.part3.reduce((t, x) => t + x.questions.length, 0)
+                + s.part4.reduce((t, x) => t + x.questions.length, 0);
+            const parts = [s.part1, s.part2, s.part3, s.part4].filter((p) => p.length > 0).length;
+            return { questions: q, parts };
+        }
+        default:
+            return { questions: 0, parts: 0 };
+    }
+};
 
 const MainMockExamPage: React.FC = () => {
     const { testId } = useParams({ strict: false }) as { testId: string };
     const navigate = useNavigate();
+    const examId = Number(testId);
+
+    const { data: examDetail, isLoading, isError } = useMockExamDetailQuery(Number.isFinite(examId) && examId > 0 ? examId : null);
+    const examData = useMemo(() => (examDetail ? buildFullMockExam(examDetail) : null), [examDetail]);
+
+    // Chỉ giữ những kỹ năng thực sự có câu hỏi trong đề
+    const skills = useMemo<SkillStep[]>(() => {
+        if (!examData) return [];
+        return SKILL_ORDER
+            .map((s) => {
+                const { questions, parts } = countSkill(examData, s.id);
+                return {
+                    id: s.id,
+                    title: s.title,
+                    icon: s.icon,
+                    duration: examData.durations[s.skillId] ?? s.defaultDuration,
+                    totalParts: parts,
+                    totalQuestions: questions,
+                };
+            })
+            .filter((s) => s.totalQuestions > 0);
+    }, [examData]);
 
     const [activeStep, setActiveStep] = useState(0);
-    const [timeLeft, setTimeLeft] = useState(mockSkills[0].duration * 60);
+    // null = chưa khởi tạo (đợi dữ liệu đề); sau đó là số giây còn lại
+    const [timeLeft, setTimeLeft] = useState<number | null>(null);
     const [isFinished, setIsFinished] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Specific Progress from skill
     const [currentStatus, setCurrentStatus] = useState({ part: 1, question: 1, answered: 0 });
-    const [nextButtonLabel, setNextButtonLabel] = useState('Phần tiếp theo');
 
-    // Refs for sub-navigation
     const grammarRef = useRef<GrammarVocabHandle>(null);
     const listeningRef = useRef<ListeningHandle>(null);
     const readingRef = useRef<ReadingHandle>(null);
     const writingRef = useRef<WritingHandle>(null);
     const speakingRef = useRef<SpeakingHandle>(null);
 
-    const currentSkill = mockSkills[activeStep];
-
-    useEffect(() => {
-        if (isFinished || isSubmitting) return;
-
-        if (timeLeft <= 0) {
-            handleNextSection(true);
-            return;
-        }
-
-        const timer = setInterval(() => {
-            setTimeLeft(prev => prev - 1);
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, [timeLeft, isFinished, isSubmitting]);
+    const currentSkill = skills[activeStep];
+    // Đồng hồ hiển thị: khi chưa khởi tạo dùng thời lượng kỹ năng hiện tại
+    const displayTime = timeLeft ?? (currentSkill ? currentSkill.duration * 60 : 0);
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -74,31 +137,30 @@ const MainMockExamPage: React.FC = () => {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const handleNextSection = (isAuto = false) => {
-        // Custom logic for sub-navigation (internal next question)
-        if (!isAuto) {
-            const skillRefMap: Record<string, any> = {
-                'grammar': grammarRef,
-                'listening': listeningRef,
-                'reading': readingRef,
-                'writing': writingRef,
-                'speaking': speakingRef
-            };
+    const skillRefMap: Record<string, React.RefObject<{ next: () => boolean; prev: () => boolean } | null>> = {
+        grammar: grammarRef,
+        listening: listeningRef,
+        reading: readingRef,
+        writing: writingRef,
+        speaking: speakingRef,
+    };
 
+    const handleNextSection = (isAuto = false) => {
+        if (!currentSkill) return;
+        if (!isAuto) {
             const currentSkillRef = skillRefMap[currentSkill.id];
-            if (currentSkillRef && currentSkillRef.current) {
+            if (currentSkillRef?.current) {
                 const handledInternally = currentSkillRef.current.next();
                 if (handledInternally) return;
             }
         }
 
         const proceed = () => {
-            if (activeStep < mockSkills.length - 1) {
+            if (activeStep < skills.length - 1) {
                 const nextStep = activeStep + 1;
                 setActiveStep(nextStep);
-                setTimeLeft(mockSkills[nextStep].duration * 60);
+                setTimeLeft(skills[nextStep].duration * 60);
                 setCurrentStatus({ part: 1, question: 1, answered: 0 });
-                setNextButtonLabel('Phần tiếp theo');
                 window.scrollTo(0, 0);
             } else {
                 handleSubmitFinal();
@@ -112,7 +174,7 @@ const MainMockExamPage: React.FC = () => {
 
         Modal.confirm({
             title: 'Chuyển sang phần thi tiếp theo?',
-            content: `Bạn sẽ chuyển sang phần thi ${mockSkills[activeStep + 1]?.title || 'Kết thúc'}. Bài làm của phần hiện tại sẽ được tự động lưu.`,
+            content: `Bạn sẽ chuyển sang phần thi ${skills[activeStep + 1]?.title || 'Kết thúc'}. Bài làm của phần hiện tại sẽ được tự động lưu.`,
             okText: 'Xác nhận chuyển',
             cancelText: 'Làm tiếp',
             onOk: proceed
@@ -120,17 +182,9 @@ const MainMockExamPage: React.FC = () => {
     };
 
     const handlePrevSection = () => {
-        // Custom logic for sub-navigation (internal prev question)
-        const skillRefMap: Record<string, any> = {
-            'grammar': grammarRef,
-            'listening': listeningRef,
-            'reading': readingRef,
-            'writing': writingRef,
-            'speaking': speakingRef
-        };
-
+        if (!currentSkill) return;
         const currentSkillRef = skillRefMap[currentSkill.id];
-        if (currentSkillRef && currentSkillRef.current) {
+        if (currentSkillRef?.current) {
             const handledInternally = currentSkillRef.current.prev();
             if (handledInternally) return;
         }
@@ -138,8 +192,8 @@ const MainMockExamPage: React.FC = () => {
         if (activeStep > 0) {
             const prevStep = activeStep - 1;
             setActiveStep(prevStep);
-            setTimeLeft(mockSkills[prevStep].duration * 60);
-            setCurrentStatus({ part: 1, question: 1, answered: 0 }); // Placeholder
+            setTimeLeft(skills[prevStep].duration * 60);
+            setCurrentStatus({ part: 1, question: 1, answered: 0 });
             window.scrollTo(0, 0);
         }
     };
@@ -157,21 +211,60 @@ const MainMockExamPage: React.FC = () => {
         setCurrentStatus({ part, question, answered: answeredCount });
     }, []);
 
-    const onButtonLabelUpdate = useCallback((label: string) => {
-        setNextButtonLabel(label);
-    }, []);
+    // Đồng hồ đếm ngược: tick mỗi giây; hết giờ -> tự chuyển phần
+    const handleNextRef = useRef(handleNextSection);
+    useEffect(() => {
+        handleNextRef.current = handleNextSection;
+    });
+
+    useEffect(() => {
+        if (isFinished || isSubmitting || skills.length === 0) return;
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => {
+                const base = prev ?? (skills[activeStep]?.duration ?? 0) * 60;
+                if (base <= 1) {
+                    clearInterval(timer);
+                    setTimeout(() => handleNextRef.current(true), 0);
+                    return 0;
+                }
+                return base - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [isFinished, isSubmitting, skills, activeStep]);
 
     const renderSkillUI = () => {
-        const skillId = mockSkills[activeStep].id;
-        switch (skillId) {
-            case 'grammar': return <GrammarVocabSection ref={grammarRef} onProgressUpdate={onProgressUpdate} />;
-            case 'listening': return <ListeningSection ref={listeningRef} onProgressUpdate={onProgressUpdate} onButtonLabelUpdate={onButtonLabelUpdate} />;
-            case 'reading': return <ReadingSection ref={readingRef} onProgressUpdate={onProgressUpdate} />;
-            case 'writing': return <WritingSection ref={writingRef} onProgressUpdate={onProgressUpdate} />;
-            case 'speaking': return <SpeakingSection ref={speakingRef} onProgressUpdate={onProgressUpdate} />;
+        if (!examData || !currentSkill) return null;
+        switch (currentSkill.id) {
+            case 'grammar': return <GrammarVocabSection ref={grammarRef} data={examData.grammar} onProgressUpdate={onProgressUpdate} />;
+            case 'listening': return <ListeningSection ref={listeningRef} data={examData.listening} onProgressUpdate={onProgressUpdate} />;
+            case 'reading': return <ReadingSection ref={readingRef} data={examData.reading} onProgressUpdate={onProgressUpdate} />;
+            case 'writing': return <WritingSection ref={writingRef} prompts={examData.writing} onProgressUpdate={onProgressUpdate} />;
+            case 'speaking': return <SpeakingSection ref={speakingRef} data={examData.speaking} onProgressUpdate={onProgressUpdate} />;
             default: return null;
         }
     };
+
+    if (isLoading) {
+        return (
+            <S.FullPageCenter>
+                <Spin size="large" tip="Đang tải đề thi thử..." />
+            </S.FullPageCenter>
+        );
+    }
+
+    if (isError || (examData && skills.length === 0)) {
+        return (
+            <S.FullPageCenter>
+                <div style={{ textAlign: 'center' }}>
+                    <Empty description="Đề thi thử chưa có câu hỏi hoặc chưa được công khai." />
+                    <Button style={{ marginTop: '1.5rem' }} onClick={() => navigate({ to: '/mock-exam' })}>
+                        Quay lại danh sách
+                    </Button>
+                </div>
+            </S.FullPageCenter>
+        );
+    }
 
     if (isFinished) {
         return (
@@ -186,6 +279,14 @@ const MainMockExamPage: React.FC = () => {
         );
     }
 
+    if (!currentSkill) {
+        return (
+            <S.FullPageCenter>
+                <Spin size="large" />
+            </S.FullPageCenter>
+        );
+    }
+
     return (
         <S.ExamLayout>
             <S.ExamHeader>
@@ -194,7 +295,7 @@ const MainMockExamPage: React.FC = () => {
                         <LeftOutlined /> Quay lại
                     </S.BackLink>
                     <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'white' }}>
-                        Đề {currentSkill.title} số 1
+                        {examData?.title ?? 'Đề thi thử'} — {currentSkill.title}
                     </span>
                 </Space>
 
@@ -208,7 +309,7 @@ const MainMockExamPage: React.FC = () => {
 
                     <S.TimerWrapper style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}>
                         <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
-                        {formatTime(timeLeft)}
+                        {formatTime(displayTime)}
                     </S.TimerWrapper>
                 </Space>
             </S.ExamHeader>
@@ -225,11 +326,11 @@ const MainMockExamPage: React.FC = () => {
                     onClick={handlePrevSection}
                     disabled={activeStep === 0 && currentStatus.question === 1}
                 >
-                    {currentStatus.question === 1 ? 'Phần trước' : 'Câu trước'}
+                    Quay lại
                 </Button>
 
                 <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#64748b', letterSpacing: '0.02em' }}>
-                    Phần {currentStatus.part} trên {currentSkill.totalParts} (Câu {currentStatus.question} / {currentSkill.totalQuestions})
+                    Kỹ năng {activeStep + 1}/{skills.length}: {currentSkill.title} — Phần {currentStatus.part} trên {currentSkill.totalParts}
                 </div>
 
                 <Space size="middle">
@@ -239,23 +340,15 @@ const MainMockExamPage: React.FC = () => {
                         style={{
                             borderRadius: '2rem',
                             fontWeight: 700,
-                            background: (activeStep === mockSkills.length - 1 && currentStatus.question === currentSkill.totalQuestions) ? '#10b981' : '#2563eb',
-                            borderColor: (activeStep === mockSkills.length - 1 && currentStatus.question === currentSkill.totalQuestions) ? '#10b981' : '#2563eb',
+                            background: activeStep === skills.length - 1 ? '#10b981' : '#2563eb',
+                            borderColor: activeStep === skills.length - 1 ? '#10b981' : '#2563eb',
                             padding: '0 2rem',
                             fontSize: '0.95rem',
                             boxShadow: `0 4px 15px rgba(37, 99, 235, 0.3)`
                         }}
-                        onClick={() => {
-                            if (activeStep === mockSkills.length - 1 && currentStatus.question === currentSkill.totalQuestions) {
-                                handleSubmitFinal();
-                            } else {
-                                handleNextSection(false);
-                            }
-                        }}
+                        onClick={() => handleNextSection(false)}
                     >
-                        {currentStatus.question === currentSkill.totalQuestions
-                            ? (activeStep === mockSkills.length - 1 ? 'Nộp bài thi' : 'Phần tiếp theo')
-                            : 'Câu tiếp theo'}
+                        Tiếp theo
                         <RightOutlined style={{ fontSize: '12px', marginLeft: '6px' }} />
                     </Button>
                 </Space>

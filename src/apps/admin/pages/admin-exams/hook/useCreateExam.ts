@@ -80,13 +80,12 @@ export const useCreateExam = () => {
     };
 
     let newSelected = [...selectedQuestions];
-    // Luyện theo phần (partial): cho phép thêm rất nhiều câu (tất cả câu của phần) -> không giới hạn 1 slot
-    if (currentType !== "partial") {
-      if (record.type === "Vocabulary") {
-        newSelected = newSelected.filter((q) => !(q?.type === "Vocabulary" && q?.task === record.task));
-      } else if (isSingleSlotPart(record.type, record.part)) {
-        newSelected = newSelected.filter((q) => !(q?.type === record.type && q?.part === record.part));
-      }
+    // Vocabulary: mỗi Task = 1 bản ghi (đã gộp 5 câu) -> luôn thay thế bản cũ cùng task, kể cả partial
+    if (record.type === "Vocabulary") {
+      newSelected = newSelected.filter((q) => !(q?.type === "Vocabulary" && q?.task === record.task));
+    } else if (currentType !== "partial" && isSingleSlotPart(record.type, record.part)) {
+      // Luyện theo phần (partial): cho phép thêm nhiều câu -> không giới hạn 1 slot
+      newSelected = newSelected.filter((q) => !(q?.type === record.type && q?.part === record.part));
     }
     setSelectedQuestions([...newSelected, record]);
   };

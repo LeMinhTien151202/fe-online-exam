@@ -1,34 +1,38 @@
 import { useNavigate } from '@tanstack/react-router';
 import React from 'react';
+import { useSpeakingSetsQuery } from '../../../services/speakingExamQuery';
 
 export const useLandingAction = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<'parts' | 'mock-tests'>('parts');
   const navigate = useNavigate();
 
-  const [speakingProgress, setSpeakingProgress] = React.useState<Record<string, number>>(() => {
+  const [speakingProgress] = React.useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('aptis_speaking_progress');
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
     return { s1: 0, s2: 0, s3: 0, s4: 0 };
   });
 
-  const [mockProgress, setMockProgress] = React.useState<Record<string, number>>(() => {
+  const [mockProgress] = React.useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('aptis_speaking_mock_progress');
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
-    return { m1: 0, m2: 0, m3: 0 };
+    return {};
   });
+
+  const { data: examRes, isLoading: isExamsLoading } = useSpeakingSetsQuery();
+  const examSets = React.useMemo(() => examRes?.data ?? [], [examRes]);
 
   const completedCount = Object.values(speakingProgress).filter((prog) => prog === 100).length;
 
@@ -37,8 +41,8 @@ export const useLandingAction = () => {
     navigate({ to: `/speaking/part/${num}` });
   };
 
-  const handleMockClick = (mockId: string) => {
-    navigate({ to: `/speaking/mock-test/${mockId}` as any });
+  const handleMockClick = (examId: number) => {
+    navigate({ to: '/speaking/mock-test/$testId', params: { testId: String(examId) } });
   };
 
   return {
@@ -49,6 +53,8 @@ export const useLandingAction = () => {
     speakingProgress,
     mockProgress,
     completedCount,
+    examSets,
+    isExamsLoading,
     handlePartClick,
     handleMockClick,
   };

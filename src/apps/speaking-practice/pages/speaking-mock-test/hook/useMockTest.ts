@@ -1,60 +1,128 @@
-import { useNavigate,useParams } from '@tanstack/react-router';
-import { Modal,message } from 'antd';
-import { useEffect,useState } from 'react';
+import { useNavigate, useParams } from '@tanstack/react-router';
+import { Modal, message } from 'antd';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { SpeakingSet } from '../../../services/mappers';
+import { useSpeakingExamDetailQuery } from '../../../services/speakingExamQuery';
+import { buildSpeakingExam } from '../../../services/speakingExamMapper';
+
+export interface SpeakingNavItem {
+  qNum: number;
+  partNumber: number;
+  setIndex: number;
+  subIndex: number;
+}
+
+const keyOf = (partNumber: number, setIndex: number, subIndex: number) =>
+  `p${partNumber}-${setIndex}-${subIndex}`;
 
 export const useMockTest = () => {
   const { testId } = useParams({ strict: false }) as { testId: string };
+  const examId = Number(testId);
   const navigate = useNavigate();
+  const { data: examDetail, isLoading, isError } = useSpeakingExamDetailQuery(examId || null);
 
-  const testTitle = testId === 'm2' ? 'Đề Nói số 2' : testId === 'm3' ? 'Đề Nói số 3' : 'Đề Nói số 1';
-  const totalQuestions = 12;
+  const examData = useMemo(() => (examDetail ? buildSpeakingExam(examDetail) : null), [examDetail]);
 
-  // Answers state for each question
-  const [answers, setAnswers] = useState<Record<number, string | null>>({});
-  const [timeLeft, setTimeLeft] = useState(20 * 60); // 20 minutes in seconds
+  const navItems = useMemo<SpeakingNavItem[]>(() => {
+    if (!examData) return [];
+    const items: SpeakingNavItem[] = [];
+
+    examData.part1.forEach((_, index) => {
+      items.push({ qNum: items.length + 1, partNumber: 1, setIndex: 0, subIndex: index + 1 });
+    });
+
+    const pushSetQuestions = (partNumber: number, sets: SpeakingSet[]) => {
+      sets.forEach((set, setIndex) => {
+        set.questions.forEach((_, questionIndex) => {
+          items.push({
+            qNum: items.length + 1,
+            partNumber,
+            setIndex,
+            subIndex: questionIndex + 1,
+          });
+        });
+      });
+    };
+
+    pushSetQuestions(2, examData.part2);
+    pushSetQuestions(3, examData.part3);
+    pushSetQuestions(4, examData.part4);
+    return items;
+  }, [examData]);
+
+  const totalQuestions = navItems.length;
+
+  const [activePart, setActivePart] = useState(1);
+  const [activeSetIndex, setActiveSetIndex] = useState(0);
+  const [activeSubIndex, setActiveSubIndex] = useState(1);
+  const [answers, setAnswers] = useState<Record<string, string | null>>({});
+  const [timeLeft, setTimeLeft] = useState(20 * 60);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [showSampleMap, setShowSampleMap] = useState<Record<string, boolean>>({});
 
-  // Collapsible sample answers state per question
-  const [showSampleMap, setShowSampleMap] = useState<Record<number, boolean>>({});
-  const [activeSampleIdxMap, setActiveSampleIdxMap] = useState<Record<number, number>>({});
+  const availableParts = useMemo(
+    () => Array.from(new Set(navItems.map((item) => item.partNumber))).sort((a, b) => a - b),
+    [navItems]
+  );
 
-  // Active question number (1 to 12)
-  const [activeQuestionNum, setActiveQuestionNum] = useState<number>(1);
-  const activePart = activeQuestionNum <= 3 ? 1 : activeQuestionNum <= 6 ? 2 : activeQuestionNum <= 9 ? 3 : 4;
+  const activeNav = useMemo(() => {
+    return navItems.find(
+      (item) =>
+        item.partNumber === activePart &&
+        item.setIndex === activeSetIndex &&
+        item.subIndex === activeSubIndex
+    ) ?? navItems.find((item) => item.partNumber === activePart) ?? navItems[0] ?? null;
+  }, [activePart, activeSetIndex, activeSubIndex, navItems]);
 
-  const saveProgressToLocalStorage = () => {
+  const activeQuestionNum = activeNav?.qNum ?? 1;
+  const activeNavIndex = activeNav ? navItems.findIndex((item) => item.qNum === activeNav.qNum) : -1;
+  const prevNavItem = activeNavIndex > 0 ? navItems[activeNavIndex - 1] : null;
+  const nextNavItem = activeNavIndex >= 0 && activeNavIndex < navItems.length - 1 ? navItems[activeNavIndex + 1] : null;
+  const hasPrevStep = !!prevNavItem;
+  const hasNextStep = !!nextNavItem;
+  const prevStepIsSamePart = !!prevNavItem && prevNavItem.partNumber === activePart;
+  const nextStepIsSamePart = !!nextNavItem && nextNavItem.partNumber === activePart;
+
+  const answeredCount = useMemo(
+    () => navItems.filter((item) => answers[keyOf(item.partNumber, item.setIndex, item.subIndex)]).length,
+    [answers, navItems]
+  );
+
+  const saveProgressToLocalStorage = useCallback(() => {
     const saved = localStorage.getItem('aptis_speaking_mock_progress');
     let progressObj: Record<string, number> = {};
     if (saved) {
       try {
         progressObj = JSON.parse(saved);
-      } catch (e) { /* bỏ qua lỗi */ }
+      } catch {
+        progressObj = {};
+      }
     }
     progressObj[testId] = 100;
     localStorage.setItem('aptis_speaking_mock_progress', JSON.stringify(progressObj));
-  };
+  }, [testId]);
 
-  const handleAutoSubmit = () => {
+  const handleAutoSubmit = useCallback(() => {
     setIsSubmitted(true);
     setShowReport(true);
     message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
     saveProgressToLocalStorage();
-  };
+  }, [saveProgressToLocalStorage]);
 
-  // Timer effect
   useEffect(() => {
-    if (timeLeft <= 0 || isSubmitted) {
-      if (timeLeft <= 0 && !isSubmitted) {
-        handleAutoSubmit();
-      }
-      return;
-    }
+    if (timeLeft <= 0 || isSubmitted) return;
     const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          window.setTimeout(handleAutoSubmit, 0);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, isSubmitted]);
+  }, [handleAutoSubmit, isSubmitted, timeLeft]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -62,7 +130,72 @@ export const useMockTest = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const answeredCount = Object.keys(answers).filter(k => answers[Number(k)]).length;
+  const jumpTo = (item: SpeakingNavItem) => {
+    setActivePart(item.partNumber);
+    setActiveSetIndex(item.setIndex);
+    setActiveSubIndex(item.subIndex);
+  };
+
+  const handleNavigateQuestion = (qNum: number) => {
+    const item = navItems.find((nav) => nav.qNum === qNum);
+    if (item) jumpTo(item);
+  };
+
+  const firstItemForPart = (partNumber: number) =>
+    navItems.find((item) => item.partNumber === partNumber) ?? null;
+
+  const handlePrevQuestion = () => {
+    const idx = availableParts.indexOf(activePart);
+    if (idx > 0) {
+      const item = firstItemForPart(availableParts[idx - 1]);
+      if (item) jumpTo(item);
+    }
+  };
+
+  const handleNextQuestion = () => {
+    const idx = availableParts.indexOf(activePart);
+    if (idx >= 0 && idx < availableParts.length - 1) {
+      const item = firstItemForPart(availableParts[idx + 1]);
+      if (item) jumpTo(item);
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (prevNavItem) jumpTo(prevNavItem);
+  };
+
+  const handleNextStep = () => {
+    if (nextNavItem) jumpTo(nextNavItem);
+  };
+
+  const handleSubTabChange = (subIndex: number) => {
+    setActiveSubIndex(subIndex);
+  };
+
+  const markRecorded = (audioUrl: string | null) => {
+    const value = audioUrl || 'recorded_mock';
+    if (activePart === 4) {
+      const part4Items = navItems.filter(
+        (item) => item.partNumber === 4 && item.setIndex === activeSetIndex
+      );
+      setAnswers((prev) => {
+        const next = { ...prev };
+        part4Items.forEach((item) => {
+          next[keyOf(item.partNumber, item.setIndex, item.subIndex)] = value;
+        });
+        return next;
+      });
+      return;
+    }
+
+    setAnswers((prev) => ({
+      ...prev,
+      [keyOf(activePart, activeSetIndex, activeSubIndex)]: value,
+    }));
+  };
+
+  const isSubDone = (partNumber: number, setIndex: number, subIndex: number) =>
+    !!answers[keyOf(partNumber, setIndex, subIndex)];
 
   const handleManualSubmit = () => {
     setIsSubmitted(true);
@@ -76,9 +209,10 @@ export const useMockTest = () => {
     setTimeLeft(20 * 60);
     setIsSubmitted(false);
     setShowReport(false);
-    setActiveQuestionNum(1);
+    setActivePart(1);
+    setActiveSetIndex(0);
+    setActiveSubIndex(1);
     setShowSampleMap({});
-    setActiveSampleIdxMap({});
   };
 
   const handleBackToLanding = () => {
@@ -91,73 +225,45 @@ export const useMockTest = () => {
       content: 'Tiến độ làm bài nói của bạn sẽ không được lưu nếu bạn thoát ra lúc này.',
       okText: 'Thoát ra',
       cancelText: 'Làm tiếp',
-      onOk: () => {
-        navigate({ to: '/speaking' });
-      }
+      onOk: () => navigate({ to: '/speaking' }),
     });
-  };
-
-  const handleNavigateQuestion = (qNum: number) => {
-    setActiveQuestionNum(qNum);
-  };
-
-  const handlePrevQuestion = () => {
-    if (activePart === 2) {
-      handleNavigateQuestion(1);
-    } else if (activePart === 3) {
-      handleNavigateQuestion(4);
-    } else if (activePart === 4) {
-      handleNavigateQuestion(7);
-    }
-  };
-
-  const handleNextQuestion = () => {
-    if (activePart === 1) {
-      handleNavigateQuestion(4);
-    } else if (activePart === 2) {
-      handleNavigateQuestion(7);
-    } else if (activePart === 3) {
-      handleNavigateQuestion(10);
-    }
   };
 
   const handleSubmitClick = () => {
     const unansweredCount = totalQuestions - answeredCount;
-    const hasUnanswered = unansweredCount > 0;
-
     Modal.confirm({
       title: 'Xác nhận nộp bài thi nói?',
-      content: hasUnanswered
-        ? `Bạn còn ${unansweredCount} câu hỏi chưa trả lời ghi âm. Bạn có thực sự muốn nộp bài thi ngay bây giờ không?`
-        : 'Bạn đã hoàn thành ghi âm toàn bộ 12 câu hỏi. Bạn có chắc chắn muốn nộp bài để xem đáp án mẫu không?',
+      content: unansweredCount > 0
+        ? `Bạn còn ${unansweredCount} câu hỏi chưa trả lời ghi âm. Bạn có thực sự muốn nộp bài ngay bây giờ không?`
+        : `Bạn đã hoàn thành ghi âm toàn bộ ${totalQuestions} câu hỏi. Bạn có chắc chắn muốn nộp bài không?`,
       okText: 'Nộp bài',
       cancelText: 'Làm tiếp',
-      onOk: handleManualSubmit
+      onOk: handleManualSubmit,
     });
   };
 
-  const toggleSample = (qNum: number) => {
-    setShowSampleMap(prev => ({ ...prev, [qNum]: !prev[qNum] }));
-  };
-
-  const setSampleIndex = (qNum: number, sIdx: number) => {
-    setActiveSampleIdxMap(prev => ({ ...prev, [qNum]: sIdx }));
+  const toggleSample = (key: string) => {
+    setShowSampleMap((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   return {
-    testId,
-    testTitle,
+    isLoading,
+    isError,
+    testTitle: examDetail?.title ?? 'Đề thi Nói',
+    examData,
+    navItems,
     totalQuestions,
     answers,
-    setAnswers,
     timeLeft,
     isSubmitted,
     showReport,
     setShowReport,
     showSampleMap,
-    activeSampleIdxMap,
     activeQuestionNum,
     activePart,
+    activeSetIndex,
+    activeSubIndex,
+    availableParts,
     formatTime,
     answeredCount,
     handleRetry,
@@ -165,9 +271,17 @@ export const useMockTest = () => {
     handleNavigateQuestion,
     handlePrevQuestion,
     handleNextQuestion,
+    handlePrevStep,
+    handleNextStep,
     handleSubmitClick,
     toggleSample,
-    setSampleIndex,
+    markRecorded,
+    isSubDone,
+    handleSubTabChange,
+    hasPrevStep,
+    hasNextStep,
+    prevStepIsSamePart,
+    nextStepIsSamePart,
     navigate,
   };
 };

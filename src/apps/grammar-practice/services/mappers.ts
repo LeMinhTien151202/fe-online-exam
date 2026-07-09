@@ -16,18 +16,34 @@ export const mapGrammarQuestions = (records: IQuestion[]): IGrammarQuestion[] =>
     };
   });
 
-// ---------- Part 2: Vocabulary (WORD_BANK, 4-5 task) ----------
-// task_variant -> nhãn tiếng Việt + kiểu render (chỉ 'context' render inline; còn lại render dạng dòng)
+// ---------- Part 2: Vocabulary (WORD_BANK, 5 task) ----------
 const VARIANT_LABEL: Record<string, string> = {
-  DEFINITION: 'Ghép định nghĩa với từ',
-  COLLOCATION: 'Cụm từ thường đi kèm',
-  SENTENCE: 'Điền từ vào câu',
-  SYNONYM: 'Tìm từ đồng nghĩa',
-  ANTONYM: 'Tìm từ trái nghĩa',
+  DEFINITION: 'Word Definition (Ghép định nghĩa)',
+  COLLOCATION: 'Word Collocation (Từ hay đi kèm)',
+  SENTENCE: 'Word Use (Điền từ vào câu)',
+  SYNONYM: 'Synonym (Từ đồng nghĩa)',
+  ANTONYM: 'Antonym (Từ trái nghĩa)',
 };
 
-// Dùng kiểu render dạng dòng (trái = đề, phải = dropdown) cho mọi task để hiển thị nhất quán
-const variantType = (): IVocabularyType => 'synonym';
+// Câu lệnh chuẩn APTIS cho từng task (fallback khi bản ghi không có content)
+const VARIANT_INSTRUCTION: Record<string, string> = {
+  DEFINITION: 'Complete each definition using a word from the list. Use each word once only. You will not need five of the words.',
+  COLLOCATION: 'Select a word from the list that is most often used with the word on the left. Use each word once only. You will not need five of the words.',
+  SENTENCE: 'Finish each sentence using a word from the list. Use each word once only. You will not need five of the words.',
+  SYNONYM: 'Select a word from the list that has the most similar meaning to the word on the left.',
+  ANTONYM: 'Select a word from the list that has the opposite meaning to the word on the left.',
+};
+
+// SENTENCE: dropdown nằm inline giữa câu (type 'context'); các task còn lại: dòng trái/phải
+const variantType = (variant: string): IVocabularyType =>
+  variant === 'SENTENCE' ? 'context' : 'synonym';
+
+// Chuẩn hóa chỗ trống về đúng '_______' (7 gạch) mà VocabularySection dùng để split
+const normalizeBlank = (prompt: string, variant: string): string => {
+  if (variant !== 'SENTENCE') return prompt;
+  if (/_{2,}/.test(prompt)) return prompt.replace(/_{2,}/g, '_______');
+  return `${prompt} _______`; // câu không có chỗ trống -> thêm vào cuối
+};
 
 export const mapVocabularySets = (records: IQuestion[]): IVocabularySet[] => {
   let counter = 0; // đánh số câu chạy liên tục qua các task (bắt đầu từ 1)
@@ -37,15 +53,15 @@ export const mapVocabularySets = (records: IQuestion[]): IVocabularySet[] => {
     const slots = cfg?.slots ?? [];
     return {
       id: `set${i + 1}`,
-      type: variantType(),
+      type: variantType(variant),
       title: `Task ${i + 1}: ${VARIANT_LABEL[variant] ?? 'Từ vựng'}`,
-      instruction: r.content || 'Chọn từ phù hợp từ danh sách cho mỗi câu. Mỗi từ chỉ dùng một lần.',
+      instruction: r.content || VARIANT_INSTRUCTION[variant] || 'Chọn từ phù hợp từ danh sách cho mỗi câu.',
       subQuestions: slots.map((s) => {
         counter += 1;
         return {
           id: s.slot_id || `v${counter}`,
           questionNumber: counter,
-          leftLabel: s.prompt,
+          leftLabel: normalizeBlank(s.prompt, variant),
           correctAnswer: s.correct_answer,
         };
       }),

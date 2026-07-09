@@ -56,7 +56,7 @@ export const MainContent = styled.main`
   overflow-y: auto;
   padding: 2rem;
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   gap: 2rem;
   width: 100%;
   background: #ffffff;
@@ -74,8 +74,7 @@ export const MainContent = styled.main`
 export const ContentCard = styled.div`
   background: white;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

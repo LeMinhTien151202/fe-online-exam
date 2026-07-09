@@ -2,34 +2,32 @@ import React from 'react';
 import { Tooltip } from 'antd';
 import * as S from '../styles/styled';
 
+// Mỗi ô trên bảng = 1 "đơn vị": với Part 2 là cả 1 task từ vựng (bộ 5 câu trong 1 bản ghi)
+export interface NavItem {
+  display: number;
+  answered: boolean;
+  active: boolean;
+  tooltip?: string;
+}
+
 interface QuestionNavProps {
-  answers: Record<number, string>;
-  currentQuestionIndex: number;
-  totalAnswered: number;
-  onNavigateQuestion: (qNum: number) => void;
-  partId?: string;
-  // Danh sách số câu động (nối API); nếu có sẽ ưu tiên dùng thay cho dải cứng 1-25/26-50
-  questionNumbers?: number[];
+  items: NavItem[];
   sectionLabel?: string;
+  totalAnswered: number;
+  totalQuestions: number;
+  onNavigate: (display: number) => void;
 }
 
 export const QuestionNav: React.FC<QuestionNavProps> = ({
-  answers,
-  currentQuestionIndex,
-  onNavigateQuestion,
-  questionNumbers,
+  items,
   sectionLabel,
+  totalAnswered,
+  totalQuestions,
+  onNavigate,
 }) => {
-  const numbers = questionNumbers && questionNumbers.length > 0 ? questionNumbers : [];
-
-  const getQuestionStatus = (qNum: number): 'unanswered' | 'answered' =>
-    answers[qNum] ? 'answered' : 'unanswered';
-
-  const renderGridButtons = (qNumbers: number[]) => (
+  const renderGridButtons = () => (
     <S.ButtonGrid>
-      {qNumbers.map((qNum, idx) => {
-        const status = getQuestionStatus(qNum);
-        const isActive = currentQuestionIndex === qNum;
+      {items.map((item, idx) => {
         const col = idx % 5;
         let placement: 'top' | 'topRight' | 'topLeft' = 'top';
         if (col === 0) placement = 'topRight';
@@ -37,17 +35,17 @@ export const QuestionNav: React.FC<QuestionNavProps> = ({
 
         return (
           <Tooltip
-            key={qNum}
-            title={`Câu ${qNum}: ${status === 'answered' ? 'Đã trả lời' : 'Chưa trả lời'}`}
+            key={item.display}
+            title={item.tooltip ?? `Câu ${item.display}: ${item.answered ? 'Đã trả lời' : 'Chưa trả lời'}`}
             placement={placement}
             mouseEnterDelay={0.15}
           >
             <S.NavGridButton
-              $status={status === 'answered' ? 'answered' : 'unanswered'}
-              $active={isActive}
-              onClick={() => onNavigateQuestion(qNum)}
+              $status={item.answered ? 'answered' : 'unanswered'}
+              $active={item.active}
+              onClick={() => onNavigate(item.display)}
             >
-              {qNum}
+              {item.display}
             </S.NavGridButton>
           </Tooltip>
         );
@@ -55,15 +53,13 @@ export const QuestionNav: React.FC<QuestionNavProps> = ({
     </S.ButtonGrid>
   );
 
-  const answeredInSet = numbers.filter((n) => !!answers[n]).length;
-
   return (
     <S.NavPanel>
       <S.PanelTitle>Bảng câu hỏi</S.PanelTitle>
 
       <S.GridScrollContainer>
         <S.SectionLabel>{sectionLabel || 'Danh sách câu'}</S.SectionLabel>
-        {renderGridButtons(numbers)}
+        {renderGridButtons()}
       </S.GridScrollContainer>
 
       <S.Legend>
@@ -83,7 +79,7 @@ export const QuestionNav: React.FC<QuestionNavProps> = ({
 
       <S.NavProgressRow>
         <span>Tiến độ:</span>
-        <span>{answeredInSet}/{numbers.length} câu</span>
+        <span>{totalAnswered}/{totalQuestions} câu</span>
       </S.NavProgressRow>
     </S.NavPanel>
   );

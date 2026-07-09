@@ -26,7 +26,8 @@ export const Part2Page: React.FC = () => {
   const { data: res, isLoading } = useGrammarQuestionsQuery(2);
   const sets = useMemo(() => mapVocabularySets(res?.data ?? []), [res]);
   const allNumbers = useMemo(() => sets.flatMap((s) => s.subQuestions.map((q) => q.questionNumber)), [sets]);
-  const total = allNumbers.length;
+  const total = allNumbers.length; // tổng số ý (để chấm điểm/tiến độ)
+  const totalUnits = sets.length; // mỗi task (bản ghi) = 1 câu trên bảng
 
   const [showResultModal, setShowResultModal] = useState(false);
   const [scoreResult, setScoreResult] = useState<number | null>(null);
@@ -63,9 +64,30 @@ export const Part2Page: React.FC = () => {
     totalAnswered
   } = usePart2Action(handleExamSubmit, 12 * 60 + 30, 'aptis_grammar_part_2', total || 1);
 
-  const activePos = allNumbers.indexOf(currentQuestionIndex);
-  const handlePrevQuestion = () => { if (activePos > 0) setCurrentQuestionIndex(allNumbers[activePos - 1]); };
-  const handleNextQuestion = () => { if (activePos >= 0 && activePos < total - 1) setCurrentQuestionIndex(allNumbers[activePos + 1]); };
+  // ---- Đơn vị hiển thị: mỗi task (bản ghi WORD_BANK) = 1 câu trên bảng/footer ----
+  const unitForQuestion = (qNum: number): number => {
+    const idx = sets.findIndex((s) => s.subQuestions.some((sub) => sub.questionNumber === qNum));
+    return idx >= 0 ? idx + 1 : 1;
+  };
+  const activeUnit = unitForQuestion(currentQuestionIndex);
+
+  const handleNavigateUnit = (unit: number) => {
+    const first = sets[unit - 1]?.subQuestions[0]?.questionNumber;
+    if (first != null) setCurrentQuestionIndex(first);
+  };
+
+  const navItems = useMemo(() => sets.map((set, i) => {
+    const answeredCount = set.subQuestions.filter((sub) => !!answers[sub.questionNumber]).length;
+    return {
+      display: i + 1,
+      answered: set.subQuestions.length > 0 && answeredCount === set.subQuestions.length,
+      active: activeUnit === i + 1,
+      tooltip: `Câu ${i + 1} — ${set.title}: đã trả lời ${answeredCount}/${set.subQuestions.length} ý`,
+    };
+  }), [sets, answers, activeUnit]);
+
+  const handlePrevQuestion = () => { if (activeUnit > 1) handleNavigateUnit(activeUnit - 1); };
+  const handleNextQuestion = () => { if (activeUnit < totalUnits) handleNavigateUnit(activeUnit + 1); };
 
   const handleBackToLanding = () => {
     Modal.confirm({
@@ -155,12 +177,11 @@ export const Part2Page: React.FC = () => {
                 </S.ContentCard>
 
                 <QuestionNav
-                  answers={answers}
-                  currentQuestionIndex={currentQuestionIndex}
+                  items={navItems}
+                  sectionLabel="Từ vựng — mỗi số là 1 task (5 ý)"
                   totalAnswered={totalAnswered}
-                  onNavigateQuestion={setCurrentQuestionIndex}
-                  questionNumbers={allNumbers}
-                  sectionLabel="Từ vựng"
+                  totalQuestions={total}
+                  onNavigate={handleNavigateUnit}
                 />
               </>
             )}
@@ -172,20 +193,20 @@ export const Part2Page: React.FC = () => {
               icon={<ArrowLeftOutlined />}
               size="large"
               onClick={handlePrevQuestion}
-              disabled={activePos <= 0}
+              disabled={activeUnit <= 1}
             >
               Câu trước
             </S.FooterButton>
 
             <S.FooterProgressText>
-              Câu {activePos >= 0 ? activePos + 1 : 0} trên {total || 0}
+              Câu {totalUnits > 0 ? activeUnit : 0} trên {totalUnits || 0}
             </S.FooterProgressText>
 
             <Space size="middle">
               <S.SubmitButton type="primary" icon={<CheckCircleOutlined />} size="large" onClick={handleSubmitClick} disabled={total === 0}>
                 Nộp bài
               </S.SubmitButton>
-              <S.NextButton type="primary" size="large" onClick={handleNextQuestion} disabled={activePos >= total - 1}>
+              <S.NextButton type="primary" size="large" onClick={handleNextQuestion} disabled={activeUnit >= totalUnits}>
                 Tiếp theo <ArrowRightOutlined className="text-[12px]" />
               </S.NextButton>
             </Space>

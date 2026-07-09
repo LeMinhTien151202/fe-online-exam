@@ -2,101 +2,71 @@ import React from 'react';
 import { Tooltip } from 'antd';
 import * as S from '../styles/styled';
 
+// Mỗi ô trên bảng = 1 "đơn vị" hiển thị: câu MC (grammar) hoặc cả 1 task từ vựng (bộ 5 câu)
+export interface GrammarNavItem {
+  display: number; // số hiển thị (1..25 grammar, 26..30 mỗi task vocab)
+  answered: boolean;
+  active: boolean;
+  tooltip?: string;
+}
+
+export interface GrammarNavSection {
+  label: string;
+  items: GrammarNavItem[];
+}
+
 interface QuestionNavProps {
-  answers: Record<number, string>;
-  currentQuestionIndex: number;
   totalAnswered: number;
-  onNavigateQuestion: (qNum: number) => void;
-  partId?: string;
+  totalQuestions: number;
+  sections: GrammarNavSection[];
+  onNavigate: (display: number) => void;
 }
 
 export const QuestionNav: React.FC<QuestionNavProps> = ({
-  answers,
-  currentQuestionIndex,
   totalAnswered,
-  onNavigateQuestion,
-  partId,
+  totalQuestions,
+  sections,
+  onNavigate,
 }) => {
-  const isPartMode = !!partId;
-  const grammarQuestions = Array.from({ length: 25 }, (_, i) => i + 1);
-  const vocabularyQuestions = Array.from({ length: 25 }, (_, i) => i + 26);
+  const renderGridButtons = (items: GrammarNavItem[]) => (
+    <S.ButtonGrid>
+      {items.map((item, index) => {
+        const col = index % 5;
+        let placement: 'top' | 'topRight' | 'topLeft' = 'top';
+        if (col === 0) placement = 'topRight';
+        else if (col === 4) placement = 'topLeft';
 
-  const getQuestionStatus = (qNum: number): 'unanswered' | 'answered' => {
-    if (answers[qNum]) return 'answered';
-    return 'unanswered';
-  };
-
-  const renderGridButtons = (qNumbers: number[]) => {
-    return (
-      <S.ButtonGrid>
-        {qNumbers.map((qNum) => {
-          const status = getQuestionStatus(qNum);
-          const isActive = currentQuestionIndex === qNum;
-
-          // Determine placement based on grid position (5 columns)
-          // Column 1 (index % 5 === 1): topRight to avoid left edge cutoff
-          // Column 5 (index % 5 === 0): topLeft to avoid right edge cutoff
-          let placement: 'top' | 'topRight' | 'topLeft' = 'top';
-          if (qNum % 5 === 1) {
-            placement = 'topRight';
-          } else if (qNum % 5 === 0) {
-            placement = 'topLeft';
-          }
-
-          return (
-            <Tooltip
-              key={qNum}
-              title={`Câu ${qNum}: ${
-                status === 'answered'
-                  ? 'Đã trả lời'
-                  : 'Chưa trả lời'
-              }`}
-              placement={placement}
-              mouseEnterDelay={0.15}
+        return (
+          <Tooltip
+            key={item.display}
+            title={item.tooltip ?? `Câu ${item.display}: ${item.answered ? 'Đã trả lời' : 'Chưa trả lời'}`}
+            placement={placement}
+            mouseEnterDelay={0.15}
+          >
+            <S.NavGridButton
+              $status={item.answered ? 'answered' : 'unanswered'}
+              $active={item.active}
+              onClick={() => onNavigate(item.display)}
             >
-              <S.NavGridButton
-                $status={status === 'answered' ? 'answered' : 'unanswered'}
-                $active={isActive}
-                onClick={() => onNavigateQuestion(qNum)}
-              >
-                {qNum}
-              </S.NavGridButton>
-            </Tooltip>
-          );
-        })}
-      </S.ButtonGrid>
-    );
-  };
-
-  const showGrammar = !isPartMode || partId === '1';
-  const showVocab = !isPartMode || partId === '2';
-
-  const displayTotalAnswered = isPartMode
-    ? (partId === '1'
-        ? Object.keys(answers).map(Number).filter(k => k >= 1 && k <= 25).length
-        : Object.keys(answers).map(Number).filter(k => k >= 26 && k <= 50).length)
-    : totalAnswered;
-
-  const totalQuestionsLimit = isPartMode ? 25 : 50;
+              {item.display}
+            </S.NavGridButton>
+          </Tooltip>
+        );
+      })}
+    </S.ButtonGrid>
+  );
 
   return (
     <S.NavPanel>
       <S.PanelTitle>Bảng câu hỏi</S.PanelTitle>
 
       <S.GridScrollContainer>
-        {showGrammar && (
-          <>
-            <S.SectionLabel>Ngữ pháp (1 - 25)</S.SectionLabel>
-            {renderGridButtons(grammarQuestions)}
-          </>
-        )}
-
-        {showVocab && (
-          <>
-            <S.SectionLabel>Từ vựng (26 - 50)</S.SectionLabel>
-            {renderGridButtons(vocabularyQuestions)}
-          </>
-        )}
+        {sections.map((section) => (
+          <React.Fragment key={section.label}>
+            <S.SectionLabel>{section.label}</S.SectionLabel>
+            {renderGridButtons(section.items)}
+          </React.Fragment>
+        ))}
       </S.GridScrollContainer>
 
       <S.Legend>
@@ -116,7 +86,7 @@ export const QuestionNav: React.FC<QuestionNavProps> = ({
 
       <S.NavProgressRow>
         <span>Tiến độ:</span>
-        <span>{displayTotalAnswered}/{totalQuestionsLimit} câu</span>
+        <span>{totalAnswered}/{totalQuestions} câu</span>
       </S.NavProgressRow>
     </S.NavPanel>
   );

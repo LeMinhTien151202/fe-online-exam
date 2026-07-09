@@ -72,14 +72,20 @@ export const ContentBody = styled.div`
 `;
 
 export const WorkspaceGrid = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 2rem;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 2rem;
   background: #ffffff;
   
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+
   @media (max-width: 640px) {
     padding: 1rem;
   }
@@ -90,9 +96,9 @@ export const ContentGrid = styled.div`
   grid-template-columns: 1fr 450px;
   gap: 2rem;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
   height: 100%;
+  min-width: 0;
+  overflow: hidden;
 
   @media (max-width: 992px) {
     grid-template-columns: 1fr;
@@ -236,6 +242,43 @@ export const QuestionBox = styled.div<{ $borderColor: string }>`
     font-size: 1.1rem;
     font-weight: 600;
     color: #1e293b;
+    line-height: 1.5;
+  }
+`;
+
+export const QListWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+`;
+
+export const QListItem = styled.div<{ $borderColor: string }>`
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 1rem;
+  border-left: 4px solid ${props => props.$borderColor};
+  background: #f8fafc;
+  border-radius: 0 0.5rem 0.5rem 0;
+
+  .q-num {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: ${props => props.$borderColor};
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+  }
+
+  .q-content {
+    color: #1e293b;
+    font-size: 1rem;
+    font-weight: 600;
     line-height: 1.5;
   }
 `;

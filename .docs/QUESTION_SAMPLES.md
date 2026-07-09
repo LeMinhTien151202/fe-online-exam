@@ -32,93 +32,97 @@
 > Mỗi bản: `options_pool` **10 từ** (thừa 5 gây nhiễu) + `slots` **5 câu**.
 > Mỗi `slot` gồm `prompt` (đề của câu) + `correct_answer` (phải nằm trong `options_pool`).
 > Khi dựng đề (Phase 4), gán cả 5 bản ghi này vào Part 2.
+>
+> **`content` = câu lệnh đề bài hiển thị cho học viên** (instruction chuẩn APTIS, xem mẫu dưới — FE sẽ dùng nguyên văn; nếu để trống, FE/mapper tự điền câu lệnh mặc định theo `task_variant`).
+> **Riêng Task SENTENCE**: `prompt` phải chứa chỗ trống **`_______`** (7 dấu gạch dưới) để FE render dropdown **inline giữa câu** (VD: `After it rained, the path was all _______ and my trainers got dirty.`). Các task còn lại (DEFINITION/COLLOCATION/SYNONYM/ANTONYM) `prompt` là chữ bên trái, dropdown bên phải.
 
-**Task 1 — DEFINITION (ghép định nghĩa → từ):**
+**Task 1 — DEFINITION (hoàn thành định nghĩa bằng từ trong list):**
 ```json
 {
   "skillId": 1,
   "partNumber": 2,
-  "content": "Chọn từ phù hợp với mỗi định nghĩa.",
+  "content": "Complete each definition using a word from the list. Use each word once only. You will not need five of the words.",
   "extraConfig": {
     "task_variant": "DEFINITION",
-    "options_pool": ["generous", "stubborn", "cautious", "fragile", "ancient", "rapid", "honest", "vacant", "gloomy", "reliable"],
+    "options_pool": ["improve", "select", "earn", "assist", "employ", "reduce", "borrow", "deny", "refuse", "spend"],
     "slots": [
-      { "slot_id": "s1", "prompt": "Willing to give and share", "correct_answer": "generous" },
-      { "slot_id": "s2", "prompt": "Refusing to change one's mind", "correct_answer": "stubborn" },
-      { "slot_id": "s3", "prompt": "Careful to avoid danger", "correct_answer": "cautious" },
-      { "slot_id": "s4", "prompt": "Easily broken", "correct_answer": "fragile" },
-      { "slot_id": "s5", "prompt": "Able to be trusted", "correct_answer": "reliable" }
+      { "slot_id": "s1", "prompt": "To get better at something is to", "correct_answer": "improve" },
+      { "slot_id": "s2", "prompt": "To choose something is to", "correct_answer": "select" },
+      { "slot_id": "s3", "prompt": "To get money from work is to", "correct_answer": "earn" },
+      { "slot_id": "s4", "prompt": "To help someone is to", "correct_answer": "assist" },
+      { "slot_id": "s5", "prompt": "To give someone a job is to", "correct_answer": "employ" }
     ]
   }
 }
 ```
 
-**Task 2 — COLLOCATION (từ gốc → từ đi kèm):**
+**Task 2 — COLLOCATION (từ bên trái → chọn từ hay đi kèm nhất):**
 ```json
 {
   "skillId": 1,
   "partNumber": 2,
-  "content": "Chọn từ ghép với từ gốc tạo thành cụm cố định.",
+  "content": "Select a word from the list that is most often used with the word on the left. Use each word once only. You will not need five of the words.",
   "extraConfig": {
     "task_variant": "COLLOCATION",
-    "options_pool": ["a decision", "a mistake", "a photo", "a break", "progress", "attention", "a risk", "fun", "care", "place"],
+    "options_pool": ["price", "value", "family", "rafting", "stone", "reaction", "memory", "journey", "moment", "river"],
     "slots": [
-      { "slot_id": "s1", "prompt": "make ___", "correct_answer": "a decision" },
-      { "slot_id": "s2", "prompt": "take ___", "correct_answer": "a photo" },
-      { "slot_id": "s3", "prompt": "pay ___", "correct_answer": "attention" },
-      { "slot_id": "s4", "prompt": "have ___", "correct_answer": "fun" },
-      { "slot_id": "s5", "prompt": "make ___ (tiến bộ)", "correct_answer": "progress" }
+      { "slot_id": "s1", "prompt": "reduced", "correct_answer": "price" },
+      { "slot_id": "s2", "prompt": "sentimental", "correct_answer": "value" },
+      { "slot_id": "s3", "prompt": "immediate", "correct_answer": "family" },
+      { "slot_id": "s4", "prompt": "white-water", "correct_answer": "rafting" },
+      { "slot_id": "s5", "prompt": "semi-precious", "correct_answer": "stone" }
     ]
   }
 }
 ```
 
-**Task 3 — SENTENCE (điền từ vào câu):**
+**Task 3 — SENTENCE (điền từ vào câu — `prompt` PHẢI có chỗ trống `_______` để FE render dropdown inline):**
 ```json
 {
   "skillId": 1,
   "partNumber": 2,
-  "content": "Chọn từ phù hợp hoàn thành mỗi câu.",
+  "content": "Finish each sentence using a word from the list. Use each word once only. You will not need five of the words.",
   "extraConfig": {
     "task_variant": "SENTENCE",
-    "options_pool": ["borrow", "lend", "raise", "rise", "affect", "effect", "advice", "advise", "fewer", "less"],
+    "options_pool": ["muddy", "brand", "extravagant", "feedback", "rewarding", "confident", "efficient", "punctual", "spacious", "reliable"],
     "slots": [
-      { "slot_id": "s1", "prompt": "Could you ___ me your pen?", "correct_answer": "lend" },
-      { "slot_id": "s2", "prompt": "Prices ___ every year.", "correct_answer": "rise" },
-      { "slot_id": "s3", "prompt": "The weather can ___ our mood.", "correct_answer": "affect" },
-      { "slot_id": "s4", "prompt": "She gave me good ___.", "correct_answer": "advice" },
-      { "slot_id": "s5", "prompt": "There are ___ cars today.", "correct_answer": "fewer" }
+      { "slot_id": "s1", "prompt": "After it rained, the path was all _______ and my trainers got dirty.", "correct_answer": "muddy" },
+      { "slot_id": "s2", "prompt": "It is important to create an eye-catching _______ when starting a business.", "correct_answer": "brand" },
+      { "slot_id": "s3", "prompt": "My cousin spent a fortune on her wedding. It was incredibly _______.", "correct_answer": "extravagant" },
+      { "slot_id": "s4", "prompt": "Teachers should always give _______ to their students so they know how to improve.", "correct_answer": "feedback" },
+      { "slot_id": "s5", "prompt": "Doing voluntary work is really _______ because it makes you feel like you are making a difference.", "correct_answer": "rewarding" }
     ]
   }
 }
 ```
 
-**Task 4 — SYNONYM (tìm từ đồng nghĩa):**
+**Task 4 — SYNONYM (từ bên trái → chọn từ đồng nghĩa nhất):**
 ```json
 {
   "skillId": 1,
   "partNumber": 2,
-  "content": "Chọn từ đồng nghĩa với mỗi từ cho sẵn.",
+  "content": "Select a word from the list that has the most similar meaning to the word on the left.",
   "extraConfig": {
     "task_variant": "SYNONYM",
-    "options_pool": ["enormous", "desert", "brave", "quick", "wealthy", "begin", "happy", "difficult", "silent", "angry"],
+    "options_pool": ["dispute", "exchange", "crumble", "possess", "happen", "run", "motivate", "observe", "use", "hide"],
     "slots": [
-      { "slot_id": "s1", "prompt": "huge", "correct_answer": "enormous" },
-      { "slot_id": "s2", "prompt": "abandon", "correct_answer": "desert" },
-      { "slot_id": "s3", "prompt": "fast", "correct_answer": "quick" },
-      { "slot_id": "s4", "prompt": "rich", "correct_answer": "wealthy" },
-      { "slot_id": "s5", "prompt": "start", "correct_answer": "begin" }
+      { "slot_id": "s1", "prompt": "argue", "correct_answer": "dispute" },
+      { "slot_id": "s2", "prompt": "swap", "correct_answer": "exchange" },
+      { "slot_id": "s3", "prompt": "collapse", "correct_answer": "crumble" },
+      { "slot_id": "s4", "prompt": "own", "correct_answer": "possess" },
+      { "slot_id": "s5", "prompt": "occur", "correct_answer": "happen" }
     ]
   }
 }
 ```
 
-**Task 5 — ANTONYM (tìm từ trái nghĩa):**
+**Task 5 — ANTONYM (từ bên trái → chọn từ trái nghĩa):**
+> Lưu ý: đề thi thật đôi khi dùng **2 task SYNONYM** thay vì có ANTONYM (như ảnh mẫu Q26 & Q29). Khi đó cứ tạo 2 bản ghi `task_variant: "SYNONYM"` khác nhau — FE hiển thị theo từng bản ghi nên không bị ảnh hưởng.
 ```json
 {
   "skillId": 1,
   "partNumber": 2,
-  "content": "Chọn từ trái nghĩa với mỗi từ cho sẵn.",
+  "content": "Select a word from the list that has the opposite meaning to the word on the left.",
   "extraConfig": {
     "task_variant": "ANTONYM",
     "options_pool": ["natural", "innocent", "ancient", "expand", "reject", "cheap", "brighten", "increase", "strengthen", "arrive"],

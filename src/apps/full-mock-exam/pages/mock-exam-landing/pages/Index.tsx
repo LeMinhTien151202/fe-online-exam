@@ -1,14 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { Empty, Spin } from 'antd';
 import { DashboardLayout } from '../../../../home/components/DashboardLayout';
+import { useMockExamSetsQuery } from '../../../services/mockExamQuery';
 import * as S from '../styles/styled';
-
-const mockExams = [
-    { id: 'M01', title: 'Aptis Mock Test 01', questions: 125, duration: 162, difficulty: 'Medium', score: 88, status: 'completed' },
-    { id: 'M02', title: 'Aptis Mock Test 02', questions: 125, duration: 162, difficulty: 'Hard', score: 72, status: 'completed' },
-    { id: 'M03', title: 'Aptis Mock Test 03', questions: 125, duration: 162, difficulty: 'Medium', score: 0, status: 'new' },
-    { id: 'M04', title: 'Aptis Mock Test 04', questions: 125, duration: 162, difficulty: 'Expert', score: 0, status: 'new' },
-];
 
 const history = [
     { date: '15/06', name: 'Test 01', cefr: 'C', score: 165 },
@@ -20,8 +15,11 @@ const MockExamLandingPage: React.FC = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('all');
 
-    const handleStartExam = (id: string) => {
-        navigate({ to: `/mock-exam/main/${id}` });
+    const { data: examRes, isLoading } = useMockExamSetsQuery();
+    const mockExams = useMemo(() => examRes?.data ?? [], [examRes]);
+
+    const handleStartExam = (id: number) => {
+        navigate({ to: '/mock-exam/main/$testId', params: { testId: String(id) } });
     };
 
     return (
@@ -67,31 +65,36 @@ const MockExamLandingPage: React.FC = () => {
                             <button className={activeTab === 'taken' ? 'active' : ''} onClick={() => setActiveTab('taken')}>Đã thi</button>
                         </div>
 
-                        {mockExams.map((exam, idx) => (
-                            <S.TestCard key={exam.id}>
-                                <div className="index">{String(idx + 1).padStart(2, '0')}</div>
-                                <div className="info">
-                                    <div className="top">
-                                        <h3>{exam.title}</h3>
-                                        {exam.status === 'completed' && <div className="status-tag">Đã thi</div>}
+                        {isLoading ? (
+                            <div style={{ textAlign: 'center', padding: '3rem' }}><Spin size="large" /></div>
+                        ) : mockExams.length === 0 ? (
+                            <div style={{ padding: '2rem' }}>
+                                <Empty description="Chưa có đề thi thử nào được công khai." />
+                            </div>
+                        ) : (
+                            mockExams.map((exam, idx) => (
+                                <S.TestCard key={exam.id}>
+                                    <div className="index">{String(idx + 1).padStart(2, '0')}</div>
+                                    <div className="info">
+                                        <div className="top">
+                                            <h3>{exam.title}</h3>
+                                        </div>
+                                        <div className="meta">
+                                            {exam._count?.sections ?? 0} kỹ năng{exam.description ? ` · ${exam.description}` : ''}
+                                        </div>
                                     </div>
-                                    <div className="meta">{exam.questions} câu · {exam.duration} phút</div>
-                                </div>
-                                <div className="score-display">
-                                    {exam.score > 0 ? (
-                                        <div className="big">{exam.score}<span>/200</span></div>
-                                    ) : (
+                                    <div className="score-display">
                                         <div className="big">--<span>/200</span></div>
-                                    )}
-                                </div>
-                                <S.ActionButton
-                                    className={exam.status === 'new' ? 'primary' : 'ghost'}
-                                    onClick={() => handleStartExam(exam.id)}
-                                >
-                                    {exam.status === 'new' ? 'Bắt đầu' : 'Thi lại'}
-                                </S.ActionButton>
-                            </S.TestCard>
-                        ))}
+                                    </div>
+                                    <S.ActionButton
+                                        className="primary"
+                                        onClick={() => handleStartExam(exam.id)}
+                                    >
+                                        Bắt đầu
+                                    </S.ActionButton>
+                                </S.TestCard>
+                            ))
+                        )}
                     </S.TestListSection>
 
                     {/* Right Column - Skill & History */}

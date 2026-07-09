@@ -1,20 +1,19 @@
 import {
-AudioOutlined,
-BellOutlined,
-ClockCircleOutlined,
-MenuOutlined,
-QuestionCircleOutlined,
-ThunderboltOutlined,
-TrophyOutlined
+  AudioOutlined,
+  BellOutlined,
+  ClockCircleOutlined,
+  MenuOutlined,
+  QuestionCircleOutlined,
+  ThunderboltOutlined,
+  TrophyOutlined,
 } from '@ant-design/icons';
 import { Link } from '@tanstack/react-router';
-import { Button,Drawer,Progress,Segmented } from 'antd';
+import { Button, Drawer, Empty, Progress, Segmented, Spin } from 'antd';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { PartCard } from '../components/PartCard';
 import { useListeningLanding } from '../hook/useListeningLanding';
-import { mockTestsData } from '../services/data';
 import * as S from '../styles/styled';
 
 export const ListeningPracticePage: React.FC = () => {
@@ -24,10 +23,11 @@ export const ListeningPracticePage: React.FC = () => {
     activeTab,
     setActiveTab,
     parts,
-    completedCount,
     mockProgress,
+    examSets,
+    isExamsLoading,
     handlePartClick,
-    handleMockClick
+    handleMockClick,
   } = useListeningLanding();
 
   return (
@@ -73,7 +73,7 @@ export const ListeningPracticePage: React.FC = () => {
                   <AudioOutlined /> KỸ NĂNG NGHE
                 </S.CategoryTag>
                 <S.PageTitle>Luyện Tập Nghe Hiểu Aptis</S.PageTitle>
-                <S.SubTitle>Mô phỏng chính xác cấu trúc bài thi thực tế. Chọn ôn luyện riêng từng phần hoặc kiểm tra năng lực với bộ đề thi thử đầy đủ.</S.SubTitle>
+                <S.SubTitle>Mô phỏng chính xác cấu trúc bài thi thực tế. Chọn ôn luyện riêng từng phần hoặc kiểm tra năng lực với bộ đề đầy đủ.</S.SubTitle>
               </S.HeaderContent>
               <S.StatsContainer>
                 <S.StatPill>
@@ -83,18 +83,16 @@ export const ListeningPracticePage: React.FC = () => {
                     <span>5 Ngày</span>
                   </div>
                 </S.StatPill>
-
               </S.StatsContainer>
             </S.HeaderSection>
 
-            {/* Tab selector for Parts vs Test Sets vs Mock Tests */}
             <S.TabSectionWrapper>
               <Segmented
                 value={activeTab}
-                onChange={(value) => setActiveTab(value as any)}
+                onChange={(value) => setActiveTab(value as 'parts' | 'mock-tests')}
                 options={[
                   { label: 'Luyện tập theo phần', value: 'parts' },
-                  { label: 'Luyện tập theo bộ đề', value: 'mock-tests' }
+                  { label: 'Luyện tập theo bộ đề', value: 'mock-tests' },
                 ]}
                 size="large"
               />
@@ -114,65 +112,75 @@ export const ListeningPracticePage: React.FC = () => {
 
             {activeTab === 'mock-tests' && (
               <S.MockTestGrid>
-                {mockTestsData.map((mock) => {
-                  const score = mockProgress[mock.id] ?? 0;
+                {isExamsLoading ? (
+                  <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem' }}>
+                    <Spin size="large" />
+                  </div>
+                ) : examSets.length === 0 ? (
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <Empty description="Chưa có đề nghe nào" />
+                  </div>
+                ) : (
+                  examSets.map((exam) => {
+                    const score = mockProgress[String(exam.id)] ?? 0;
 
-                  return (
-                    <S.MockTestCard key={mock.id}>
-                      <S.MockTestTitle>{mock.title}</S.MockTestTitle>
+                    return (
+                      <S.MockTestCard key={exam.id}>
+                        <S.MockTestTitle>{exam.title}</S.MockTestTitle>
 
-                      <S.MockTestMeta>
-                        <S.MetaItem>
-                          <QuestionCircleOutlined />
-                          <span>Số câu hỏi: {mock.questions} câu</span>
-                        </S.MetaItem>
-                        <S.MetaItem>
-                          <ClockCircleOutlined />
-                          <span>Thời gian: {mock.duration} phút</span>
-                        </S.MetaItem>
-                        <S.MetaItem>
-                          <TrophyOutlined />
-                          <span>
-                            Kết quả tốt nhất:{' '}
-                            {score > 0 ? (
-                              <strong style={{ color: '#10b981' }}>{score}/25 ({Math.round(score / 25 * 100)}%)</strong>
-                            ) : (
-                              <span style={{ color: '#64748b' }}>Chưa làm</span>
-                            )}
-                          </span>
-                        </S.MetaItem>
-                      </S.MockTestMeta>
+                        <S.MockTestMeta>
+                          <S.MetaItem>
+                            <QuestionCircleOutlined />
+                            <span>Số phần: {exam._count?.sections ?? 0} phần</span>
+                          </S.MetaItem>
+                          <S.MetaItem>
+                            <ClockCircleOutlined />
+                            <span>Thời gian: 40 phút</span>
+                          </S.MetaItem>
+                          <S.MetaItem>
+                            <TrophyOutlined />
+                            <span>
+                              Kết quả tốt nhất:{' '}
+                              {score > 0 ? (
+                                <strong style={{ color: '#10b981' }}>{score}%</strong>
+                              ) : (
+                                <span style={{ color: '#64748b' }}>Chưa làm</span>
+                              )}
+                            </span>
+                          </S.MetaItem>
+                        </S.MockTestMeta>
 
-                      {score > 0 && (
-                        <div style={{ marginBottom: '1rem' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
-                            <span>Điểm số</span>
-                            <span>{Math.round(score / 25 * 100)}%</span>
+                        {score > 0 && (
+                          <div style={{ marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
+                              <span>Điểm số</span>
+                              <span>{score}%</span>
+                            </div>
+                            <Progress percent={score} size="small" strokeColor="#10b981" showInfo={false} />
                           </div>
-                          <Progress percent={Math.round(score / 25 * 100)} size="small" strokeColor="#10b981" showInfo={false} />
-                        </div>
-                      )}
+                        )}
 
-                      <Button
-                        type="primary"
-                        icon={<ThunderboltOutlined />}
-                        style={{
-                          width: '100%',
-                          borderRadius: '8px',
-                          height: '40px',
-                          fontWeight: 700,
-                          background: score > 0 ? '#eff6ff' : '#1a365d',
-                          borderColor: score > 0 ? '#bfdbfe' : '#1a365d',
-                          color: score > 0 ? '#1d4ed8' : '#ffffff',
-                          boxShadow: score > 0 ? 'none' : '0 4px 6px -1px rgba(26, 54, 93, 0.15)'
-                        }}
-                        onClick={() => handleMockClick(mock.id)}
-                      >
-                        {score > 0 ? 'Làm lại đề thi' : 'Bắt đầu làm đề'}
-                      </Button>
-                    </S.MockTestCard>
-                  );
-                })}
+                        <Button
+                          type="primary"
+                          icon={<ThunderboltOutlined />}
+                          style={{
+                            width: '100%',
+                            borderRadius: '8px',
+                            height: '40px',
+                            fontWeight: 700,
+                            background: score > 0 ? '#eff6ff' : '#1a365d',
+                            borderColor: score > 0 ? '#bfdbfe' : '#1a365d',
+                            color: score > 0 ? '#1d4ed8' : '#ffffff',
+                            boxShadow: score > 0 ? 'none' : '0 4px 6px -1px rgba(26, 54, 93, 0.15)',
+                          }}
+                          onClick={() => handleMockClick(exam.id)}
+                        >
+                          {score > 0 ? 'Làm lại đề thi' : 'Bắt đầu làm đề'}
+                        </Button>
+                      </S.MockTestCard>
+                    );
+                  })
+                )}
               </S.MockTestGrid>
             )}
           </S.Container>

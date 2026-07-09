@@ -1,18 +1,10 @@
-import { Col,Row,Typography } from 'antd';
-import React,{ useState } from 'react';
+import { Col,Row } from 'antd';
+import React,{ useMemo,useState } from 'react';
 import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
-import {
-ISpeakingQuestion,
-part1Questions,
-part2Questions,
-part3Questions,
-part4Questions
-} from '../services/speakingData';
+import { SpeakingExamData } from '../../../../speaking-practice/services/speakingExamMapper';
 import * as S from '../styles/shared.styles';
 import * as SS from '../styles/speaking.styles';
 import { SpeakingController } from './speaking/SpeakingController';
-
-const { Text, Paragraph } = Typography;
 
 export interface SpeakingHandle {
     next: () => boolean;
@@ -20,191 +12,192 @@ export interface SpeakingHandle {
 }
 
 interface SpeakingSectionProps {
+    data: SpeakingExamData;
     onProgressUpdate?: (answered: number, part: number, question: number) => void;
 }
 
-const SpeakingSection = React.forwardRef<SpeakingHandle, SpeakingSectionProps>(({ onProgressUpdate }, ref) => {
-    const [activeQuestionNum, setActiveQuestionNum] = useState(1);
-    const [answers, setAnswers] = useState<Record<number, string>>({});
-    const [showSampleMap, setShowSampleMap] = useState<Record<number, boolean>>({});
-    const [activeSampleIdxMap, setActiveSampleIdxMap] = useState<Record<number, number>>({});
+// Đơn vị hiển thị: P1 mỗi câu 1 unit; P2/P3 mỗi câu con trong bộ 1 unit; P4 cả bộ (nói 1 lượt) 1 unit
+interface SpeakUnit {
+    part: number;
+    setIndex: number; // index bộ trong part (P1: index câu)
+    subIndex: number; // index câu con trong bộ
+    label: string;
+}
 
-    const isSubmitted = false; // Internal submitted state, can be linked to parent if needed
+const PART_COLOR: Record<number, string> = { 1: '#0284c7', 2: '#059669', 3: '#d97706', 4: '#7c3aed' };
 
-    const activePart = activeQuestionNum <= 3 ? 1 : activeQuestionNum <= 6 ? 2 : activeQuestionNum <= 9 ? 3 : 4;
+const SpeakingSection = React.forwardRef<SpeakingHandle, SpeakingSectionProps>(({ data, onProgressUpdate }, ref) => {
+    const units = useMemo<SpeakUnit[]>(() => {
+        const list: SpeakUnit[] = [];
+        data.part1.forEach((_, i) => list.push({ part: 1, setIndex: i, subIndex: 0, label: `P1 câu ${i + 1}` }));
+        data.part2.forEach((set, i) => set.questions.forEach((_, j) =>
+            list.push({ part: 2, setIndex: i, subIndex: j, label: `P2 bộ ${i + 1} câu ${j + 1}` })));
+        data.part3.forEach((set, i) => set.questions.forEach((_, j) =>
+            list.push({ part: 3, setIndex: i, subIndex: j, label: `P3 bộ ${i + 1} câu ${j + 1}` })));
+        data.part4.forEach((_, i) => list.push({ part: 4, setIndex: i, subIndex: 0, label: `P4 bộ ${i + 1}` }));
+        return list;
+    }, [data]);
 
-    const updateProgress = () => {
-        const answered = Object.keys(answers).length;
-        onProgressUpdate?.(answered, activePart, activeQuestionNum);
-    };
+    const [currentUnit, setCurrentUnit] = useState(1); // 1-based
+    const [answers, setAnswers] = useState<Record<number, string>>({}); // key = unit number
 
-    React.useEffect(() => {
-        updateProgress();
-    }, [activeQuestionNum, answers]);
+    const unit = units[currentUnit - 1];
+    const activePart = unit?.part ?? 1;
 
     React.useImperativeHandle(ref, () => ({
         next: () => {
-            if (activeQuestionNum < 12) {
-                setActiveQuestionNum(prev => prev + 1);
+            if (currentUnit < units.length) {
+                setCurrentUnit(prev => prev + 1);
                 return true;
             }
             return false;
         },
         prev: () => {
-            if (activeQuestionNum > 1) {
-                setActiveQuestionNum(prev => prev - 1);
+            if (currentUnit > 1) {
+                setCurrentUnit(prev => prev - 1);
                 return true;
             }
             return false;
         }
-    }), [activeQuestionNum]);
+    }), [currentUnit, units.length]);
 
-    const toggleSample = (qId: number) => {
-        setShowSampleMap(prev => ({ ...prev, [qId]: !prev[qId] }));
-    };
+    const navSections: NavSection[] = useMemo(() => {
+        const sections: NavSection[] = [];
+        const labels: Record<number, string> = {
+            1: 'Part 1: Cá nhân',
+            2: 'Part 2: Miêu tả tranh',
+            3: 'Part 3: So sánh tranh',
+            4: 'Part 4: Thuyết trình',
+        };
+        [1, 2, 3, 4].forEach((part) => {
+            const nums = units
+                .map((u, i) => ({ u, num: i + 1 }))
+                .filter(({ u }) => u.part === part)
+                .map(({ num }) => num);
+            if (nums.length > 0) {
+                sections.push({ label: `${labels[part]} (${nums[0]} - ${nums[nums.length - 1]})`, questions: nums });
+            }
+        });
+        return sections;
+    }, [units]);
 
-    const setSampleIndex = (qId: number, idx: number) => {
-        setActiveSampleIdxMap(prev => ({ ...prev, [qId]: idx }));
-    };
+    React.useEffect(() => {
+        onProgressUpdate?.(Object.keys(answers).length, activePart, currentUnit);
+    }, [answers, activePart, currentUnit, onProgressUpdate]);
 
-    const renderActiveQuestionContent = () => {
-        // PART 1 (Questions 1 - 3)
-        if (activeQuestionNum <= 3) {
-            const q = part1Questions[activeQuestionNum - 1];
+    const renderQuestionContent = () => {
+        if (!unit) return null;
+
+        if (unit.part === 1) {
+            const q = data.part1[unit.setIndex];
             return (
-                <SS.QuestionBox $borderColor="#0284c7">
-                    <div className="q-badge">Câu hỏi {q.id}</div>
-                    <div className="q-text">{q.questionText}</div>
+                <SS.QuestionBox $borderColor={PART_COLOR[1]}>
+                    <div className="q-badge">Câu hỏi {unit.setIndex + 1}</div>
+                    <div className="q-text">{q?.questionText}</div>
                 </SS.QuestionBox>
             );
         }
 
-        // PART 2 (Questions 4 - 6)
-        if (activeQuestionNum >= 4 && activeQuestionNum <= 6) {
-            const q = part2Questions[activeQuestionNum - 4];
+        if (unit.part === 2 || unit.part === 3) {
+            const set = (unit.part === 2 ? data.part2 : data.part3)[unit.setIndex];
+            if (!set) return null;
+            const q = set.questions[unit.subIndex];
             return (
                 <SS.SectionColumn>
-                    <SS.ImageWrapper $height="280px">
-                        <img src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&auto=format&fit=crop&q=60" alt="Family Cooking" />
+                    {set.imageUrls.length > 1 ? (
+                        <SS.PhotosGrid>
+                            {set.imageUrls.map((url, i) => (
+                                <SS.ImageWrapper key={i} $height="200px">
+                                    <img src={url} alt={`Ảnh ${i + 1}`} />
+                                </SS.ImageWrapper>
+                            ))}
+                        </SS.PhotosGrid>
+                    ) : set.imageUrls.length === 1 ? (
+                        <SS.ImageWrapper $height="280px">
+                            <img src={set.imageUrls[0]} alt="Ảnh đề bài" />
+                        </SS.ImageWrapper>
+                    ) : null}
+
+                    <SS.QuestionBox $borderColor={PART_COLOR[unit.part]}>
+                        <div className="q-badge">
+                            {unit.subIndex === 0
+                                ? (unit.part === 2 ? 'Mô tả tranh (Describe)' : 'So sánh tranh (Compare)')
+                                : 'Câu hỏi mở rộng (Explain)'}
+                        </div>
+                        <div className="q-text">{q?.questionText}</div>
+                    </SS.QuestionBox>
+                </SS.SectionColumn>
+            );
+        }
+
+        // Part 4: cả bộ trả lời trong 1 lượt nói
+        const set = data.part4[unit.setIndex];
+        if (!set) return null;
+        return (
+            <SS.SectionColumn>
+                {set.imageUrls.length > 0 && (
+                    <SS.ImageWrapper $height="240px">
+                        <img src={set.imageUrls[0]} alt="Ảnh đề bài" />
                     </SS.ImageWrapper>
-
-                    <SS.QuestionBox $borderColor="#059669">
-                        <div className="q-badge">{activeQuestionNum === 4 ? 'Mô tả tranh (Describe)' : 'Câu hỏi mở rộng (Explain)'}</div>
-                        <div className="q-text">{q.questionText}</div>
-                    </SS.QuestionBox>
-                </SS.SectionColumn>
-            );
-        }
-
-        // PART 3 (Questions 7 - 9)
-        if (activeQuestionNum >= 7 && activeQuestionNum <= 9) {
-            const q = part3Questions[activeQuestionNum - 7];
-            return (
-                <SS.SectionColumn>
-                    <SS.PhotosGrid>
-                        <SS.ImageWrapper $height="200px">
-                            <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800" alt="Restaurant dining" />
-                        </SS.ImageWrapper>
-                        <SS.ImageWrapper $height="200px">
-                            <img src="https://images.unsplash.com/photo-1547573854-74d2a71d0826?w=800" alt="Home dining" />
-                        </SS.ImageWrapper>
-                    </SS.PhotosGrid>
-
-                    <SS.QuestionBox $borderColor="#d97706">
-                        <div className="q-badge">{activeQuestionNum === 7 ? 'So sánh tranh (Compare)' : 'Câu hỏi mở rộng (Explain)'}</div>
-                        <div className="q-text">{q.questionText}</div>
-                    </SS.QuestionBox>
-                </SS.SectionColumn>
-            );
-        }
-
-        // PART 4 (Questions 10 - 12)
-        if (activeQuestionNum >= 10 && activeQuestionNum <= 12) {
-            return (
-                <SS.QuestionBox $borderColor="#7c3aed">
-                    <div className="q-badge">Part 4: Thuyết trình dài về chủ đề trừu tượng (Câu 10, 11 & 12)</div>
+                )}
+                <SS.QuestionBox $borderColor={PART_COLOR[4]}>
+                    <div className="q-badge">Part 4: Trả lời {set.questions.length} câu hỏi trong một bài nói</div>
                     <div className="q-text">
-                        Trả lời 3 câu hỏi sau đây trong một bài thuyết trình hoàn chỉnh:<br /><br />
-                        10. Tell me about a time you had to make an important decision.<br />
-                        11. What was the decision and why was it important?<br />
-                        12. What was the outcome of your decision?
+                        {set.questions.map((q, i) => (
+                            <div key={q.id} style={{ marginBottom: '0.5rem' }}>{i + 1}. {q.questionText}</div>
+                        ))}
                     </div>
                 </SS.QuestionBox>
-            );
-        }
-
-        return null;
+            </SS.SectionColumn>
+        );
     };
 
-    const renderActiveQuestionRight = () => {
-        let prepTime = 0;
-        let recordingTime = 30;
-        let statusColor = "#0284c7";
-        let q: ISpeakingQuestion | undefined;
+    const renderRecorder = () => {
+        if (!unit) return null;
 
-        if (activeQuestionNum <= 3) {
-            q = part1Questions[activeQuestionNum - 1];
-            prepTime = 0;
-            recordingTime = 30;
-            statusColor = "#0284c7";
-        } else if (activeQuestionNum <= 6) {
-            q = part2Questions[activeQuestionNum - 4];
-            prepTime = 45;
-            recordingTime = 45;
-            statusColor = "#059669";
-        } else if (activeQuestionNum <= 9) {
-            q = part3Questions[activeQuestionNum - 7];
-            prepTime = 45;
-            recordingTime = 45;
-            statusColor = "#d97706";
-        } else {
-            q = part4Questions[0];
-            prepTime = 60;
-            recordingTime = 120;
-            statusColor = "#7c3aed";
-        }
-
-        if (!q) return null;
-
-        const showSample = showSampleMap[q.id] ?? false;
-        const sampleIdx = activeSampleIdxMap[q.id] ?? 0;
+        // P1: nói ngay 30s; P2/P3/P4: lấy prep/record theo cấu hình bộ
+        const timeOf = (): { prepTime: number; recordingTime: number } => {
+            if (unit.part === 2 || unit.part === 3) {
+                const set = (unit.part === 2 ? data.part2 : data.part3)[unit.setIndex];
+                return { prepTime: set?.prepTime ?? 0, recordingTime: set?.recordTime ?? 45 };
+            }
+            if (unit.part === 4) {
+                const set = data.part4[unit.setIndex];
+                return { prepTime: set?.prepTime ?? 60, recordingTime: set?.recordTime ?? 120 };
+            }
+            return { prepTime: 0, recordingTime: 30 };
+        };
+        const { prepTime, recordingTime } = timeOf();
 
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                 <SpeakingController
                     prepTime={prepTime}
                     recordingTime={recordingTime}
-                    statusColor={statusColor}
-                    title={`speak-test-q${activeQuestionNum}`}
-                    onCompleted={(url) => setAnswers(prev => ({ ...prev, [activeQuestionNum]: url || 'recorded' }))}
+                    statusColor={PART_COLOR[unit.part]}
+                    title={`mock-exam-speaking-u${currentUnit}`}
+                    onCompleted={(url) => setAnswers(prev => ({ ...prev, [currentUnit]: url || 'recorded' }))}
                 />
-
-                {/* Samples are usually visible if it's a practice, but for Mock Exam we might want to hide them until submitted. 
-                    However, the requirement says synchronize with speaking-practice. 
-                    I'll show them only if needed or keep the structure.
-                */}
             </div>
         );
     };
 
-    const navSections: NavSection[] = [
-        { label: 'Part 1: Cá nhân (1-3)', questions: [1, 2, 3] },
-        { label: 'Part 2: Miêu tả (4-6)', questions: [4, 5, 6] },
-        { label: 'Part 3: So sánh (7-9)', questions: [7, 8, 9] },
-        { label: 'Part 4: Thuyết trình (10-12)', questions: [10, 11, 12] }
-    ];
-
     const getPartTitle = () => {
         switch (activePart) {
-            case 1: return { title: 'Personal Information', subtitle: `Part 1 • Question ${activeQuestionNum} of 3` };
-            case 2: return { title: 'Describe, Express Opinion & Explain', subtitle: 'Part 2 • 3 Questions' };
-            case 3: return { title: 'Compare & Provide Reasons', subtitle: 'Part 3 • 3 Questions' };
-            case 4: return { title: 'Abstract Topic', subtitle: 'Part 4 • Long Presentation' };
+            case 1: return { title: 'Personal Information', subtitle: `Part 1 • Câu ${(unit?.setIndex ?? 0) + 1} / ${data.part1.length}` };
+            case 2: return { title: 'Describe, Express Opinion & Explain', subtitle: `Part 2 • Bộ ${(unit?.setIndex ?? 0) + 1} / ${data.part2.length}` };
+            case 3: return { title: 'Compare & Provide Reasons', subtitle: `Part 3 • Bộ ${(unit?.setIndex ?? 0) + 1} / ${data.part3.length}` };
+            case 4: return { title: 'Abstract Topic', subtitle: `Part 4 • Bộ ${(unit?.setIndex ?? 0) + 1} / ${data.part4.length}` };
             default: return { title: '', subtitle: '' };
         }
     };
 
     const { title, subtitle } = getPartTitle();
+
+    // Sub-tabs: các unit cùng part
+    const partUnitNums = units
+        .map((u, i) => ({ u, num: i + 1 }))
+        .filter(({ u }) => u.part === activePart);
 
     return (
         <S.SectionWrapper>
@@ -217,24 +210,24 @@ const SpeakingSection = React.forwardRef<SpeakingHandle, SpeakingSectionProps>((
                         </S.TitleArea>
 
                         <SS.SubTabContainer>
-                            {navSections[activePart - 1].questions.map((num) => (
+                            {partUnitNums.map(({ num }, i) => (
                                 <SS.SubTab
                                     key={num}
-                                    $active={activeQuestionNum === num}
-                                    $color={activePart === 1 ? "#0284c7" : activePart === 2 ? "#059669" : activePart === 3 ? "#d97706" : "#7c3aed"}
-                                    onClick={() => setActiveQuestionNum(num)}
+                                    $active={currentUnit === num}
+                                    $color={PART_COLOR[activePart]}
+                                    onClick={() => setCurrentUnit(num)}
                                 >
-                                    Câu {activePart === 4 ? num : (num - (activePart - 1) * 3)} {answers[num] ? '✓' : ''}
+                                    Câu {i + 1} {answers[num] ? '✓' : ''}
                                 </SS.SubTab>
                             ))}
                         </SS.SubTabContainer>
 
                         <Row gutter={24}>
                             <Col lg={13} md={24}>
-                                {renderActiveQuestionContent()}
+                                {renderQuestionContent()}
                             </Col>
                             <Col lg={11} md={24}>
-                                {renderActiveQuestionRight()}
+                                {renderRecorder()}
                             </Col>
                         </Row>
                     </S.ContentCard>
@@ -244,9 +237,8 @@ const SpeakingSection = React.forwardRef<SpeakingHandle, SpeakingSectionProps>((
                     <ExamQuestionNavigator
                         sections={navSections}
                         answers={answers}
-                        currentQuestion={activeQuestionNum}
-                        onNavigate={(q) => setActiveQuestionNum(q)}
-                        isSubmitted={false}
+                        currentQuestion={currentUnit}
+                        onNavigate={setCurrentUnit}
                     />
                 </Col>
             </Row>

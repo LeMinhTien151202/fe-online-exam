@@ -1,457 +1,350 @@
 import {
-AlertOutlined,
-ArrowLeftOutlined,
-ArrowRightOutlined,
-CheckCircleOutlined,
-ClockCircleOutlined,
-FileTextOutlined,
-LeftOutlined,
-RollbackOutlined
+  AlertOutlined,
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  LeftOutlined,
+  RollbackOutlined,
 } from '@ant-design/icons';
-import { useNavigate,useParams } from '@tanstack/react-router';
-import { Button,Modal,Progress,Space,Typography } from 'antd';
+import { useNavigate, useParams } from '@tanstack/react-router';
+import { Button, Empty, Progress, Space, Spin, Typography } from 'antd';
 import React from 'react';
-import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
+import { ExamQuestionNavigator } from '../../../../../shared/components/ExamQuestionNavigator';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { AudioPlayer } from '../../../components/AudioPlayer';
-import { useMockTest } from '../hook/useMockTest';
 import {
-correctAnswersBank,
-correctP1,
-correctP2,
-correctP3,
-p1Questions,
-p2Options,
-p3SpeakerOptions,
-p3Statements,
-p4Groups
-} from '../services/data';
+  keyForP1,
+  keyForP2,
+  keyForP3,
+  keyForP4,
+  useMockTest,
+} from '../hook/useMockTest';
 import * as S from '../styles/styled';
 
 const { Title, Text } = Typography;
+
+const SPEAKER_OPTIONS = [
+  { value: 'MAN', label: 'Man' },
+  { value: 'WOMAN', label: 'Woman' },
+  { value: 'BOTH', label: 'Both' },
+];
+
+const getOptionStatus = (
+  isSubmitted: boolean,
+  selected: string | undefined,
+  option: string,
+  correct: string | undefined
+): 'success' | 'error' | 'default' => {
+  if (!isSubmitted) return 'default';
+  if (option === correct) return 'success';
+  if (selected === option) return 'error';
+  return 'default';
+};
+
+const getSelectStatus = (
+  isSubmitted: boolean,
+  selected: string | undefined,
+  correct: string | undefined
+): 'success' | 'error' | 'default' => {
+  if (!isSubmitted || !selected) return 'default';
+  return selected === correct ? 'success' : 'error';
+};
 
 export const ListeningMockTestPage: React.FC = () => {
   const { testId } = useParams({ strict: false }) as { testId: string };
   const navigate = useNavigate();
 
   const {
+    isLoading,
+    isError,
+    testTitle,
+    examData,
+    navItems,
+    navSections,
+    navAnswers,
+    navCorrectAnswers,
+    totalQuestions,
     answers,
     timeLeft,
     isSubmitted,
     showReport,
     setShowReport,
-    showTranscript,
-    setShowTranscript,
     activeQuestionNum,
-    setActiveQuestionNum,
     activePart,
+    activeNavItem,
     answeredCount,
+    prevStepIsSamePart,
+    nextStepIsSamePart,
+    hasPrevStep,
+    hasNextStep,
     formatTime,
     calculateScores,
     getAptisLevel,
-    handleManualSubmit,
     handleRetry,
     handleBackToLanding,
     handleNavigateQuestion,
     handlePrevQuestion,
     handleNextQuestion,
-    handleSelectAnswer
+    handleSelectAnswer,
+    handleSubmitClick,
   } = useMockTest(testId);
 
-  const testTitle = testId === 'm2' ? 'Đề Nghe hiểu số 2' : testId === 'm3' ? 'Đề Nghe hiểu số 3' : 'Đề Nghe hiểu số 1';
-  const totalQuestions = 25;
+  const {
+    scoreP1,
+    scoreP2,
+    scoreP3,
+    scoreP4,
+    maxP1,
+    maxP2,
+    maxP3,
+    maxP4,
+    totalScore,
+    totalMax,
+  } = calculateScores();
 
-  const handleSubmitClick = () => {
-    const unansweredCount = totalQuestions - answeredCount;
-    const hasUnanswered = unansweredCount > 0;
+  const scorePercent = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
 
-    Modal.confirm({
-      title: 'Xác nhận nộp bài thi?',
-      icon: <CheckCircleOutlined style={{ color: '#10b981' }} />,
-      content: hasUnanswered
-        ? `Bạn còn ${unansweredCount} câu hỏi chưa trả lời. Bạn có thực sự muốn nộp bài thi ngay bây giờ không?`
-        : 'Bạn đã hoàn thành toàn bộ 25 câu hỏi. Bạn có chắc chắn muốn nộp bài thi để chấm điểm không?',
-      okText: 'Nộp bài',
-      cancelText: 'Làm tiếp',
-      onOk: handleManualSubmit
-    });
-  };
-
-  const renderActiveQuestionContent = () => {
-    // PART 1 (Questions 1 - 13)
-    if (activeQuestionNum <= 13) {
-      const q = p1Questions[activeQuestionNum - 1];
-      const answer = answers[activeQuestionNum];
-      const correctAns = correctP1[activeQuestionNum];
-      const optionStatus: 'success' | 'error' | 'default' = 'default';
-
-      return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontWeight: 700, color: '#1a365d', fontSize: '1.1rem' }}>
-              Nghe audio và trả lời câu hỏi dưới đây:
-            </span>
-          </div>
-
-          <AudioPlayer />
-
-          <S.InstructionText>
-            {activeQuestionNum}. {q.questionText}
-          </S.InstructionText>
-
-          <div style={{ marginTop: '1rem' }}>
-            {q.options.map((option, idx) => {
-              const letter = String.fromCharCode(65 + idx);
-              const isSelected = answer === option;
-              let currentStatus: 'success' | 'error' | 'default' = 'default';
-              if (isSubmitted) {
-                if (option === correctAns) currentStatus = 'success';
-                else if (isSelected) currentStatus = 'error';
-              }
-
-              return (
-                <S.OptionCard
-                  key={idx}
-                  $selected={isSelected}
-                  $status={currentStatus}
-                  onClick={() => handleSelectAnswer(activeQuestionNum, option)}
-                >
-                  <div className="option-letter">{letter}</div>
-                  <div className="option-text">{option}</div>
-                </S.OptionCard>
-              );
-            })}
-          </div>
-
-          {isSubmitted && (
-            <div style={{ marginTop: '2rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '0.75rem', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#10b981', fontWeight: 700 }}>
-                <CheckCircleOutlined /> <span>Giải thích đáp án:</span>
-              </div>
-              <p style={{ margin: '0 0 1rem 0', color: '#475569', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                {q.explanation}
-              </p>
-
-              <Button
-                size="small"
-                icon={<FileTextOutlined />}
-                onClick={() => setShowTranscript(!showTranscript)}
-                style={{ marginBottom: '1rem' }}
-              >
-                {showTranscript ? 'Ẩn Transcript' : 'Hiện Transcript'}
-              </Button>
-              {showTranscript && (
-                <S.TranscriptBox style={{ marginTop: 0 }}>
-                  {q.transcript}
-                </S.TranscriptBox>
-              )}
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    // PART 2 (Questions 14 - 17)
-    if (activeQuestionNum >= 14 && activeQuestionNum <= 17) {
-      return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <span style={{ fontWeight: 700, color: '#1a365d', fontSize: '1.1rem' }}>
-            Four people are talking about music habits. Complete the sentences below.
-          </span>
-
-          <AudioPlayer />
-
-          <div style={{ marginTop: '1rem' }}>
-            {['Person 1', 'Person 2', 'Person 3', 'Person 4'].map((person, index) => {
-              const qNum = 14 + index;
-              const answer = answers[qNum];
-              const correctAns = correctP2[qNum];
-              const isCorrect = answer === correctAns;
-              let selectStatus: 'success' | 'error' | 'default' = 'default';
-              if (isSubmitted) {
-                selectStatus = isCorrect ? 'success' : 'error';
-              }
-
-              return (
-                <S.PersonRow key={index}>
-                  <div className="person-label">{person}</div>
-                  <div className="person-select">
-                    <S.StyledSelect
-                      placeholder="Select option"
-                      onChange={(val) => handleSelectAnswer(qNum, val as string)}
-                      value={answer}
-                      $hasValue={!!answer}
-                      $status={selectStatus}
-                      options={p2Options}
-                      disabled={isSubmitted}
-                    />
-                    {isSubmitted && !isCorrect && (
-                      <div style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 600, marginTop: '4px' }}>
-                        Đáp án đúng: {p2Options.find(o => o.value === correctAns)?.label}
-                      </div>
-                    )}
-                  </div>
-                </S.PersonRow>
-              );
-            })}
-          </div>
-
-          {isSubmitted && (
-            <div style={{ marginTop: '2rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '0.75rem', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#10b981', fontWeight: 700 }}>
-                <CheckCircleOutlined /> <span>Giải thích & Transcript:</span>
-              </div>
-              <ul style={{ margin: '0 0 1rem 0', paddingLeft: '1.25rem', color: '#475569', fontSize: '0.95rem', lineHeight: 1.8 }}>
-                <li><strong>Person 1 (Câu 14):</strong> 'listens to music while working' (nghe nhạc khi làm việc).</li>
-                <li><strong>Person 2 (Câu 15):</strong> 'dislikes modern pop music' (không thích nhạc pop hiện đại).</li>
-                <li><strong>Person 3 (Câu 16):</strong> 'attends live concerts frequently' (thường xuyên đi xem hòa nhạc trực tiếp).</li>
-                <li><strong>Person 4 (Câu 17):</strong> 'plays an instrument' (chơi một nhạc cụ - piano).</li>
-              </ul>
-
-              <Button
-                size="small"
-                icon={<FileTextOutlined />}
-                onClick={() => setShowTranscript(!showTranscript)}
-                style={{ marginBottom: '1rem' }}
-              >
-                {showTranscript ? 'Ẩn Transcript' : 'Hiện Transcript'}
-              </Button>
-              {showTranscript && (
-                <S.TranscriptBox style={{ marginTop: 0 }}>
-                  <strong>Person 1:</strong> I usually put on some jazz or classical music when I'm at my desk. It helps me focus on the tasks.<br /><br />
-                  <strong>Person 2:</strong> To be honest, I can't stand the popular songs they play on the radio these days. I much prefer older genres.<br /><br />
-                  <strong>Person 3:</strong> I save up all year to travel to music festivals. Seeing bands live is the best experience in the world.<br /><br />
-                  <strong>Person 4:</strong> I've been learning to play the piano for five years. Practicing daily is hard work but very rewarding.
-                </S.TranscriptBox>
-              )}
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    // PART 3 (Questions 18 - 21)
-    if (activeQuestionNum >= 18 && activeQuestionNum <= 21) {
-      return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <span style={{ fontWeight: 700, color: '#1a365d', fontSize: '1.1rem' }}>
-            Listen and decide whose opinion matches the statements: the man, the woman, or both.
-          </span>
-
-          <AudioPlayer />
-
-          <div style={{ marginTop: '1rem' }}>
-            {p3Statements.map((st) => {
-              const answer = answers[st.id];
-              const correctAns = correctP3[st.id];
-              const isCorrect = answer === correctAns;
-              let selectStatus: 'success' | 'error' | 'default' = 'default';
-              if (isSubmitted) {
-                selectStatus = isCorrect ? 'success' : 'error';
-              }
-
-              return (
-                <S.StatementRow key={st.id}>
-                  <div className="statement-number">{st.index}.</div>
-                  <div className="statement-text">{st.text}</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <S.StyledSelect
-                      placeholder="Select"
-                      onChange={(val) => handleSelectAnswer(st.id, val as string)}
-                      value={answer}
-                      $hasValue={!!answer}
-                      $status={selectStatus}
-                      options={p3SpeakerOptions}
-                      disabled={isSubmitted}
-                    />
-                    {isSubmitted && !isCorrect && (
-                      <div style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 600, marginTop: '2px' }}>
-                        Đáp án đúng: {p3SpeakerOptions.find(o => o.value === correctAns)?.label}
-                      </div>
-                    )}
-                  </div>
-                </S.StatementRow>
-              );
-            })}
-          </div>
-
-          {isSubmitted && (
-            <div style={{ marginTop: '2rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '0.75rem', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#10b981', fontWeight: 700 }}>
-                <CheckCircleOutlined /> <span>Giải thích & Transcript:</span>
-              </div>
-              <ul style={{ margin: '0 0 1rem 0', paddingLeft: '1.25rem', color: '#475569', fontSize: '0.95rem', lineHeight: 1.8 }}>
-                <li><strong>Câu 18 (Exhibitions):</strong> 'Both' đồng tình (Woman nói triển lãm đa dạng, Man đồng ý).</li>
-                <li><strong>Câu 19 (Customs):</strong> 'Woman' nêu ý kiến (customs fading away).</li>
-                <li><strong>Câu 20 (Festivals):</strong> 'Man' bày tỏ sự lo ngại (festivals disappear soon).</li>
-                <li><strong>Câu 21 (Schools):</strong> 'Woman' khẳng định tầm quan trọng của nhà trường.</li>
-              </ul>
-
-              <Button
-                size="small"
-                icon={<FileTextOutlined />}
-                onClick={() => setShowTranscript(!showTranscript)}
-                style={{ marginBottom: '1rem' }}
-              >
-                {showTranscript ? 'Ẩn Transcript' : 'Hiện Transcript'}
-              </Button>
-              {showTranscript && (
-                <S.TranscriptBox style={{ marginTop: 0 }}>
-                  <strong>Man:</strong> Have you been to the new local center yet? They have some interesting exhibitions.<br /><br />
-                  <strong>Woman:</strong> Yes, I went yesterday. I agree the exhibitions are diverse, but I feel traditional customs are slowly fading away.<br /><br />
-                  <strong>Man:</strong> That's true. Sometimes I worry local festivals might disappear soon if we don't act.<br /><br />
-                  <strong>Woman:</strong> Absolutely. And that's why schools are so critical in educating the younger generations.
-                </S.TranscriptBox>
-              )}
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    // PART 4 (Questions 22 - 25)
-    if (activeQuestionNum >= 22 && activeQuestionNum <= 25) {
-      const activeGroupId = activeQuestionNum <= 23 ? 16 : 17;
-      const group = p4Groups.find(g => g.id === activeGroupId) || p4Groups[0];
-
-      return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <span style={{ fontWeight: 700, color: '#1a365d', fontSize: '1.1rem' }}>
-            {group.title}
-          </span>
-          <div className="subtitle" style={{ fontSize: '0.95rem', color: '#64748b' }}>
-            {group.instruction}
-          </div>
-
-          <AudioPlayer />
-
-          {group.subQuestions.map((subQ) => {
-            const answer = answers[subQ.num];
-            const correctAns = correctAnswersBank[subQ.num];
-            const optionStatus: 'success' | 'error' | 'default' = 'default';
-
-            return (
-              <S.QuestionBlock key={subQ.id}>
-                <S.QuestionTitle>{subQ.title}</S.QuestionTitle>
-                {subQ.options.map((option, idx) => {
-                  const letter = String.fromCharCode(65 + idx);
-                  const isSelected = answer === option;
-                  let currentStatus: 'success' | 'error' | 'default' = 'default';
-                  if (isSubmitted) {
-                    if (option === correctAns) currentStatus = 'success';
-                    else if (isSelected) currentStatus = 'error';
-                  }
-
-                  return (
-                    <S.OptionCard
-                      key={idx}
-                      $selected={isSelected}
-                      $status={currentStatus}
-                      onClick={() => handleSelectAnswer(subQ.num, option)}
-                    >
-                      <div className="option-letter">{letter}</div>
-                      <div className="option-text">{option}</div>
-                    </S.OptionCard>
-                  );
-                })}
-              </S.QuestionBlock>
-            );
-          })}
-
-          {isSubmitted && (
-            <div style={{ marginTop: '2rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '0.75rem', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#10b981', fontWeight: 700 }}>
-                <CheckCircleOutlined /> <span>Giải thích & Transcript:</span>
-              </div>
-              <ul style={{ margin: '0 0 1rem 0', paddingLeft: '1.25rem', color: '#475569', fontSize: '0.95rem', lineHeight: 1.8 }}>
-                {group.subQuestions.map((subQ) => (
-                  <li key={subQ.id}><strong>{subQ.id}:</strong> {subQ.explanation}</li>
-                ))}
-              </ul>
-
-              <Button
-                size="small"
-                icon={<FileTextOutlined />}
-                onClick={() => setShowTranscript(!showTranscript)}
-                style={{ marginBottom: '1rem' }}
-              >
-                {showTranscript ? 'Ẩn Transcript' : 'Hiện Transcript'}
-              </Button>
-              {showTranscript && (
-                <S.TranscriptBox style={{ marginTop: 0 }}>
-                  {group.transcript}
-                </S.TranscriptBox>
-              )}
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    return null;
-  };
-
-  const renderQuestionNav = () => {
-    const getStatus = (qNum: number): 'unanswered' | 'answered' => {
-      return answers[qNum] ? 'answered' : 'unanswered';
-    };
-
-    const getCorrectness = (qNum: number): 'success' | 'error' | 'default' => {
-      if (!isSubmitted) return 'default';
-      return answers[qNum] === correctAnswersBank[qNum] ? 'success' : 'error';
-    };
-
-    const navSections: NavSection[] = [
-      { label: 'Part 1: Câu hỏi ngắn (1 - 13)', questions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] },
-      { label: 'Part 2: Điền từ (14 - 17)', questions: [14, 15, 16, 17] },
-      { label: 'Part 3: Ghép ý kiến (18 - 21)', questions: [18, 19, 20, 21] },
-      { label: 'Part 4: Đàm thoại dài (22 - 25)', questions: [22, 23, 24, 25] },
-    ];
+  const renderPart1 = () => {
+    if (!examData || !activeNavItem) return null;
+    const question = examData.part1[activeNavItem.itemIndex];
+    if (!question) return null;
+    const answerKey = keyForP1(activeNavItem.qNum);
+    const answer = answers[answerKey];
+    const correctAnswer = question.options[question.correctIndex];
 
     return (
-      <ExamQuestionNavigator
-        sections={navSections}
-        answers={answers}
-        currentQuestion={activeQuestionNum}
-        onNavigate={handleNavigateQuestion}
-        isSubmitted={isSubmitted}
-        correctAnswers={correctAnswersBank}
-      />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <span style={{ fontWeight: 700, color: '#1a365d', fontSize: '1.1rem' }}>
+          Nghe audio và trả lời câu hỏi dưới đây:
+        </span>
+
+        <AudioPlayer src={question.mediaUrl} />
+
+        <S.InstructionText>
+          {activeNavItem.qNum}. {question.questionText}
+        </S.InstructionText>
+
+        <div style={{ marginTop: '1rem' }}>
+          {question.options.map((option, idx) => {
+            const letter = String.fromCharCode(65 + idx);
+            const isSelected = answer === option;
+            const status = getOptionStatus(isSubmitted, answer, option, correctAnswer);
+
+            return (
+              <S.OptionCard
+                key={option}
+                $selected={isSelected}
+                $status={status}
+                onClick={() => handleSelectAnswer(answerKey, option)}
+              >
+                <div className="option-letter">{letter}</div>
+                <div className="option-text">{option}</div>
+              </S.OptionCard>
+            );
+          })}
+        </div>
+      </div>
     );
   };
 
+  const renderPart2 = () => {
+    if (!examData || !activeNavItem) return null;
+    const set = examData.part2[activeNavItem.itemIndex];
+    if (!set) return null;
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <span style={{ fontWeight: 700, color: '#1a365d', fontSize: '1.1rem' }}>
+          {set.instruction}
+        </span>
+
+        <AudioPlayer src={set.mediaUrl} />
+
+        <div style={{ marginTop: '1rem' }}>
+          {Array.from({ length: set.speakerCount }, (_, index) => {
+            const speaker = index + 1;
+            const answerKey = keyForP2(activeNavItem.qNum, speaker);
+            const answer = answers[answerKey];
+            const correctAnswer = set.correctBySpeaker[speaker];
+            const status = getSelectStatus(isSubmitted, answer, correctAnswer);
+
+            return (
+              <S.PersonRow key={speaker}>
+                <div className="person-label">Người {speaker}</div>
+                <div className="person-select">
+                  <S.StyledSelect
+                    placeholder="Chọn đáp án"
+                    onChange={(value) => handleSelectAnswer(answerKey, value as string)}
+                    value={answer}
+                    $hasValue={!!answer}
+                    $status={status}
+                    options={set.options}
+                    disabled={isSubmitted}
+                  />
+                  {isSubmitted && answer && answer !== correctAnswer && (
+                    <div style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 600, marginTop: '4px' }}>
+                      Đáp án đúng: {correctAnswer}
+                    </div>
+                  )}
+                </div>
+              </S.PersonRow>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderPart3 = () => {
+    if (!examData || !activeNavItem) return null;
+    const set = examData.part3[activeNavItem.itemIndex];
+    if (!set) return null;
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <span style={{ fontWeight: 700, color: '#1a365d', fontSize: '1.1rem' }}>
+          {set.instruction}
+        </span>
+
+        <AudioPlayer src={set.mediaUrl} />
+
+        <div style={{ marginTop: '1rem' }}>
+          {set.statements.map((statement) => {
+            const answerKey = keyForP3(activeNavItem.qNum, statement.id);
+            const answer = answers[answerKey];
+            const status = getSelectStatus(isSubmitted, answer, statement.correct);
+
+            return (
+              <S.StatementRow key={statement.id}>
+                <div className="statement-number">{statement.id}.</div>
+                <div className="statement-text">{statement.text}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <S.StyledSelect
+                    placeholder="Chọn"
+                    onChange={(value) => handleSelectAnswer(answerKey, value as string)}
+                    value={answer}
+                    $hasValue={!!answer}
+                    $status={status}
+                    options={SPEAKER_OPTIONS}
+                    disabled={isSubmitted}
+                  />
+                  {isSubmitted && answer && answer !== statement.correct && (
+                    <div style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 600, marginTop: '2px' }}>
+                      Đáp án đúng: {SPEAKER_OPTIONS.find((option) => option.value === statement.correct)?.label}
+                    </div>
+                  )}
+                </div>
+              </S.StatementRow>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderPart4 = () => {
+    if (!examData || !activeNavItem) return null;
+    const group = examData.part4[activeNavItem.itemIndex];
+    if (!group) return null;
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <span style={{ fontWeight: 700, color: '#1a365d', fontSize: '1.1rem' }}>
+          {group.title}
+        </span>
+        <div className="subtitle" style={{ fontSize: '0.95rem', color: '#64748b' }}>
+          {group.instruction}
+        </div>
+
+        <AudioPlayer src={group.mediaUrl} />
+
+        {group.subQuestions.map((subQuestion) => {
+          const answerKey = keyForP4(activeNavItem.qNum, subQuestion.id);
+          const answer = answers[answerKey];
+          const correctAnswer = subQuestion.options[subQuestion.correctIndex];
+
+          return (
+            <S.QuestionBlock key={subQuestion.id}>
+              <S.QuestionTitle>{subQuestion.title}</S.QuestionTitle>
+              {subQuestion.options.map((option, idx) => {
+                const letter = String.fromCharCode(65 + idx);
+                const isSelected = answer === option;
+                const status = getOptionStatus(isSubmitted, answer, option, correctAnswer);
+
+                return (
+                  <S.OptionCard
+                    key={option}
+                    $selected={isSelected}
+                    $status={status}
+                    onClick={() => handleSelectAnswer(answerKey, option)}
+                  >
+                    <div className="option-letter">{letter}</div>
+                    <div className="option-text">{option}</div>
+                  </S.OptionCard>
+                );
+              })}
+            </S.QuestionBlock>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderActiveQuestionContent = () => {
+    if (activePart === 1) return renderPart1();
+    if (activePart === 2) return renderPart2();
+    if (activePart === 3) return renderPart3();
+    return renderPart4();
+  };
+
   const getPartTitleAndInstruction = () => {
-    switch (activePart) {
-      case 1:
-        return {
-          title: 'Listening',
-          subtitle: `Part 1 • Question ${activeQuestionNum} of 13`
-        };
-      case 2:
-        return {
-          title: 'Listening To Music',
-          subtitle: 'Part 2 • Questions 14 - 17 of 25'
-        };
-      case 3:
-        return {
-          title: 'The Local Central',
-          subtitle: 'Part 3 • Questions 18 - 21 of 25'
-        };
-      case 4:
-      default: {
-        const activeGroupId = activeQuestionNum <= 23 ? 16 : 17;
-        const group = p4Groups.find(g => g.id === activeGroupId) || p4Groups[0];
-        return {
-          title: group.title,
-          subtitle: 'Part 4 • Questions 22 - 25 of 25'
-        };
-      }
+    if (!examData || !activeNavItem) {
+      return { title: 'Listening', subtitle: 'Đang tải đề nghe' };
     }
+
+    if (activePart === 1) {
+      const part1Total = examData.part1.length;
+      return {
+        title: 'Listening',
+        subtitle: `Part 1 • Question ${activeNavItem.qNum} of ${part1Total}`,
+      };
+    }
+
+    if (activePart === 2) {
+      return {
+        title: 'Information Matching',
+        subtitle: `Part 2 • Question ${activeNavItem.qNum}`,
+      };
+    }
+
+    if (activePart === 3) {
+      return {
+        title: 'Opinion Matching',
+        subtitle: `Part 3 • Question ${activeNavItem.qNum}`,
+      };
+    }
+
+    const group = examData.part4[activeNavItem.itemIndex];
+    return {
+      title: group?.title ?? 'Monologue',
+      subtitle: `Part 4 • Question ${activeNavItem.qNum}`,
+    };
   };
 
   const { title: partTitle, subtitle: partSubtitle } = getPartTitleAndInstruction();
-  const { scoreP1, scoreP2, scoreP3, scoreP4, totalScore } = calculateScores();
+
+  const renderQuestionNav = () => (
+    <ExamQuestionNavigator
+      sections={navSections}
+      answers={navAnswers}
+      currentQuestion={activeQuestionNum}
+      onNavigate={handleNavigateQuestion}
+      isSubmitted={isSubmitted}
+      correctAnswers={navCorrectAnswers}
+    />
+  );
 
   return (
     <HomeS.MainLayout>
@@ -496,13 +389,13 @@ export const ListeningMockTestPage: React.FC = () => {
                     <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: 700 }}>TIẾN ĐỘ:</span>
                     <Progress
                       type="circle"
-                      percent={Math.round(answeredCount / totalQuestions * 100)}
+                      percent={totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0}
                       size={40}
                       strokeColor="#10b981"
                       trailColor="rgba(255,255,255,0.2)"
                       format={() => (
                         <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>
-                          {answeredCount}/25
+                          {answeredCount}/{totalQuestions || 0}
                         </span>
                       )}
                     />
@@ -517,7 +410,15 @@ export const ListeningMockTestPage: React.FC = () => {
             </Space>
           </S.Header>
 
-          {isSubmitted && showReport ? (
+          {isLoading ? (
+            <div style={{ padding: '4rem', textAlign: 'center' }}>
+              <Spin size="large" />
+            </div>
+          ) : isError || !examData || navItems.length === 0 ? (
+            <div style={{ padding: '4rem' }}>
+              <Empty description="Không tải được đề nghe hoặc đề chưa có câu hỏi" />
+            </div>
+          ) : isSubmitted && showReport ? (
             <S.ReportContainer>
               <S.ReportCard>
                 <Space direction="vertical" size="small" style={{ marginBottom: '1.5rem' }}>
@@ -530,14 +431,14 @@ export const ListeningMockTestPage: React.FC = () => {
                 <S.ScoreRingWrapper>
                   <Progress
                     type="circle"
-                    percent={Math.round(totalScore / totalQuestions * 100)}
+                    percent={scorePercent}
                     size={140}
                     strokeWidth={10}
                     strokeColor="#10b981"
                     format={() => (
                       <S.ScoreLabel>
                         <span className="score-val">{totalScore}</span>
-                        <span className="score-max">/ 25 câu</span>
+                        <span className="score-max">/ {totalMax} câu</span>
                       </S.ScoreLabel>
                     )}
                   />
@@ -546,19 +447,19 @@ export const ListeningMockTestPage: React.FC = () => {
                 <S.ReportGrid>
                   <S.ReportStatItem>
                     <span className="stat-label">Cấp độ Nghe</span>
-                    <span className="stat-value">{getAptisLevel(totalScore)}</span>
+                    <span className="stat-value">{getAptisLevel(totalScore, totalMax)}</span>
                   </S.ReportStatItem>
                   <S.ReportStatItem>
                     <span className="stat-label">Tỷ lệ đúng</span>
-                    <span className="stat-value">{Math.round(totalScore / totalQuestions * 100)}%</span>
+                    <span className="stat-value">{scorePercent}%</span>
                   </S.ReportStatItem>
                   <S.ReportStatItem>
                     <span className="stat-label">Part 1 & 2</span>
-                    <span className="stat-value">{scoreP1 + scoreP2} / 17 câu</span>
+                    <span className="stat-value">{scoreP1 + scoreP2} / {maxP1 + maxP2} câu</span>
                   </S.ReportStatItem>
                   <S.ReportStatItem>
                     <span className="stat-label">Part 3 & 4</span>
-                    <span className="stat-value">{scoreP3 + scoreP4} / 8 câu</span>
+                    <span className="stat-value">{scoreP3 + scoreP4} / {maxP3 + maxP4} câu</span>
                   </S.ReportStatItem>
                 </S.ReportGrid>
 
@@ -567,13 +468,13 @@ export const ListeningMockTestPage: React.FC = () => {
                     <AlertOutlined /> <span>Nhận xét chi tiết từ hệ thống:</span>
                   </div>
                   <p style={{ margin: 0, color: '#475569', fontSize: '0.95rem', lineHeight: 1.6, fontWeight: 500 }}>
-                    {totalScore >= 22
-                      ? "Tuyệt vời! Kỹ năng nghe hiểu của bạn ở mức C (Cao cấp). Bạn có khả năng nghe hiểu chính xác mọi ý kiến, quan điểm và các chi tiết phức tạp trong cuộc đàm thoại dài. Hãy tiếp tục phát huy!"
-                      : totalScore >= 16
-                        ? "Rất tốt! Kỹ năng nghe của bạn đạt trình độ B2. Bạn có thể nghe hiểu hầu hết các ý chính và thông tin quan trọng. Luyện tập thêm kỹ năng bắt thông tin nhiễu ở Part 4 để nâng cao lên mức C."
-                        : totalScore >= 9
-                          ? "Kỹ năng nghe của bạn ở mức B1. Bạn có thể nghe hiểu các hội thoại ngắn hàng ngày, tuy nhiên còn gặp khó khăn với cấu trúc câu phức tạp và tốc độ nói nhanh ở các đoạn hội thoại dài. Hãy luyện tập thêm."
-                          : "Kỹ năng nghe của bạn đang ở mức A1/A2. Bạn cần nghe nhiều hơn, làm quen với nối âm và ngữ điệu nói của người bản xứ để nâng cao khả năng nắm bắt thông tin cơ bản."}
+                    {scorePercent >= 88
+                      ? 'Tuyệt vời! Kỹ năng nghe hiểu của bạn đang ở mức cao. Bạn nắm tốt thông tin chi tiết và ý chính trong các bài nghe.'
+                      : scorePercent >= 64
+                        ? 'Rất tốt! Bạn nghe hiểu được phần lớn thông tin quan trọng. Hãy luyện thêm các bài dài để tăng độ chắc chắn.'
+                        : scorePercent >= 36
+                          ? 'Bạn đang ở mức nền tảng khá. Nên luyện thêm khả năng bắt từ khóa và phân biệt ý kiến của từng người nói.'
+                          : 'Bạn cần nghe nhiều hơn với các đoạn ngắn trước, sau đó tăng dần sang bài hội thoại và độc thoại dài.'}
                   </p>
                 </div>
 
@@ -581,9 +482,9 @@ export const ListeningMockTestPage: React.FC = () => {
                   type="primary"
                   size="large"
                   style={{ borderRadius: '2rem', height: '48px', padding: '0 2.5rem', fontWeight: 700, background: '#1a365d', borderColor: '#1a365d' }}
-                  onClick={() => setShowReport(false)} // Switch to Review Mode
+                  onClick={() => setShowReport(false)}
                 >
-                  Xem lại đáp án chi tiết & Giải thích
+                  Xem lại đáp án chi tiết
                 </Button>
               </S.ReportCard>
             </S.ReportContainer>
@@ -591,7 +492,6 @@ export const ListeningMockTestPage: React.FC = () => {
             <>
               <S.ContentBody>
                 <S.WorkspaceGrid>
-                  {/* Cột trái: Vùng làm bài theo Part */}
                   <S.QuestionsColumn>
                     <S.ContentCard>
                       <S.TitleArea>
@@ -602,7 +502,6 @@ export const ListeningMockTestPage: React.FC = () => {
                     </S.ContentCard>
                   </S.QuestionsColumn>
 
-                  {/* Cột phải: Bảng câu hỏi */}
                   {renderQuestionNav()}
                 </S.WorkspaceGrid>
               </S.ContentBody>
@@ -614,13 +513,13 @@ export const ListeningMockTestPage: React.FC = () => {
                   size="large"
                   style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', border: '1px solid #e2e8f0', color: '#64748b' }}
                   onClick={handlePrevQuestion}
-                  disabled={activePart === 1}
+                  disabled={!hasPrevStep}
                 >
-                  Phần trước
+                  {prevStepIsSamePart ? 'Câu trước' : 'Phần trước'}
                 </Button>
 
                 <span style={{ fontWeight: 700, color: '#475569', fontSize: '0.95rem' }}>
-                  Phần {activePart} trên 4 (Câu {activeQuestionNum} / 25)
+                  Phần {activePart} trên 4 (Câu {activeQuestionNum} / {totalQuestions})
                 </span>
 
                 <Space size="middle">
@@ -635,7 +534,7 @@ export const ListeningMockTestPage: React.FC = () => {
                         background: '#10b981',
                         borderColor: '#10b981',
                         padding: '0 2rem',
-                        boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
+                        boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)',
                       }}
                       onClick={handleSubmitClick}
                     >
@@ -662,12 +561,12 @@ export const ListeningMockTestPage: React.FC = () => {
                       background: '#2563eb',
                       borderColor: '#2563eb',
                       padding: '0 1.5rem',
-                      boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
+                      boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)',
                     }}
                     onClick={handleNextQuestion}
-                    disabled={activePart === 4}
+                    disabled={!hasNextStep}
                   >
-                    Phần tiếp theo <ArrowRightOutlined style={{ fontSize: '12px' }} />
+                    {nextStepIsSamePart ? 'Câu tiếp theo' : 'Phần tiếp theo'} <ArrowRightOutlined style={{ fontSize: '12px' }} />
                   </Button>
                 </Space>
               </S.Footer>

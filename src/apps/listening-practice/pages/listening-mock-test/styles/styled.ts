@@ -74,7 +74,7 @@ export const ContentBody = styled.div`
 
 export const WorkspaceGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: minmax(0, 1fr) 300px;
   gap: 2rem;
   width: 100%;
   flex: 1;
@@ -89,6 +89,7 @@ export const WorkspaceGrid = styled.div`
 `;
 
 export const QuestionsColumn = styled.div`
+  min-width: 0;
   flex: 1;
   overflow-y: auto;
   padding-right: 0.5rem;

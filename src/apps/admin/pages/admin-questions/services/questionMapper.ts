@@ -29,6 +29,15 @@ const VOCAB_VARIANT: Record<string, WordBankVariant> = {
   vocab_task5: 'ANTONYM',
 };
 
+// Câu lệnh chuẩn APTIS cho từng task (dùng khi admin không nhập content riêng)
+const VOCAB_INSTRUCTION: Record<WordBankVariant, string> = {
+  DEFINITION: 'Complete each definition using a word from the list. Use each word once only. You will not need five of the words.',
+  COLLOCATION: 'Select a word from the list that is most often used with the word on the left. Use each word once only. You will not need five of the words.',
+  SENTENCE: 'Finish each sentence using a word from the list. Use each word once only. You will not need five of the words.',
+  SYNONYM: 'Select a word from the list that has the most similar meaning to the word on the left.',
+  ANTONYM: 'Select a word from the list that has the opposite meaning to the word on the left.',
+};
+
 const AGREEMENT: Record<string, AgreementChoice> = {
   man: 'MAN',
   woman: 'WOMAN',
@@ -47,13 +56,15 @@ const buildGrammar = (v: FormValues): ICreateQuestionPayload[] => {
   if (part.startsWith('vocab_')) {
     const pool = arr<string>(v.vocabPool);
     const questions = arr<{ question: string; answerIndex: number }>(v.vocabQuestions);
+    const variant = VOCAB_VARIANT[part];
     return [
       {
         skillId: SKILL_ID.grammar,
         partNumber: 2,
-        content: str(v.content) || str(v.title) || 'Chọn từ phù hợp với mỗi câu.',
+        // content = câu lệnh đề bài; mặc định theo chuẩn APTIS của từng task
+        content: str(v.content) || VOCAB_INSTRUCTION[variant],
         extraConfig: {
-          task_variant: VOCAB_VARIANT[part],
+          task_variant: variant,
           options_pool: pool,
           slots: questions.map((q, i) => ({
             slot_id: `s${i + 1}`,
