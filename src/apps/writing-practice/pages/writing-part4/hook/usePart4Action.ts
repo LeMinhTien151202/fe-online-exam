@@ -3,8 +3,10 @@ import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
 import { countWords } from '../../../utils/wordCounter';
 import { useWritingTimer } from '../../writing-part1/hook/useWritingTimer';
-import { useWritingQuestionsQuery } from '../../../services/writingQuery';
 import { mapWPart4 } from '../../../services/mappers';
+import { flattenWritingExam } from '../../../services/writingExamMapper';
+import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart4Action = () => {
   const navigate = useNavigate();
@@ -12,9 +14,15 @@ export const usePart4Action = () => {
   const [informalEmail, setInformalEmail] = useState('');
   const [formalEmail, setFormalEmail] = useState('');
 
-  const { data: res, isLoading } = useWritingQuestionsQuery(4);
-  const list = useMemo(() => res?.data ?? [], [res]);
+  // Luyện theo phần = đề PART_PRACTICE (skill 4, part 4 — ESSAY 2 email).
+  const { examId, examDetail, isLoading } = usePartPracticeExam(4, 4);
+  const list = useMemo(() => {
+    if (!examDetail) return [];
+    return flattenWritingExam(examDetail).find((p) => p.partNumber === 4)?.questions ?? [];
+  }, [examDetail]);
   const total = list.length;
+
+  const submitMutation = useSubmitExamMutation();
   const [index, setIndex] = useState(0);
   const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
   const data = useMemo(() => {
@@ -55,7 +63,20 @@ export const usePart4Action = () => {
       message.error(`Email trang trọng (${formWc} từ) chưa đúng giới hạn ${formalMin}-${formalMax} từ!`);
       return;
     }
+    confirmSubmitExam({ totalQuestions: 2, onOk: doSubmit });
+  };
+
+  const doSubmit = () => {
     message.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
+
+    // Nộp lên BE để tăng student_progress (skill 4, part 4). ESSAY = [email thân mật, email trang trọng].
+    const dbQuestion = list[safeIndex];
+    if (examId && dbQuestion) {
+      submitMutation.mutate({
+        examId,
+        payload: { answers: [{ questionId: dbQuestion.id, response: [informalEmail, formalEmail] }] },
+      });
+    }
   };
 
   const handleBack = () => navigate({ to: '/writing' });

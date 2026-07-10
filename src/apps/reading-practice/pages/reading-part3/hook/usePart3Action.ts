@@ -1,12 +1,20 @@
 import { message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
-import { useReadingQuestionsQuery } from '../../../services/readingQuery';
 import { mapPart3, Part3Data } from '../../../services/mappers';
+import { flattenExam } from '../../../services/readingExamMapper';
+import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart3Action = () => {
-  const { data: res, isLoading } = useReadingQuestionsQuery(3);
-  const list = useMemo(() => res?.data ?? [], [res]);
+  // Luyện theo phần = đề PART_PRACTICE (skill 3, API part 4 — opinion/speaker match).
+  const { examId, examDetail, isLoading } = usePartPracticeExam(3, 4);
+  const list = useMemo(() => {
+    if (!examDetail) return [];
+    return flattenExam(examDetail).find((p) => p.partNumber === 4)?.questions ?? [];
+  }, [examDetail]);
   const total = list.length;
+
+  const submitMutation = useSubmitExamMutation();
   const [index, setIndex] = useState(0);
   const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
   const data: Part3Data | null = useMemo(() => {
@@ -61,7 +69,10 @@ export const usePart3Action = () => {
       message.warning(`Bạn đã trả lời ${answeredCount}/${questionCount} ý kiến. Vui lòng chọn đáp án cho tất cả các câu!`);
       return;
     }
+    confirmSubmitExam({ totalQuestions: questionCount, onOk: doSubmit });
+  };
 
+  const doSubmit = () => {
     setIsSubmitted(true);
     const correctCount = Object.keys(correctAnswers).filter(
       (id) => answers[Number(id)] === correctAnswers[Number(id)]
@@ -78,6 +89,14 @@ export const usePart3Action = () => {
     localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
 
     message.success(`Chúc mừng! Bạn đã hoàn thành Part 3. Kết quả: ${correctCount}/${questionCount} câu đúng.`);
+
+    // Nộp lên BE để tăng student_progress (skill 3, part 4). SPEAKER_MATCH = mảng person key theo từng ý.
+    if (examId && data?.questionId != null) {
+      const response = data.questions.map((q) => answers[q.id] ?? '');
+      if (response.some((v) => v !== '')) {
+        submitMutation.mutate({ examId, payload: { answers: [{ questionId: data.questionId, response }] } });
+      }
+    }
   };
 
   const handleRetry = () => resetForNewQuestion();

@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
-import { useSpeakingQuestionsQuery } from '../../../services/speakingQuery';
 import { mapSpeakingSets } from '../../../services/mappers';
+import { flattenSpeakingExam } from '../../../services/speakingExamMapper';
+import { ISubmitAnswer, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart4 = () => {
   const navigate = useNavigate();
@@ -13,9 +15,16 @@ export const usePart4 = () => {
   const [showSampleAnswer, setShowSampleAnswer] = useState(false);
   const [activeSampleIdx, setActiveSampleIdx] = useState(0);
 
-  const { data: res, isLoading } = useSpeakingQuestionsQuery(4);
-  const sets = useMemo(() => mapSpeakingSets(res?.data ?? []), [res]);
+  // Luyện theo phần = đề PART_PRACTICE (skill 5, part 4 — RECORD, 1 bản ghi/bộ).
+  const { examId, examDetail, isLoading } = usePartPracticeExam(5, 4);
+  const sets = useMemo(() => {
+    if (!examDetail) return [];
+    const part = flattenSpeakingExam(examDetail).find((p) => p.partNumber === 4);
+    return mapSpeakingSets(part?.questions ?? []);
+  }, [examDetail]);
   const setCount = sets.length;
+
+  const submitMutation = useSubmitExamMutation();
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
@@ -61,7 +70,24 @@ export const usePart4 = () => {
   };
 
   const handleSubmit = () => {
+    confirmSubmitExam({ onOk: doSubmit });
+  };
+
+  const doSubmit = () => {
     message.success('Đã ghi nhận phần trả lời của bạn! Bạn có thể luyện bộ câu hỏi tiếp theo.');
+
+    // Nộp lên BE để tăng student_progress (skill 5, part 4). 1 bản ghi/bộ, lặp URL cho mọi câu con.
+    if (examId) {
+      const submitAnswers: ISubmitAnswer[] = [];
+      sets.forEach((set, setIndex) => {
+        if (set.questionId == null) return;
+        const url = answers[setIndex];
+        if (!url) return;
+        const response = set.questions.length ? set.questions.map(() => url) : [url];
+        submitAnswers.push({ questionId: set.questionId, response });
+      });
+      if (submitAnswers.length) submitMutation.mutate({ examId, payload: { answers: submitAnswers } });
+    }
   };
 
   const handleRecordComplete = (audioUrl: string | null) => {

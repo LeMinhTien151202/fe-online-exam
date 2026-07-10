@@ -9,8 +9,9 @@ ReadOutlined,
 RightOutlined
 } from '@ant-design/icons';
 import { useNavigate,useParams } from '@tanstack/react-router';
-import { Button,Empty,Modal,Result,Space,Spin } from 'antd';
-import React,{ useCallback,useEffect,useMemo,useRef,useState } from 'react';
+import { Button,Empty,Result,Space,Spin } from 'antd';
+import React,{ useEffect,useMemo,useRef,useState } from 'react';
+import { confirmExamAction } from '../../../../../shared/utils/examDialogs';
 
 // Import các module kỹ năng tích hợp
 import GrammarVocabSection,{ GrammarVocabHandle } from '../components/GrammarVocabSection';
@@ -181,12 +182,12 @@ const MainMockExamPage: React.FC = () => {
             return;
         }
 
-        Modal.confirm({
+        confirmExamAction({
             title: 'Chuyển sang phần thi tiếp theo?',
             content: `Bạn sẽ chuyển sang phần thi ${skills[activeStep + 1]?.title || 'Kết thúc'}. Bài làm của phần hiện tại sẽ được tự động lưu.`,
             okText: 'Xác nhận chuyển',
             cancelText: 'Làm tiếp',
-            onOk: proceed
+            onOk: proceed,
         });
     };
 
@@ -226,8 +227,24 @@ const MainMockExamPage: React.FC = () => {
         }
     };
 
-    const onProgressUpdate = useCallback((answeredCount: number, part: number, question: number) => {
-        setCurrentStatus({ part, question, answered: answeredCount });
+    // Chỉ nhận tiến độ từ kỹ năng đang hiển thị (các section ẩn vẫn mounted để giữ state).
+    const activeSkillIdRef = useRef<SkillStep['id'] | undefined>(currentSkill?.id);
+    useEffect(() => {
+        activeSkillIdRef.current = currentSkill?.id;
+    });
+
+    // Handler tiến độ ổn định theo từng kỹ năng (tránh tạo mới mỗi render -> loop effect ở section).
+    const progressHandlers = useMemo(() => {
+        const make = (id: SkillStep['id']) => (answered: number, part: number, question: number) => {
+            if (activeSkillIdRef.current === id) setCurrentStatus({ part, question, answered });
+        };
+        return {
+            grammar: make('grammar'),
+            listening: make('listening'),
+            reading: make('reading'),
+            writing: make('writing'),
+            speaking: make('speaking'),
+        } as Record<SkillStep['id'], (answered: number, part: number, question: number) => void>;
     }, []);
 
     // Đồng hồ đếm ngược: tick mỗi giây; hết giờ -> tự chuyển phần
@@ -252,16 +269,29 @@ const MainMockExamPage: React.FC = () => {
         return () => clearInterval(timer);
     }, [isFinished, isSubmitting, skills, activeStep]);
 
+    // Mount đồng thời mọi kỹ năng, chỉ hiển thị kỹ năng đang active bằng CSS.
+    // Nếu unmount section không active thì state đáp án (useState cục bộ) sẽ mất -> nộp bài chỉ còn kỹ năng cuối.
     const renderSkillUI = () => {
-        if (!examData || !currentSkill) return null;
-        switch (currentSkill.id) {
-            case 'grammar': return <GrammarVocabSection ref={grammarRef} data={examData.grammar} onProgressUpdate={onProgressUpdate} />;
-            case 'listening': return <ListeningSection ref={listeningRef} data={examData.listening} onProgressUpdate={onProgressUpdate} />;
-            case 'reading': return <ReadingSection ref={readingRef} data={examData.reading} onProgressUpdate={onProgressUpdate} />;
-            case 'writing': return <WritingSection ref={writingRef} prompts={examData.writing} onProgressUpdate={onProgressUpdate} />;
-            case 'speaking': return <SpeakingSection ref={speakingRef} data={examData.speaking} onProgressUpdate={onProgressUpdate} />;
-            default: return null;
-        }
+        if (!examData) return null;
+        const wrap = (id: SkillStep['id'], node: React.ReactNode) => (
+            <div key={id} style={{ display: currentSkill?.id === id ? 'block' : 'none' }}>
+                {node}
+            </div>
+        );
+        return (
+            <>
+                {skills.some((s) => s.id === 'grammar') && wrap('grammar',
+                    <GrammarVocabSection ref={grammarRef} data={examData.grammar} onProgressUpdate={progressHandlers.grammar} />)}
+                {skills.some((s) => s.id === 'listening') && wrap('listening',
+                    <ListeningSection ref={listeningRef} data={examData.listening} onProgressUpdate={progressHandlers.listening} />)}
+                {skills.some((s) => s.id === 'reading') && wrap('reading',
+                    <ReadingSection ref={readingRef} data={examData.reading} onProgressUpdate={progressHandlers.reading} />)}
+                {skills.some((s) => s.id === 'writing') && wrap('writing',
+                    <WritingSection ref={writingRef} prompts={examData.writing} onProgressUpdate={progressHandlers.writing} />)}
+                {skills.some((s) => s.id === 'speaking') && wrap('speaking',
+                    <SpeakingSection ref={speakingRef} data={examData.speaking} onProgressUpdate={progressHandlers.speaking} />)}
+            </>
+        );
     };
 
     if (isLoading) {

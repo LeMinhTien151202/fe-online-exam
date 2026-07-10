@@ -41,8 +41,8 @@ export const Part2Page: React.FC = () => {
         <S.PageContainer>
           <S.Header>
             <Space size="middle">
-              <S.BackLink to="/writing/part/1">
-                <LeftOutlined /> Quay lại Part 1
+              <S.BackLink to="/writing">
+                <LeftOutlined /> Quay lại
               </S.BackLink>
               <S.HeaderTitle>
                 Part 2: Short Text Writing

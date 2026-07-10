@@ -2,23 +2,23 @@ import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useListeningSetsQuery } from '../../../services/listeningExamQuery';
 import { listeningPartsData } from '../services/data';
+import { usePartPracticeProgress } from '../../../../../shared/services/student-exam';
+
+// Listening: l1..l4 = API part 1..4.
+const LISTENING_PART_MAP = [
+  { feId: 'l1', apiPart: 1 },
+  { feId: 'l2', apiPart: 2 },
+  { feId: 'l3', apiPart: 3 },
+  { feId: 'l4', apiPart: 4 },
+];
 
 export const useListeningLanding = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'parts' | 'mock-tests'>('parts');
 
-  const [listeningProgress] = useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem('aptis_listening_progress');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        // ignore
-      }
-    }
-    return { l1: 0, l2: 0, l3: 0, l4: 0 };
-  });
+  // Tiến độ luyện theo phần lấy từ server (answered/total).
+  const { progress: listeningProgress } = usePartPracticeProgress(2, LISTENING_PART_MAP);
 
   const [mockProgress] = useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('aptis_listening_mock_progress');
@@ -40,7 +40,7 @@ export const useListeningLanding = () => {
     progress: listeningProgress[part.id] ?? 0,
   }));
 
-  const completedCount = Object.values(listeningProgress).filter((prog) => prog === 100).length;
+  const completedCount = Object.values(listeningProgress).filter((prog) => prog >= 100).length;
 
   const handlePartClick = (partId: string) => {
     if (partId === 'l1') {

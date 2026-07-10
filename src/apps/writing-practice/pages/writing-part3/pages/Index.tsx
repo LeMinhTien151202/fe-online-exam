@@ -41,8 +41,8 @@ export const Part3Page: React.FC = () => {
         <S.PageContainer>
           <S.Header>
             <Space size="middle">
-              <S.BackLink to="/writing/part/2">
-                <LeftOutlined /> Quay lại Part 2
+              <S.BackLink to="/writing">
+                <LeftOutlined /> Quay lại
               </S.BackLink>
               <S.HeaderTitle>
                 Part 3: Social Network Interaction

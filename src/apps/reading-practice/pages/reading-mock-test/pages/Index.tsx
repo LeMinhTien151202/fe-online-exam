@@ -1,5 +1,4 @@
 import {
-AlertOutlined,
 ArrowLeftOutlined,
 ArrowRightOutlined,
 CheckCircleOutlined,
@@ -8,12 +7,13 @@ LeftOutlined,
 RollbackOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { Badge, Button, Empty, Modal, Progress, Radio, Select, Space, Spin, Typography } from 'antd';
+import { Badge, Button, Empty, Progress, Radio, Select, Space, Spin, Typography } from 'antd';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { Part1Data, Part2Data } from '../../../services/mappers';
 import { useMockTest } from '../hook/useMockTest';
+import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import * as S from '../styles/styled';
 
 const { Title, Text, Paragraph } = Typography;
@@ -148,28 +148,15 @@ export const ReadingMockTestPage: React.FC = () => {
   // ==================== HANDLERS ====================
   const handleBackToLanding = () => {
     if (isSubmitted) { navigate({ to: '/reading' }); return; }
-    Modal.confirm({
-      title: 'Xác nhận thoát khỏi đề thi?',
-      icon: <AlertOutlined style={{ color: '#faad14' }} />,
+    confirmExitExam({
       content: 'Tiến độ làm bài của bạn sẽ không được lưu nếu bạn thoát ra lúc này.',
-      okText: 'Thoát ra',
-      cancelText: 'Làm tiếp',
       onOk: () => navigate({ to: '/reading' }),
     });
   };
 
   const handleSubmitClick = () => {
     const unansweredCount = totalQuestions - totalAnsweredCount;
-    Modal.confirm({
-      title: 'Xác nhận nộp bài thi?',
-      icon: <CheckCircleOutlined style={{ color: '#10b981' }} />,
-      content: unansweredCount > 0
-        ? `Bạn còn ${unansweredCount} câu hỏi chưa trả lời. Bạn có thực sự muốn nộp bài thi ngay bây giờ không?`
-        : `Bạn đã hoàn thành toàn bộ ${totalQuestions} câu hỏi. Bạn có chắc chắn muốn nộp bài thi để chấm điểm không?`,
-      okText: 'Nộp bài',
-      cancelText: 'Làm tiếp',
-      onOk: handleManualSubmit,
-    });
+    confirmSubmitExam({ unansweredCount, totalQuestions, onOk: handleManualSubmit });
   };
 
   // ==================== PART 1: đoạn văn với ô chọn inline ====================
@@ -579,7 +566,7 @@ export const ReadingMockTestPage: React.FC = () => {
                 <span style={{ fontWeight: 700, color: '#475569', fontSize: '0.95rem' }}>Phần {partPosition} trên {availableParts.length} (Đã làm {totalAnsweredCount} / {totalQuestions})</span>
                 <Space size="middle">
                   {!isSubmitted && (
-                    <Button type="primary" icon={<CheckCircleOutlined />} size="large" style={{ borderRadius: '2rem', fontWeight: 600, background: '#10b981', borderColor: '#10b981', padding: '0 2rem', boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)' }} onClick={handleSubmitClick}>Nộp bài</Button>
+                    <Button type="primary" icon={<CheckCircleOutlined />} size="large" style={{ borderRadius: '2rem', fontWeight: 600, background: '#1a365d', borderColor: '#1a365d', padding: '0 2rem', boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.25)' }} onClick={handleSubmitClick}>Nộp bài</Button>
                   )}
                   {isSubmitted && (
                     <Button type="default" icon={<RollbackOutlined />} size="large" style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', border: '1px solid #cbd5e1' }} onClick={() => navigate({ to: '/reading' })}>Thoát xem lại</Button>

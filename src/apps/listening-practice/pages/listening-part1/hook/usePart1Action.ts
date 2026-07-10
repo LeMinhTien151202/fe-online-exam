@@ -1,8 +1,10 @@
 import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
-import { useListeningQuestionsQuery } from '../../../services/listeningQuery';
+import { flattenListeningExam } from '../../../services/listeningExamMapper';
 import { mapLPart1 } from '../../../services/mappers';
+import { ISubmitAnswer, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart1Action = () => {
   const navigate = useNavigate();
@@ -11,9 +13,16 @@ export const usePart1Action = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(1);
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
-  const { data: res, isLoading } = useListeningQuestionsQuery(1);
-  const questions = useMemo(() => mapLPart1(res?.data ?? []), [res]);
+  // Luyện theo phần = đề PART_PRACTICE (skill 2, part 1).
+  const { examId, examDetail, isLoading } = usePartPracticeExam(2, 1);
+  const questions = useMemo(() => {
+    if (!examDetail) return [];
+    const part = flattenListeningExam(examDetail).find((p) => p.partNumber === 1);
+    return mapLPart1(part?.questions ?? []);
+  }, [examDetail]);
   const total = questions.length;
+
+  const submitMutation = useSubmitExamMutation();
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
@@ -49,6 +58,14 @@ export const usePart1Action = () => {
   };
 
   const handleSubmit = () => {
+    confirmSubmitExam({
+      unansweredCount: total - Object.keys(answers).length,
+      totalQuestions: total,
+      onOk: doSubmit,
+    });
+  };
+
+  const doSubmit = () => {
     const saved = localStorage.getItem('aptis_listening_progress');
     let progressObj: Record<string, number> = {};
     if (saved) {
@@ -57,6 +74,19 @@ export const usePart1Action = () => {
     progressObj['l1'] = 100;
     localStorage.setItem('aptis_listening_progress', JSON.stringify(progressObj));
     message.success('Đã ghi nhận câu trả lời! Bạn có thể luyện câu tiếp theo.');
+
+    // Nộp lên BE để tăng student_progress (skill 2, part 1). P1 = MC index 0-based.
+    if (examId) {
+      const submitAnswers: ISubmitAnswer[] = [];
+      questions.forEach((q, i) => {
+        if (q.questionId == null) return;
+        const chosen = answers[i + 1];
+        if (chosen == null) return;
+        const idx = q.options.indexOf(chosen);
+        if (idx >= 0) submitAnswers.push({ questionId: q.questionId, response: idx });
+      });
+      submitMutation.mutate({ examId, payload: { answers: submitAnswers } });
+    }
   };
 
   const answeredCount = Object.keys(answers).length;

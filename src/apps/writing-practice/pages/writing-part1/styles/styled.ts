@@ -345,7 +345,7 @@ export const ModernWordBadge = styled.span<{ $isValid?: boolean; $hasText?: bool
   };
   border: 1px solid ${props => 
     !props.$hasText ? '#cbd5e1' : 
-    (props.$isValid ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)')
+    (props.$isValid ? 'rgba(26, 54, 93, 0.25)' : 'rgba(239, 68, 68, 0.2)')
   };
   transition: all 0.2s ease;
 `;
@@ -433,14 +433,14 @@ export const FooterButton = styled(Button)`
 export const SubmitButton = styled(Button)`
   border-radius: 2rem !important;
   font-weight: 600 !important;
-  background: #10b981 !important;
-  border-color: #10b981 !important;
+  background: #1a365d !important;
+  border-color: #1a365d !important;
   padding: 0 2rem !important;
   color: white !important;
   
   &:hover {
-    background: #059669 !important;
-    border-color: #059669 !important;
+    background: #12263f !important;
+    border-color: #12263f !important;
   }
 `;
 
@@ -636,15 +636,15 @@ export const EmailPromptText = styled.div`
 export const SubmitButtonPurple = styled(Button)`
   border-radius: 2rem !important;
   font-weight: 600 !important;
-  background: #9333ea !important;
-  border-color: #9333ea !important;
+  background: #1a365d !important;
+  border-color: #1a365d !important;
   padding: 0 2.5rem !important;
   color: white !important;
-  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3) !important;
-  
+  box-shadow: 0 4px 12px rgba(26, 54, 93, 0.3) !important;
+
   &:hover {
-    background: #7c3aed !important;
-    border-color: #7c3aed !important;
+    background: #12263f !important;
+    border-color: #12263f !important;
   }
 `;
 

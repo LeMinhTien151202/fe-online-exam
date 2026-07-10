@@ -1,23 +1,23 @@
 import { useNavigate } from '@tanstack/react-router';
 import React from 'react';
 import { useWritingSetsQuery } from '../../../services/writingExamQuery';
+import { usePartPracticeProgress } from '../../../../../shared/services/student-exam';
+
+// Writing: w1..w4 = API part 1..4.
+const WRITING_PART_MAP = [
+  { feId: 'w1', apiPart: 1 },
+  { feId: 'w2', apiPart: 2 },
+  { feId: 'w3', apiPart: 3 },
+  { feId: 'w4', apiPart: 4 },
+];
 
 export const useLandingAction = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<'parts' | 'mock-tests'>('parts');
   const navigate = useNavigate();
 
-  const [writingProgress] = React.useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem('aptis_writing_progress');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        // ignore
-      }
-    }
-    return { w1: 0, w2: 0, w3: 0, w4: 0 };
-  });
+  // Tiến độ luyện theo phần lấy từ server (answered/total).
+  const { progress: writingProgress } = usePartPracticeProgress(4, WRITING_PART_MAP);
 
   const [mockProgress] = React.useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('aptis_writing_mock_progress');
@@ -34,7 +34,7 @@ export const useLandingAction = () => {
   const { data: examRes, isLoading: isExamsLoading } = useWritingSetsQuery();
   const examSets = React.useMemo(() => examRes?.data ?? [], [examRes]);
 
-  const completedCount = Object.values(writingProgress).filter((prog) => prog === 100).length;
+  const completedCount = Object.values(writingProgress).filter((prog) => prog >= 100).length;
 
   const handlePartClick = (partId: string) => {
     const num = partId.replace('w', '');

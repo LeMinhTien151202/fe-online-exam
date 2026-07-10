@@ -3,7 +3,6 @@ import {
   ArrowRightOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
-  InfoCircleOutlined,
   LeftOutlined,
   UndoOutlined,
 } from '@ant-design/icons';
@@ -16,6 +15,7 @@ import * as HomeS from '../../../../home/pages/styled';
 import { useGrammarExamDetailQuery } from '../../../services/grammarExamQuery';
 import { buildGrammarExam, collectGrammarAnswers } from '../../../services/grammarExamMapper';
 import { useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import { GrammarSection } from '../components/GrammarSection';
 import { GrammarNavSection, QuestionNav } from '../components/QuestionNav';
 import { VocabularySection } from '../components/VocabularySection';
@@ -198,31 +198,16 @@ export const GrammarMockTestPage: React.FC = () => {
   const nextStepIsSamePart = nextUnit != null && unitSection(nextUnit) === currentSection;
 
   const handleBackToLanding = () => {
-    Modal.confirm({
-      title: 'Xác nhận thoát khỏi phòng thi?',
-      icon: <InfoCircleOutlined className="text-[#faad14]" />,
-      content: 'Hệ thống vẫn sẽ lưu kết quả tạm thời của bạn, tuy nhiên đồng hồ đếm ngược vẫn sẽ chạy tiếp nếu bạn quay lại sau.',
-      okText: 'Rời phòng thi',
-      cancelText: 'Tiếp tục làm bài',
-      onOk: () => {
-        navigate({ to: '/grammar' });
-      },
+    confirmExitExam({
+      content:
+        'Hệ thống vẫn sẽ lưu kết quả tạm thời của bạn, tuy nhiên đồng hồ đếm ngược vẫn sẽ chạy tiếp nếu bạn quay lại sau.',
+      onOk: () => navigate({ to: '/grammar' }),
     });
   };
 
   const handleSubmitClick = () => {
-    const { hasUnanswered, unansweredCount, confirm } = submitExamManual();
-
-    Modal.confirm({
-      title: 'Xác nhận nộp bài thi?',
-      icon: <CheckCircleOutlined className="text-[#52c41a]" />,
-      content: hasUnanswered
-        ? `Bạn còn ${unansweredCount} câu hỏi chưa trả lời. Bạn có muốn nộp bài thi ngay bây giờ không?`
-        : `Bạn đã hoàn thành toàn bộ ${totalQuestions} câu hỏi. Bạn có chắc chắn muốn nộp bài thi để chấm điểm không?`,
-      okText: 'Nộp bài',
-      cancelText: 'Làm tiếp',
-      onOk: confirm,
-    });
+    const { unansweredCount, confirm } = submitExamManual();
+    confirmSubmitExam({ unansweredCount, totalQuestions, onOk: confirm });
   };
 
   const handleRestartExam = () => {

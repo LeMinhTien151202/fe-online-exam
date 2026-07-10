@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
-import { useSpeakingQuestionsQuery } from '../../../services/speakingQuery';
 import { mapSpeakingSets } from '../../../services/mappers';
+import { flattenSpeakingExam } from '../../../services/speakingExamMapper';
+import { ISubmitAnswer, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart3 = () => {
   const navigate = useNavigate();
@@ -13,9 +15,16 @@ export const usePart3 = () => {
   const [showSampleAnswer, setShowSampleAnswer] = useState(false);
   const [activeSampleIdx, setActiveSampleIdx] = useState(0);
 
-  const { data: res, isLoading } = useSpeakingQuestionsQuery(3);
-  const sets = useMemo(() => mapSpeakingSets(res?.data ?? []), [res]);
+  // Luyện theo phần = đề PART_PRACTICE (skill 5, part 3 — RECORD theo bộ).
+  const { examId, examDetail, isLoading } = usePartPracticeExam(5, 3);
+  const sets = useMemo(() => {
+    if (!examDetail) return [];
+    const part = flattenSpeakingExam(examDetail).find((p) => p.partNumber === 3);
+    return mapSpeakingSets(part?.questions ?? []);
+  }, [examDetail]);
   const setCount = sets.length;
+
+  const submitMutation = useSubmitExamMutation();
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
@@ -67,7 +76,22 @@ export const usePart3 = () => {
   };
 
   const handleSubmit = () => {
+    confirmSubmitExam({ onOk: doSubmit });
+  };
+
+  const doSubmit = () => {
     message.success('Đã ghi nhận phần trả lời của bạn! Bạn có thể luyện câu tiếp theo.');
+
+    // Nộp lên BE để tăng student_progress (skill 5, part 3). RECORD = mảng URL theo thứ tự câu con mỗi bộ.
+    if (examId) {
+      const submitAnswers: ISubmitAnswer[] = [];
+      sets.forEach((set, setIndex) => {
+        if (set.questionId == null) return;
+        const response = set.questions.map((_, qIndex) => answers[`${setIndex}-${qIndex + 1}`] ?? '');
+        if (response.some((v) => v !== '')) submitAnswers.push({ questionId: set.questionId, response });
+      });
+      if (submitAnswers.length) submitMutation.mutate({ examId, payload: { answers: submitAnswers } });
+    }
   };
 
   const keyOf = (sub: number) => `${safeSet}-${sub}`;

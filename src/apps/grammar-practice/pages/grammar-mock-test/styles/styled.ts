@@ -563,15 +563,15 @@ export const FooterProgressText = styled.span`
 export const SubmitButton = styled(Button)`
   border-radius: 2rem !important;
   font-weight: 600 !important;
-  background: #10b981 !important;
-  border-color: #10b981 !important;
+  background: #1a365d !important;
+  border-color: #1a365d !important;
   padding: 0 2rem !important;
-  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important;
+  box-shadow: 0 4px 6px -1px rgba(26, 54, 93, 0.25) !important;
   color: white !important;
   
   &:hover {
-    background: #059669 !important;
-    border-color: #059669 !important;
+    background: #12263f !important;
+    border-color: #12263f !important;
   }
 `;
 

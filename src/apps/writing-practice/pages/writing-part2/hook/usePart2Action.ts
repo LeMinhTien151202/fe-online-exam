@@ -3,17 +3,25 @@ import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
 import { countWords } from '../../../utils/wordCounter';
 import { useWritingTimer } from '../../writing-part1/hook/useWritingTimer';
-import { useWritingQuestionsQuery } from '../../../services/writingQuery';
 import { mapWPart2 } from '../../../services/mappers';
+import { flattenWritingExam } from '../../../services/writingExamMapper';
+import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart2Action = () => {
   const navigate = useNavigate();
   const timer = useWritingTimer(3 * 60);
   const [answer, setAnswer] = useState('');
 
-  const { data: res, isLoading } = useWritingQuestionsQuery(2);
-  const list = useMemo(() => res?.data ?? [], [res]);
+  // Luyện theo phần = đề PART_PRACTICE (skill 4, part 2 — ESSAY).
+  const { examId, examDetail, isLoading } = usePartPracticeExam(4, 2);
+  const list = useMemo(() => {
+    if (!examDetail) return [];
+    return flattenWritingExam(examDetail).find((p) => p.partNumber === 2)?.questions ?? [];
+  }, [examDetail]);
   const total = list.length;
+
+  const submitMutation = useSubmitExamMutation();
   const [index, setIndex] = useState(0);
   const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
   const data = useMemo(() => {
@@ -42,7 +50,17 @@ export const usePart2Action = () => {
       message.error(`Số lượng từ hiện tại (${wc}) chưa nằm trong khoảng quy định ${wordMin}-${wordMax} từ!`);
       return;
     }
+    confirmSubmitExam({ totalQuestions: 1, onOk: doSubmit });
+  };
+
+  const doSubmit = () => {
     message.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
+
+    // Nộp lên BE để tăng student_progress (skill 4, part 2). ESSAY = mảng 1 bài viết.
+    const dbQuestion = list[safeIndex];
+    if (examId && dbQuestion) {
+      submitMutation.mutate({ examId, payload: { answers: [{ questionId: dbQuestion.id, response: [answer] }] } });
+    }
   };
 
   const handleBack = () => navigate({ to: '/writing' });

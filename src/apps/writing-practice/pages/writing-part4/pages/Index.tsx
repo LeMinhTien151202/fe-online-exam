@@ -52,8 +52,8 @@ export const Part4Page: React.FC = () => {
         <S.PageContainer>
           <S.Header>
             <Space size="middle">
-              <S.BackLink to="/writing/part/3">
-                <LeftOutlined /> Quay lại Part 3
+              <S.BackLink to="/writing">
+                <LeftOutlined /> Quay lại
               </S.BackLink>
               <S.HeaderTitle>
                 Part 4: Formal and Informal Emails

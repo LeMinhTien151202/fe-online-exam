@@ -62,31 +62,38 @@ const SpeakingSection = React.forwardRef<SpeakingHandle, SpeakingSectionProps>((
             return false;
         },
         // RECORD: P1 mỗi câu = 1 bản ghi -> response = 1 URL.
-        // P2/P3/P4 gói cả bộ = 1 bản ghi -> response = mảng URL theo thứ tự câu con.
+        // P2/P3: mảng URL theo đúng thứ tự questions (câu chưa ghi = '' để không lệch vị trí).
+        // P4: nói cả bộ trong 1 lượt -> lặp lại URL cho từng câu để giữ đúng số phần tử theo questions.
         collect: () => {
-            const groups = new Map<number, { part: number; entries: { subIndex: number; url: string }[] }>();
-            units.forEach((u, i) => {
-                const url = answers[i + 1];
-                if (!url) return;
-                const set = u.part === 1 ? data.part1[u.setIndex]
-                    : u.part === 2 ? data.part2[u.setIndex]
-                    : u.part === 3 ? data.part3[u.setIndex]
-                    : data.part4[u.setIndex];
-                const questionId = set?.questionId;
-                if (questionId == null) return;
-                const g = groups.get(questionId) ?? { part: u.part, entries: [] };
-                g.entries.push({ subIndex: u.subIndex, url });
-                groups.set(questionId, g);
-            });
             const result: ISubmitAnswer[] = [];
-            groups.forEach((g, questionId) => {
-                if (g.part === 1) {
-                    result.push({ questionId, response: g.entries[0].url });
-                } else {
-                    const ordered = [...g.entries].sort((a, b) => a.subIndex - b.subIndex);
-                    result.push({ questionId, response: ordered.map((e) => e.url) });
-                }
+            const unitNum = new Map<string, number>();
+            units.forEach((u, i) => unitNum.set(`${u.part}-${u.setIndex}-${u.subIndex}`, i + 1));
+            const urlAt = (part: number, setIndex: number, subIndex: number) =>
+                answers[unitNum.get(`${part}-${setIndex}-${subIndex}`) ?? -1] ?? '';
+
+            data.part1.forEach((q, i) => {
+                if (q.questionId == null) return;
+                const url = urlAt(1, i, 0);
+                if (url) result.push({ questionId: q.questionId, response: url });
             });
+
+            const collectSets = (part: number, sets: typeof data.part2) => {
+                sets.forEach((set, setIndex) => {
+                    if (set.questionId == null) return;
+                    const response = set.questions.map((_, j) => urlAt(part, setIndex, j));
+                    if (response.some((v) => v !== '')) result.push({ questionId: set.questionId, response });
+                });
+            };
+            collectSets(2, data.part2);
+            collectSets(3, data.part3);
+
+            data.part4.forEach((set, setIndex) => {
+                if (set.questionId == null) return;
+                const url = urlAt(4, setIndex, 0);
+                if (!url) return;
+                result.push({ questionId: set.questionId, response: set.questions.map(() => url) });
+            });
+
             return result;
         },
     }), [currentUnit, units, data, answers]);

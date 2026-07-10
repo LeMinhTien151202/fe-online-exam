@@ -3,7 +3,6 @@ ArrowLeftOutlined,
 ArrowRightOutlined,
 CheckCircleOutlined,
 ClockCircleOutlined,
-InfoCircleOutlined,
 LeftOutlined,
 UndoOutlined
 } from '@ant-design/icons';
@@ -16,16 +15,25 @@ import * as HomeS from '../../../../home/pages/styled';
 import { GrammarSection } from '../components/GrammarSection';
 import { QuestionNav } from '../components/QuestionNav';
 import { usePart1Action } from '../hook/usePart1Action';
-import { useGrammarQuestionsQuery } from '../../../services/grammarQuery';
+import { flattenGrammarExam, collectGrammarAnswers } from '../../../services/grammarExamMapper';
 import { mapGrammarQuestions } from '../../../services/mappers';
+import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import * as S from '../styles/styled';
 
 export const Part1Page: React.FC = () => {
   const navigate = useNavigate();
 
-  const { data: res, isLoading } = useGrammarQuestionsQuery(1);
-  const questions = useMemo(() => mapGrammarQuestions(res?.data ?? []), [res]);
+  // Luyện theo phần = đề PART_PRACTICE (skill 1, part 1). Tải đề để build câu + nộp tăng tiến độ.
+  const { examId, examDetail, isLoading } = usePartPracticeExam(1, 1);
+  const questions = useMemo(() => {
+    if (!examDetail) return [];
+    const part = flattenGrammarExam(examDetail).find((p) => p.partNumber === 1);
+    return mapGrammarQuestions(part?.questions ?? []);
+  }, [examDetail]);
   const total = questions.length;
+
+  const submitMutation = useSubmitExamMutation();
 
   const [showResultModal, setShowResultModal] = useState(false);
   const [scoreResult, setScoreResult] = useState<number | null>(null);
@@ -45,6 +53,12 @@ export const Part1Page: React.FC = () => {
     localStorage.setItem('aptis_grammar_progress', JSON.stringify(progressObj));
 
     setShowResultModal(true);
+
+    // Nộp lên BE để tăng student_progress (skill 1, part 1). Không chặn UI.
+    if (examId) {
+      const submitAnswers = collectGrammarAnswers({ grammarQuestions: questions, vocabularySets: [] }, finalAnswers);
+      submitMutation.mutate({ examId, payload: { answers: submitAnswers } });
+    }
   };
 
   const {
@@ -64,28 +78,15 @@ export const Part1Page: React.FC = () => {
   const handleNextQuestion = () => { if (currentQuestionIndex < total) setCurrentQuestionIndex(currentQuestionIndex + 1); };
 
   const handleBackToLanding = () => {
-    Modal.confirm({
-      title: 'Xác nhận thoát khỏi phòng thi?',
-      icon: <InfoCircleOutlined className="text-[#faad14]" />,
+    confirmExitExam({
       content: 'Hệ thống vẫn sẽ lưu kết quả tạm thời của bạn.',
-      okText: 'Rời phòng thi',
-      cancelText: 'Tiếp tục làm bài',
       onOk: () => navigate({ to: '/grammar' }),
     });
   };
 
   const handleSubmitClick = () => {
-    const { hasUnanswered, unansweredCount, confirm } = submitExamManual();
-    Modal.confirm({
-      title: 'Xác nhận nộp bài?',
-      icon: <CheckCircleOutlined className="text-[#52c41a]" />,
-      content: hasUnanswered
-        ? `Bạn còn ${unansweredCount} câu chưa trả lời. Nộp bài ngay?`
-        : `Bạn đã hoàn thành ${total} câu. Nộp bài để chấm điểm?`,
-      okText: 'Nộp bài',
-      cancelText: 'Làm tiếp',
-      onOk: confirm,
-    });
+    const { unansweredCount, confirm } = submitExamManual();
+    confirmSubmitExam({ unansweredCount, totalQuestions: total, onOk: confirm });
   };
 
   const handleRestartExam = () => {

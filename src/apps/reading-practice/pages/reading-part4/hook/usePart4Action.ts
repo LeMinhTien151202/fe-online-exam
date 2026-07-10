@@ -1,12 +1,20 @@
 import { message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
-import { useReadingQuestionsQuery } from '../../../services/readingQuery';
 import { mapPart4, Part4Data } from '../../../services/mappers';
+import { flattenExam } from '../../../services/readingExamMapper';
+import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart4Action = () => {
-  const { data: res, isLoading } = useReadingQuestionsQuery(4);
-  const list = useMemo(() => res?.data ?? [], [res]);
+  // Luyện theo phần = đề PART_PRACTICE (skill 3, API part 5 — heading match).
+  const { examId, examDetail, isLoading } = usePartPracticeExam(3, 5);
+  const list = useMemo(() => {
+    if (!examDetail) return [];
+    return flattenExam(examDetail).find((p) => p.partNumber === 5)?.questions ?? [];
+  }, [examDetail]);
   const total = list.length;
+
+  const submitMutation = useSubmitExamMutation();
   const [index, setIndex] = useState(0);
   const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
   const data: Part4Data | null = useMemo(() => {
@@ -61,7 +69,10 @@ export const usePart4Action = () => {
       message.warning(`Bạn đã trả lời ${answeredCount}/${paragraphCount} tiêu đề. Vui lòng gán tiêu đề cho cả ${paragraphCount} đoạn văn!`);
       return;
     }
+    confirmSubmitExam({ totalQuestions: paragraphCount, onOk: doSubmit });
+  };
 
+  const doSubmit = () => {
     setIsSubmitted(true);
     const correctCount = Object.keys(correctAnswers).filter(
       (id) => answers[Number(id)] === correctAnswers[Number(id)]
@@ -78,6 +89,19 @@ export const usePart4Action = () => {
     localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
 
     message.success(`Chúc mừng! Bạn đã hoàn thành Part 4. Kết quả: ${correctCount}/${paragraphCount} câu đúng.`);
+
+    // Nộp lên BE để tăng student_progress (skill 3, part 5). HEADING = { paragraph_num: heading_label }.
+    if (examId && data?.questionId != null) {
+      const labelByValue = new Map(data.headings.map((h) => [h.value, h.label]));
+      const response: Record<string, string> = {};
+      data.paragraphs.forEach((pg) => {
+        const val = answers[pg.num];
+        if (val != null) response[String(pg.num)] = labelByValue.get(val) ?? val;
+      });
+      if (Object.keys(response).length > 0) {
+        submitMutation.mutate({ examId, payload: { answers: [{ questionId: data.questionId, response }] } });
+      }
+    }
   };
 
   const handleRetry = () => resetForNewQuestion();

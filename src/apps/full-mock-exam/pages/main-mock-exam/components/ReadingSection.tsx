@@ -105,6 +105,8 @@ const ReadingSection = React.forwardRef<ReadingHandle, ReadingSectionProps>(({ d
                 if (!ordering?.questionId) return;
                 const count = ordering.initialSentences.length;
                 const response: number[] = [];
+                // fixed_first: câu cố định luôn đứng đầu -> prepend để khớp correct_order đầy đủ ở BE.
+                if (ordering.fixedPoolIndex >= 0) response.push(ordering.fixedPoolIndex);
                 for (let i = 1; i <= count; i += 1) {
                     const item = slots[i];
                     response.push(item ? Number(item.id.replace(/^s/, '')) : -1);

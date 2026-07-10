@@ -1,7 +1,8 @@
 import { useNavigate } from '@tanstack/react-router';
-import { Modal, message } from 'antd';
+import { message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ISubmitAnswer, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import { useListeningExamDetailQuery } from '../../../services/listeningExamQuery';
 import { ListeningExamData, buildListeningExam } from '../../../services/listeningExamMapper';
 
@@ -365,15 +366,7 @@ export const useMockTest = (testId: string) => {
 
   const handleSubmitClick = () => {
     const unansweredCount = totalQuestions - answeredCount;
-    Modal.confirm({
-      title: 'Xác nhận nộp bài thi?',
-      content: unansweredCount > 0
-        ? `Bạn còn ${unansweredCount} câu/bài nghe chưa hoàn thành. Bạn có muốn nộp bài ngay bây giờ không?`
-        : `Bạn đã hoàn thành toàn bộ ${totalQuestions} câu/bài nghe. Bạn có chắc chắn muốn nộp bài không?`,
-      okText: 'Nộp bài',
-      cancelText: 'Làm tiếp',
-      onOk: handleManualSubmit,
-    });
+    confirmSubmitExam({ unansweredCount, totalQuestions, onOk: handleManualSubmit });
   };
 
   const handleRetry = () => {
@@ -389,11 +382,8 @@ export const useMockTest = (testId: string) => {
       onConfirmBack();
       return;
     }
-    Modal.confirm({
-      title: 'Xác nhận thoát khỏi đề thi?',
+    confirmExitExam({
       content: 'Tiến độ làm bài của bạn sẽ không được lưu nếu bạn thoát ra lúc này.',
-      okText: 'Thoát ra',
-      cancelText: 'Làm tiếp',
       onOk: onConfirmBack,
     });
   };

@@ -1,12 +1,20 @@
 import { message } from 'antd';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useReadingQuestionsQuery } from '../../../services/readingQuery';
 import { mapPart2, Part2Data, Part2Sentence } from '../../../services/mappers';
+import { flattenExam } from '../../../services/readingExamMapper';
+import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart2Action = () => {
-  const { data: res, isLoading } = useReadingQuestionsQuery(2);
-  const list = useMemo(() => res?.data ?? [], [res]);
+  // Luyện theo phần = đề PART_PRACTICE (skill 3, API part 2 — ordering).
+  const { examId, examDetail, isLoading } = usePartPracticeExam(3, 2);
+  const list = useMemo(() => {
+    if (!examDetail) return [];
+    return flattenExam(examDetail).find((p) => p.partNumber === 2)?.questions ?? [];
+  }, [examDetail]);
   const total = list.length;
+
+  const submitMutation = useSubmitExamMutation();
   const [index, setIndex] = useState(0);
   const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
   const data: Part2Data | null = useMemo(() => {
@@ -121,6 +129,10 @@ export const usePart2Action = () => {
       message.warning(`Vui lòng hoàn thành sắp xếp tất cả ${slotCount} ô trống! (Hiện tại: ${filledCount}/${slotCount})`);
       return;
     }
+    confirmSubmitExam({ totalQuestions: slotCount, onOk: doSubmit });
+  };
+
+  const doSubmit = () => {
     setIsSubmitted(true);
     const correct = countCorrect();
     const progressPercent = slotCount ? Math.round((correct / slotCount) * 100) : 0;
@@ -133,6 +145,19 @@ export const usePart2Action = () => {
     }
     localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
     message.success(`Chúc mừng! Bạn đã hoàn thành Part 2. Kết quả: ${correct}/${slotCount} câu đúng.`);
+
+    // Nộp lên BE để tăng student_progress (skill 3, part 2). P2 = mảng index theo thứ tự, prepend câu cố định.
+    if (examId && data?.questionId != null) {
+      const response: number[] = [];
+      if (data.fixedPoolIndex >= 0) response.push(data.fixedPoolIndex);
+      for (let i = 1; i <= slotCount; i += 1) {
+        const item = slots[i];
+        response.push(item ? Number(item.id.replace(/^s/, '')) : -1);
+      }
+      if (response.some((v) => v >= 0)) {
+        submitMutation.mutate({ examId, payload: { answers: [{ questionId: data.questionId, response }] } });
+      }
+    }
   };
 
   const handleRetry = () => {

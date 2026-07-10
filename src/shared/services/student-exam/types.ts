@@ -84,3 +84,20 @@ export interface IAttemptFilter {
   type?: ExamType;
   examSetId?: number;
 }
+
+// GET /progress/me — tiến độ TÍCH LŨY theo (skill, part), gộp mọi đề (dashboard học tập).
+export interface IStudentProgressRow {
+  skillId: number;
+  partNumber: number;
+  answered: number;
+  total: number;
+}
+
+// GET /progress/exams/me — % hoàn thành theo TỪNG ĐỀ (gắn examId). BE tự tính percent,
+// total luôn theo đề hiện tại nên thêm câu -> % giảm; đề chưa làm KHÔNG có dòng -> FE coi 0%.
+export interface IExamProgressRow {
+  examId: number;
+  answered: number;
+  total: number;
+  percent: number;
+}

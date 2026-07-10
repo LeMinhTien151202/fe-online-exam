@@ -1,12 +1,20 @@
 import { message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
-import { useReadingQuestionsQuery } from '../../../services/readingQuery';
 import { mapPart1 } from '../../../services/mappers';
+import { flattenExam } from '../../../services/readingExamMapper';
+import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart1Action = () => {
-  const { data: res, isLoading } = useReadingQuestionsQuery(1);
-  const questions = useMemo(() => res?.data ?? [], [res]);
+  // Luyện theo phần = đề PART_PRACTICE (skill 3, API part 1 — gap fill).
+  const { examId, examDetail, isLoading } = usePartPracticeExam(3, 1);
+  const questions = useMemo(() => {
+    if (!examDetail) return [];
+    return flattenExam(examDetail).find((p) => p.partNumber === 1)?.questions ?? [];
+  }, [examDetail]);
   const total = questions.length;
+
+  const submitMutation = useSubmitExamMutation();
 
   const [index, setIndex] = useState(0);
   const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
@@ -48,7 +56,10 @@ export const usePart1Action = () => {
       message.warning(`Bạn mới trả lời ${answeredCount}/${gapCount} câu hỏi. Hãy hoàn thành tất cả nhé!`);
       return;
     }
+    confirmSubmitExam({ totalQuestions: gapCount, onOk: doSubmit });
+  };
 
+  const doSubmit = () => {
     setIsSubmitted(true);
     const correctCount = Object.keys(correctAnswers).filter(
       (id) => answers[Number(id)] === correctAnswers[Number(id)]
@@ -65,6 +76,14 @@ export const usePart1Action = () => {
     localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
 
     message.success(`Chúc mừng! Bạn đã hoàn thành câu ${safeIndex + 1}. Kết quả: ${correctCount}/${gapCount} câu đúng.`);
+
+    // Nộp lên BE để tăng student_progress (skill 3, part 1). P1 = mảng index đáp án theo từng gap.
+    if (examId && data?.questionId != null) {
+      const response = data.questions.map((q) => q.options.indexOf(answers[q.id] ?? ''));
+      if (response.some((v) => v >= 0)) {
+        submitMutation.mutate({ examId, payload: { answers: [{ questionId: data.questionId, response }] } });
+      }
+    }
   };
 
   const resetForNewQuestion = () => {

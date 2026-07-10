@@ -1,11 +1,12 @@
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { Modal, message } from 'antd';
+import { message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   IExamSubmitResult,
   ISubmitAnswer,
   useSubmitExamMutation,
 } from '../../../../../shared/services/student-exam';
+import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import { SpeakingSet } from '../../../services/mappers';
 import { useSpeakingExamDetailQuery } from '../../../services/speakingExamQuery';
 import { buildSpeakingExam } from '../../../services/speakingExamMapper';
@@ -266,26 +267,15 @@ export const useMockTest = () => {
       navigate({ to: '/speaking' });
       return;
     }
-    Modal.confirm({
-      title: 'Xác nhận thoát khỏi đề thi?',
+    confirmExitExam({
       content: 'Tiến độ làm bài nói của bạn sẽ không được lưu nếu bạn thoát ra lúc này.',
-      okText: 'Thoát ra',
-      cancelText: 'Làm tiếp',
       onOk: () => navigate({ to: '/speaking' }),
     });
   };
 
   const handleSubmitClick = () => {
     const unansweredCount = totalQuestions - answeredCount;
-    Modal.confirm({
-      title: 'Xác nhận nộp bài thi nói?',
-      content: unansweredCount > 0
-        ? `Bạn còn ${unansweredCount} câu hỏi chưa trả lời ghi âm. Bạn có thực sự muốn nộp bài ngay bây giờ không?`
-        : `Bạn đã hoàn thành ghi âm toàn bộ ${totalQuestions} câu hỏi. Bạn có chắc chắn muốn nộp bài không?`,
-      okText: 'Nộp bài',
-      cancelText: 'Làm tiếp',
-      onOk: handleManualSubmit,
-    });
+    confirmSubmitExam({ unansweredCount, totalQuestions, onOk: handleManualSubmit });
   };
 
   const toggleSample = (key: string) => {

@@ -30,6 +30,7 @@ export interface Part2Sentence { id: string; text: string; }
 export interface Part2Data {
   questionId?: number; // id thật trong DB
   fixedSentence: string;
+  fixedPoolIndex: number; // index câu cố định trong options_pool (-1 nếu không cố định)
   initialSentences: Part2Sentence[]; // các câu cần sắp xếp (đã xáo)
   correctOrder: string[]; // id theo đúng thứ tự
 }
@@ -55,6 +56,7 @@ export const mapPart2 = (q: IQuestion): Part2Data | null => {
   return {
     questionId: q.id,
     fixedSentence: fixedPoolIdx >= 0 ? cfg.options_pool[fixedPoolIdx] : '',
+    fixedPoolIndex: fixedPoolIdx,
     initialSentences: shuffle(sentences),
     correctOrder,
   };

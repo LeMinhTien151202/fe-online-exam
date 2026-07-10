@@ -194,10 +194,10 @@ export const Part1Page: React.FC = () => {
                 style={{
                   borderRadius: '2rem',
                   fontWeight: 600,
-                  background: '#10b981',
-                  borderColor: '#10b981',
+                  background: '#1a365d',
+                  borderColor: '#1a365d',
                   padding: '0 2rem',
-                  boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
+                  boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.25)'
                 }}
                 onClick={handleSubmit}
               >

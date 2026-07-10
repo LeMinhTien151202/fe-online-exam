@@ -3,17 +3,25 @@ import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
 import { countWords } from '../../../utils/wordCounter';
 import { useWritingTimer } from './useWritingTimer';
-import { useWritingQuestionsQuery } from '../../../services/writingQuery';
 import { mapWPart1 } from '../../../services/mappers';
+import { flattenWritingExam } from '../../../services/writingExamMapper';
+import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart1Action = () => {
   const navigate = useNavigate();
   const timer = useWritingTimer(3 * 60);
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
-  const { data: res, isLoading } = useWritingQuestionsQuery(1);
-  const list = useMemo(() => res?.data ?? [], [res]);
+  // Luyện theo phần = đề PART_PRACTICE (skill 4, part 1 — ESSAY).
+  const { examId, examDetail, isLoading } = usePartPracticeExam(4, 1);
+  const list = useMemo(() => {
+    if (!examDetail) return [];
+    return flattenWritingExam(examDetail).find((p) => p.partNumber === 1)?.questions ?? [];
+  }, [examDetail]);
   const total = list.length;
+
+  const submitMutation = useSubmitExamMutation();
   const [index, setIndex] = useState(0);
   const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
   const data = useMemo(() => {
@@ -47,7 +55,20 @@ export const usePart1Action = () => {
       message.error(`Có câu hỏi vượt quá giới hạn ${wordMax} từ! Vui lòng chỉnh sửa lại.`);
       return;
     }
+    confirmSubmitExam({ totalQuestions: questions.length, onOk: doSubmit });
+  };
+
+  const doSubmit = () => {
     message.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
+
+    // Nộp lên BE để tăng student_progress (skill 4, part 1). ESSAY = mảng bài viết theo thứ tự câu con.
+    const dbQuestion = list[safeIndex];
+    if (examId && dbQuestion) {
+      const response = questions.map((q) => answers[q.id] ?? '');
+      if (response.some((v) => v.trim() !== '')) {
+        submitMutation.mutate({ examId, payload: { answers: [{ questionId: dbQuestion.id, response }] } });
+      }
+    }
   };
 
   const handleBack = () => navigate({ to: '/writing' });

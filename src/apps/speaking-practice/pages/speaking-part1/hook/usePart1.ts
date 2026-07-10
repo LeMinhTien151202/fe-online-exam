@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
-import { useSpeakingQuestionsQuery } from '../../../services/speakingQuery';
 import { mapSpeakingP1, SpeakingP1Item } from '../../../services/mappers';
+import { flattenSpeakingExam } from '../../../services/speakingExamMapper';
+import { ISubmitAnswer, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart1 = () => {
   const navigate = useNavigate();
@@ -13,9 +15,16 @@ export const usePart1 = () => {
   const [showSampleAnswer, setShowSampleAnswer] = useState(false);
   const [activeSampleIdx, setActiveSampleIdx] = useState(0);
 
-  const { data: res, isLoading } = useSpeakingQuestionsQuery(1);
-  const questions = useMemo<SpeakingP1Item[]>(() => mapSpeakingP1(res?.data ?? []), [res]);
+  // Luyện theo phần = đề PART_PRACTICE (skill 5, part 1 — RECORD).
+  const { examId, examDetail, isLoading } = usePartPracticeExam(5, 1);
+  const questions = useMemo<SpeakingP1Item[]>(() => {
+    if (!examDetail) return [];
+    const part = flattenSpeakingExam(examDetail).find((p) => p.partNumber === 1);
+    return mapSpeakingP1(part?.questions ?? []);
+  }, [examDetail]);
   const total = questions.length;
+
+  const submitMutation = useSubmitExamMutation();
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
@@ -49,7 +58,26 @@ export const usePart1 = () => {
   };
 
   const handleSubmit = () => {
+    confirmSubmitExam({
+      unansweredCount: total - Object.keys(answers).length,
+      totalQuestions: total,
+      onOk: doSubmit,
+    });
+  };
+
+  const doSubmit = () => {
     message.success('Đã ghi nhận phần trả lời của bạn! Bạn có thể luyện câu tiếp theo.');
+
+    // Nộp lên BE để tăng student_progress (skill 5, part 1). RECORD P1 = 1 URL cho mỗi câu.
+    if (examId) {
+      const submitAnswers: ISubmitAnswer[] = [];
+      questions.forEach((q, i) => {
+        if (q.questionId == null) return;
+        const url = answers[i + 1];
+        if (url) submitAnswers.push({ questionId: q.questionId, response: url });
+      });
+      if (submitAnswers.length) submitMutation.mutate({ examId, payload: { answers: submitAnswers } });
+    }
   };
 
   const handleRecordComplete = (audioUrl: string | null) => {

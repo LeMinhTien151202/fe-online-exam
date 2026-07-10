@@ -1,5 +1,4 @@
 import {
-  AlertOutlined,
   ArrowLeftOutlined,
   ArrowRightOutlined,
   CheckCircleOutlined,
@@ -12,8 +11,9 @@ import {
   UpOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { Button, Card, Empty, Modal, Progress, Space, Spin, Tag, Typography } from 'antd';
+import { Button, Card, Empty, Progress, Space, Spin, Tag, Typography } from 'antd';
 import { Sidebar } from '../../../../home/components/Sidebar';
+import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import * as HomeS from '../../../../home/pages/styled';
 import { WritingPromptItem } from '../../../services/writingExamMapper';
 import * as W from '../../writing-part1/styles/styled';
@@ -71,6 +71,7 @@ export const WritingMockTestPage = () => {
     showReport,
     showSampleMap,
     submitResult,
+    isSubmitting,
     setShowReport,
     setActivePart,
     handleAnswerChange,
@@ -84,33 +85,49 @@ export const WritingMockTestPage = () => {
     formatTime,
   } = useWritingMockTest(testId);
 
+  // Điểm tổng dạng band A1..C. Dùng thẳng `score` BE trả về (tính trên TOÀN đề,
+  // câu bỏ trống = 0% — đúng số đã lưu vào exam_attempts). Nếu AI chưa chấm được
+  // câu nào (score = 0 do toàn bộ chờ chấm tay) thì tạm tính "nhẹ tay" theo số từ.
+  const scoreToBand = (score: number): string => {
+    if (score >= 85) return 'C';
+    if (score >= 70) return 'B2';
+    if (score >= 55) return 'B1';
+    if (score >= 40) return 'A2';
+    return 'A1';
+  };
+
+  const overall = (() => {
+    if (!submitResult) return null;
+    const hasScored = submitResult.ai.some((a) => a.aiScore != null);
+    if (hasScored) {
+      const percent = Math.round(submitResult.score);
+      return { band: scoreToBand(percent), percent, fromAi: true };
+    }
+    // AI chưa chấm được phần nào (needsManualReview) -> tạm tính theo số phần đạt đủ số từ.
+    const validCount = prompts.filter((p) => isWordCountValid(p.id)).length;
+    const percent = prompts.length ? Math.round((validCount / prompts.length) * 100) : 0;
+    return { band: scoreToBand(percent), percent, fromAi: false };
+  })();
+
+  const bandColor = (band: string) => (band === 'C' ? '#10b981' : band.startsWith('B') ? '#2563eb' : '#f59e0b');
+
+  // Chưa có kết quả AI (đang chấm) -> chờ, không hiện điểm/đáp án mẫu vội.
+  const isGrading = isSubmitted && (isSubmitting || !submitResult);
+
   const handleBackToLanding = () => {
     if (isSubmitted) {
       navigate({ to: '/writing' });
       return;
     }
-    Modal.confirm({
-      title: 'Xác nhận thoát khỏi đề thi?',
-      icon: <AlertOutlined style={{ color: '#faad14' }} />,
+    confirmExitExam({
       content: 'Tiến độ làm bài viết của bạn sẽ không được lưu nếu bạn thoát ra lúc này.',
-      okText: 'Thoát ra',
-      cancelText: 'Làm tiếp',
       onOk: () => navigate({ to: '/writing' }),
     });
   };
 
   const handleSubmitClick = () => {
     const unansweredCount = totalQuestions - answeredCount;
-    Modal.confirm({
-      title: 'Xác nhận nộp bài thi viết?',
-      icon: <CheckCircleOutlined style={{ color: '#10b981' }} />,
-      content: unansweredCount > 0
-        ? `Bạn còn ${unansweredCount} câu chưa hoàn thành. Bạn có thực sự muốn nộp bài không?`
-        : `Bạn đã hoàn thành toàn bộ ${totalQuestions} câu viết. Bạn có chắc chắn muốn nộp bài không?`,
-      okText: 'Nộp bài',
-      cancelText: 'Làm tiếp',
-      onOk: handleManualSubmit,
-    });
+    confirmSubmitExam({ unansweredCount, totalQuestions, onOk: handleManualSubmit });
   };
 
   if (isLoading) {
@@ -186,7 +203,7 @@ export const WritingMockTestPage = () => {
   };
 
   const renderSampleReview = () => {
-    if (!isSubmitted || !hasSample) return null;
+    if (!isSubmitted || !hasSample || isGrading) return null;
     return (
       <S.CollapsibleWrapper>
         <S.CollapsibleHeader onClick={() => toggleSample(activePart)}>
@@ -461,7 +478,22 @@ export const WritingMockTestPage = () => {
             </Space>
           </S.Header>
 
-          {isSubmitted && showReport ? (
+          {isSubmitted && showReport && isGrading ? (
+            <S.ReportContainer>
+              <S.ReportCard>
+                <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+                  <Spin size="large" />
+                  <Title level={3} style={{ color: '#1a365d', marginTop: '1.5rem' }}>
+                    <RobotOutlined style={{ color: '#6366f1', marginRight: 8 }} />
+                    AI đang chấm toàn bộ bài viết của bạn...
+                  </Title>
+                  <Text type="secondary" style={{ fontSize: '1rem' }}>
+                    Vui lòng chờ trong giây lát. Điểm tổng (band A–C) sẽ hiển thị ngay khi AI chấm xong.
+                  </Text>
+                </div>
+              </S.ReportCard>
+            </S.ReportContainer>
+          ) : isSubmitted && showReport ? (
             <S.ReportContainer>
               <S.ReportCard>
                 <Space direction="vertical" size="small" style={{ marginBottom: '1.5rem' }}>
@@ -473,18 +505,23 @@ export const WritingMockTestPage = () => {
                 <S.ScoreRingWrapper>
                   <Progress
                     type="circle"
-                    percent={Math.round((answeredCount / totalQuestions) * 100)}
+                    percent={overall?.percent ?? 0}
                     size={140}
                     strokeWidth={10}
-                    strokeColor="#10b981"
+                    strokeColor={bandColor(overall?.band ?? 'A1')}
                     format={() => (
                       <S.ScoreLabel>
-                        <span className="score-val">{answeredCount}</span>
-                        <span className="score-max">/ {totalQuestions} câu viết</span>
+                        <span className="score-val">{overall?.band ?? '—'}</span>
+                        <span className="score-max">Band tổng</span>
                       </S.ScoreLabel>
                     )}
                   />
                 </S.ScoreRingWrapper>
+                {overall && !overall.fromAi && (
+                  <Text type="secondary" style={{ display: 'block', marginBottom: '1rem', fontSize: '0.85rem' }}>
+                    (AI chưa chấm được — điểm tạm tính theo số phần đạt đủ số từ)
+                  </Text>
+                )}
                 <S.ReportGrid>
                   <S.ReportStatItem>
                     <span className="stat-label">Số câu đã hoàn thành</span>
@@ -556,7 +593,7 @@ export const WritingMockTestPage = () => {
 
                 <Space size="middle">
                   {!isSubmitted && (
-                    <Button type="primary" icon={<CheckCircleOutlined />} size="large" style={{ borderRadius: '2rem', fontWeight: 600, background: '#10b981', borderColor: '#10b981', padding: '0 2rem', boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)' }} onClick={handleSubmitClick}>
+                    <Button type="primary" icon={<CheckCircleOutlined />} size="large" style={{ borderRadius: '2rem', fontWeight: 600, background: '#1a365d', borderColor: '#1a365d', padding: '0 2rem', boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.25)' }} onClick={handleSubmitClick}>
                       Nộp bài
                     </Button>
                   )}
