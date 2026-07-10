@@ -6,11 +6,12 @@ import {
   ClockCircleOutlined,
   DownOutlined,
   LeftOutlined,
+  RobotOutlined,
   RollbackOutlined,
   UnlockOutlined,
   UpOutlined,
 } from '@ant-design/icons';
-import { Button, Empty, Progress, Space, Spin, Tooltip, Typography } from 'antd';
+import { Button, Card, Empty, Progress, Space, Spin, Tag, Tooltip, Typography } from 'antd';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { SpeakingController } from '../../../components/SpeakingController';
@@ -62,6 +63,7 @@ export const SpeakingMockTestPage = () => {
     showReport,
     setShowReport,
     showSampleMap,
+    submitResult,
     activeQuestionNum,
     activePart,
     activeSetIndex,
@@ -426,6 +428,33 @@ export const SpeakingMockTestPage = () => {
                     <span className="stat-value">{formatTime(20 * 60 - timeLeft)}</span>
                   </S.ReportStatItem>
                 </S.ReportGrid>
+                {submitResult && submitResult.ai.length > 0 && (
+                  <Card
+                    title={<Space><RobotOutlined style={{ color: '#6366f1' }} /> AI chấm bài Nói</Space>}
+                    style={{ borderRadius: 16, marginBottom: '2rem', textAlign: 'left', width: '100%' }}
+                  >
+                    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                      {submitResult.ai.map((item) => (
+                        <div key={item.questionId} style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '0.75rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <Space>
+                              <Tag color="geekblue">{item.questionType}</Tag>
+                              {item.band && <Tag color="green">Band {item.band}</Tag>}
+                            </Space>
+                            {item.aiScore != null ? (
+                              <b style={{ color: '#10b981' }}>{item.aiScore}/100</b>
+                            ) : (
+                              <Tag color="warning">Chờ chấm tay</Tag>
+                            )}
+                          </div>
+                          <Text style={{ color: '#475569', fontSize: '0.9rem' }}>
+                            {item.feedback || 'Chưa có nhận xét.'}
+                          </Text>
+                        </div>
+                      ))}
+                    </Space>
+                  </Card>
+                )}
                 <div style={{ width: '100%', textAlign: 'left', background: '#f8fafc', padding: '1.25rem 1.5rem', borderRadius: '0.75rem', border: '1px solid #e2e8f0', marginBottom: '2rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '6px', color: '#1a365d', fontWeight: 700 }}>
                     <AlertOutlined /> <span>Lưu ý về tự đánh giá bài Nói:</span>

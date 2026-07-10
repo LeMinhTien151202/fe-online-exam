@@ -1,6 +1,7 @@
 import { Col,Row,Typography } from 'antd';
 import React,{ useEffect,useMemo,useState } from 'react';
 import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
+import { ISubmitAnswer } from '../../../../../shared/services/student-exam';
 import { WritingPromptItem } from '../../../../writing-practice/services/writingExamMapper';
 import * as S from '../styles/shared.styles';
 import * as WS from '../styles/writing.styles';
@@ -10,6 +11,7 @@ const { Text } = Typography;
 export interface WritingHandle {
     next: () => boolean;
     prev: () => boolean;
+    collect: () => ISubmitAnswer[];
 }
 
 interface WritingSectionProps {
@@ -50,8 +52,26 @@ const WritingSection = React.forwardRef<WritingHandle, WritingSectionProps>(({ p
                 return true;
             }
             return false;
-        }
-    }), [activePart, availableParts]);
+        },
+        // ESSAY: 1 bản ghi DB (part) = nhiều prompt con -> response là mảng bài viết
+        // theo thứ tự subIndex. Gom prompt theo questionId.
+        collect: () => {
+            const byQuestion = new Map<number, WritingPromptItem[]>();
+            prompts.forEach((p) => {
+                if (p.questionId == null) return;
+                const list = byQuestion.get(p.questionId) ?? [];
+                list.push(p);
+                byQuestion.set(p.questionId, list);
+            });
+            const result: ISubmitAnswer[] = [];
+            byQuestion.forEach((items, questionId) => {
+                const ordered = [...items].sort((a, b) => (a.subIndex ?? 0) - (b.subIndex ?? 0));
+                const response = ordered.map((p) => answers[p.id]?.trim() ?? '');
+                if (response.some((v) => v !== '')) result.push({ questionId, response });
+            });
+            return result;
+        },
+    }), [activePart, availableParts, prompts, answers]);
 
     const getWordCount = (text: string) => {
         if (!text) return 0;

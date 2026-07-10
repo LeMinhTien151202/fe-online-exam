@@ -1,5 +1,6 @@
 export interface IGrammarQuestion {
   id: string; // e.g., "g1", "g2"
+  questionId?: number; // id thật trong DB (dùng khi nộp bài)
   questionNumber: number; // 1 -> 25
   sentence: string; // e.g., "If I _______ younger, I would have studied abroad."
   options: string[]; // exactly 3 options for Aptis Grammar
@@ -17,6 +18,7 @@ export interface IVocabularySubQuestion {
 
 export interface IVocabularySet {
   id: string; // e.g., "set1", "set2"
+  questionId?: number; // id thật trong DB (1 task = 1 bản ghi -> dùng khi nộp bài)
   type: IVocabularyType;
   title: string; // e.g., "Word Matching (Synonyms)", "Word Definitions"
   instruction: string;

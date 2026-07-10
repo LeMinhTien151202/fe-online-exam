@@ -9,6 +9,7 @@ export const mapGrammarQuestions = (records: IQuestion[]): IGrammarQuestion[] =>
     const correct = (cfg?.options ?? []).find((o) => o.is_correct)?.content ?? '';
     return {
       id: `g${i + 1}`,
+      questionId: r.id,
       questionNumber: i + 1,
       sentence: r.content,
       options,
@@ -53,6 +54,7 @@ export const mapVocabularySets = (records: IQuestion[]): IVocabularySet[] => {
     const slots = cfg?.slots ?? [];
     return {
       id: `set${i + 1}`,
+      questionId: r.id,
       type: variantType(variant),
       title: `Task ${i + 1}: ${VARIANT_LABEL[variant] ?? 'Từ vựng'}`,
       instruction: r.content || VARIANT_INSTRUCTION[variant] || 'Chọn từ phù hợp từ danh sách cho mỗi câu.',

@@ -1,13 +1,15 @@
 import { Col,Row,Select } from 'antd';
 import React,{ useMemo,useState } from 'react';
 import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
-import { GrammarExamData } from '../../../../grammar-practice/services/grammarExamMapper';
+import { ISubmitAnswer } from '../../../../../shared/services/student-exam';
+import { collectGrammarAnswers, GrammarExamData } from '../../../../grammar-practice/services/grammarExamMapper';
 import * as GS from '../styles/grammar.styles';
 import * as S from '../styles/shared.styles';
 
 export interface GrammarVocabHandle {
     next: () => boolean;
     prev: () => boolean;
+    collect: () => ISubmitAnswer[];
 }
 
 interface GrammarVocabSectionProps {
@@ -42,8 +44,10 @@ const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSec
                 return true;
             }
             return false;
-        }
-    }), [activeUnit, totalUnits]);
+        },
+        // Grammar P1 (MC): index đáp án. Vocab P2 (WORD_BANK): { slot_id: từ }.
+        collect: () => collectGrammarAnswers({ grammarQuestions, vocabularySets }, answers),
+    }), [activeUnit, totalUnits, grammarQuestions, vocabularySets, answers]);
 
     // Bảng câu hỏi: vocab mỗi task 1 ô, tô "đã trả lời" khi đủ hết ý
     const navAnswers = useMemo(() => {

@@ -1,6 +1,7 @@
 import { Col,Row } from 'antd';
 import React,{ useMemo,useState } from 'react';
 import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
+import { ISubmitAnswer } from '../../../../../shared/services/student-exam';
 import { SpeakingExamData } from '../../../../speaking-practice/services/speakingExamMapper';
 import * as S from '../styles/shared.styles';
 import * as SS from '../styles/speaking.styles';
@@ -9,6 +10,7 @@ import { SpeakingController } from './speaking/SpeakingController';
 export interface SpeakingHandle {
     next: () => boolean;
     prev: () => boolean;
+    collect: () => ISubmitAnswer[];
 }
 
 interface SpeakingSectionProps {
@@ -58,8 +60,36 @@ const SpeakingSection = React.forwardRef<SpeakingHandle, SpeakingSectionProps>((
                 return true;
             }
             return false;
-        }
-    }), [currentUnit, units.length]);
+        },
+        // RECORD: P1 mỗi câu = 1 bản ghi -> response = 1 URL.
+        // P2/P3/P4 gói cả bộ = 1 bản ghi -> response = mảng URL theo thứ tự câu con.
+        collect: () => {
+            const groups = new Map<number, { part: number; entries: { subIndex: number; url: string }[] }>();
+            units.forEach((u, i) => {
+                const url = answers[i + 1];
+                if (!url) return;
+                const set = u.part === 1 ? data.part1[u.setIndex]
+                    : u.part === 2 ? data.part2[u.setIndex]
+                    : u.part === 3 ? data.part3[u.setIndex]
+                    : data.part4[u.setIndex];
+                const questionId = set?.questionId;
+                if (questionId == null) return;
+                const g = groups.get(questionId) ?? { part: u.part, entries: [] };
+                g.entries.push({ subIndex: u.subIndex, url });
+                groups.set(questionId, g);
+            });
+            const result: ISubmitAnswer[] = [];
+            groups.forEach((g, questionId) => {
+                if (g.part === 1) {
+                    result.push({ questionId, response: g.entries[0].url });
+                } else {
+                    const ordered = [...g.entries].sort((a, b) => a.subIndex - b.subIndex);
+                    result.push({ questionId, response: ordered.map((e) => e.url) });
+                }
+            });
+            return result;
+        },
+    }), [currentUnit, units, data, answers]);
 
     const navSections: NavSection[] = useMemo(() => {
         const sections: NavSection[] = [];

@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { Modal, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ISubmitAnswer, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { useListeningExamDetailQuery } from '../../../services/listeningExamQuery';
 import { ListeningExamData, buildListeningExam } from '../../../services/listeningExamMapper';
 
@@ -53,6 +54,7 @@ export const useMockTest = (testId: string) => {
   const examData = useMemo(() => (examDetail ? buildListeningExam(examDetail) : null), [examDetail]);
   const navItems = useMemo(() => buildNavItems(examData), [examData]);
   const totalQuestions = navItems.length;
+  const submitMutation = useSubmitExamMutation();
 
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [timeLeft, setTimeLeft] = useState(40 * 60);
@@ -180,6 +182,55 @@ export const useMockTest = (testId: string) => {
     [isNavItemAnswered, navItems]
   );
 
+  // Dịch state đáp án (theo key nav) sang shape submit của API.
+  // P1 (MC): index; P2 (SPEAKER_MATCH): { speaker: answer }; P3 (AGREEMENT): mảng theo statement;
+  // P4 (Monologue): mảng index đáp án theo từng câu con.
+  const collectAnswers = useCallback((): ISubmitAnswer[] => {
+    if (!examData) return [];
+    const result: ISubmitAnswer[] = [];
+
+    navItems.forEach((item) => {
+      if (item.partNumber === 1) {
+        const question = examData.part1[item.itemIndex];
+        if (!question || question.questionId == null) return;
+        const chosen = answers[keyForP1(item.qNum)];
+        if (chosen == null) return;
+        const idx = question.options.indexOf(chosen);
+        if (idx >= 0) result.push({ questionId: question.questionId, response: idx });
+      } else if (item.partNumber === 2) {
+        const set = examData.part2[item.itemIndex];
+        if (!set || set.questionId == null) return;
+        const response: Record<string, string> = {};
+        for (let speaker = 1; speaker <= set.speakerCount; speaker += 1) {
+          const chosen = answers[keyForP2(item.qNum, speaker)];
+          if (chosen != null) response[String(speaker)] = chosen;
+        }
+        if (Object.keys(response).length > 0) result.push({ questionId: set.questionId, response });
+      } else if (item.partNumber === 3) {
+        const set = examData.part3[item.itemIndex];
+        if (!set || set.questionId == null) return;
+        const response = set.statements.map((st) => answers[keyForP3(item.qNum, st.id)] ?? '');
+        if (response.some((v) => v !== '')) result.push({ questionId: set.questionId, response });
+      } else {
+        const group = examData.part4[item.itemIndex];
+        if (!group || group.questionId == null) return;
+        const response = group.subQuestions.map((sq) => {
+          const chosen = answers[keyForP4(item.qNum, sq.id)];
+          return chosen == null ? -1 : sq.options.indexOf(chosen);
+        });
+        if (response.some((v) => v >= 0)) result.push({ questionId: group.questionId, response });
+      }
+    });
+
+    return result;
+  }, [answers, examData, navItems]);
+
+  const submitToServer = useCallback(() => {
+    if (!examId) return;
+    const collected = collectAnswers();
+    submitMutation.mutate({ examId, payload: { answers: collected } });
+  }, [collectAnswers, examId, submitMutation]);
+
   const calculateScores = useCallback(() => {
     let scoreP1 = 0;
     let scoreP2 = 0;
@@ -263,7 +314,8 @@ export const useMockTest = (testId: string) => {
     message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
     const { totalScore, totalMax } = calculateScores();
     saveProgressToLocalStorage(totalScore, totalMax);
-  }, [calculateScores, saveProgressToLocalStorage]);
+    submitToServer();
+  }, [calculateScores, saveProgressToLocalStorage, submitToServer]);
 
   useEffect(() => {
     if (timeLeft <= 0 || isSubmitted) return;
@@ -308,6 +360,7 @@ export const useMockTest = (testId: string) => {
     message.success('Bạn đã nộp bài nghe thành công!');
     const { totalScore, totalMax } = calculateScores();
     saveProgressToLocalStorage(totalScore, totalMax);
+    submitToServer();
   };
 
   const handleSubmitClick = () => {

@@ -9,6 +9,7 @@ import {
 // ---------- P1: MC (mỗi bản ghi = 1 câu, audio riêng) ----------
 export interface LPart1Question {
   id: number;
+  questionId?: number; // id thật trong DB
   questionText: string;
   options: string[];
   correctIndex: number;
@@ -21,6 +22,7 @@ export const mapLPart1 = (records: IQuestion[]): LPart1Question[] =>
     const options = (cfg?.options ?? []).map((o) => o.content);
     return {
       id: i + 1,
+      questionId: r.id,
       questionText: r.content,
       options,
       correctIndex: (cfg?.options ?? []).findIndex((o) => o.is_correct),
@@ -31,6 +33,7 @@ export const mapLPart1 = (records: IQuestion[]): LPart1Question[] =>
 // ---------- P2: SPEAKER_MATCH (1 bản ghi = 1 bài, 4 người / 6 câu văn) ----------
 export interface LPart2Set {
   id: number;
+  questionId?: number; // id thật trong DB
   mediaUrl: string | null;
   instruction: string;
   options: { value: string; label: string }[]; // options_pool
@@ -45,6 +48,7 @@ export const mapLPart2 = (records: IQuestion[]): LPart2Set[] =>
     const speakers = cfg?.speakers ?? [];
     return {
       id: i + 1,
+      questionId: r.id,
       mediaUrl: r.mediaUrl,
       instruction: r.content,
       options: pool.map((s) => ({ value: s, label: s })),
@@ -61,6 +65,7 @@ export interface LPart3Statement {
 }
 export interface LPart3Set {
   id: number;
+  questionId?: number; // id thật trong DB
   mediaUrl: string | null;
   instruction: string;
   statements: LPart3Statement[];
@@ -71,6 +76,7 @@ export const mapLPart3 = (records: IQuestion[]): LPart3Set[] =>
     const cfg = r.extraConfig as unknown as SpeakerAgreementConfig;
     return {
       id: i + 1,
+      questionId: r.id,
       mediaUrl: r.mediaUrl,
       instruction: r.content,
       statements: (cfg?.statements ?? []).map((s, j) => ({ id: j + 1, text: s.statement, correct: s.correct })),
@@ -86,6 +92,7 @@ export interface LPart4SubQuestion {
 }
 export interface LPart4Group {
   id: number;
+  questionId?: number; // id thật trong DB
   title: string;
   instruction: string;
   mediaUrl: string | null;
@@ -97,6 +104,7 @@ export const mapLPart4 = (records: IQuestion[]): LPart4Group[] =>
     const cfg = r.extraConfig as unknown as MonologueConfig;
     return {
       id: i + 1,
+      questionId: r.id,
       title: `Bài nghe ${i + 1}`,
       instruction: r.content,
       mediaUrl: r.mediaUrl,

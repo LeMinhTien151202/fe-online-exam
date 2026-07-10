@@ -10,6 +10,8 @@ export interface WritingExamPartData {
 
 export interface WritingPromptItem {
   id: number;
+  questionId?: number; // id thật trong DB (1 part = 1 bản ghi; ESSAY nộp theo mảng con)
+  subIndex?: number; // thứ tự câu con trong part (0-based) -> vị trí trong mảng response
   partNumber: number;
   partLabel: string;
   title: string;
@@ -61,9 +63,11 @@ export const buildWritingPrompts = (exam: IExamSetDetail): WritingPromptItem[] =
     if (part.partNumber === 1) {
       const data = mapWPart1(firstQuestion);
       if (!data) return;
-      data.questions.forEach((question) => {
+      data.questions.forEach((question, subIndex) => {
         prompts.push({
           id: prompts.length + 1,
+          questionId: firstQuestion.id,
+          subIndex,
           partNumber: 1,
           partLabel: 'Part 1',
           title: `Câu ${question.id}: Word-level writing`,
@@ -82,6 +86,8 @@ export const buildWritingPrompts = (exam: IExamSetDetail): WritingPromptItem[] =
       if (!data) return;
       prompts.push({
         id: prompts.length + 1,
+        questionId: firstQuestion.id,
+        subIndex: 0,
         partNumber: 2,
         partLabel: 'Part 2',
         title: 'Short text writing',
@@ -97,9 +103,11 @@ export const buildWritingPrompts = (exam: IExamSetDetail): WritingPromptItem[] =
     if (part.partNumber === 3) {
       const data = mapWPart3(firstQuestion);
       if (!data) return;
-      data.messages.forEach((message) => {
+      data.messages.forEach((message, subIndex) => {
         prompts.push({
           id: prompts.length + 1,
+          questionId: firstQuestion.id,
+          subIndex,
           partNumber: 3,
           partLabel: 'Part 3',
           title: `${message.sender}: Chat response`,
@@ -118,6 +126,8 @@ export const buildWritingPrompts = (exam: IExamSetDetail): WritingPromptItem[] =
       if (!data) return;
       prompts.push({
         id: prompts.length + 1,
+        questionId: firstQuestion.id,
+        subIndex: 0,
         partNumber: 4,
         partLabel: 'Part 4',
         title: 'Informal email',
@@ -129,6 +139,8 @@ export const buildWritingPrompts = (exam: IExamSetDetail): WritingPromptItem[] =
       });
       prompts.push({
         id: prompts.length + 1,
+        questionId: firstQuestion.id,
+        subIndex: 1,
         partNumber: 4,
         partLabel: 'Part 4',
         title: 'Formal email',

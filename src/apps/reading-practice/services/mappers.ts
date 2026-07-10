@@ -8,6 +8,7 @@ import {
 
 // ---------- Part 1: Gap fill ----------
 export interface Part1Data {
+  questionId?: number; // id thật trong DB
   content: string; // đoạn văn chứa ___(1)..(5)
   questions: { id: number; options: string[] }[];
   correctAnswers: Record<number, string>; // gap_id -> đáp án đúng (text)
@@ -17,6 +18,7 @@ export const mapPart1 = (q: IQuestion): Part1Data | null => {
   const cfg = q.extraConfig as unknown as GapFillConfig;
   if (!cfg?.gaps?.length) return null;
   return {
+    questionId: q.id,
     content: q.content,
     questions: cfg.gaps.map((g) => ({ id: g.gap_id, options: g.options })),
     correctAnswers: Object.fromEntries(cfg.gaps.map((g) => [g.gap_id, g.options[g.correct_index]])),
@@ -26,6 +28,7 @@ export const mapPart1 = (q: IQuestion): Part1Data | null => {
 // ---------- Part 2: Ordering ----------
 export interface Part2Sentence { id: string; text: string; }
 export interface Part2Data {
+  questionId?: number; // id thật trong DB
   fixedSentence: string;
   initialSentences: Part2Sentence[]; // các câu cần sắp xếp (đã xáo)
   correctOrder: string[]; // id theo đúng thứ tự
@@ -50,6 +53,7 @@ export const mapPart2 = (q: IQuestion): Part2Data | null => {
   const correctOrder = restOrder.map((idx) => `s${idx}`);
   const sentences = restOrder.map((idx) => ({ id: `s${idx}`, text: cfg.options_pool[idx] }));
   return {
+    questionId: q.id,
     fixedSentence: fixedPoolIdx >= 0 ? cfg.options_pool[fixedPoolIdx] : '',
     initialSentences: shuffle(sentences),
     correctOrder,
@@ -60,6 +64,7 @@ export const mapPart2 = (q: IQuestion): Part2Data | null => {
 export interface Part3Opinion { id: string; name: string; color: string; text: string; }
 export interface Part3Question { id: number; text: string; }
 export interface Part3Data {
+  questionId?: number; // id thật trong DB
   opinions: Part3Opinion[];
   questions: Part3Question[];
   correctAnswers: Record<number, string>; // questionId -> person key
@@ -71,6 +76,7 @@ export const mapPart3 = (q: IQuestion): Part3Data | null => {
   const cfg = q.extraConfig as unknown as ReadingSpeakerMatchConfig;
   if (!cfg?.people?.length || !cfg?.questions?.length) return null;
   return {
+    questionId: q.id,
     opinions: cfg.people.map((p, i) => ({
       id: p.key,
       name: p.key,
@@ -86,6 +92,7 @@ export const mapPart3 = (q: IQuestion): Part3Data | null => {
 export interface Part4Heading { value: string; label: string; }
 export interface Part4Paragraph { num: number; text: string; }
 export interface Part4Data {
+  questionId?: number; // id thật trong DB
   headings: Part4Heading[];
   paragraphs: Part4Paragraph[];
   correctAnswers: Record<number, string>; // paragraph num -> heading value
@@ -102,5 +109,5 @@ export const mapPart4 = (q: IQuestion): Part4Data | null => {
     const value = headingValueByText.get(a.correct_heading);
     if (value) correctAnswers[Number(a.paragraph_label)] = value;
   });
-  return { headings, paragraphs, correctAnswers };
+  return { questionId: q.id, headings, paragraphs, correctAnswers };
 };

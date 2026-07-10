@@ -1,5 +1,6 @@
 import { message } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ISubmitAnswer, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { useReadingExamDetailQuery } from '../../../services/readingExamQuery';
 import { flattenExam, ExamPartData } from '../../../services/readingExamMapper';
 import {
@@ -19,6 +20,7 @@ import {
 export const useMockTest = (testId: string) => {
   const examId = Number(testId);
   const { data: examDetail, isLoading, isError } = useReadingExamDetailQuery(examId || null);
+  const submitMutation = useSubmitExamMutation();
 
   // ==================== DERIVED DATA FROM API ====================
 
@@ -215,6 +217,54 @@ export const useMockTest = (testId: string) => {
     return 'C (Cao cấp)';
   };
 
+  // ==================== COLLECT (state -> shape submit API) ====================
+  // P1 gap-fill: mảng index đáp án theo từng gap; P2/P3 ordering: mảng index câu trong pool;
+  // P4 speaker-match: mảng person key theo câu; P5 heading: { paragraph: label tiêu đề }.
+  const collectAnswers = (): ISubmitAnswer[] => {
+    const result: ISubmitAnswer[] = [];
+
+    part1Data.forEach((pd) => {
+      if (pd.questionId == null) return;
+      const response = pd.questions.map((q) => q.options.indexOf(p1Answers[q.id] ?? ''));
+      if (response.some((v) => v >= 0)) result.push({ questionId: pd.questionId, response });
+    });
+
+    const collectOrdering = (ordering: Part2Data | null, slots: Record<number, Part2Sentence | null>) => {
+      if (!ordering?.questionId) return;
+      const count = ordering.initialSentences.length;
+      const response: number[] = [];
+      for (let i = 1; i <= count; i += 1) {
+        const item = slots[i];
+        response.push(item ? Number(item.id.replace(/^s/, '')) : -1);
+      }
+      if (response.some((v) => v >= 0)) result.push({ questionId: ordering.questionId, response });
+    };
+    collectOrdering(orderingP2, p2Slots);
+    collectOrdering(orderingP3, p3Slots);
+
+    if (speakerP4?.questionId) {
+      const response = speakerP4.questions.map((q) => p4Answers[q.id] ?? '');
+      if (response.some((v) => v !== '')) result.push({ questionId: speakerP4.questionId, response });
+    }
+
+    if (headingP5?.questionId) {
+      const labelByValue = new Map(headingP5.headings.map((h) => [h.value, h.label]));
+      const response: Record<string, string> = {};
+      headingP5.paragraphs.forEach((pg) => {
+        const val = p5Answers[pg.num];
+        if (val != null) response[String(pg.num)] = labelByValue.get(val) ?? val;
+      });
+      if (Object.keys(response).length > 0) result.push({ questionId: headingP5.questionId, response });
+    }
+
+    return result;
+  };
+
+  const submitToServer = () => {
+    if (!examId) return;
+    submitMutation.mutate({ examId, payload: { answers: collectAnswers() } });
+  };
+
   // ==================== PERSISTENCE ====================
 
   const saveProgressToLocalStorage = (score: number) => {
@@ -233,11 +283,13 @@ export const useMockTest = (testId: string) => {
   const isSubmittedRef = useRef(isSubmitted);
   const calculateScoresRef = useRef(calculateScores);
   const saveProgressRef = useRef(saveProgressToLocalStorage);
+  const submitToServerRef = useRef(submitToServer);
 
   useEffect(() => {
     isSubmittedRef.current = isSubmitted;
     calculateScoresRef.current = calculateScores;
     saveProgressRef.current = saveProgressToLocalStorage;
+    submitToServerRef.current = submitToServer;
   });
 
   useEffect(() => {
@@ -247,6 +299,7 @@ export const useMockTest = (testId: string) => {
         message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
         const { totalScore } = calculateScoresRef.current();
         saveProgressRef.current(totalScore);
+        submitToServerRef.current();
       }
       return;
     }
@@ -262,6 +315,7 @@ export const useMockTest = (testId: string) => {
     message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
     const { totalScore } = calculateScores();
     saveProgressToLocalStorage(totalScore);
+    submitToServer();
   };
 
   const handleManualSubmit = () => {
@@ -270,6 +324,7 @@ export const useMockTest = (testId: string) => {
     message.success('Bạn đã nộp bài thi thành công!');
     const { totalScore } = calculateScores();
     saveProgressToLocalStorage(totalScore);
+    submitToServer();
   };
 
   const resetOrdering = (

@@ -1,5 +1,10 @@
 import { message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  IExamSubmitResult,
+  ISubmitAnswer,
+  useSubmitExamMutation,
+} from '../../../../../shared/services/student-exam';
 import { countWords } from '../../../utils/wordCounter';
 import { useWritingExamDetailQuery } from '../../../services/writingExamQuery';
 import { buildWritingPrompts } from '../../../services/writingExamMapper';
@@ -10,6 +15,7 @@ export const useWritingMockTest = (testId: string) => {
 
   const prompts = useMemo(() => (examDetail ? buildWritingPrompts(examDetail) : []), [examDetail]);
   const totalQuestions = prompts.length;
+  const submitMutation = useSubmitExamMutation();
 
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [timeLeft, setTimeLeft] = useState(50 * 60);
@@ -17,6 +23,7 @@ export const useWritingMockTest = (testId: string) => {
   const [showReport, setShowReport] = useState(false);
   const [activePart, setActivePart] = useState(1);
   const [showSampleMap, setShowSampleMap] = useState<Record<number, boolean>>({});
+  const [submitResult, setSubmitResult] = useState<IExamSubmitResult | null>(null);
 
   const availableParts = useMemo(
     () => Array.from(new Set(prompts.map((prompt) => prompt.partNumber))).sort((a, b) => a - b),
@@ -52,12 +59,41 @@ export const useWritingMockTest = (testId: string) => {
     localStorage.setItem('aptis_writing_mock_progress', JSON.stringify(progressObj));
   }, [testId]);
 
+  // Gom prompt theo questionId (1 câu DB có thể sinh nhiều prompt) -> response là mảng
+  // bài viết theo đúng thứ tự subIndex. ESSAY: AI chấm và trả kết quả ngay.
+  const collectAnswers = useCallback((): ISubmitAnswer[] => {
+    const byQuestion = new Map<number, { subIndex: number; text: string }[]>();
+    prompts.forEach((p) => {
+      if (p.questionId == null) return;
+      const list = byQuestion.get(p.questionId) ?? [];
+      list.push({ subIndex: p.subIndex ?? 0, text: answers[p.id]?.trim() ?? '' });
+      byQuestion.set(p.questionId, list);
+    });
+    const result: ISubmitAnswer[] = [];
+    byQuestion.forEach((items, questionId) => {
+      const response = [...items].sort((a, b) => a.subIndex - b.subIndex).map((i) => i.text);
+      if (response.some((v) => v !== '')) result.push({ questionId, response });
+    });
+    return result;
+  }, [answers, prompts]);
+
+  const submitToServer = useCallback(async () => {
+    if (!examId) return;
+    try {
+      const result = await submitMutation.mutateAsync({ examId, payload: { answers: collectAnswers() } });
+      setSubmitResult(result);
+    } catch {
+      // Interceptor đã hiện notification lỗi.
+    }
+  }, [collectAnswers, examId, submitMutation]);
+
   const handleAutoSubmit = useCallback(() => {
     setIsSubmitted(true);
     setShowReport(true);
     message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
     saveProgressToLocalStorage();
-  }, [saveProgressToLocalStorage]);
+    submitToServer();
+  }, [saveProgressToLocalStorage, submitToServer]);
 
   useEffect(() => {
     if (timeLeft <= 0 || isSubmitted) return;
@@ -78,6 +114,7 @@ export const useWritingMockTest = (testId: string) => {
     setShowReport(true);
     message.success('Bạn đã nộp bài thi viết thành công!');
     saveProgressToLocalStorage();
+    submitToServer();
   };
 
   const handleRetry = () => {
@@ -87,6 +124,7 @@ export const useWritingMockTest = (testId: string) => {
     setShowReport(false);
     setActivePart(1);
     setShowSampleMap({});
+    setSubmitResult(null);
   };
 
   const handleAnswerChange = (questionId: number, value: string) => {
@@ -134,6 +172,8 @@ export const useWritingMockTest = (testId: string) => {
     isSubmitted,
     showReport,
     showSampleMap,
+    submitResult,
+    isSubmitting: submitMutation.isPending,
     setShowReport,
     setActivePart,
     handleAnswerChange,

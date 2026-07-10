@@ -14,7 +14,8 @@ import React, { useMemo, useState } from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { useGrammarExamDetailQuery } from '../../../services/grammarExamQuery';
-import { buildGrammarExam } from '../../../services/grammarExamMapper';
+import { buildGrammarExam, collectGrammarAnswers } from '../../../services/grammarExamMapper';
+import { useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { GrammarSection } from '../components/GrammarSection';
 import { GrammarNavSection, QuestionNav } from '../components/QuestionNav';
 import { VocabularySection } from '../components/VocabularySection';
@@ -29,6 +30,7 @@ export const GrammarMockTestPage: React.FC = () => {
 
   const { data: examDetail, isLoading, isError } = useGrammarExamDetailQuery(examId || null);
   const examData = useMemo(() => (examDetail ? buildGrammarExam(examDetail) : null), [examDetail]);
+  const submitMutation = useSubmitExamMutation();
   const grammarQuestions = useMemo(() => examData?.grammarQuestions ?? [], [examData]);
   const vocabularySets = useMemo(() => examData?.vocabularySets ?? [], [examData]);
 
@@ -80,6 +82,12 @@ export const GrammarMockTestPage: React.FC = () => {
 
     const totalScore = grammarScore + vocabScore;
     setScoreResult({ grammarScore, vocabScore, total: totalScore });
+
+    // Nộp lên BE để đánh dấu "đã làm" bộ đề (SKILL_FULL_SET) — không chặn UI.
+    if (examData && examId) {
+      const submitAnswers = collectGrammarAnswers(examData, finalAnswers);
+      submitMutation.mutate({ examId, payload: { answers: submitAnswers } });
+    }
 
     const saved = localStorage.getItem('aptis_grammar_mock_progress');
     let progressObj: Record<string, number> = {};

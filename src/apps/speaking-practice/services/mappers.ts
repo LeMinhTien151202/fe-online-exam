@@ -3,12 +3,13 @@ import { IQuestion, RecordConfig } from '../../admin/pages/admin-questions/servi
 // P1: mỗi bản ghi = 1 câu độc lập
 export interface SpeakingP1Item {
   id: number;
+  questionId?: number; // id thật trong DB (mỗi câu P1 = 1 bản ghi)
   questionText: string;
   sampleAnswers: string[];
 }
 
 export const mapSpeakingP1 = (records: IQuestion[]): SpeakingP1Item[] =>
-  records.map((r, i) => ({ id: i + 1, questionText: r.content, sampleAnswers: [] }));
+  records.map((r, i) => ({ id: i + 1, questionId: r.id, questionText: r.content, sampleAnswers: [] }));
 
 // P2/P3/P4: mỗi bản ghi = 1 bộ (ảnh + nhiều câu con)
 export interface SpeakingSubQuestion {
@@ -18,6 +19,7 @@ export interface SpeakingSubQuestion {
 }
 export interface SpeakingSet {
   id: number;
+  questionId?: number; // id thật trong DB (mỗi bộ P2/P3/P4 = 1 bản ghi, nộp mảng URL)
   imageUrls: string[];
   prepTime: number;
   recordTime: number;
@@ -29,6 +31,7 @@ export const mapSpeakingSets = (records: IQuestion[]): SpeakingSet[] =>
     const cfg = r.extraConfig as unknown as RecordConfig;
     return {
       id: i + 1,
+      questionId: r.id,
       imageUrls: cfg?.image_urls ?? [],
       prepTime: cfg?.prep_time_seconds ?? 0,
       recordTime: cfg?.response_time_seconds ?? 45,

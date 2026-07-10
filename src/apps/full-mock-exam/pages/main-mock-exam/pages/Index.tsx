@@ -18,9 +18,15 @@ import ListeningSection,{ ListeningHandle } from '../components/ListeningSection
 import ReadingSection,{ ReadingHandle } from '../components/ReadingSection';
 import SpeakingSection,{ SpeakingHandle } from '../components/SpeakingSection';
 import WritingSection,{ WritingHandle } from '../components/WritingSection';
+import ExamResultScreen from '../components/ExamResultScreen';
 
 import { useMockExamDetailQuery } from '../../../services/mockExamQuery';
 import { buildFullMockExam,FullMockExamData } from '../../../services/mockExamMapper';
+import {
+    IExamSubmitResult,
+    ISubmitAnswer,
+    useSubmitExamMutation,
+} from '../../../../../shared/services/student-exam';
 import * as S from '../styles/shared.styles';
 
 interface SkillStep {
@@ -113,11 +119,14 @@ const MainMockExamPage: React.FC = () => {
             .filter((s) => s.totalQuestions > 0);
     }, [examData]);
 
+    const submitMutation = useSubmitExamMutation();
+
     const [activeStep, setActiveStep] = useState(0);
     // null = chưa khởi tạo (đợi dữ liệu đề); sau đó là số giây còn lại
     const [timeLeft, setTimeLeft] = useState<number | null>(null);
     const [isFinished, setIsFinished] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitResult, setSubmitResult] = useState<IExamSubmitResult | null>(null);
 
     const [currentStatus, setCurrentStatus] = useState({ part: 1, question: 1, answered: 0 });
 
@@ -137,7 +146,7 @@ const MainMockExamPage: React.FC = () => {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const skillRefMap: Record<string, React.RefObject<{ next: () => boolean; prev: () => boolean } | null>> = {
+    const skillRefMap: Record<string, React.RefObject<{ next: () => boolean; prev: () => boolean; collect: () => ISubmitAnswer[] } | null>> = {
         grammar: grammarRef,
         listening: listeningRef,
         reading: readingRef,
@@ -198,13 +207,23 @@ const MainMockExamPage: React.FC = () => {
         }
     };
 
-    const handleSubmitFinal = () => {
+    const handleSubmitFinal = async () => {
+        // Gom đáp án từ mọi kỹ năng (mỗi section tự dịch state -> shape API)
+        const answers: ISubmitAnswer[] = [];
+        [grammarRef, listeningRef, readingRef, writingRef, speakingRef].forEach((r) => {
+            if (r.current) answers.push(...r.current.collect());
+        });
+
         setIsSubmitting(true);
-        setTimeout(() => {
-            setIsSubmitting(false);
+        try {
+            const result = await submitMutation.mutateAsync({ examId, payload: { answers } });
+            setSubmitResult(result);
             setIsFinished(true);
-            setTimeout(() => navigate({ to: '/mock-exam' }), 3000);
-        }, 2500);
+        } catch {
+            // Interceptor đã hiện notification lỗi; cho phép người dùng thử lại.
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const onProgressUpdate = useCallback((answeredCount: number, part: number, question: number) => {
@@ -264,6 +283,10 @@ const MainMockExamPage: React.FC = () => {
                 </div>
             </S.FullPageCenter>
         );
+    }
+
+    if (isFinished && submitResult) {
+        return <ExamResultScreen result={submitResult} onBack={() => navigate({ to: '/mock-exam' })} />;
     }
 
     if (isFinished) {
@@ -337,6 +360,7 @@ const MainMockExamPage: React.FC = () => {
                     <Button
                         type="primary"
                         size="large"
+                        loading={isSubmitting}
                         style={{
                             borderRadius: '2rem',
                             fontWeight: 700,
@@ -348,7 +372,7 @@ const MainMockExamPage: React.FC = () => {
                         }}
                         onClick={() => handleNextSection(false)}
                     >
-                        Tiếp theo
+                        {activeStep === skills.length - 1 ? 'Nộp bài' : 'Tiếp theo'}
                         <RightOutlined style={{ fontSize: '12px', marginLeft: '6px' }} />
                     </Button>
                 </Space>

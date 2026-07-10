@@ -6,12 +6,13 @@ import {
   ClockCircleOutlined,
   DownOutlined,
   LeftOutlined,
+  RobotOutlined,
   RollbackOutlined,
   UnlockOutlined,
   UpOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { Button, Empty, Modal, Progress, Space, Spin, Tag, Typography } from 'antd';
+import { Button, Card, Empty, Modal, Progress, Space, Spin, Tag, Typography } from 'antd';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { WritingPromptItem } from '../../../services/writingExamMapper';
@@ -69,6 +70,7 @@ export const WritingMockTestPage = () => {
     isSubmitted,
     showReport,
     showSampleMap,
+    submitResult,
     setShowReport,
     setActivePart,
     handleAnswerChange,
@@ -493,6 +495,33 @@ export const WritingMockTestPage = () => {
                     <span className="stat-value">{formatTime(50 * 60 - timeLeft)}</span>
                   </S.ReportStatItem>
                 </S.ReportGrid>
+                {submitResult && submitResult.ai.length > 0 && (
+                  <Card
+                    title={<Space><RobotOutlined style={{ color: '#6366f1' }} /> AI chấm bài Viết</Space>}
+                    style={{ borderRadius: 16, marginBottom: '2rem', textAlign: 'left', width: '100%' }}
+                  >
+                    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                      {submitResult.ai.map((item) => (
+                        <div key={item.questionId} style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '0.75rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <Space>
+                              <Tag color="purple">{item.questionType}</Tag>
+                              {item.band && <Tag color="green">Band {item.band}</Tag>}
+                            </Space>
+                            {item.aiScore != null ? (
+                              <b style={{ color: '#10b981' }}>{item.aiScore}/100</b>
+                            ) : (
+                              <Tag color="warning">Chờ chấm tay</Tag>
+                            )}
+                          </div>
+                          <Text style={{ color: '#475569', fontSize: '0.9rem' }}>
+                            {item.feedback || 'Chưa có nhận xét.'}
+                          </Text>
+                        </div>
+                      ))}
+                    </Space>
+                  </Card>
+                )}
                 <Button type="primary" size="large" style={{ borderRadius: '2rem', height: '48px', padding: '0 2.5rem', fontWeight: 700, background: '#1a365d', borderColor: '#1a365d' }} onClick={() => setShowReport(false)}>
                   Xem lại bài viết và đáp án mẫu
                 </Button>

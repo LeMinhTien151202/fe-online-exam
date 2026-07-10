@@ -1,6 +1,11 @@
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { Modal, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  IExamSubmitResult,
+  ISubmitAnswer,
+  useSubmitExamMutation,
+} from '../../../../../shared/services/student-exam';
 import { SpeakingSet } from '../../../services/mappers';
 import { useSpeakingExamDetailQuery } from '../../../services/speakingExamQuery';
 import { buildSpeakingExam } from '../../../services/speakingExamMapper';
@@ -22,6 +27,7 @@ export const useMockTest = () => {
   const { data: examDetail, isLoading, isError } = useSpeakingExamDetailQuery(examId || null);
 
   const examData = useMemo(() => (examDetail ? buildSpeakingExam(examDetail) : null), [examDetail]);
+  const submitMutation = useSubmitExamMutation();
 
   const navItems = useMemo<SpeakingNavItem[]>(() => {
     if (!examData) return [];
@@ -60,6 +66,7 @@ export const useMockTest = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [showSampleMap, setShowSampleMap] = useState<Record<string, boolean>>({});
+  const [submitResult, setSubmitResult] = useState<IExamSubmitResult | null>(null);
 
   const availableParts = useMemo(
     () => Array.from(new Set(navItems.map((item) => item.partNumber))).sort((a, b) => a - b),
@@ -103,12 +110,49 @@ export const useMockTest = () => {
     localStorage.setItem('aptis_speaking_mock_progress', JSON.stringify(progressObj));
   }, [testId]);
 
+  // Dịch URL ghi âm sang shape submit của API. P1: mỗi câu = 1 bản ghi (1 URL);
+  // P2/P3/P4: mỗi bộ = 1 bản ghi (mảng URL theo thứ tự câu con). RECORD: AI chấm & trả ngay.
+  const collectAnswers = useCallback((): ISubmitAnswer[] => {
+    if (!examData) return [];
+    const result: ISubmitAnswer[] = [];
+
+    examData.part1.forEach((item, index) => {
+      if (item.questionId == null) return;
+      const url = answers[keyOf(1, 0, index + 1)];
+      if (url) result.push({ questionId: item.questionId, response: url });
+    });
+
+    const collectSets = (partNumber: number, sets: SpeakingSet[]) => {
+      sets.forEach((set, setIndex) => {
+        if (set.questionId == null) return;
+        const response = set.questions.map((_, qIndex) => answers[keyOf(partNumber, setIndex, qIndex + 1)] ?? '');
+        if (response.some((v) => v !== '')) result.push({ questionId: set.questionId, response });
+      });
+    };
+    collectSets(2, examData.part2);
+    collectSets(3, examData.part3);
+    collectSets(4, examData.part4);
+
+    return result;
+  }, [answers, examData]);
+
+  const submitToServer = useCallback(async () => {
+    if (!examId) return;
+    try {
+      const result = await submitMutation.mutateAsync({ examId, payload: { answers: collectAnswers() } });
+      setSubmitResult(result);
+    } catch {
+      // Interceptor đã hiện notification lỗi.
+    }
+  }, [collectAnswers, examId, submitMutation]);
+
   const handleAutoSubmit = useCallback(() => {
     setIsSubmitted(true);
     setShowReport(true);
     message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
     saveProgressToLocalStorage();
-  }, [saveProgressToLocalStorage]);
+    submitToServer();
+  }, [saveProgressToLocalStorage, submitToServer]);
 
   useEffect(() => {
     if (timeLeft <= 0 || isSubmitted) return;
@@ -202,6 +246,7 @@ export const useMockTest = () => {
     setShowReport(true);
     message.success('Bạn đã nộp bài thi nói thành công!');
     saveProgressToLocalStorage();
+    submitToServer();
   };
 
   const handleRetry = () => {
@@ -213,6 +258,7 @@ export const useMockTest = () => {
     setActiveSetIndex(0);
     setActiveSubIndex(1);
     setShowSampleMap({});
+    setSubmitResult(null);
   };
 
   const handleBackToLanding = () => {
@@ -259,6 +305,7 @@ export const useMockTest = () => {
     showReport,
     setShowReport,
     showSampleMap,
+    submitResult,
     activeQuestionNum,
     activePart,
     activeSetIndex,

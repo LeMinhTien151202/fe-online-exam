@@ -1,6 +1,7 @@
 import { Col,Radio,Row,Select,Typography } from 'antd';
 import React,{ useMemo,useState } from 'react';
 import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
+import { ISubmitAnswer } from '../../../../../shared/services/student-exam';
 import { Part2Sentence } from '../../../../reading-practice/services/mappers';
 import { ReadingExamData } from '../../../services/mockExamMapper';
 import * as RS from '../styles/reading.styles';
@@ -11,6 +12,7 @@ const { Text, Paragraph } = Typography;
 export interface ReadingHandle {
     next: () => boolean;
     prev: () => boolean;
+    collect: () => ISubmitAnswer[];
 }
 
 interface ReadingSectionProps {
@@ -85,8 +87,51 @@ const ReadingSection = React.forwardRef<ReadingHandle, ReadingSectionProps>(({ d
                 return true;
             }
             return false;
-        }
-    }), [activePart, availableParts]);
+        },
+        // P1 gap-fill: mảng index đáp án theo thứ tự gap
+        // P2/P3 ORDERING: mảng chỉ số pool theo thứ tự học viên xếp
+        // P4 SPEAKER_MATCH: mảng person key theo thứ tự câu hỏi
+        // P5 HEADING_MATCH: object { paragraph_label: heading text }
+        collect: () => {
+            const result: ISubmitAnswer[] = [];
+
+            data.part1.forEach((pd) => {
+                if (pd.questionId == null) return;
+                const response = pd.questions.map((q) => q.options.indexOf(p1Answers[q.id] ?? ''));
+                if (response.some((v) => v >= 0)) result.push({ questionId: pd.questionId, response });
+            });
+
+            const collectOrdering = (ordering: typeof data.orderingP2, slots: Record<number, Part2Sentence | null>) => {
+                if (!ordering?.questionId) return;
+                const count = ordering.initialSentences.length;
+                const response: number[] = [];
+                for (let i = 1; i <= count; i += 1) {
+                    const item = slots[i];
+                    response.push(item ? Number(item.id.replace(/^s/, '')) : -1);
+                }
+                if (response.some((v) => v >= 0)) result.push({ questionId: ordering.questionId, response });
+            };
+            collectOrdering(data.orderingP2, p2Slots);
+            collectOrdering(data.orderingP3, p3Slots);
+
+            if (data.speakerP4?.questionId) {
+                const response = data.speakerP4.questions.map((q) => p4Answers[q.id] ?? '');
+                if (response.some((v) => v !== '')) result.push({ questionId: data.speakerP4.questionId, response });
+            }
+
+            if (data.headingP5?.questionId) {
+                const labelByValue = new Map(data.headingP5.headings.map((h) => [h.value, h.label]));
+                const response: Record<string, string> = {};
+                data.headingP5.paragraphs.forEach((pg) => {
+                    const val = p5Answers[pg.num];
+                    if (val != null) response[String(pg.num)] = labelByValue.get(val) ?? val;
+                });
+                if (Object.keys(response).length > 0) result.push({ questionId: data.headingP5.questionId, response });
+            }
+
+            return result;
+        },
+    }), [activePart, availableParts, data, p1Answers, p2Slots, p3Slots, p4Answers, p5Answers]);
 
     const PART_LABEL: Record<number, string> = {
         1: 'Part 1: Điền từ',

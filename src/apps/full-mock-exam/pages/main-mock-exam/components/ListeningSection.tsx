@@ -2,6 +2,7 @@ import { CaretRightOutlined,PauseOutlined } from '@ant-design/icons';
 import { Col,Row,Select,Typography } from 'antd';
 import React,{ forwardRef,useImperativeHandle,useMemo,useRef,useState } from 'react';
 import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
+import { ISubmitAnswer } from '../../../../../shared/services/student-exam';
 import { ListeningExamData } from '../../../../listening-practice/services/listeningExamMapper';
 import * as LS from '../styles/listening.styles';
 import * as S from '../styles/shared.styles';
@@ -11,6 +12,7 @@ const { Text } = Typography;
 export interface ListeningHandle {
     next: () => boolean;
     prev: () => boolean;
+    collect: () => ISubmitAnswer[];
 }
 
 interface ListeningSectionProps {
@@ -135,8 +137,44 @@ const ListeningSection = forwardRef<ListeningHandle, ListeningSectionProps>(({ d
                 return true;
             }
             return false;
-        }
-    }), [currentUnit, units.length]);
+        },
+        // P1 (MC): index đáp án | P2 (SPEAKER_MATCH): { speaker_index: answer }
+        // P3 (SPEAKER_AGREEMENT): mảng MAN/WOMAN/BOTH theo thứ tự statements
+        // P4 (Monologue): mảng index đáp án theo thứ tự câu con
+        collect: () => {
+            const result: ISubmitAnswer[] = [];
+            data.part1.forEach((q, i) => {
+                if (q.questionId == null) return;
+                const chosen = answers[`p1-${i}`];
+                if (chosen == null) return;
+                const idx = q.options.indexOf(chosen);
+                if (idx >= 0) result.push({ questionId: q.questionId, response: idx });
+            });
+            data.part2.forEach((set, i) => {
+                if (set.questionId == null) return;
+                const response: Record<string, string> = {};
+                for (let s = 1; s <= set.speakerCount; s += 1) {
+                    const chosen = answers[`p2-${i}-${s}`];
+                    if (chosen != null) response[String(s)] = chosen;
+                }
+                if (Object.keys(response).length > 0) result.push({ questionId: set.questionId, response });
+            });
+            data.part3.forEach((set, i) => {
+                if (set.questionId == null) return;
+                const response = set.statements.map((st) => answers[`p3-${i}-${st.id}`] ?? '');
+                if (response.some((v) => v !== '')) result.push({ questionId: set.questionId, response });
+            });
+            data.part4.forEach((group, i) => {
+                if (group.questionId == null) return;
+                const response = group.subQuestions.map((sq) => {
+                    const chosen = answers[`p4-${i}-${sq.id}`];
+                    return chosen == null ? -1 : sq.options.indexOf(chosen);
+                });
+                if (response.some((v) => v >= 0)) result.push({ questionId: group.questionId, response });
+            });
+            return result;
+        },
+    }), [currentUnit, units.length, data, answers]);
 
     const handleSelect = (key: string, val: string) => {
         setAnswers(prev => ({ ...prev, [key]: val }));

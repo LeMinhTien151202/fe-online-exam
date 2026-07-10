@@ -1,5 +1,6 @@
 import { IExamSetDetail } from '../../admin/pages/admin-exams/services/types';
 import { IQuestion } from '../../admin/pages/admin-questions/services/types';
+import { ISubmitAnswer } from '../../../shared/services/student-exam';
 import { IGrammarQuestion, IVocabularySet } from '../types';
 import { mapGrammarQuestions, mapVocabularySets } from './mappers';
 
@@ -40,6 +41,31 @@ export const flattenGrammarExam = (exam: IExamSetDetail): GrammarExamPartData[] 
     });
 
   return Array.from(byPart.values()).sort((a, b) => a.partNumber - b.partNumber);
+};
+
+// Dịch state đáp án (key = questionNumber toàn cục) sang shape submit của API.
+// Dùng chung cho trang bộ đề (SKILL_FULL_SET) và section trong thi thử.
+export const collectGrammarAnswers = (
+  data: GrammarExamData,
+  answers: Record<number, string>,
+): ISubmitAnswer[] => {
+  const result: ISubmitAnswer[] = [];
+  data.grammarQuestions.forEach((q) => {
+    const chosen = answers[q.questionNumber];
+    if (q.questionId == null || chosen == null) return;
+    const idx = q.options.indexOf(chosen);
+    if (idx >= 0) result.push({ questionId: q.questionId, response: idx });
+  });
+  data.vocabularySets.forEach((set) => {
+    if (set.questionId == null) return;
+    const response: Record<string, string> = {};
+    set.subQuestions.forEach((sub) => {
+      const chosen = answers[sub.questionNumber];
+      if (chosen != null) response[sub.id] = chosen;
+    });
+    if (Object.keys(response).length > 0) result.push({ questionId: set.questionId, response });
+  });
+  return result;
 };
 
 const offsetVocabularyNumbers = (sets: IVocabularySet[], offset: number): IVocabularySet[] =>
