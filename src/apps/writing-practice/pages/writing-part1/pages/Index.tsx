@@ -1,5 +1,6 @@
 import { BulbOutlined,CheckSquareOutlined,ClockCircleOutlined,LeftOutlined,RightOutlined } from '@ant-design/icons';
-import { Button, Empty, Space, Spin, Tag } from 'antd';
+import { Button, Space, Tag } from 'antd';
+import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
@@ -94,9 +95,9 @@ export const Part1Page: React.FC = () => {
                 )}
 
                 {isLoading ? (
-                  <div style={{ textAlign: 'center', padding: '3rem' }}><Spin size="large" /></div>
+                  <ExamLoading />
                 ) : !hasData ? (
-                  <Empty description="Chưa có câu hỏi cho phần này. Vui lòng quay lại sau." />
+                  <ExamEmpty />
                 ) : (
                   <S.QuestionsWrapper>
                     {questions.map((q) => {

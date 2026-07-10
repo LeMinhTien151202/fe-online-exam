@@ -7,7 +7,8 @@ import {
   RollbackOutlined
 } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { Button, Empty, Progress, Select, Space, Spin, Tag } from 'antd';
+import { Button, Progress, Select, Space, Tag } from 'antd';
+import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
@@ -187,11 +188,11 @@ export const Part1Page: React.FC = () => {
               </S.TitleArea>
 
               {isLoading ? (
-                <div style={{ textAlign: 'center', padding: '3rem' }}><Spin size="large" /></div>
+                <ExamLoading />
               ) : data ? (
                 <div className="flex flex-col">{renderPassage()}</div>
               ) : (
-                <Empty description="Chưa có câu hỏi cho phần này. Vui lòng quay lại sau." />
+                <ExamEmpty />
               )}
             </S.ContentCard>
 

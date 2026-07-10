@@ -1,5 +1,6 @@
 import React from 'react';
-import { Space, Progress, Button, Select, Spin, Empty } from 'antd';
+import { Space, Progress, Button, Select } from 'antd';
+import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import {
   LeftOutlined,
   RightOutlined,
@@ -66,10 +67,10 @@ export const Part1Page: React.FC = () => {
 
           <S.MainContent>
             {isLoading ? (
-              <div style={{ textAlign: 'center', padding: '3rem', width: '100%' }}><Spin size="large" /></div>
+              <ExamLoading />
             ) : !hasData ? (
               <div style={{ padding: '3rem', width: '100%' }}>
-                <Empty description="Chưa có câu hỏi cho phần này. Vui lòng quay lại sau." />
+                <ExamEmpty />
               </div>
             ) : (
             <S.ContentCard>

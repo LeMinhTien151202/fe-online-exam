@@ -7,7 +7,8 @@ LeftOutlined,
 UndoOutlined
 } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { Button,Empty,Modal,Progress,Space,Spin,Statistic,message } from 'antd';
+import { Button,Modal,Progress,Space,Statistic,message } from 'antd';
+import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import React,{ useMemo, useState } from 'react';
 
 import { Sidebar } from '../../../../home/components/Sidebar';
@@ -127,10 +128,10 @@ export const Part1Page: React.FC = () => {
 
           <S.MainContent>
             {isLoading ? (
-              <div style={{ textAlign: 'center', padding: '3rem', width: '100%' }}><Spin size="large" /></div>
+              <ExamLoading />
             ) : total === 0 ? (
               <div style={{ padding: '3rem', width: '100%' }}>
-                <Empty description="Chưa có câu hỏi Ngữ pháp. Vui lòng quay lại sau." />
+                <ExamEmpty description="Chưa có câu hỏi Ngữ pháp. Vui lòng quay lại sau." />
               </div>
             ) : (
               <>

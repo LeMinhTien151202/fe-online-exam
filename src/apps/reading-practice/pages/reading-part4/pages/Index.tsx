@@ -1,6 +1,7 @@
 import { CheckCircleOutlined,ClockCircleOutlined,LeftOutlined,RightOutlined,RollbackOutlined } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { Badge,Button,Empty,Progress,Select,Space,Spin,Tag } from 'antd';
+import { Badge,Button,Progress,Select,Space,Tag } from 'antd';
+import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
@@ -73,10 +74,10 @@ export const Part4Page: React.FC = () => {
           </S.Header>
 
           {isLoading ? (
-            <div style={{ textAlign: 'center', padding: '3rem' }}><Spin size="large" /></div>
+            <ExamLoading />
           ) : !data ? (
             <div style={{ padding: '3rem' }}>
-              <Empty description="Chưa có câu hỏi cho phần này. Vui lòng quay lại sau." />
+              <ExamEmpty />
             </div>
           ) : (
           <S.MainContent>

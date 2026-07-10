@@ -20,7 +20,7 @@ export const Header = styled.header`
   height: 4.5rem;
   background: #0D2245;
   color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
   z-index: 10;
   flex-shrink: 0;
 `;

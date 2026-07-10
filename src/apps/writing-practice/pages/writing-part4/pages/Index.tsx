@@ -1,5 +1,6 @@
 import { BulbOutlined,CheckSquareOutlined,ClockCircleOutlined,LeftOutlined,RightOutlined } from '@ant-design/icons';
-import { Button, Empty, Space, Spin, Tag } from 'antd';
+import { Button, Space, Tag } from 'antd';
+import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
@@ -87,9 +88,9 @@ export const Part4Page: React.FC = () => {
                 </S.TitleArea>
 
                 {isLoading ? (
-                  <div style={{ textAlign: 'center', padding: '3rem' }}><Spin size="large" /></div>
+                  <ExamLoading />
                 ) : !hasData ? (
-                  <Empty description="Chưa có câu hỏi cho phần này. Vui lòng quay lại sau." />
+                  <ExamEmpty />
                 ) : (
                   <>
                     <S.InstructionBox $borderColor="#3b82f6" className="mb-6 p-4 text-[0.9rem] bg-[#eff6ff] text-[#244b80]">
