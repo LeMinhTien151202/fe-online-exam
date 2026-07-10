@@ -147,7 +147,7 @@ export const OptionCard = styled.div<{ $selected?: boolean; $status?: 'success' 
   border: 1.5px solid ${props => {
     if (props.$status === 'success') return '#10b981';
     if (props.$status === 'error') return '#ef4444';
-    return props.$selected ? '#2563eb' : '#e2e8f0';
+    return props.$selected ? '#3b5b8c' : '#e2e8f0';
   }};
   border-radius: 8px;
   margin-bottom: 12px;
@@ -161,7 +161,7 @@ export const OptionCard = styled.div<{ $selected?: boolean; $status?: 'success' 
   }};
 
   &:hover {
-    border-color: ${props => props.$status && props.$status !== 'default' ? '' : '#2563eb'};
+    border-color: ${props => props.$status && props.$status !== 'default' ? '' : '#3b5b8c'};
     background: ${props => {
       if (props.$status === 'success') return '#ecfdf5';
       if (props.$status === 'error') return '#fef2f2';
@@ -174,7 +174,7 @@ export const OptionCard = styled.div<{ $selected?: boolean; $status?: 'success' 
     color: ${props => {
       if (props.$status === 'success') return '#047857';
       if (props.$status === 'error') return '#b91c1c';
-      return props.$selected ? '#2563eb' : '#0f172a';
+      return props.$selected ? '#3b5b8c' : '#0f172a';
     }};
     margin-right: 24px;
     font-size: 1.1rem;
@@ -244,7 +244,7 @@ export const StyledSelect = styled(Select)<{ $hasValue?: boolean; $status?: 'suc
     border-color: ${props => {
       if (props.$status === 'success') return '#10b981';
       if (props.$status === 'error') return '#ef4444';
-      return props.$hasValue ? '#2563eb' : '#cbd5e1';
+      return props.$hasValue ? '#3b5b8c' : '#cbd5e1';
     }} !important;
     
     background: ${props => {
@@ -412,7 +412,7 @@ export const NavGridButton = styled.button<{
     if (props.$active) return '#1a365d';
     if (props.$isCorrect === 'success') return '#10b981';
     if (props.$isCorrect === 'error') return '#ef4444';
-    if (props.$status === 'answered') return '#1d4ed8';
+    if (props.$status === 'answered') return '#2f4a6b';
     return '#64748b';
   }};
 

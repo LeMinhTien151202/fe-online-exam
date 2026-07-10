@@ -366,7 +366,7 @@ export const ReadingMockTestPage: React.FC = () => {
             return (
               <S.StatementCard key={q.id} $isAnswered={!!answer} $status={isSubmitted ? (isCorrect ? 'success' : 'error') : 'default'}>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                  <Badge count={idx + 1} style={{ backgroundColor: isSubmitted ? (isCorrect ? '#10b981' : '#ef4444') : (answer ? '#2563eb' : '#94a3b8'), color: 'white', fontWeight: 'bold' }} />
+                  <Badge count={idx + 1} style={{ backgroundColor: isSubmitted ? (isCorrect ? '#10b981' : '#ef4444') : (answer ? '#3b5b8c' : '#94a3b8'), color: 'white', fontWeight: 'bold' }} />
                   <div style={{ flex: 1 }}>
                     <Text strong style={{ fontSize: '1rem', color: '#1e293b', display: 'block', marginBottom: '0.5rem', lineHeight: 1.4 }}>{q.text}</Text>
                     <S.StyledRadioGroup optionType="button" buttonStyle="solid" value={answer} onChange={(e) => setP4Answers((prev) => ({ ...prev, [q.id]: e.target.value as string }))} disabled={isSubmitted} style={{ marginTop: '0.25rem' }}>
@@ -571,7 +571,7 @@ export const ReadingMockTestPage: React.FC = () => {
                   {isSubmitted && (
                     <Button type="default" icon={<RollbackOutlined />} size="large" style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', border: '1px solid #cbd5e1' }} onClick={() => navigate({ to: '/reading' })}>Thoát xem lại</Button>
                   )}
-                  <Button type="primary" size="large" style={{ borderRadius: '2rem', fontWeight: 600, background: '#2563eb', borderColor: '#2563eb', padding: '0 1.5rem', boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)' }} onClick={handleNextQuestion} disabled={isLastPart}>Phần tiếp theo <ArrowRightOutlined style={{ fontSize: '12px' }} /></Button>
+                  <Button type="primary" size="large" style={{ borderRadius: '2rem', fontWeight: 600, background: '#3b5b8c', borderColor: '#3b5b8c', padding: '0 1.5rem', boxShadow: '0 4px 6px -1px rgba(59, 91, 140, 0.2)' }} onClick={handleNextQuestion} disabled={isLastPart}>Phần tiếp theo <ArrowRightOutlined style={{ fontSize: '12px' }} /></Button>
                 </Space>
               </S.Footer>
             </>

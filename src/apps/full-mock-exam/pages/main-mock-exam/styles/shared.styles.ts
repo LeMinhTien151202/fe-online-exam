@@ -152,7 +152,7 @@ export const OptionCard = styled.div<{
     ${(props) => {
       if (props.$status === "success") return "#10b981";
       if (props.$status === "error") return "#ef4444";
-      return props.$selected ? "#2563eb" : "#e2e8f0";
+      return props.$selected ? "#3b5b8c" : "#e2e8f0";
     }};
   border-radius: 8px;
   margin-bottom: 12px;
@@ -167,7 +167,7 @@ export const OptionCard = styled.div<{
 
   &:hover {
     border-color: ${(props) =>
-      props.$status && props.$status !== "default" ? "" : "#2563eb"};
+      props.$status && props.$status !== "default" ? "" : "#3b5b8c"};
     background: ${(props) => {
       if (props.$status === "success") return "#ecfdf5";
       if (props.$status === "error") return "#fef2f2";
@@ -180,7 +180,7 @@ export const OptionCard = styled.div<{
     color: ${(props) => {
       if (props.$status === "success") return "#047857";
       if (props.$status === "error") return "#b91c1c";
-      return props.$selected ? "#2563eb" : "#0f172a";
+      return props.$selected ? "#3b5b8c" : "#0f172a";
     }};
     margin-right: 24px;
     font-size: 1.1rem;

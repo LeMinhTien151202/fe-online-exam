@@ -174,14 +174,14 @@ export const NavButton = styled.button<{ $active?: boolean; $answered?: boolean 
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
-  border: 1px solid ${props => props.$active ? '#2563eb' : props.$answered ? '#10b981' : '#cbd5e1'} !important;
-  background: ${props => props.$active ? '#2563eb' : props.$answered ? '#ecfdf5' : '#ffffff'} !important;
+  border: 1px solid ${props => props.$active ? '#3b5b8c' : props.$answered ? '#10b981' : '#cbd5e1'} !important;
+  background: ${props => props.$active ? '#3b5b8c' : props.$answered ? '#ecfdf5' : '#ffffff'} !important;
   color: ${props => props.$active ? '#ffffff' : props.$answered ? '#047857' : '#475569'} !important;
   transition: all 0.2s;
   outline: none;
   
   &:hover {
-    border-color: #2563eb !important;
-    background: ${props => props.$active ? '#2563eb' : '#f8fafc'} !important;
+    border-color: #3b5b8c !important;
+    background: ${props => props.$active ? '#3b5b8c' : '#f8fafc'} !important;
   }
 `;

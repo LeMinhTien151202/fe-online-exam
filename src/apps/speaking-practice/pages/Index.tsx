@@ -249,7 +249,7 @@ export const SpeakingPracticePage: React.FC = () => {
                           fontWeight: 700,
                           background: hasDone ? '#eff6ff' : '#1a365d',
                           borderColor: hasDone ? '#bfdbfe' : '#1a365d',
-                          color: hasDone ? '#1d4ed8' : '#ffffff',
+                          color: hasDone ? '#2f4a6b' : '#ffffff',
                           boxShadow: hasDone ? 'none' : '0 4px 6px -1px rgba(26, 54, 93, 0.15)'
                         }}
                         onClick={() => handleMockClick(mock.id)}

@@ -94,7 +94,7 @@ export const AudioWaveform: React.FC<AudioWaveformProps> = ({ isRecording, audio
       const waves = [
         { amplitude: 22 * volumeMultiplier, frequency: 0.015, speed: 0.08, opacity: 0.25, color: '#3b82f6' },
         { amplitude: 15 * volumeMultiplier, frequency: 0.025, speed: -0.05, opacity: 0.4, color: '#60a5fa' },
-        { amplitude: 8 * volumeMultiplier, frequency: 0.01, speed: 0.03, opacity: 0.8, color: '#2563eb' }
+        { amplitude: 8 * volumeMultiplier, frequency: 0.01, speed: 0.03, opacity: 0.8, color: '#3b5b8c' }
       ];
 
       waves.forEach((wave) => {

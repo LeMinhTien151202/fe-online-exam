@@ -394,11 +394,11 @@ const MainMockExamPage: React.FC = () => {
                         style={{
                             borderRadius: '2rem',
                             fontWeight: 700,
-                            background: activeStep === skills.length - 1 ? '#10b981' : '#2563eb',
-                            borderColor: activeStep === skills.length - 1 ? '#10b981' : '#2563eb',
+                            background: activeStep === skills.length - 1 ? '#10b981' : '#3b5b8c',
+                            borderColor: activeStep === skills.length - 1 ? '#10b981' : '#3b5b8c',
                             padding: '0 2rem',
                             fontSize: '0.95rem',
-                            boxShadow: `0 4px 15px rgba(37, 99, 235, 0.3)`
+                            boxShadow: `0 4px 15px rgba(59, 91, 140, 0.3)`
                         }}
                         onClick={() => handleNextSection(false)}
                     >

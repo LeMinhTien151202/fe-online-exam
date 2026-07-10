@@ -88,14 +88,14 @@ export const ParagraphNumber = styled.div`
   height: 2.25rem;
   border-radius: 50%;
   background: #eff6ff;
-  color: #2563eb;
+  color: #3b5b8c;
   font-weight: bold;
   font-size: 1.125rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 2px 6px rgba(59, 91, 140, 0.1);
 `;
 
 export const QuestionSlot = styled(Card)<{ $isAnswered: boolean; $status?: 'success' | 'error' | 'default' }>`

@@ -121,11 +121,11 @@ export const Part1Page: React.FC = () => {
                       key={idx}
                       onClick={() => handleSelectAnswer(option)}
                       style={{
-                        borderColor: isSelected ? '#2563eb' : '#e2e8f0',
+                        borderColor: isSelected ? '#3b5b8c' : '#e2e8f0',
                         background: isSelected ? '#eff6ff' : '#ffffff'
                       }}
                     >
-                      <div className="option-letter" style={{ color: isSelected ? '#2563eb' : '#0f172a' }}>{letter}</div>
+                      <div className="option-letter" style={{ color: isSelected ? '#3b5b8c' : '#0f172a' }}>{letter}</div>
                       <div className="option-text" style={{ color: isSelected ? '#1a365d' : '#334155', fontWeight: isSelected ? '700' : '500' }}>{option}</div>
                     </S.OptionCard>
                   );
@@ -170,10 +170,10 @@ export const Part1Page: React.FC = () => {
                   style={{
                     borderRadius: '2rem',
                     fontWeight: 600,
-                    background: '#2563eb',
-                    borderColor: '#2563eb',
+                    background: '#3b5b8c',
+                    borderColor: '#3b5b8c',
                     padding: '0 1.5rem',
-                    boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
+                    boxShadow: '0 4px 6px -1px rgba(59, 91, 140, 0.2)'
                   }}
                   onClick={handleNext}
                 >

@@ -170,7 +170,7 @@ export const ListeningPracticePage: React.FC = () => {
                             fontWeight: 700,
                             background: score > 0 ? '#eff6ff' : '#1a365d',
                             borderColor: score > 0 ? '#bfdbfe' : '#1a365d',
-                            color: score > 0 ? '#1d4ed8' : '#ffffff',
+                            color: score > 0 ? '#2f4a6b' : '#ffffff',
                             boxShadow: score > 0 ? 'none' : '0 4px 6px -1px rgba(26, 54, 93, 0.15)',
                           }}
                           onClick={() => handleMockClick(exam.id)}

@@ -340,7 +340,7 @@ export const InlineSentenceSelect = styled(Select)<{
     border-color: ${(props) => {
       if (props.$status === "success") return "#10b981";
       if (props.$status === "error") return "#ef4444";
-      return props.$hasValue ? "#2563eb" : "#cbd5e1";
+      return props.$hasValue ? "#3b5b8c" : "#cbd5e1";
     }} !important;
 
     background: ${(props) => {
@@ -353,7 +353,7 @@ export const InlineSentenceSelect = styled(Select)<{
       border-color: ${(props) => {
         if (props.$status === "success") return "#059669";
         if (props.$status === "error") return "#dc2626";
-        return props.$hasValue ? "#1d4ed8" : "#6366f1";
+        return props.$hasValue ? "#2f4a6b" : "#6366f1";
       }} !important;
     }
   }
@@ -385,7 +385,7 @@ export const InlineSentenceSelect = styled(Select)<{
     color: ${(props) => {
       if (props.$status === "success") return "#059669";
       if (props.$status === "error") return "#dc2626";
-      return props.$hasValue ? "#2563eb" : "#94a3b8";
+      return props.$hasValue ? "#3b5b8c" : "#94a3b8";
     }} !important;
     transition: color 0.2s !important;
     pointer-events: none !important;
@@ -607,7 +607,7 @@ export const StatementCard = styled(Card)<{
       if (props.$status === "success") return "#10b981";
       if (props.$status === "error") return "#ef4444";
       if (props.$isActive) return "#1a365d";
-      return props.$isAnswered ? "#2563eb" : "rgba(0, 0, 0, 0.06)";
+      return props.$isAnswered ? "#3b5b8c" : "rgba(0, 0, 0, 0.06)";
     }};
   background: ${(props) => {
     if (props.$status === "success") return "#f6fdfa";
@@ -644,8 +644,8 @@ export const StyledRadioGroup = styled(Radio.Group)`
 
   .ant-radio-button-wrapper-checked {
     background-color: #eff6ff !important;
-    color: #2563eb !important;
-    border-color: #2563eb !important;
+    color: #3b5b8c !important;
+    border-color: #3b5b8c !important;
   }
 `;
 
@@ -669,7 +669,7 @@ export const ParagraphNumber = styled.div`
   height: 2.25rem;
   border-radius: 50%;
   background: #eff6ff;
-  color: #2563eb;
+  color: #3b5b8c;
   font-weight: bold;
   font-size: 1.125rem;
   display: flex;
@@ -689,7 +689,7 @@ export const QuestionSlot = styled(Card)<{
       if (props.$status === "success") return "#10b981";
       if (props.$status === "error") return "#ef4444";
       if (props.$isActive) return "#1a365d";
-      return props.$isAnswered ? "#2563eb" : "rgba(0, 0, 0, 0.06)";
+      return props.$isAnswered ? "#3b5b8c" : "rgba(0, 0, 0, 0.06)";
     }};
   background: ${(props) => {
     if (props.$status === "success") return "#f6fdfa";
@@ -816,7 +816,7 @@ export const NavGridButton = styled.button<{
     if (props.$active) return "#1a365d";
     if (props.$isCorrect === "success") return "#10b981";
     if (props.$isCorrect === "error") return "#ef4444";
-    if (props.$status === "answered") return "#1d4ed8";
+    if (props.$status === "answered") return "#2f4a6b";
     return "#64748b";
   }};
 

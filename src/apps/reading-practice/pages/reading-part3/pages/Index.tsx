@@ -119,7 +119,7 @@ export const Part3Page: React.FC = () => {
                         style={{
                           backgroundColor: isSubmitted
                             ? (isCorrect ? '#10b981' : '#ef4444')
-                            : (isAnswered ? '#2563eb' : '#94a3b8'),
+                            : (isAnswered ? '#3b5b8c' : '#94a3b8'),
                           color: 'white',
                           fontWeight: 'bold'
                         }}

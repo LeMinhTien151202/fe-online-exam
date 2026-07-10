@@ -579,15 +579,15 @@ export const SubmitButton = styled(Button)`
 export const NextButton = styled(Button)`
   border-radius: 2rem !important;
   font-weight: 600 !important;
-  background: #2563eb !important;
-  border-color: #2563eb !important;
+  background: #3b5b8c !important;
+  border-color: #3b5b8c !important;
   padding: 0 1.5rem !important;
-  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2) !important;
+  box-shadow: 0 4px 6px -1px rgba(59, 91, 140, 0.2) !important;
   color: white !important;
   
   &:hover {
-    background: #1d4ed8 !important;
-    border-color: #1d4ed8 !important;
+    background: #2f4a6b !important;
+    border-color: #2f4a6b !important;
   }
 `;
 

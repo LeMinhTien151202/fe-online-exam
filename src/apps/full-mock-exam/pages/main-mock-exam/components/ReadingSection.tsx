@@ -408,7 +408,7 @@ const ReadingSection = React.forwardRef<ReadingHandle, ReadingSectionProps>(({ d
                                 $isAnswered={!!p4Answers[q.id]}
                             >
                                 <div style={{ display: 'flex', gap: '0.75rem' }}>
-                                    <RS.BadgeNumber style={{ backgroundColor: p4Answers[q.id] ? '#2563eb' : '#eff6ff', color: p4Answers[q.id] ? 'white' : '#244b80', border: p4Answers[q.id] ? 'none' : '1px solid #dbeafe' }}>{idx + 1}</RS.BadgeNumber>
+                                    <RS.BadgeNumber style={{ backgroundColor: p4Answers[q.id] ? '#3b5b8c' : '#eff6ff', color: p4Answers[q.id] ? 'white' : '#244b80', border: p4Answers[q.id] ? 'none' : '1px solid #dbeafe' }}>{idx + 1}</RS.BadgeNumber>
                                     <div style={{ flex: 1 }}>
                                         <Text strong style={{ display: 'block', marginBottom: '0.5rem' }}>{q.text}</Text>
                                         <RS.StyledRadioGroup

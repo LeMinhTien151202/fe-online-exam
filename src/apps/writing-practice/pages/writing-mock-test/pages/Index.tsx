@@ -109,7 +109,7 @@ export const WritingMockTestPage = () => {
     return { band: scoreToBand(percent), percent, fromAi: false };
   })();
 
-  const bandColor = (band: string) => (band === 'C' ? '#10b981' : band.startsWith('B') ? '#2563eb' : '#f59e0b');
+  const bandColor = (band: string) => (band === 'C' ? '#10b981' : band.startsWith('B') ? '#3b5b8c' : '#f59e0b');
 
   // Chưa có kết quả AI (đang chấm) -> chờ, không hiện điểm/đáp án mẫu vội.
   const isGrading = isSubmitted && (isSubmitting || !submitResult);
@@ -602,7 +602,7 @@ export const WritingMockTestPage = () => {
                       Thoát xem lại
                     </Button>
                   )}
-                  <Button type="primary" size="large" style={{ borderRadius: '2rem', fontWeight: 600, background: '#2563eb', borderColor: '#2563eb', padding: '0 1.5rem', boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)' }} onClick={handleNextPart} disabled={partPosition === availableParts.length}>
+                  <Button type="primary" size="large" style={{ borderRadius: '2rem', fontWeight: 600, background: '#3b5b8c', borderColor: '#3b5b8c', padding: '0 1.5rem', boxShadow: '0 4px 6px -1px rgba(59, 91, 140, 0.2)' }} onClick={handleNextPart} disabled={partPosition === availableParts.length}>
                     Phần tiếp theo <ArrowRightOutlined style={{ fontSize: '12px' }} />
                   </Button>
                 </Space>

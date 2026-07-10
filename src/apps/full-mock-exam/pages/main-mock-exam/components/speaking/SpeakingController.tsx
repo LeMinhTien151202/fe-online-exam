@@ -25,7 +25,7 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
     recordingTime,
     onCompleted,
     onReset,
-    statusColor = '#2563eb',
+    statusColor = '#3b5b8c',
     title = ''
 }) => {
     const [step, setStep] = useState<'IDLE' | 'PREPARATION' | 'RECORDING' | 'COMPLETED'>('IDLE');
@@ -385,15 +385,15 @@ const IdleWrapper = styled.div`
 const pulse = keyframes`
   0% {
     transform: scale(0.92);
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.3);
+    box-shadow: 0 0 0 0 rgba(59, 91, 140, 0.3);
   }
   70% {
     transform: scale(1);
-    box-shadow: 0 0 0 12px rgba(37, 99, 235, 0);
+    box-shadow: 0 0 0 12px rgba(59, 91, 140, 0);
   }
   100% {
     transform: scale(0.92);
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+    box-shadow: 0 0 0 0 rgba(59, 91, 140, 0);
   }
 `;
 

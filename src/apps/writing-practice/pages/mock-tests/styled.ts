@@ -181,8 +181,8 @@ export const ModernInput = styled.input<{ $isValid?: boolean; $hasText?: boolean
   transition: all 0.2s;
 
   &:focus {
-    border-color: ${props => props.$hasText && !props.$isValid ? '#ef4444' : '#2563eb'};
-    box-shadow: 0 0 0 3px ${props => props.$hasText && !props.$isValid ? 'rgba(239, 68, 68, 0.15)' : 'rgba(37, 99, 235, 0.15)'};
+    border-color: ${props => props.$hasText && !props.$isValid ? '#ef4444' : '#3b5b8c'};
+    box-shadow: 0 0 0 3px ${props => props.$hasText && !props.$isValid ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 91, 140, 0.15)'};
   }
   
   &:disabled {
@@ -219,8 +219,8 @@ export const ModernTextArea = styled.textarea<{ $isValid?: boolean; $hasText?: b
   transition: all 0.2s;
 
   &:focus {
-    border-color: ${props => props.$hasText && !props.$isValid ? '#ef4444' : '#2563eb'};
-    box-shadow: 0 0 0 3px ${props => props.$hasText && !props.$isValid ? 'rgba(239, 68, 68, 0.15)' : 'rgba(37, 99, 235, 0.15)'};
+    border-color: ${props => props.$hasText && !props.$isValid ? '#ef4444' : '#3b5b8c'};
+    box-shadow: 0 0 0 3px ${props => props.$hasText && !props.$isValid ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 91, 140, 0.15)'};
   }
   
   &:disabled {
@@ -373,7 +373,7 @@ export const NavGridButton = styled.button<{
   
   color: ${props => {
     if (props.$active) return '#1a365d';
-    if (props.$status === 'answered') return '#1d4ed8';
+    if (props.$status === 'answered') return '#2f4a6b';
     return '#64748b';
   }};
 

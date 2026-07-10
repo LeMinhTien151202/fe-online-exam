@@ -250,7 +250,7 @@ export const MockStartButton = styled(Button) <{ $hasScore: boolean }>`
   font-weight: 700 !important;
   background: ${props => props.$hasScore ? '#eff6ff' : '#1a365d'} !important;
   border-color: ${props => props.$hasScore ? '#bfdbfe' : '#1a365d'} !important;
-  color: ${props => props.$hasScore ? '#1d4ed8' : '#ffffff'} !important;
+  color: ${props => props.$hasScore ? '#2f4a6b' : '#ffffff'} !important;
   box-shadow: ${props => props.$hasScore ? 'none' : '0 4px 6px -1px rgba(26, 54, 93, 0.15)'} !important;
   
   &:hover {

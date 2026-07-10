@@ -303,10 +303,10 @@ export const Part3Page: React.FC = () => {
                 style={{
                   borderRadius: '2rem',
                   fontWeight: 600,
-                  background: '#2563eb',
-                  borderColor: '#2563eb',
+                  background: '#3b5b8c',
+                  borderColor: '#3b5b8c',
                   padding: '0 1.5rem',
-                  boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
+                  boxShadow: '0 4px 6px -1px rgba(59, 91, 140, 0.2)'
                 }}
                 onClick={handleNext}
               >

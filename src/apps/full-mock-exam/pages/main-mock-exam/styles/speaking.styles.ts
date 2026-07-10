@@ -11,10 +11,10 @@ export const SubTabContainer = styled.div`
 
 export const SubTab = styled.button<{ $active: boolean; $color?: string }>`
   border: 1px solid
-    ${(props) => (props.$active ? props.$color || "#2563eb" : "#e2e8f0")};
+    ${(props) => (props.$active ? props.$color || "#3b5b8c" : "#e2e8f0")};
   background: ${(props) =>
-    props.$active ? `${props.$color || "#2563eb"}10` : "white"};
-  color: ${(props) => (props.$active ? props.$color || "#2563eb" : "#64748b")};
+    props.$active ? `${props.$color || "#3b5b8c"}10` : "white"};
+  color: ${(props) => (props.$active ? props.$color || "#3b5b8c" : "#64748b")};
   padding: 0.5rem 1.25rem;
   border-radius: 0.375rem;
   font-weight: 700;
@@ -24,8 +24,8 @@ export const SubTab = styled.button<{ $active: boolean; $color?: string }>`
   transition: all 0.2s;
 
   &:hover {
-    border-color: ${(props) => props.$color || "#2563eb"};
-    color: ${(props) => props.$color || "#2563eb"};
+    border-color: ${(props) => props.$color || "#3b5b8c"};
+    color: ${(props) => props.$color || "#3b5b8c"};
   }
 `;
 

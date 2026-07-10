@@ -510,7 +510,7 @@ export const SpeakingMockTestPage = () => {
                       Thoát xem lại
                     </Button>
                   )}
-                  <Button type="primary" size="large" style={{ borderRadius: '2rem', fontWeight: 600, background: '#2563eb', borderColor: '#2563eb', padding: '0 1.5rem', boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)' }} onClick={handleNextStep} disabled={!hasNextStep}>
+                  <Button type="primary" size="large" style={{ borderRadius: '2rem', fontWeight: 600, background: '#3b5b8c', borderColor: '#3b5b8c', padding: '0 1.5rem', boxShadow: '0 4px 6px -1px rgba(59, 91, 140, 0.2)' }} onClick={handleNextStep} disabled={!hasNextStep}>
                     {nextStepIsSamePart ? 'Câu tiếp theo' : 'Phần tiếp theo'} <ArrowRightOutlined style={{ fontSize: '12px' }} />
                   </Button>
                 </Space>

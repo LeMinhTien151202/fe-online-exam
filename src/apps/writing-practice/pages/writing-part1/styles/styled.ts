@@ -583,7 +583,7 @@ export const Subtitle = styled.div`
 
 export const SituationTitle = styled.div`
   font-weight: 800;
-  color: #1d4ed8;
+  color: #2f4a6b;
   margin-bottom: 0.25rem;
   text-transform: uppercase;
   font-size: 0.75rem;

@@ -113,7 +113,7 @@ export const Part4Page: React.FC = () => {
 
                 {/* THÔNG BÁO / TÌNH HUỐNG (CHỈ HIỂN THỊ 1 LẦN Ở TRÊN CÙNG) */}
                 <S.InstructionBox $borderColor="#3b82f6" style={{ marginBottom: '1.5rem', padding: '0.85rem 1.25rem', fontSize: '0.9rem', background: '#eff6ff', color: '#244b80' }}>
-                  <div style={{ fontWeight: 800, color: '#1d4ed8', marginBottom: '0.25rem', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>
+                  <div style={{ fontWeight: 800, color: '#2f4a6b', marginBottom: '0.25rem', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>
                     Tình huống giả định (Club Notification)
                   </div>
                   <div style={{ whiteSpace: 'pre-line', fontWeight: 500, lineHeight: 1.45 }}>
