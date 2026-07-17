@@ -13,9 +13,22 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
+// 5 kỹ năng dùng chung 2 mục con: "Bài tập theo phần" & "Luyện theo bộ đề"
+const SKILL_MENUS = [
+  { key: 'grammar', label: 'Ngữ pháp & Từ vựng', icon: 'spellcheck', path: '/grammar' },
+  { key: 'reading', label: 'Đọc', icon: 'auto_stories', path: '/reading' },
+  { key: 'listening', label: 'Nghe', icon: 'headphones', path: '/listening' },
+  { key: 'speaking', label: 'Nói', icon: 'mic', path: '/speaking' },
+  { key: 'writing', label: 'Viết', icon: 'edit_document', path: '/writing' },
+] as const;
+
 export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
+  // Đọc search từ router state (reactive) thay vì window.location
+  const currentSearch = routerState.location.search as Record<string, unknown>;
+  // Đang ở tab "Luyện theo bộ đề" của kỹ năng này?
+  const isMockTab = (path: string) => currentPath === path && currentSearch?.tab === 'mock-tests';
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const { logout } = useLogout();
@@ -36,12 +49,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
-    doc: currentPath.startsWith('/reading'),
-    nghe: currentPath.startsWith('/listening'),
-    noi: currentPath.startsWith('/speaking'),
-    viet: currentPath.startsWith('/writing')
-  });
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(SKILL_MENUS.map((menu) => [menu.key, currentPath.startsWith(menu.path)]))
+  );
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -59,16 +69,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
   const toggleMenu = (key: string) => {
     if (collapsed) setCollapsed(false);
-    setOpenMenus(prev => {
-      const next: Record<string, boolean> = {
-        doc: false,
-        nghe: false,
-        noi: false,
-        viet: false
-      };
-      next[key] = !prev[key];
-      return next;
-    });
+    setOpenMenus(prev => ({
+      ...Object.fromEntries(SKILL_MENUS.map((menu) => [menu.key, false])),
+      [key]: !prev[key],
+    }));
   };
 
   const toggleUserMenu = () => {
@@ -95,8 +99,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     if (onClose) onClose();
   };
 
-  const handleSkillClick = (skill: 'reading' | 'listening' | 'speaking' | 'grammar' | 'writing') => {
-    navigate({ to: `/${skill}` });
+  // Route kỹ năng chưa khai báo validateSearch nên phải ép kiểu search
+  const goToSkillTab = (path: string, tab?: 'mock-tests') => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    navigate({ to: path, search: tab ? { tab } : {} } as any);
     if (onClose) onClose();
   };
 
@@ -137,81 +143,42 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               <span className="nav-text">Bảng điều khiển</span>
             </S.NavLink>
 
-            <S.NavLink as="div" $active={currentPath === '/grammar'} onClick={() => handleSkillClick('grammar')} $collapsed={collapsed}>
-              <span className="material-symbols-outlined">spellcheck</span>
-              <span className="nav-text">Ngữ pháp & Từ vựng</span>
-            </S.NavLink>
-
-            {/* Mục Đọc */}
-            <S.NavItemWrapper>
-              <S.NavLink as="div" onClick={() => toggleMenu('doc')} $collapsed={collapsed} $active={currentPath.startsWith('/reading')} $isOpen={openMenus.doc}>
-                <span className="material-symbols-outlined">auto_stories</span>
-                <span className="nav-text">Đọc</span>
-                {renderArrow(openMenus.doc)}
-              </S.NavLink>
-              <S.SubMenuWrapper $isOpen={openMenus.doc} $collapsed={collapsed}>
-                <S.NavLink as="div" $isSub $active={currentPath === '/reading'} onClick={() => handleSkillClick('reading')} $collapsed={collapsed}>
-                  <span className="nav-text">Bài tập theo phần</span>
+            {/* 5 kỹ năng: mỗi kỹ năng có 2 mục con thống nhất */}
+            {SKILL_MENUS.map((menu) => (
+              <S.NavItemWrapper key={menu.key}>
+                <S.NavLink
+                  as="div"
+                  onClick={() => toggleMenu(menu.key)}
+                  $collapsed={collapsed}
+                  $active={currentPath.startsWith(menu.path)}
+                  $isOpen={openMenus[menu.key]}
+                >
+                  <span className="material-symbols-outlined">{menu.icon}</span>
+                  <span className="nav-text">{menu.label}</span>
+                  {renderArrow(openMenus[menu.key])}
                 </S.NavLink>
-                <S.NavLink as="div" $isSub $active={currentPath === '/reading' && window.location.search.includes('tab=mock-tests')} onClick={() => {
-                  navigate({ to: '/reading', search: { tab: 'mock-tests' } as any });
-                  if (onClose) onClose();
-                }} $collapsed={collapsed}>
-                  <span className="nav-text">Luyện theo bộ đề</span>
-                </S.NavLink>
-              </S.SubMenuWrapper>
-            </S.NavItemWrapper>
-
-            {/* Mục Nghe */}
-            <S.NavItemWrapper>
-              <S.NavLink as="div" onClick={() => toggleMenu('nghe')} $collapsed={collapsed} $active={currentPath.startsWith('/listening')} $isOpen={openMenus.nghe}>
-                <span className="material-symbols-outlined">headphones</span>
-                <span className="nav-text">Nghe</span>
-                {renderArrow(openMenus.nghe)}
-              </S.NavLink>
-              <S.SubMenuWrapper $isOpen={openMenus.nghe} $collapsed={collapsed}>
-                <S.NavLink as="div" $isSub $active={currentPath.startsWith('/listening')} onClick={() => handleSkillClick('listening')} $collapsed={collapsed}>
-                  <span className="nav-text">Luyện nghe hội thoại</span>
-                </S.NavLink>
-                <S.NavLink as="div" $isSub onClick={onClose} $collapsed={collapsed}>
-                  <span className="nav-text">Luyện nghe thông báo</span>
-                </S.NavLink>
-              </S.SubMenuWrapper>
-            </S.NavItemWrapper>
-
-            {/* Mục Nói */}
-            <S.NavItemWrapper>
-              <S.NavLink as="div" onClick={() => toggleMenu('noi')} $collapsed={collapsed} $active={currentPath.startsWith('/speaking')} $isOpen={openMenus.noi}>
-                <span className="material-symbols-outlined">mic</span>
-                <span className="nav-text">Nói</span>
-                {renderArrow(openMenus.noi)}
-              </S.NavLink>
-              <S.SubMenuWrapper $isOpen={openMenus.noi} $collapsed={collapsed}>
-                <S.NavLink as="div" $isSub $active={currentPath.startsWith('/speaking')} onClick={() => handleSkillClick('speaking')} $collapsed={collapsed}>
-                  <span className="nav-text">Luyện theo câu hỏi</span>
-                </S.NavLink>
-                <S.NavLink as="div" $isSub onClick={onClose} $collapsed={collapsed}>
-                  <span className="nav-text">Mẹo học hay</span>
-                </S.NavLink>
-              </S.SubMenuWrapper>
-            </S.NavItemWrapper>
-
-            {/* Mục Viết */}
-            <S.NavItemWrapper>
-              <S.NavLink as="div" onClick={() => toggleMenu('viet')} $collapsed={collapsed} $active={currentPath.startsWith('/writing')} $isOpen={openMenus.viet}>
-                <span className="material-symbols-outlined">edit_document</span>
-                <span className="nav-text">Viết</span>
-                {renderArrow(openMenus.viet)}
-              </S.NavLink>
-              <S.SubMenuWrapper $isOpen={openMenus.viet} $collapsed={collapsed}>
-                <S.NavLink as="div" $isSub $active={currentPath.startsWith('/writing')} onClick={() => handleSkillClick('writing')} $collapsed={collapsed}>
-                  <span className="nav-text">Bài viết theo phần</span>
-                </S.NavLink>
-                <S.NavLink as="div" $isSub onClick={onClose} $collapsed={collapsed}>
-                  <span className="nav-text">Luyện viết thư</span>
-                </S.NavLink>
-              </S.SubMenuWrapper>
-            </S.NavItemWrapper>
+                <S.SubMenuWrapper $isOpen={openMenus[menu.key]} $collapsed={collapsed}>
+                  <S.NavLink
+                    as="div"
+                    $isSub
+                    $active={currentPath.startsWith(menu.path) && !isMockTab(menu.path)}
+                    onClick={() => goToSkillTab(menu.path)}
+                    $collapsed={collapsed}
+                  >
+                    <span className="nav-text">Bài tập theo phần</span>
+                  </S.NavLink>
+                  <S.NavLink
+                    as="div"
+                    $isSub
+                    $active={isMockTab(menu.path)}
+                    onClick={() => goToSkillTab(menu.path, 'mock-tests')}
+                    $collapsed={collapsed}
+                  >
+                    <span className="nav-text">Luyện theo bộ đề</span>
+                  </S.NavLink>
+                </S.SubMenuWrapper>
+              </S.NavItemWrapper>
+            ))}
           </div>
         </S.NavSection>
 
@@ -221,13 +188,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             <div className="line" />
           </S.SectionTitle>
           <div className="space-y-1">
-            <S.ProLink as="div" onClick={() => {
-              navigate({ to: '/reading', search: { tab: 'mock-tests' } as any });
+            <S.ProLink as="div" $active={currentPath.startsWith('/mock-exam')} onClick={() => {
+              navigate({ to: '/mock-exam' });
               if (onClose) onClose();
             }} $collapsed={collapsed}>
               <span className="material-symbols-outlined">stars</span>
               <span className="nav-text">Thi thử</span>
-              <Badge status="warning" className="ml-auto" />
+              <Badge status="processing" className="ml-auto" />
             </S.ProLink>
             <S.NavLink as="div" $active={currentPath === '/materials'} onClick={() => {
               navigate({ to: '/materials' });

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { message } from 'antd';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import {
+  useAssignQuestionsMutation,
   useExamDetailQuery,
   useRemoveQuestionMutation,
   useReorderQuestionsMutation,
@@ -27,6 +28,7 @@ export const useExamDetail = () => {
   const updatePart = useUpdatePartMutation();
   const reorderQuestions = useReorderQuestionsMutation();
   const removeQuestion = useRemoveQuestionMutation();
+  const assignQuestions = useAssignQuestionsMutation();
 
   // Form sửa tiêu đề/mô tả (nạp từ dữ liệu vừa fetch, điều chỉnh state lúc render)
   const [loadedId, setLoadedId] = useState<number | null>(null);
@@ -67,6 +69,17 @@ export const useExamDetail = () => {
     );
   };
 
+  // Thêm câu hỏi mới vào part: orderIndex nối tiếp sau các câu đã có
+  const handleAddQuestions = (part: IExamPart, questionIds: number[]) => {
+    if (questionIds.length === 0) return;
+    const startIndex = part.questions.length;
+    const questions = questionIds.map((questionId, i) => ({ questionId, orderIndex: startIndex + i }));
+    assignQuestions.mutate(
+      { partId: part.id, questions },
+      { onSuccess: () => message.success(`Đã thêm ${questionIds.length} câu hỏi vào Part ${part.partNumber}.`) }
+    );
+  };
+
   const handleRemoveQuestion = (partId: number, questionId: number) => {
     removeQuestion.mutate(
       { partId, questionId },
@@ -93,11 +106,13 @@ export const useExamDetail = () => {
     description,
     setDescription,
     isSavingInfo: updateExam.isPending,
+    isTogglingActive: toggleActive.isPending,
     goBack: () => navigate({ to: '/admin/exams' }),
     handleSaveInfo,
     handleToggleActive,
     handleSaveDuration,
     handleSavePart,
+    handleAddQuestions,
     handleRemoveQuestion,
     handleMoveQuestion,
   };

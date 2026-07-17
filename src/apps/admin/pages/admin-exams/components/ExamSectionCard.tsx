@@ -13,9 +13,10 @@ interface Props {
   onSavePart: (partId: number, payload: { instruction?: string; audioUrl?: string }) => void;
   onRemoveQuestion: (partId: number, questionId: number) => void;
   onMoveQuestion: (part: IExamPart, index: number, direction: -1 | 1) => void;
+  onAddQuestions: (part: IExamPart, questionIds: number[]) => void;
 }
 
-const ExamSectionCard: React.FC<Props> = ({ section, readOnly, onSaveDuration, onSavePart, onRemoveQuestion, onMoveQuestion }) => {
+const ExamSectionCard: React.FC<Props> = ({ section, readOnly, onSaveDuration, onSavePart, onRemoveQuestion, onMoveQuestion, onAddQuestions }) => {
   const [loadedId, setLoadedId] = useState<number | null>(null);
   const [duration, setDuration] = useState<number>(0);
 
@@ -50,11 +51,13 @@ const ExamSectionCard: React.FC<Props> = ({ section, readOnly, onSaveDuration, o
           <ExamPartEditor
             key={part.id}
             part={part}
+            skillId={section.skillId}
             readOnly={readOnly}
             showAudio={isListening && (part.partNumber === 3 || part.partNumber === 4)}
             onSavePart={onSavePart}
             onRemoveQuestion={onRemoveQuestion}
             onMoveQuestion={onMoveQuestion}
+            onAddQuestions={onAddQuestions}
           />
         ))}
     </Card>

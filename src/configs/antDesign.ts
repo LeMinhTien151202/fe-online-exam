@@ -28,7 +28,7 @@ export const SHADOW = {
   soft: "0 1px 3px rgba(15, 23, 42, 0.05)",
 };
 
-const FONT_FAMILY =
+export const FONT_FAMILY =
   '"Outfit", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
 export const antThemeConfig: ThemeConfig = {

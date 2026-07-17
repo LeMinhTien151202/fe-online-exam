@@ -118,7 +118,7 @@ const CreateExam: React.FC = () => {
         }}
       >
         {currentStep === 0 && (
-          <Card bordered={false} title="Bước 1: Thông tin cơ bản bộ đề">
+          <Card variant="borderless" title="Bước 1: Thông tin cơ bản bộ đề">
             <Row gutter={16}>
               <Col span={24} style={{ marginBottom: 16 }}>
                 <Form.Item label="Loại đề thi" name="type" rules={[{ required: true }]}>

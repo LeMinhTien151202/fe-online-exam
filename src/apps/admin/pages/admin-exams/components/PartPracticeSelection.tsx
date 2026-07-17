@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, List, Button, Typography, Row, Col, Space, Tag, Input, Empty } from 'antd';
-import { PlusOutlined, DeleteOutlined, SearchOutlined, AppstoreAddOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { FE_SKILL_TO_ID, IBankQuestion } from '../services/types';
 
@@ -35,6 +35,7 @@ const PartPracticeSelection: React.FC<Props> = ({
     const bankForPart = bankQuestions.filter((q) => q.skillId === skillId && q.partNumber === partNumber);
     const selectedForPart = selectedQuestions.filter((q) => q.skillId === skillId && q.partNumber === partNumber);
     const selectedKeys = new Set(selectedForPart.map((q) => q.key));
+    const remainingCount = bankForPart.filter((q) => !selectedKeys.has(q.key)).length;
 
     const filteredBank = bankForPart.filter(
         (q) => searchText === '' || q.content.toLowerCase().includes(searchText.toLowerCase())
@@ -124,15 +125,18 @@ const PartPracticeSelection: React.FC<Props> = ({
                         />
                     </div>
 
-                    {/* Nút "+" cấu hình thêm: thêm tất cả câu hỏi của phần */}
+                    {/* Nút "+" phía dưới: thêm toàn bộ câu còn lại của phần (không giới hạn số câu) */}
                     <Button
                         type="dashed"
                         block
-                        icon={<AppstoreAddOutlined />}
+                        icon={<PlusOutlined />}
+                        disabled={remainingCount === 0}
                         onClick={() => handleAddAll(bankForPart)}
-                        style={{ marginTop: '12px', height: '44px', color: ADMIN_COLORS.primary, borderColor: ADMIN_COLORS.primary }}
+                        style={{ marginTop: '12px', height: '44px', color: remainingCount === 0 ? undefined : ADMIN_COLORS.primary, borderColor: remainingCount === 0 ? undefined : ADMIN_COLORS.primary }}
                     >
-                        Thêm tất cả câu hỏi của phần này ({bankForPart.length})
+                        {remainingCount === 0
+                            ? 'Đã thêm tất cả câu hỏi của phần này'
+                            : `Thêm ${remainingCount} câu hỏi còn lại của phần này`}
                     </Button>
                 </Card>
             </Col>

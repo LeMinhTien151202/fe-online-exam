@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { useGrammarSetsQuery } from '../../../services/grammarExamQuery';
 import { grammarParts } from '../services/data';
 import { usePartPracticeProgress } from '../../../../../shared/services/student-exam';
@@ -12,7 +13,7 @@ const GRAMMAR_PART_MAP = [
 
 export const useGrammarLanding = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'parts' | 'mock-tests'>('parts');
+  const { activeTab, setActiveTab } = useLandingTab();
   const navigate = useNavigate();
 
   // Tiến độ luyện theo phần lấy từ server (answered/total).

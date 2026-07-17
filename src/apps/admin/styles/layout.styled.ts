@@ -19,7 +19,8 @@ export const StyledSider = styled(Sider)`
   height: 100dvh;
   z-index: 1001;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease !important;
+  /* Đồng bộ tốc độ thu gọn với sidebar học viên */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
   .ant-layout-sider-children {
     display: flex;
@@ -103,12 +104,17 @@ export const StyledMenu = styled(Menu)`
     line-height: 40px !important;
     display: flex;
     align-items: center;
-    transition: all 0.2s ease !important;
+    /* Đồng bộ hiệu ứng hover/nhấn với sidebar học viên */
+    transition: background-color 0.18s ease, color 0.18s ease, transform 0.1s ease !important;
 
     .anticon {
       font-size: 1.1rem;
       color: rgba(255, 255, 255, 0.7) !important;
-      transition: color 0.2s ease !important;
+      transition: color 0.18s ease !important;
+    }
+
+    &:active {
+      transform: scale(0.98);
     }
 
     &:hover,
@@ -126,12 +132,12 @@ export const StyledMenu = styled(Menu)`
   .ant-menu-submenu-title:hover,
   .ant-menu-item-active,
   .ant-menu-submenu-active {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: #ffffff !important;
   }
 
   .ant-menu-item-selected {
-    background: rgba(255, 255, 255, 0.1) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
     color: #ffffff !important;
 
     .anticon {
@@ -168,16 +174,20 @@ export const StyledMenu = styled(Menu)`
       line-height: 36px !important;
       font-size: 0.875rem;
       color: rgba(255, 255, 255, 0.5) !important;
-      transition: all 0.2s ease !important;
+      transition: background-color 0.18s ease, color 0.18s ease, transform 0.1s ease !important;
+
+      &:active {
+        transform: scale(0.98);
+      }
 
       &:hover,
       &-active {
-        background: rgba(255, 255, 255, 0.05) !important;
+        background: rgba(255, 255, 255, 0.06) !important;
         color: #ffffff !important;
       }
 
       &.ant-menu-item-selected {
-        background: rgba(255, 255, 255, 0.1) !important;
+        background: rgba(255, 255, 255, 0.12) !important;
         color: #ffffff !important;
       }
     }

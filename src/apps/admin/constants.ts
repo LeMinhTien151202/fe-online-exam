@@ -1,4 +1,4 @@
-import { APP_COLORS } from "@/configs/antDesign";
+import { APP_COLORS, FONT_FAMILY, RADIUS, SHADOW } from "@/configs/antDesign";
 
 export const ADMIN_COLORS = {
   sidebarBg: "#0D2245",
@@ -36,13 +36,26 @@ export const ADMIN_THEME = {
     colorWarning: ADMIN_COLORS.warning,
     colorError: ADMIN_COLORS.danger,
     colorInfo: ADMIN_COLORS.info,
-    borderRadius: 12,
-    fontFamily: "'Inter', -apple-system, sans-serif",
+    // Đồng bộ hệ thống thiết kế chung: font Outfit, thang bo góc & bóng tinted
+    borderRadius: RADIUS.md,
+    borderRadiusLG: RADIUS.lg,
+    borderRadiusSM: RADIUS.sm,
+    fontFamily: FONT_FAMILY,
+    boxShadow: SHADOW.card,
+    boxShadowSecondary: SHADOW.card,
   },
   components: {
+    Button: {
+      fontWeight: 600,
+      controlHeight: 36,
+      primaryShadow: "none",
+      defaultShadow: "none",
+      dangerShadow: "none",
+    },
     Card: {
-      colorBorderSecondary: "#cbd5e1",
-      boxShadowTertiary: "0 4px 20px rgba(0, 0, 0, 0.08)",
+      colorBorderSecondary: "#e2e8f0",
+      boxShadowTertiary: SHADOW.card,
+      borderRadiusLG: RADIUS.lg,
     },
   },
 };

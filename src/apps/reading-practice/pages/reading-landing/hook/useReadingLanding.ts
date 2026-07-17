@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
+import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { readingParts } from '../services/data';
 import { useReadingSetsQuery } from '../../../services/readingExamQuery';
 import { usePartPracticeProgress } from '../../../../../shared/services/student-exam';
@@ -15,7 +16,7 @@ const READING_PART_MAP = [
 export const useReadingLanding = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'parts' | 'mock-tests'>('parts');
+  const { activeTab, setActiveTab } = useLandingTab();
 
   // Tiến độ luyện theo phần lấy từ server (answered/total) — thêm câu hỏi thì tiến độ giảm.
   const { progress: readingProgress } = usePartPracticeProgress(3, READING_PART_MAP);

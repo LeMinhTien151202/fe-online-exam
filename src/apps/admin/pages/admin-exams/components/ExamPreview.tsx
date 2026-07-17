@@ -1,8 +1,9 @@
-import React from 'react';
-import { Button, Card, Col, Divider, Row, Space, Tag, Typography } from 'antd';
-import { ThunderboltOutlined, SoundOutlined, PictureOutlined } from '@ant-design/icons';
+import React, { useMemo } from 'react';
+import { Button, Card, Col, Collapse, Divider, Empty, Row, Space, Tag, Typography } from 'antd';
+import { ThunderboltOutlined, SoundOutlined, PictureOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { IBankQuestion } from '../services/types';
+import * as S from '../styles/styled';
 import {
   EssayConfig,
   GapFillConfig,
@@ -16,6 +17,7 @@ import {
   RecordConfig,
   SpeakerAgreementConfig,
   WordBankConfig,
+  questionTypeLabel,
 } from '../../admin-questions/services/types';
 
 const { Text, Paragraph } = Typography;
@@ -31,6 +33,23 @@ interface ExamPreviewProps {
   isPublishing?: boolean;
   onPublish: () => void;
 }
+
+// Tên kỹ năng + màu tag theo skillId (seed BE)
+const SKILL_NAME: Record<number, string> = {
+  1: 'Grammar & Vocabulary',
+  2: 'Nghe (Listening)',
+  3: 'Đọc hiểu (Reading)',
+  4: 'Viết (Writing)',
+  5: 'Nói (Speaking)',
+};
+
+const SKILL_TAG_COLOR: Record<number, string> = {
+  1: 'cyan',
+  2: 'purple',
+  3: 'blue',
+  4: 'green',
+  5: 'orange',
+};
 
 const answerTag = (text: string) => <Tag color="success" style={{ margin: '2px 4px 2px 0' }}>{text}</Tag>;
 const plainTag = (text: string) => <Tag style={{ margin: '2px 4px 2px 0' }}>{text}</Tag>;
@@ -209,6 +228,34 @@ const renderAnswer = (q: IQuestion): React.ReactNode => {
   return null;
 };
 
+// 1 câu hỏi trong bản xem trước: nội dung rút gọn + đáp án
+const PreviewQuestionItem: React.FC<{ item: IBankQuestion; index: number }> = ({ item, index }) => {
+  const raw = item.raw;
+  // Audio chỉ có ở Listening (skillId 2); ảnh chỉ có ở Speaking (skillId 5)
+  const hasAudio = raw?.skillId === 2 && !!raw?.mediaUrl;
+  const hasImages = raw?.skillId === 5 && !!(raw?.extraConfig as unknown as RecordConfig)?.image_count;
+
+  return (
+    <S.PreviewQuestion>
+      <Space size={8} wrap style={{ marginBottom: 6 }}>
+        <Tag color="blue">Câu {index + 1}</Tag>
+        <Tag color="geekblue">{questionTypeLabel(raw?.questionType)}</Tag>
+        {hasAudio && <SoundOutlined style={{ color: ADMIN_COLORS.primary }} />}
+        {hasImages && <PictureOutlined style={{ color: ADMIN_COLORS.primary }} />}
+      </Space>
+      <Paragraph
+        strong
+        style={{ whiteSpace: 'pre-wrap', marginBottom: 8 }}
+        ellipsis={{ rows: 3, expandable: true, symbol: 'Xem thêm' }}
+      >
+        {item.content}
+      </Paragraph>
+      {hasAudio && <audio src={raw.mediaUrl!} controls style={{ width: '100%', marginBottom: 8 }} />}
+      {raw && <S.PreviewAnswerBox>{renderAnswer(raw)}</S.PreviewAnswerBox>}
+    </S.PreviewQuestion>
+  );
+};
+
 const ExamPreview: React.FC<ExamPreviewProps> = ({
   title,
   description,
@@ -220,73 +267,148 @@ const ExamPreview: React.FC<ExamPreviewProps> = ({
   isPublishing,
   onPublish,
 }) => {
-  const durationLabel = String(duration ?? 0).padStart(2, '0');
+  // hh:mm:ss từ số phút (sửa lỗi hiển thị "00:90:00" khi > 60 phút)
+  const durationLabel = useMemo(() => {
+    const mins = duration ?? 0;
+    const hh = String(Math.floor(mins / 60)).padStart(2, '0');
+    const mm = String(mins % 60).padStart(2, '0');
+    return `${hh}:${mm}:00`;
+  }, [duration]);
+
+  // Gom câu hỏi theo Kỹ năng -> Part (đúng thứ tự đề thi thật thay vì thứ tự chọn)
+  const groups = useMemo(() => {
+    const map = new Map<string, { skillId: number; partNumber: number; items: IBankQuestion[] }>();
+    questions.forEach((q) => {
+      const key = `${q.skillId}-${q.partNumber}`;
+      const group = map.get(key) ?? { skillId: q.skillId, partNumber: q.partNumber, items: [] };
+      group.items.push(q);
+      map.set(key, group);
+    });
+    return [...map.values()].sort((a, b) => a.skillId - b.skillId || a.partNumber - b.partNumber);
+  }, [questions]);
+
+  // Thống kê số câu theo kỹ năng cho sidebar
+  const skillCounts = useMemo(() => {
+    const map = new Map<number, number>();
+    questions.forEach((q) => map.set(q.skillId, (map.get(q.skillId) ?? 0) + 1));
+    return [...map.entries()].sort((a, b) => a[0] - b[0]);
+  }, [questions]);
+
+  const collapseItems = groups.map((g) => ({
+    key: `${g.skillId}-${g.partNumber}`,
+    label: (
+      <Space size={8}>
+        <Tag color={SKILL_TAG_COLOR[g.skillId] ?? 'default'} style={{ margin: 0 }}>
+          {SKILL_NAME[g.skillId] ?? `Kỹ năng ${g.skillId}`}
+        </Tag>
+        <Text strong>Part {g.partNumber}</Text>
+        <Text type="secondary">· {g.items.length} câu</Text>
+      </Space>
+    ),
+    children: g.items.map((item, index) => (
+      <PreviewQuestionItem key={item.key} item={item} index={index} />
+    )),
+  }));
+
+  // Ít nhóm (luyện theo phần) -> mở hết; đề nhiều phần -> chỉ mở nhóm đầu cho gọn
+  const defaultActiveKeys =
+    groups.length <= 3 ? collapseItems.map((i) => i.key) : collapseItems.slice(0, 1).map((i) => i.key);
 
   return (
     <Row gutter={16}>
       <Col xs={24} lg={16}>
-        <Card title="Giao diện xem trước bộ đề" bordered={false} style={{ background: '#f8fafc' }}>
-          <div style={{ padding: '1rem', borderBottom: '1px solid #e2e8f0', background: '#ffffff', borderRadius: '8px 8px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Card title="Giao diện xem trước bộ đề" variant="borderless">
+          <S.PreviewExamHeader>
             <Text strong style={{ fontSize: '16px' }}>{title}</Text>
-            <Tag color="red">00:{durationLabel}:00</Tag>
-          </div>
-          <div style={{ padding: '1.5rem', background: '#ffffff', borderRadius: '0 0 8px 8px' }}>
-            <Paragraph style={{ fontStyle: 'italic', color: '#64748b' }}>
-              {description || 'Đề luyện tập này không có mô tả chi tiết...'}
-            </Paragraph>
+            <Tag color="red" icon={<ClockCircleOutlined />} style={{ margin: 0 }}>{durationLabel}</Tag>
+          </S.PreviewExamHeader>
 
-            {questions.length === 0 ? (
-              <Text type="secondary">Chưa có câu hỏi nào được chọn.</Text>
-            ) : (
-              <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                {questions.map((item, index) => {
-                  const raw = item.raw;
-                  // Audio chỉ có ở Listening (skillId 2); ảnh chỉ có ở Speaking (skillId 5)
-                  const hasAudio = raw?.skillId === 2 && !!raw?.mediaUrl;
-                  const hasImages = raw?.skillId === 5 && !!(raw?.extraConfig as unknown as RecordConfig)?.image_count;
-                  return (
-                    <div key={item.key} style={{ paddingBottom: 12, borderBottom: '1px dashed #e2e8f0' }}>
-                      <Space size={8} align="start" style={{ marginBottom: 6 }}>
-                        <Tag color="blue">Câu {index + 1}</Tag>
-                        <Tag color="geekblue">{raw?.questionType}</Tag>
-                        {hasAudio && <SoundOutlined style={{ color: ADMIN_COLORS.primary }} />}
-                        {hasImages && <PictureOutlined style={{ color: ADMIN_COLORS.primary }} />}
-                      </Space>
-                      <Paragraph strong style={{ whiteSpace: 'pre-wrap', marginBottom: 8 }}>{item.content}</Paragraph>
-                      {hasAudio && <audio src={raw.mediaUrl!} controls style={{ width: '100%', marginBottom: 8 }} />}
-                      {raw && renderAnswer(raw)}
-                    </div>
-                  );
-                })}
-              </Space>
-            )}
-          </div>
+          {description && (
+            <Paragraph style={{ fontStyle: 'italic', color: '#64748b' }}>{description}</Paragraph>
+          )}
+
+          {questions.length === 0 ? (
+            <Empty description="Chưa có câu hỏi nào được chọn. Quay lại bước 2 để chọn câu hỏi." />
+          ) : (
+            <Collapse
+              items={collapseItems}
+              defaultActiveKey={defaultActiveKeys}
+              style={{ background: '#ffffff' }}
+            />
+          )}
         </Card>
       </Col>
 
       <Col xs={24} lg={8}>
-        <Card title="Thông tin cấu hình đề" bordered={false}>
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <div><Text type="secondary">Tên đề: </Text><Text strong>{title}</Text></div>
-            <div><Text type="secondary">Phân loại: </Text><Tag color="cyan">{typeLabel}</Tag></div>
-            {skillLabel && <div><Text type="secondary">Kỹ năng: </Text><Tag color="blue">{skillLabel}</Tag></div>}
-            {partLabel && <div><Text type="secondary">Phần: </Text><Tag>{partLabel}</Tag></div>}
-            <div><Text type="secondary">Thời gian làm bài: </Text><Text strong>{duration} phút</Text></div>
-            <div><Text type="secondary">Số lượng câu: </Text><Text strong>{questions.length} câu</Text></div>
-          </Space>
-          <Divider style={{ margin: '16px 0' }} />
-          <Button
-            type="primary"
-            icon={<ThunderboltOutlined />}
-            block
-            size="large"
-            loading={isPublishing}
-            onClick={onPublish}
-            style={{ background: ADMIN_COLORS.primary, borderColor: ADMIN_COLORS.primary }}
-          >
-            XUẤT BẢN ĐỀ THI
-          </Button>
-        </Card>
+        <S.PreviewSticky>
+          <Card title="Thông tin cấu hình đề" variant="borderless">
+            <Space direction="vertical" style={{ width: '100%' }} size={4}>
+              <S.PreviewSummaryRow>
+                <Text type="secondary">Tên đề</Text>
+                <Text strong style={{ textAlign: 'right', maxWidth: '65%' }}>{title}</Text>
+              </S.PreviewSummaryRow>
+              <S.PreviewSummaryRow>
+                <Text type="secondary">Phân loại</Text>
+                <Tag color="cyan" style={{ margin: 0 }}>{typeLabel}</Tag>
+              </S.PreviewSummaryRow>
+              {skillLabel && (
+                <S.PreviewSummaryRow>
+                  <Text type="secondary">Kỹ năng</Text>
+                  <Tag color="blue" style={{ margin: 0 }}>{skillLabel}</Tag>
+                </S.PreviewSummaryRow>
+              )}
+              {partLabel && (
+                <S.PreviewSummaryRow>
+                  <Text type="secondary">Phần</Text>
+                  <Tag style={{ margin: 0 }}>{partLabel}</Tag>
+                </S.PreviewSummaryRow>
+              )}
+              <S.PreviewSummaryRow>
+                <Text type="secondary">Thời gian làm bài</Text>
+                <Text strong>{duration} phút</Text>
+              </S.PreviewSummaryRow>
+              <S.PreviewSummaryRow>
+                <Text type="secondary">Tổng số câu</Text>
+                <Text strong>{questions.length} câu</Text>
+              </S.PreviewSummaryRow>
+            </Space>
+
+            {skillCounts.length > 0 && (
+              <>
+                <Divider style={{ margin: '12px 0' }} />
+                <Text type="secondary" style={{ fontSize: 12 }}>Phân bổ theo kỹ năng</Text>
+                <Space direction="vertical" style={{ width: '100%', marginTop: 4 }} size={2}>
+                  {skillCounts.map(([skillId, count]) => (
+                    <S.PreviewSummaryRow key={skillId}>
+                      <Tag color={SKILL_TAG_COLOR[skillId] ?? 'default'} style={{ margin: 0 }}>
+                        {SKILL_NAME[skillId] ?? `Kỹ năng ${skillId}`}
+                      </Tag>
+                      <Text strong>{count} câu</Text>
+                    </S.PreviewSummaryRow>
+                  ))}
+                </Space>
+              </>
+            )}
+
+            <Divider style={{ margin: '16px 0' }} />
+            <Button
+              type="primary"
+              icon={<ThunderboltOutlined />}
+              block
+              size="large"
+              loading={isPublishing}
+              disabled={questions.length === 0}
+              onClick={onPublish}
+            >
+              XUẤT BẢN ĐỀ THI
+            </Button>
+            {questions.length === 0 && (
+              <Text type="warning" style={{ display: 'block', marginTop: 8, fontSize: 12, textAlign: 'center' }}>
+                Cần ít nhất 1 câu hỏi để xuất bản
+              </Text>
+            )}
+          </Card>
+        </S.PreviewSticky>
       </Col>
     </Row>
   );

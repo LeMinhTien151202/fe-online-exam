@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Input, Button, Space, Typography, List, Upload, message, Tag } from 'antd';
-import { SaveOutlined, UploadOutlined, DeleteOutlined, ArrowUpOutlined, ArrowDownOutlined, SoundOutlined } from '@ant-design/icons';
+import { SaveOutlined, UploadOutlined, DeleteOutlined, ArrowUpOutlined, ArrowDownOutlined, SoundOutlined, PlusOutlined } from '@ant-design/icons';
 import { questionApi } from '../../admin-questions/services/questionApi';
+import { questionTypeLabel } from '../../admin-questions/services/types';
 import { IExamPart } from '../services/types';
+import AddQuestionsModal from './AddQuestionsModal';
 import * as S from './ExamPartEditor.styled';
 
 const { Text } = Typography;
@@ -10,18 +12,21 @@ const { TextArea } = Input;
 
 interface Props {
   part: IExamPart;
+  skillId: number;
   showAudio: boolean;
   readOnly?: boolean;
   onSavePart: (partId: number, payload: { instruction?: string; audioUrl?: string }) => void;
   onRemoveQuestion: (partId: number, questionId: number) => void;
   onMoveQuestion: (part: IExamPart, index: number, direction: -1 | 1) => void;
+  onAddQuestions: (part: IExamPart, questionIds: number[]) => void;
 }
 
-const ExamPartEditor: React.FC<Props> = ({ part, showAudio, readOnly, onSavePart, onRemoveQuestion, onMoveQuestion }) => {
+const ExamPartEditor: React.FC<Props> = ({ part, skillId, showAudio, readOnly, onSavePart, onRemoveQuestion, onMoveQuestion, onAddQuestions }) => {
   const [loadedId, setLoadedId] = useState<number | null>(null);
   const [instruction, setInstruction] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Nạp lại giá trị khi part đổi (điều chỉnh state lúc render thay vì useEffect)
   if (part.id !== loadedId) {
@@ -115,12 +120,37 @@ const ExamPartEditor: React.FC<Props> = ({ part, showAudio, readOnly, onSavePart
           >
             <Space>
               <Text type="secondary">{index + 1}.</Text>
-              {pq.question?.questionType && <Tag>{pq.question.questionType}</Tag>}
+              {pq.question?.questionType && <Tag color="geekblue">{questionTypeLabel(pq.question.questionType)}</Tag>}
               <Text ellipsis style={{ maxWidth: 420 }}>{pq.question?.content ?? `#${pq.questionId}`}</Text>
             </Space>
           </List.Item>
         )}
         />
+
+        {!readOnly && (
+          <>
+            <Button
+              type="dashed"
+              block
+              icon={<PlusOutlined />}
+              onClick={() => setIsAddModalOpen(true)}
+              style={{ marginTop: 8 }}
+            >
+              Thêm câu hỏi từ ngân hàng
+            </Button>
+            <AddQuestionsModal
+              open={isAddModalOpen}
+              skillId={skillId}
+              partNumber={part.partNumber}
+              existingQuestionIds={part.questions.map((q) => q.questionId)}
+              onClose={() => setIsAddModalOpen(false)}
+              onAdd={(questionIds) => {
+                onAddQuestions(part, questionIds);
+                setIsAddModalOpen(false);
+              }}
+            />
+          </>
+        )}
       </S.Block>
     </S.PartWrapper>
   );

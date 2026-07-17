@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Card, Input, Space, Typography, Tag, Spin } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, SaveOutlined, EyeInvisibleOutlined, GlobalOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useExamDetail } from '../hook/useExamDetail';
 import { API_TYPE_TO_UI } from '../services/types';
@@ -26,11 +26,13 @@ const ExamDetail: React.FC = () => {
     description,
     setDescription,
     isSavingInfo,
+    isTogglingActive,
     goBack,
     handleSaveInfo,
     handleToggleActive,
     handleSaveDuration,
     handleSavePart,
+    handleAddQuestions,
     handleRemoveQuestion,
     handleMoveQuestion,
   } = useExamDetail();
@@ -63,19 +65,9 @@ const ExamDetail: React.FC = () => {
             {readOnly ? 'Xem chi tiết đề thi' : 'Chỉnh sửa đề thi'}
           </Title>
           <Tag color="cyan">{UI_TYPE_LABEL[API_TYPE_TO_UI[exam.type]]}</Tag>
-          {readOnly ? (
-            <Tag color={exam.isActive ? 'success' : 'default'}>
-              {exam.isActive ? 'Công khai' : 'Nháp'}
-            </Tag>
-          ) : (
-            <Tag
-              color={exam.isActive ? 'success' : 'default'}
-              style={{ cursor: 'pointer' }}
-              onClick={handleToggleActive}
-            >
-              {exam.isActive ? 'Công khai' : 'Nháp'} (bấm để đổi)
-            </Tag>
-          )}
+          <Tag color={exam.isActive ? 'success' : 'default'}>
+            {exam.isActive ? 'Công khai' : 'Nháp'}
+          </Tag>
         </Space>
       </S.Header>
 
@@ -122,10 +114,42 @@ const ExamDetail: React.FC = () => {
             readOnly={readOnly}
             onSaveDuration={handleSaveDuration}
             onSavePart={handleSavePart}
+            onAddQuestions={handleAddQuestions}
             onRemoveQuestion={handleRemoveQuestion}
             onMoveQuestion={handleMoveQuestion}
           />
         ))}
+
+      {/* Thanh trạng thái Nháp/Công khai đặt cuối trang cho dễ thấy & thao tác */}
+      {!readOnly && (
+        <Card variant="borderless">
+          <S.PublishBar>
+            <Space direction="vertical" size={0}>
+              <Space size={8}>
+                <Text strong>Trạng thái đề thi:</Text>
+                <Tag color={exam.isActive ? 'success' : 'default'} style={{ margin: 0 }}>
+                  {exam.isActive ? 'Công khai' : 'Nháp'}
+                </Tag>
+              </Space>
+              <Text type="secondary">
+                {exam.isActive
+                  ? 'Học viên đang nhìn thấy và có thể làm đề này.'
+                  : 'Đề đang ở chế độ nháp — học viên không nhìn thấy.'}
+              </Text>
+            </Space>
+            <Button
+              type={exam.isActive ? 'default' : 'primary'}
+              danger={exam.isActive}
+              size="large"
+              icon={exam.isActive ? <EyeInvisibleOutlined /> : <GlobalOutlined />}
+              loading={isTogglingActive}
+              onClick={handleToggleActive}
+            >
+              {exam.isActive ? 'Chuyển về nháp (ẩn đề)' : 'Công khai đề thi'}
+            </Button>
+          </S.PublishBar>
+        </Card>
+      )}
     </S.Container>
   );
 };

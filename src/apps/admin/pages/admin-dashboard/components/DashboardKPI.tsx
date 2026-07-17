@@ -12,11 +12,12 @@ interface KPICardProps {
   trend: string;
   trendType: 'up' | 'down' | 'neutral';
   trendLabel: string;
+  loading?: boolean;
 }
 
-export const KPICard: React.FC<KPICardProps> = ({ title, value, icon, trend, trendType, trendLabel }) => {
+export const KPICard: React.FC<KPICardProps> = ({ title, value, icon, trend, trendType, trendLabel, loading }) => {
   return (
-    <Card bordered={false} hoverable>
+    <Card variant="borderless" hoverable loading={loading}>
       <Statistic
         title={<span style={{ color: ADMIN_COLORS.textSecondary, fontWeight: 500 }}>{title}</span>}
         value={value}

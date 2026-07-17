@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ConfigProvider, Breadcrumb, Badge, Button, Drawer, Layout } from 'antd';
 import {
   MenuUnfoldOutlined,
@@ -19,11 +19,45 @@ import { useRouterState, useNavigate, Outlet, Link } from '@tanstack/react-route
 import * as S from '../styles/layout.styled';
 import { ADMIN_THEME, ADMIN_COLORS } from '../constants';
 import { GlobalAdminStyle } from '../styles/GlobalAdminStyle';
+import { useGeneralSettings } from '../pages/admin-settings/hook/useGeneralSettings';
+import { useExamDetailQuery } from '../pages/admin-exams/services/examQuery';
 
 const AdminLayout: React.FC = () => {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const navigate = useNavigate();
+
+  const { generalSettings } = useGeneralSettings();
+
+  // Áp dụng nhận diện nền tảng (tên + favicon) từ cài đặt hệ thống
+  useEffect(() => {
+    document.title = `${generalSettings.appName} · Quản trị`;
+  }, [generalSettings.appName]);
+
+  useEffect(() => {
+    if (!generalSettings.faviconUrl) return;
+    let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = generalSettings.faviconUrl;
+  }, [generalSettings.faviconUrl]);
+
+  // Màu chủ đạo do admin cấu hình sẽ ghi đè token theme của khu vực quản trị
+  const adminTheme = useMemo(
+    () => ({
+      ...ADMIN_THEME,
+      token: { ...ADMIN_THEME.token, colorPrimary: generalSettings.primaryColor || ADMIN_COLORS.primary },
+    }),
+    [generalSettings.primaryColor],
+  );
+
+  // Breadcrumb trang chi tiết đề: hiển thị tên đề thay vì id (dùng cache query của trang chi tiết)
+  const examIdMatch = currentPath.match(/^\/admin\/exams\/(\d+)/);
+  const breadcrumbExamId = examIdMatch ? Number(examIdMatch[1]) : null;
+  const { data: breadcrumbExam } = useExamDetailQuery(breadcrumbExamId);
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -65,7 +99,11 @@ const AdminLayout: React.FC = () => {
       currentAcc += `/${path}`;
 
       let label = path.charAt(0).toUpperCase() + path.slice(1);
-      if (path === 'users') label = 'Người dùng';
+      // Trang chi tiết đề thi: thay id số bằng tên đề
+      if (breadcrumbExamId && path === String(breadcrumbExamId)) {
+        label = breadcrumbExam?.title ?? `Đề #${path}`;
+      }
+      else if (path === 'users') label = 'Người dùng';
       else if (path === 'questions') label = 'Ngân hàng câu hỏi';
       else if (path === 'exams') label = 'Bộ đề thi';
       else if (path === 'materials') label = 'Tài liệu học tập';
@@ -182,8 +220,8 @@ const AdminLayout: React.FC = () => {
   const renderSidebarContent = () => (
     <>
       <S.LogoWrapper $collapsed={collapsed} onClick={() => navigate({ to: '/admin' })}>
-        <img src="/image.png" alt="Aptis Admin Logo" />
-        <span>APTIS ADMIN</span>
+        <img src={generalSettings.logoUrl || '/image.png'} alt={`${generalSettings.appName} Logo`} />
+        <span>{generalSettings.appName}</span>
       </S.LogoWrapper>
       <S.MenuWrapper>
         <S.StyledMenu
@@ -207,7 +245,7 @@ const AdminLayout: React.FC = () => {
   const isMobile = windowWidth < 768;
 
   return (
-    <ConfigProvider theme={ADMIN_THEME}>
+    <ConfigProvider theme={adminTheme}>
       <GlobalAdminStyle />
       <S.StyledLayout>
         {/* Desktop Sider */}
@@ -241,7 +279,7 @@ const AdminLayout: React.FC = () => {
         <Layout
           style={{
             marginLeft: isMobile ? 0 : collapsed ? 64 : 260,
-            transition: 'margin-left 0.2s ease',
+            transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',

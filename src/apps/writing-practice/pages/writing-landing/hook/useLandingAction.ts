@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import React from 'react';
+import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { useWritingSetsQuery } from '../../../services/writingExamQuery';
 import { usePartPracticeProgress } from '../../../../../shared/services/student-exam';
 
@@ -13,7 +14,7 @@ const WRITING_PART_MAP = [
 
 export const useLandingAction = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  const [activeTab, setActiveTab] = React.useState<'parts' | 'mock-tests'>('parts');
+  const { activeTab, setActiveTab } = useLandingTab();
   const navigate = useNavigate();
 
   // Tiến độ luyện theo phần lấy từ server (answered/total).

@@ -12,7 +12,8 @@ export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
   top: 0;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   z-index: 100;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Đồng bộ tốc độ thu gọn với sidebar admin */
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: visible;
   font-family: "Outfit", "Inter", system-ui, sans-serif;
 
@@ -36,12 +37,16 @@ export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
     cursor: pointer;
     z-index: 110;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 
     &:hover {
       background: #3b82f6;
       transform: scale(1.1);
       border-color: #60a5fa;
+    }
+
+    &:active {
+      transform: scale(0.95);
     }
   }
 `;
@@ -51,7 +56,7 @@ export const LogoWrapper = styled.div<{ $collapsed?: boolean }>`
   display: flex;
   align-items: center;
   gap: 1rem;
-  transition: all 0.3s;
+  transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   justify-content: ${(props) => (props.$collapsed ? "center" : "flex-start")};
   position: relative;
   flex-shrink: 0;
@@ -138,10 +143,13 @@ export const NavLink = styled.a<{
   gap: ${(props) => (props.$collapsed ? "0" : "0.75rem")};
   padding: ${(props) => {
     if (props.$collapsed) return "0.75rem 0";
-    return props.$isSub ? "0.5rem 1rem 0.5rem 3.25rem" : "0.75rem 1rem";
+    /* Mục con: text thẳng hàng với label mục cha (giống admin) */
+    return props.$isSub ? "0.5rem 0.75rem 0.5rem 3rem" : "0.75rem 1rem";
   }};
+  margin: ${(props) => (props.$isSub ? "0.125rem 0" : "0")};
   justify-content: ${(props) => (props.$collapsed ? "center" : "flex-start")};
-  border-radius: 0.75rem;
+  /* Bo góc 8px đồng bộ với menu admin */
+  border-radius: 0.5rem;
   color: ${(props) => {
     if (props.$active) return "white";
     if (props.$isSub) return "rgba(255, 255, 255, 0.5)";
@@ -149,19 +157,28 @@ export const NavLink = styled.a<{
   }};
   background: ${(props) =>
     props.$active && !(props.$isOpen && !props.$isSub)
-      ? "rgba(255, 255, 255, 0.1)"
+      ? "rgba(255, 255, 255, 0.12)"
       : "transparent"};
   font-size: ${(props) => (props.$isSub ? "0.8125rem" : "0.875rem")};
   font-weight: 500;
-  transition: all 0.2s ease;
+  /* Chỉ transition thuộc tính cần thiết để tránh giật khi thu gọn (đồng bộ với admin) */
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.1s ease,
+    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), gap 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: ${(props) =>
+      props.$active && !(props.$isOpen && !props.$isSub)
+        ? "rgba(255, 255, 255, 0.12)"
+        : "rgba(255, 255, 255, 0.06)"};
     color: white;
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 
   span.material-symbols-outlined {
@@ -179,7 +196,7 @@ export const NavLink = styled.a<{
     margin-left: auto;
     font-size: 0.625rem;
     color: rgba(255, 255, 255, 0.3);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: ${(props) => (props.$collapsed ? "none" : "block")};
   }
 `;
@@ -188,11 +205,19 @@ export const SubMenuWrapper = styled.div<{
   $isOpen: boolean;
   $collapsed?: boolean;
 }>`
-  max-height: ${(props) =>
-    props.$isOpen && !props.$collapsed ? "18.75rem" : "0"};
+  /* Panel lõm nền tối bọc mục con — giống .ant-menu-sub bên admin */
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 0.5rem;
+  margin-top: ${(props) => (props.$isOpen && !props.$collapsed ? "0.25rem" : "0")};
+  padding: ${(props) => (props.$isOpen && !props.$collapsed ? "0.25rem 0.375rem" : "0 0.375rem")};
+  /* max-height sát nội dung thật (2-3 mục) để đóng/mở không bị trễ */
+  max-height: ${(props) => (props.$isOpen && !props.$collapsed ? "9rem" : "0")};
   opacity: ${(props) => (props.$isOpen && !props.$collapsed ? "1" : "0")};
+  transform: translateY(${(props) => (props.$isOpen && !props.$collapsed ? "0" : "-0.25rem")});
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease,
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
 
@@ -201,13 +226,18 @@ export const SubMenuWrapper = styled.div<{
   }
 `;
 
+/* Nổi bật "Thi thử" bằng dải xanh chủ đạo thay cho viền vàng cũ */
 export const ProLink = styled(NavLink)`
-  background: rgba(251, 191, 36, 0.05);
-  border: 1px solid rgba(251, 191, 36, 0.1);
-  color: #fbbf24;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.18), rgba(59, 130, 246, 0.04));
+  color: #e2e8f0;
+
+  span.material-symbols-outlined {
+    color: #60a5fa;
+  }
 
   &:hover {
-    background: rgba(251, 191, 36, 0.1);
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.28), rgba(59, 130, 246, 0.08));
+    color: white;
   }
 
   .ant-badge {
@@ -261,11 +291,15 @@ export const UserProfileCard = styled.div<{
   align-items: center;
   gap: 0.75rem;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.18s ease, transform 0.1s ease;
   justify-content: ${(props) => (props.$collapsed ? "center" : "flex-start")};
 
+  &:active {
+    transform: scale(0.98);
+  }
+
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
     .avatar {
       box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
       transform: scale(1.05);
@@ -416,11 +450,15 @@ export const MenuItem = styled.div<{ $danger?: boolean }>`
   font-weight: 500;
   color: ${(props) => (props.$danger ? "#f87171" : "rgba(255, 255, 255, 0.7)")};
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.1s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
     color: ${(props) => (props.$danger ? "#ef4444" : "white")};
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 
   span.material-symbols-outlined {

@@ -1,25 +1,70 @@
-import React from 'react';
-import { Card, Tabs, Form, Input, Button, Switch, Upload, Space, Table, InputNumber, Tag, Typography, Row, Col } from 'antd';
-import { SaveOutlined, UploadOutlined, SafetyCertificateOutlined, SettingOutlined, HistoryOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import React, { useEffect } from 'react';
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  Input,
+  InputNumber,
+  Row,
+  Space,
+  Table,
+  Tabs,
+  Tag,
+  Typography,
+  Upload,
+  message,
+} from 'antd';
+import {
+  ClockCircleOutlined,
+  HistoryOutlined,
+  SaveOutlined,
+  SafetyCertificateOutlined,
+  SettingOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
+import { UploadRequestOption } from '@rc-component/upload/lib/interface';
 import { ADMIN_COLORS } from '../../../constants';
-import { useSettings } from '../hook/useSettings';
+import { GeneralSettingsFormValues, useSettings } from '../hook/useSettings';
 import MockDurationSettings from '../components/MockDurationSettings';
 import * as S from '../styles/styled';
 
 const { Title, Text } = Typography;
 
 const SettingsIndex: React.FC = () => {
+  const [form] = Form.useForm<GeneralSettingsFormValues>();
   const {
     activeTab,
     setActiveTab,
     auditLogs,
     packages,
     settingMap,
+    generalSettings,
+    maxUploadMb,
     isLoadingSettings,
     isSavingSetting,
+    isUploadingLogo,
     handleSaveSetting,
     handleSaveGeneral,
+    handleUploadLogo,
   } = useSettings();
+
+  useEffect(() => {
+    form.setFieldsValue(generalSettings);
+  }, [form, generalSettings]);
+
+  const checkUploadSize = (file: File) => {
+    const isWithinLimit = file.size / 1024 / 1024 <= maxUploadMb;
+    if (!isWithinLimit) {
+      message.error(`Tệp vượt quá giới hạn ${maxUploadMb}MB.`);
+    }
+    return isWithinLimit;
+  };
+
+  const handleLogoUpload = async (options: UploadRequestOption) => {
+    const logoUrl = await handleUploadLogo(options);
+    form.setFieldValue('logoUrl', logoUrl);
+  };
 
   return (
     <S.Container>
@@ -27,7 +72,7 @@ const SettingsIndex: React.FC = () => {
         Cài đặt hệ thống
       </Title>
 
-      <Card bordered={false} styles={{ body: { padding: 0 } }} style={{ background: 'transparent', boxShadow: 'none', marginTop: '1rem' }}>
+      <Card variant="borderless" styles={{ body: { padding: 0 } }} style={{ background: 'transparent', boxShadow: 'none', marginTop: '1rem' }}>
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
@@ -48,53 +93,112 @@ const SettingsIndex: React.FC = () => {
               key: 'general',
               label: <Space><SettingOutlined />Cài đặt chung</Space>,
               children: (
-                <Form layout="vertical" onFinish={handleSaveGeneral} style={{ padding: '1.5rem 0' }}>
+                <Form<GeneralSettingsFormValues>
+                  form={form}
+                  layout="vertical"
+                  onFinish={handleSaveGeneral}
+                  style={{ padding: '1.5rem 0' }}
+                  disabled={isLoadingSettings}
+                >
                   <Row gutter={48}>
                     <Col xs={24} lg={12}>
                       <Title level={5} style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ width: 4, height: 16, background: ADMIN_COLORS.primary, borderRadius: 2 }} />
-                        Thông tin cơ bản
+                        Thông tin nền tảng
                       </Title>
-                      <Form.Item label="Tên nền tảng" name="appName" initialValue="Aptis Prep Online">
+
+                      <Form.Item label="Tên nền tảng" name="appName" rules={[{ required: true, message: 'Nhập tên nền tảng' }]}>
                         <Input placeholder="Ví dụ: Aptis Prep Online" />
                       </Form.Item>
-                      <Form.Item label="Mô tả nền tảng" name="appDesc" initialValue="Nền tảng luyện thi thử Aptis tốt nhất Việt Nam">
+
+                      <Form.Item label="Mô tả nền tảng" name="appDescription">
                         <Input.TextArea rows={4} placeholder="Mô tả ngắn gọn về website..." />
                       </Form.Item>
-                      <Form.Item label="Logo nền tảng">
-                        <Upload maxCount={1} beforeUpload={() => false}>
-                          <Button icon={<UploadOutlined />} style={{ borderRadius: '8px' }}>Tải Logo mới</Button>
+
+                      <Row gutter={12}>
+                        <Col xs={24} md={12}>
+                          <Form.Item label="Email hỗ trợ" name="supportEmail" rules={[{ type: 'email', message: 'Email không hợp lệ' }]}>
+                            <Input placeholder="support@example.com" />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                          <Form.Item label="Hotline hỗ trợ" name="supportPhone">
+                            <Input placeholder="090..." />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+
+                      <Form.Item label="Logo nền tảng" name="logoUrl">
+                        <Input placeholder="https://.../logo.png hoặc /image.png" />
+                      </Form.Item>
+
+                      <Space align="start" style={{ marginBottom: '1.5rem' }}>
+                        <Upload
+                          maxCount={1}
+                          accept="image/*"
+                          beforeUpload={checkUploadSize}
+                          customRequest={handleLogoUpload}
+                          showUploadList={false}
+                        >
+                          <Button icon={<UploadOutlined />} loading={isUploadingLogo} style={{ borderRadius: '8px' }}>
+                            Tải logo mới
+                          </Button>
                         </Upload>
+
+                        <Form.Item shouldUpdate noStyle>
+                          {({ getFieldValue }) => {
+                            const logoUrl = getFieldValue('logoUrl') as string | undefined;
+                            return logoUrl ? (
+                              <div style={{ width: 96, height: 48, border: '1px solid #e2e8f0', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', overflow: 'hidden' }}>
+                                <img src={logoUrl} alt="Logo preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                              </div>
+                            ) : null;
+                          }}
+                        </Form.Item>
+                      </Space>
+
+                      <Form.Item label="Favicon URL" name="faviconUrl">
+                        <Input placeholder="https://.../favicon.ico" />
                       </Form.Item>
                     </Col>
 
                     <Col xs={24} lg={12}>
                       <Title level={5} style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ width: 4, height: 16, background: ADMIN_COLORS.primary, borderRadius: 2 }} />
-                        Cấu hình kỹ thuật
+                        Giao diện & vận hành
                       </Title>
-                      <Form.Item label="Màu chủ đạo Primary color (Hex)" name="primaryHex" initialValue="#1a365d">
-                        <Input prefix={<div style={{ width: 16, height: 16, background: '#1a365d', borderRadius: '50%' }} />} />
+
+                      <Row gutter={12}>
+                        <Col xs={24} md={12}>
+                          <Form.Item label="Màu chủ đạo" name="primaryColor" rules={[{ required: true, message: 'Nhập màu chủ đạo' }]}>
+                            <Input prefix={<Form.Item shouldUpdate noStyle>{({ getFieldValue }) => <div style={{ width: 16, height: 16, background: getFieldValue('primaryColor') || '#1a365d', borderRadius: '50%', border: '1px solid #e2e8f0' }} />}</Form.Item>} />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                          <Form.Item label="Màu phụ" name="secondaryColor">
+                            <Input prefix={<Form.Item shouldUpdate noStyle>{({ getFieldValue }) => <div style={{ width: 16, height: 16, background: getFieldValue('secondaryColor') || '#3b5b8c', borderRadius: '50%', border: '1px solid #e2e8f0' }} />}</Form.Item>} />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+
+                      <Form.Item label="Giới hạn dung lượng tệp tin tải lên" name="maxUploadMb" rules={[{ required: true, message: 'Nhập giới hạn upload' }]}>
+                        <InputNumber min={1} max={500} addonAfter="MB" style={{ width: '100%' }} />
                       </Form.Item>
 
-                      <Form.Item label="Giới hạn dung lượng tệp tin tải lên (MB)" name="maxUpload" initialValue={50}>
-                        <InputNumber style={{ width: '100%' }} />
-                      </Form.Item>
-
-                      <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #eef2f6' }}>
-                        <Form.Item label="Tự động gửi email thông báo kết quả thi" name="sendMailNotify" valuePropName="checked" initialValue={true} style={{ marginBottom: '1rem' }}>
-                          <Switch />
-                        </Form.Item>
-
-                        <Form.Item label="Tự động gửi email nhắc nhở học viên hàng ngày" name="sendMailStreak" valuePropName="checked" initialValue={false} style={{ marginBottom: 0 }}>
-                          <Switch />
-                        </Form.Item>
-                      </div>
+                      <Text type="secondary" style={{ display: 'block', marginTop: '1rem' }}>
+                        Tên nền tảng, logo, favicon, màu chủ đạo và giới hạn dung lượng được áp dụng ngay trong khu vực quản trị sau khi lưu. Thông tin hỗ trợ và mô tả được lưu để hiển thị nơi khác khi backend đọc key tương ứng.
+                      </Text>
                     </Col>
                   </Row>
 
                   <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button type="primary" htmlType="submit" icon={<SaveOutlined />} style={{ background: ADMIN_COLORS.primary, height: '40px', padding: '0 2rem', borderRadius: '8px' }}>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      icon={<SaveOutlined />}
+                      loading={isSavingSetting}
+                      style={{ background: ADMIN_COLORS.primary, height: '40px', padding: '0 2rem', borderRadius: '8px' }}
+                    >
                       Lưu cài đặt hệ thống
                     </Button>
                   </div>

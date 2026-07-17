@@ -55,10 +55,10 @@ export const PrimaryButton = styled(Button)`
 export const TableWrapper = styled.div`
   background: white;
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow:
-    0 1px 3px 0 rgba(0, 0, 0, 0.1),
-    0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 6px 16px rgba(15, 23, 42, 0.06);
 
   .ant-table-thead > tr > th {
     background: #f8fafc;

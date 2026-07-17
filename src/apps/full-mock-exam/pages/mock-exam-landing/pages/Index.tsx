@@ -1,26 +1,29 @@
-import React, { useMemo, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import React from 'react';
 import { Empty, Spin } from 'antd';
 import { DashboardLayout } from '../../../../home/components/DashboardLayout';
-import { useMockExamSetsQuery } from '../../../services/mockExamQuery';
+import { useMockExamLanding, TARGET_SCORE } from '../hook/useMockExamLanding';
 import * as S from '../styles/styled';
 
-const history = [
-    { date: '15/06', name: 'Test 01', cefr: 'C', score: 165 },
-    { date: '10/06', name: 'Test 01', cefr: 'B2', score: 143 },
-    { date: '02/06', name: 'Test 02', cefr: 'B2', score: 140 },
-];
+const EMPTY_TEXT: Record<string, string> = {
+    all: 'Chưa có đề thi thử nào được công khai.',
+    new: 'Bạn đã thi hết các đề hiện có. 🎉',
+    taken: 'Bạn chưa thi đề nào — chọn tab "Chưa thi" để bắt đầu.',
+};
 
 const MockExamLandingPage: React.FC = () => {
-    const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('all');
-
-    const { data: examRes, isLoading } = useMockExamSetsQuery();
-    const mockExams = useMemo(() => examRes?.data ?? [], [examRes]);
-
-    const handleStartExam = (id: number) => {
-        navigate({ to: '/mock-exam/main/$testId', params: { testId: String(id) } });
-    };
+    const {
+        isLoading,
+        activeTab,
+        setActiveTab,
+        filteredExams,
+        takenExamIds,
+        latestScores,
+        history,
+        averageScore,
+        cefrLevel,
+        targetProgress,
+        handleStartExam,
+    } = useMockExamLanding();
 
     return (
         <DashboardLayout>
@@ -35,11 +38,16 @@ const MockExamLandingPage: React.FC = () => {
                     <div className="banner-right">
                         <div className="stat-row">
                             <div className="stat-item">
-                                <span className="val">152.0</span>
+                                <span className="val">{averageScore != null ? averageScore.toFixed(1) : '--'}</span>
                                 <span className="label">Điểm Trung Bình</span>
                             </div>
                             <div className="stat-item">
-                                <span className="val" style={{ color: 'rgba(255,255,255,0.4)' }}>B2</span>
+                                <span
+                                    className="val"
+                                    style={cefrLevel ? undefined : { color: 'rgba(255,255,255,0.4)' }}
+                                >
+                                    {cefrLevel ?? '--'}
+                                </span>
                                 <span className="label">Trình độ hiện tại</span>
                             </div>
                         </div>
@@ -47,10 +55,10 @@ const MockExamLandingPage: React.FC = () => {
                         <S.TargetProgressWidget>
                             <div className="progress-info">
                                 <span>Tiến độ mục tiêu</span>
-                                <span className="target">Mục tiêu C · 180</span>
+                                <span className="target">Mục tiêu C · {TARGET_SCORE} điểm</span>
                             </div>
                             <div className="progress-rail">
-                                <div className="progress-fill" style={{ width: '82%' }}></div>
+                                <div className="progress-fill" style={{ width: `${targetProgress}%` }}></div>
                             </div>
                         </S.TargetProgressWidget>
                     </div>
@@ -67,55 +75,67 @@ const MockExamLandingPage: React.FC = () => {
 
                         {isLoading ? (
                             <div style={{ textAlign: 'center', padding: '3rem' }}><Spin size="large" /></div>
-                        ) : mockExams.length === 0 ? (
+                        ) : filteredExams.length === 0 ? (
                             <div style={{ padding: '2rem' }}>
-                                <Empty description="Chưa có đề thi thử nào được công khai." />
+                                <Empty description={EMPTY_TEXT[activeTab]} />
                             </div>
                         ) : (
-                            mockExams.map((exam, idx) => (
-                                <S.TestCard key={exam.id}>
-                                    <div className="index">{String(idx + 1).padStart(2, '0')}</div>
-                                    <div className="info">
-                                        <div className="top">
-                                            <h3>{exam.title}</h3>
+                            filteredExams.map((exam, idx) => {
+                                const latestScore = latestScores.get(exam.id);
+                                const isTaken = takenExamIds.has(exam.id);
+                                return (
+                                    <S.TestCard key={exam.id}>
+                                        <div className="index">{String(idx + 1).padStart(2, '0')}</div>
+                                        <div className="info">
+                                            <div className="top">
+                                                <h3>{exam.title}</h3>
+                                            </div>
+                                            <div className="meta">
+                                                {exam._count?.sections ?? 0} kỹ năng{exam.description ? ` · ${exam.description}` : ''}
+                                            </div>
                                         </div>
-                                        <div className="meta">
-                                            {exam._count?.sections ?? 0} kỹ năng{exam.description ? ` · ${exam.description}` : ''}
+                                        <div className="score-display">
+                                            <div className="big">
+                                                {latestScore != null ? Math.round(latestScore) : '--'}
+                                                <span>/100</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="score-display">
-                                        <div className="big">--<span>/200</span></div>
-                                    </div>
-                                    <S.ActionButton
-                                        className="primary"
-                                        onClick={() => handleStartExam(exam.id)}
-                                    >
-                                        Bắt đầu
-                                    </S.ActionButton>
-                                </S.TestCard>
-                            ))
+                                        <S.ActionButton
+                                            className="primary"
+                                            onClick={() => handleStartExam(exam.id)}
+                                        >
+                                            {isTaken ? 'Thi lại' : 'Bắt đầu'}
+                                        </S.ActionButton>
+                                    </S.TestCard>
+                                );
+                            })
                         )}
                     </S.TestListSection>
 
-                    {/* Right Column - Skill & History */}
+                    {/* Right Column - History */}
                     <div>
-
-
                         <S.SidebarCard>
                             <h4>Lịch sử thi</h4>
                             <S.HistoryList>
-                                {history.map((h, i) => (
-                                    <div className="history-item" key={i}>
-                                        <div className="left">
-                                            <span className="date">{h.date}</span>
-                                            <span className="name">{h.name}</span>
+                                {history.length === 0 ? (
+                                    <Empty
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                        description="Chưa có lần thi nào."
+                                    />
+                                ) : (
+                                    history.map((item) => (
+                                        <div className="history-item" key={item.id}>
+                                            <div className="left">
+                                                <span className="date">{item.date}</span>
+                                                <span className="name">{item.name}</span>
+                                            </div>
+                                            <div className="right">
+                                                {item.cefr && <span className="cefr">{item.cefr}</span>}
+                                                <span className="score">{item.score != null ? Math.round(item.score) : '--'}</span>
+                                            </div>
                                         </div>
-                                        <div className="right">
-                                            <span className="cefr">{h.cefr}</span>
-                                            <span className="score">{h.score}</span>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </S.HistoryList>
                         </S.SidebarCard>
                     </div>

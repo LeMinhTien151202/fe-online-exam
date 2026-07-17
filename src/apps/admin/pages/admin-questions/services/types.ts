@@ -11,6 +11,20 @@ export type QuestionType =
   | 'ESSAY'
   | 'RECORD';
 
+// Label tiếng Việt cho loại câu hỏi — hiển thị cho người dùng thay enum thô
+export const QUESTION_TYPE_LABEL: Record<QuestionType, string> = {
+  MC: 'Trắc nghiệm',
+  ORDERING: 'Sắp xếp câu',
+  WORD_BANK: 'Ngân hàng từ',
+  HEADING_MATCH: 'Ghép tiêu đề',
+  SPEAKER_MATCH: 'Ghép người nói',
+  ESSAY: 'Tự luận',
+  RECORD: 'Ghi âm',
+};
+
+export const questionTypeLabel = (type?: string | null): string =>
+  (type && QUESTION_TYPE_LABEL[type as QuestionType]) || type || '';
+
 // Kỹ năng: id cố định theo seed BE
 export const SKILL_ID = {
   grammar: 1,
