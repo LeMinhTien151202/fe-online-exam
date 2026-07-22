@@ -97,9 +97,22 @@ export const usePart2 = () => {
 
   const keyOf = (sub: number) => `${safeSet}-${sub}`;
   const handleRecordComplete = (audioUrl: string | null) => {
-    setAnswers((prev) => ({ ...prev, [keyOf(currentSubIndex)]: audioUrl || 'recorded_mock' }));
+    setAnswers((prev) => ({ ...prev, [keyOf(currentSubIndex)]: audioUrl ?? '' }));
   };
   const isSubDone = (sub: number) => !!answers[keyOf(sub)];
+
+  const goTo = (setIdx: number) => {
+    setCurrentSetIndex(setIdx);
+    setCurrentSubIndex(1);
+    resetSub();
+  };
+  // Bảng câu hỏi: mỗi bộ = 1 nút; trạng thái theo số câu con đã thu âm.
+  const boardItems = sets.map((set, i) => {
+    const filled = set.questions.filter((_, qi) => answers[`${i}-${qi + 1}`]).length;
+    const status: 'unanswered' | 'partial' | 'answered' =
+      filled === 0 ? 'unanswered' : filled >= set.questions.length ? 'answered' : 'partial';
+    return { key: i, label: i + 1, status };
+  });
 
   let answeredCount = 0;
   for (let s = 1; s <= totalSubQuestions; s++) if (isSubDone(s)) answeredCount++;
@@ -136,5 +149,8 @@ export const usePart2 = () => {
     currentSetNumber: safeSet + 1,
     hasNext: !isLast,
     hasPrev: !isFirst,
+    goTo,
+    boardItems,
+    activeSetIndex: safeSet,
   };
 };

@@ -14,7 +14,10 @@ import * as HomeS from '../../../../home/pages/styled';
 import { Part1Data, Part2Data } from '../../../services/mappers';
 import { useMockTest } from '../hook/useMockTest';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
+import { percentToBand, singleSkillScore } from '../../../../../shared/utils/skillScore';
 import * as S from '../styles/styled';
+
+const READING_SKILL_ID = 3;
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -82,6 +85,7 @@ export const ReadingMockTestPage: React.FC = () => {
     isSubmitted,
     showReport,
     setShowReport,
+    submitResult,
     handleManualSubmit,
     handleRetry,
 
@@ -99,7 +103,6 @@ export const ReadingMockTestPage: React.FC = () => {
     totalAnsweredCount,
 
     calculateScores,
-    getAptisLevel,
   } = useMockTest(testId);
 
   // ==================== LOADING / ERROR ====================
@@ -497,6 +500,13 @@ export const ReadingMockTestPage: React.FC = () => {
   const { totalScore } = scores;
   const partPosition = availableParts.indexOf(activePart) + 1;
 
+  // Band CEFR kỹ năng Đọc (skillId 3) theo ĐÚNG bảng quy đổi 0–50: ưu tiên kết quả BE,
+  // fallback suy từ % đúng cục bộ (giá trị bằng nhau vì Đọc là trắc nghiệm).
+  const readingPercent = totalQuestions > 0 ? (totalScore / totalQuestions) * 100 : 0;
+  const beSkill = submitResult ? singleSkillScore(submitResult, READING_SKILL_ID) : null;
+  const readingBand = beSkill?.cefr ?? percentToBand(READING_SKILL_ID, readingPercent).cefr;
+  const readingScaled = beSkill?.scaled ?? percentToBand(READING_SKILL_ID, readingPercent).scaled;
+
   return (
     <HomeS.MainLayout>
       <Sidebar />
@@ -536,7 +546,7 @@ export const ReadingMockTestPage: React.FC = () => {
                   <Progress type="circle" percent={Math.round((totalScore / totalQuestions) * 100)} size={140} strokeWidth={10} strokeColor="#10b981" format={() => (<S.ScoreLabel><span className="score-val">{totalScore}</span><span className="score-max">/ {totalQuestions} câu</span></S.ScoreLabel>)} />
                 </S.ScoreRingWrapper>
                 <S.ReportGrid>
-                  <S.ReportStatItem><span className="stat-label">Cấp độ Đọc</span><span className="stat-value">{getAptisLevel(totalScore)}</span></S.ReportStatItem>
+                  <S.ReportStatItem><span className="stat-label">CEFR Đọc (ước lượng)</span><span className="stat-value">{readingBand ? `${readingBand} · ${readingScaled}/50` : 'Chưa xếp loại'}</span></S.ReportStatItem>
                   <S.ReportStatItem><span className="stat-label">Tỷ lệ đúng</span><span className="stat-value">{Math.round((totalScore / totalQuestions) * 100)}%</span></S.ReportStatItem>
                   <S.ReportStatItem><span className="stat-label">Đã trả lời</span><span className="stat-value">{totalAnsweredCount} / {totalQuestions} câu</span></S.ReportStatItem>
                   <S.ReportStatItem><span className="stat-label">Số câu đúng</span><span className="stat-value">{totalScore} câu</span></S.ReportStatItem>

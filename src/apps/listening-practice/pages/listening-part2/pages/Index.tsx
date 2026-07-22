@@ -11,6 +11,7 @@ import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import { AudioPlayer } from '../../../components/AudioPlayer';
+import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import { usePart2Action } from '../hook/usePart2Action';
 
 export const Part2Page: React.FC = () => {
@@ -30,7 +31,10 @@ export const Part2Page: React.FC = () => {
     handleSubmit,
     answeredCount,
     progressPercent,
-    formatTime
+    formatTime,
+    boardItems,
+    activeSetIndex,
+    goTo
   } = usePart2Action();
 
   return (
@@ -67,7 +71,7 @@ export const Part2Page: React.FC = () => {
             </Space>
           </S.Header>
 
-          <S.MainContent>
+          <S.MainContent $hasBoard={hasData && setCount > 1}>
             {isLoading ? (
               <ExamLoading />
             ) : !hasData ? (
@@ -109,6 +113,16 @@ export const Part2Page: React.FC = () => {
                 })}
               </div>
             </S.ContentCard>
+            )}
+            {hasData && setCount > 1 && (
+              <QuestionBoard
+                items={boardItems}
+                activeKey={activeSetIndex}
+                onJump={goTo}
+                sectionLabel="Danh sách bài"
+                showPartial
+                answeredLabel="Đã trả lời đủ"
+              />
             )}
           </S.MainContent>
 

@@ -5,6 +5,7 @@ import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { SampleAnswerModal } from '../../writing-part1/components/SampleAnswerModal';
+import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import * as S from '../../writing-part1/styles/styled';
 import { usePart3Action } from '../hook/usePart3Action';
 
@@ -29,7 +30,10 @@ export const Part3Page: React.FC = () => {
     hasNext,
     hasPrev,
     handleNext,
-    handlePrev
+    handlePrev,
+    goTo,
+    boardItems,
+    activeSetIndex
   } = usePart3Action();
 
   const [showSample, setShowSample] = React.useState(false);
@@ -59,7 +63,7 @@ export const Part3Page: React.FC = () => {
             </S.TimerWrapper>
           </S.Header>
 
-          <S.MainContent>
+          <S.MainContent $hasBoard={total > 1}>
             <S.CenteredContainer className="max-w-[900px]">
               <S.ContentCard className="py-2">
                 <S.TitleArea className="mb-5">
@@ -133,6 +137,18 @@ export const Part3Page: React.FC = () => {
                 )}
               </S.ContentCard>
             </S.CenteredContainer>
+
+            {total > 1 && (
+              <QuestionBoard
+                items={boardItems}
+                activeKey={activeSetIndex}
+                onJump={goTo}
+                sectionLabel="Danh sách đề"
+                showPartial
+                answeredLabel="Đã nộp"
+                partialLabel="Đang viết"
+              />
+            )}
           </S.MainContent>
 
           <S.Footer>

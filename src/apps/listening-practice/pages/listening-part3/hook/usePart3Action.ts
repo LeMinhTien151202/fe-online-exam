@@ -51,6 +51,15 @@ export const usePart3Action = () => {
 
   const handleNext = () => { if (safeSet < setCount - 1) setCurrentSetIndex(safeSet + 1); };
   const handlePrev = () => { if (safeSet > 0) setCurrentSetIndex(safeSet - 1); else navigate({ to: '/listening' }); };
+  const goTo = (idx: number) => setCurrentSetIndex(idx);
+
+  // Bảng câu hỏi: mỗi bộ = 1 nút; trạng thái theo số statement đã chọn của bộ.
+  const boardItems = sets.map((set, i) => {
+    const filled = set.statements.filter((st) => answers[`${i}-${st.id}`]).length;
+    const status: 'unanswered' | 'partial' | 'answered' =
+      filled === 0 ? 'unanswered' : filled >= set.statements.length ? 'answered' : 'partial';
+    return { key: i, label: i + 1, status };
+  });
 
   const handleSubmit = () => {
     confirmSubmitExam({ onOk: doSubmit });
@@ -98,6 +107,9 @@ export const usePart3Action = () => {
     handleSubmit,
     answeredCount,
     progressPercent,
-    formatTime
+    formatTime,
+    boardItems,
+    activeSetIndex: safeSet,
+    goTo,
   };
 };

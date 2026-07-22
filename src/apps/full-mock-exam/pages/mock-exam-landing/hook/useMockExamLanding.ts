@@ -1,22 +1,15 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useMyAttemptsQuery } from '@/shared/services/student-exam';
+import { IAttemptItem, useMyAttemptsQuery } from '@/shared/services/student-exam';
 import { useMockExamSetsQuery } from '../../../services/mockExamQuery';
 
 export type MockExamTab = 'all' | 'new' | 'taken';
 
-// Ngưỡng CEFR ước lượng theo thang điểm 0-100 của BE (score tổng khi nộp MOCK_TEST)
-const cefrFromScore = (score: number | null): string | null => {
-  if (score == null) return null;
-  if (score >= 85) return 'C';
-  if (score >= 70) return 'B2';
-  if (score >= 55) return 'B1';
-  if (score >= 40) return 'A2';
-  return 'A1';
-};
-
-// Mục tiêu mặc định: đạt CEFR C (85/100)
+// Mục tiêu mặc định: đạt CEFR C (85/100 điểm tổng)
 export const TARGET_SCORE = 85;
+
+// BE đổi examSetId -> examId (+ exam{}); đọc linh hoạt để tương thích ngược.
+const attemptExamId = (att: IAttemptItem) => att.examSetId ?? att.examId ?? att.exam?.id;
 
 export const useMockExamLanding = () => {
   const navigate = useNavigate();
@@ -29,7 +22,14 @@ export const useMockExamLanding = () => {
   const attempts = useMemo(() => attemptsRes?.result ?? [], [attemptsRes]);
 
   // Các đề đã từng nộp (kể cả attempt chưa có điểm)
-  const takenExamIds = useMemo(() => new Set(attempts.map((att) => att.examSetId)), [attempts]);
+  const takenExamIds = useMemo(() => {
+    const set = new Set<number>();
+    attempts.forEach((att) => {
+      const id = attemptExamId(att);
+      if (id != null) set.add(id);
+    });
+    return set;
+  }, [attempts]);
 
   // Điểm lần thi GẦN NHẤT theo từng đề (duyệt tăng dần, lần sau ghi đè lần trước)
   const latestScores = useMemo(() => {
@@ -37,7 +37,8 @@ export const useMockExamLanding = () => {
     [...attempts]
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
       .forEach((att) => {
-        if (att.totalScore != null) map.set(att.examSetId, att.totalScore);
+        const id = attemptExamId(att);
+        if (id != null && att.totalScore != null) map.set(id, att.totalScore);
       });
     return map;
   }, [attempts]);
@@ -48,25 +49,34 @@ export const useMockExamLanding = () => {
     return mockExams;
   }, [mockExams, activeTab, takenExamIds]);
 
-  // Lịch sử thi gần nhất (tối đa 6 dòng), gắn tên đề từ danh sách
+  // Lịch sử thi gần nhất (tối đa 6 dòng), gắn tên đề từ danh sách hoặc `exam{}` của attempt
   const titleById = useMemo(() => new Map(mockExams.map((exam) => [exam.id, exam.title])), [mockExams]);
   const history = useMemo(
     () =>
       [...attempts]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 6)
-        .map((att) => ({
-          id: att.id,
-          date: new Date(att.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
-          name: titleById.get(att.examSetId) ?? `Đề #${att.examSetId}`,
-          score: att.totalScore,
-          cefr: cefrFromScore(att.totalScore),
-        })),
+        .map((att) => {
+          const id = attemptExamId(att);
+          return {
+            id: att.id,
+            date: new Date(att.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
+            name: att.exam?.title ?? (id != null ? titleById.get(id) : undefined) ?? `Đề #${id ?? '?'}`,
+            score: att.totalScore,
+            cefr: att.overallCefr ?? null, // CEFR thật từ BE (null nếu còn chờ chấm tay)
+          };
+        }),
     [attempts, titleById],
   );
 
   const averageScore = attemptsRes?.averageMockScore ?? null;
-  const cefrLevel = cefrFromScore(averageScore);
+  // "Trình độ hiện tại" = CEFR tổng của lần thi gần nhất có xếp loại.
+  const cefrLevel = useMemo(() => {
+    const latest = [...attempts]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .find((att) => att.overallCefr);
+    return latest?.overallCefr ?? null;
+  }, [attempts]);
   const targetProgress =
     averageScore != null ? Math.min(100, Math.round((averageScore / TARGET_SCORE) * 100)) : 0;
 

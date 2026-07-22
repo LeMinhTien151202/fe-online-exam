@@ -59,7 +59,7 @@ export const usePart1 = () => {
 
   const handleSubmit = () => {
     confirmSubmitExam({
-      unansweredCount: total - Object.keys(answers).length,
+      unansweredCount: total - Object.values(answers).filter((v) => !!v).length,
       totalQuestions: total,
       onOk: doSubmit,
     });
@@ -81,11 +81,11 @@ export const usePart1 = () => {
   };
 
   const handleRecordComplete = (audioUrl: string | null) => {
-    setAnswers((prev) => ({ ...prev, [safeIndex]: audioUrl || 'recorded_mock' }));
+    setAnswers((prev) => ({ ...prev, [safeIndex]: audioUrl ?? '' }));
   };
 
   const currentQuestion = questions[safeIndex - 1] ?? { id: 0, questionText: '', sampleAnswers: [] };
-  const answeredCount = Object.keys(answers).length;
+  const answeredCount = Object.values(answers).filter((v) => !!v).length;
   const progressPercent = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
 
   return {

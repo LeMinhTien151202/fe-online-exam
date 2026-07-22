@@ -11,6 +11,7 @@ import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import { AudioPlayer } from '../../../components/AudioPlayer';
+import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import { usePart4Action } from '../hook/usePart4Action';
 
 export const Part4Page: React.FC = () => {
@@ -31,7 +32,10 @@ export const Part4Page: React.FC = () => {
     totalSub,
     progressPercent,
     currentGroup,
-    formatTime
+    formatTime,
+    boardItems,
+    activeGroupIndex,
+    goTo
   } = usePart4Action();
 
   return (
@@ -68,7 +72,7 @@ export const Part4Page: React.FC = () => {
             </Space>
           </S.Header>
 
-          <S.MainContent>
+          <S.MainContent $hasBoard={hasData && groupCount > 1}>
             {isLoading ? (
               <ExamLoading />
             ) : !hasData ? (
@@ -112,6 +116,16 @@ export const Part4Page: React.FC = () => {
                 </S.QuestionBlock>
               ))}
             </S.ContentCard>
+            )}
+            {hasData && groupCount > 1 && (
+              <QuestionBoard
+                items={boardItems}
+                activeKey={activeGroupIndex}
+                onJump={goTo}
+                sectionLabel="Danh sách bài"
+                showPartial
+                answeredLabel="Đã trả lời đủ"
+              />
             )}
           </S.MainContent>
 

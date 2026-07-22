@@ -14,6 +14,7 @@ import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import { SpeakingController } from '../../speaking-part1/components/SpeakingController';
+import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import { usePart2 } from '../hook/usePart2';
 
 export const Part2Page: React.FC = () => {
@@ -41,6 +42,9 @@ export const Part2Page: React.FC = () => {
     totalSubQuestions,
     answeredCount,
     progressPercent,
+    goTo,
+    boardItems,
+    activeSetIndex,
   } = usePart2();
 
   return (
@@ -77,7 +81,7 @@ export const Part2Page: React.FC = () => {
             </Space>
           </S.Header>
 
-          <S.MainContent>
+          <S.MainContent $hasBoard={hasData && setCount > 1}>
             {isLoading ? (
               <ExamLoading />
             ) : !hasData ? (
@@ -134,6 +138,8 @@ export const Part2Page: React.FC = () => {
                   recordingTime={45} // Ghi âm 45 giây
                   statusColor="#059669"
                   title={`p2-q${currentSubIndex}`}
+                  uploadPrefix="speaking/part/p2"
+                  autoUpload
                   onCompleted={handleRecordComplete}
                 />
                 {/* Collapsible Sample Answer */}
@@ -175,6 +181,17 @@ export const Part2Page: React.FC = () => {
                 )}
               </S.RightColumn>
             </S.ContentGrid>
+            )}
+            {hasData && setCount > 1 && (
+              <QuestionBoard
+                items={boardItems}
+                activeKey={activeSetIndex}
+                onJump={goTo}
+                sectionLabel="Danh sách bộ"
+                showPartial
+                answeredLabel="Đã thu âm đủ"
+                unansweredLabel="Chưa thu âm"
+              />
             )}
           </S.MainContent>
 

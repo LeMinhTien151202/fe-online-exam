@@ -47,6 +47,15 @@ export const usePart2Action = () => {
   const handleNext = () => { if (safeSet < setCount - 1) goSet(safeSet + 1); };
   const handlePrev = () => { if (safeSet > 0) goSet(safeSet - 1); else navigate({ to: '/listening' }); };
 
+  // Bảng câu hỏi: mỗi bộ = 1 nút; trạng thái theo số speaker đã chọn của bộ.
+  const boardItems = sets.map((set, i) => {
+    let filled = 0;
+    for (let sp = 1; sp <= set.speakerCount; sp += 1) if (answers[`${i}-${sp}`]) filled += 1;
+    const status: 'unanswered' | 'partial' | 'answered' =
+      filled === 0 ? 'unanswered' : filled >= set.speakerCount ? 'answered' : 'partial';
+    return { key: i, label: i + 1, status };
+  });
+
   const handleSubmit = () => {
     confirmSubmitExam({ onOk: doSubmit });
   };
@@ -95,6 +104,9 @@ export const usePart2Action = () => {
     handleSubmit,
     answeredCount,
     progressPercent,
-    formatTime
+    formatTime,
+    boardItems,
+    activeSetIndex: safeSet,
+    goTo: goSet,
   };
 };

@@ -12,6 +12,7 @@ import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
+import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import { usePart2Action } from '../hook/usePart2Action';
 import * as S from '../styles/styled';
 
@@ -43,7 +44,10 @@ export const Part2Page: React.FC = () => {
     handleRetry,
     placedCount,
     progressPercent,
-    correctCount
+    correctCount,
+    goTo,
+    boardItems,
+    activeSetIndex
   } = usePart2Action();
 
   const slotIds = Array.from({ length: slotCount }, (_, i) => i + 1);
@@ -94,7 +98,7 @@ export const Part2Page: React.FC = () => {
               <ExamEmpty />
             </div>
           ) : (
-          <S.MainContent>
+          <S.MainContent $hasBoard={total > 1}>
             <S.Column>
               <div className="flex items-center gap-2 mb-2">
                 <Badge status="processing" text={<span className="font-bold text-[#0f172a] text-[0.95rem]">Sắp xếp các đáp án theo đúng thứ tự</span>} />
@@ -213,6 +217,18 @@ export const Part2Page: React.FC = () => {
                 )}
               </S.OptionsPool>
             </S.Column>
+
+            {total > 1 && (
+              <QuestionBoard
+                items={boardItems}
+                activeKey={activeSetIndex}
+                onJump={goTo}
+                sectionLabel="Danh sách đoạn văn"
+                showPartial
+                answeredLabel="Đã nộp"
+                partialLabel="Đang làm"
+              />
+            )}
           </S.MainContent>
           )}
 

@@ -12,6 +12,7 @@ import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
+import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import { usePart1Action } from '../hook/usePart1Action';
 import * as S from '../styles/styled';
 
@@ -37,7 +38,10 @@ export const Part1Page: React.FC = () => {
     answeredCount,
     progressPercent,
     correctCount,
-    formatTime
+    formatTime,
+    goTo,
+    boardItems,
+    activeSetIndex
   } = usePart1Action();
 
   // Ô chọn đáp án cho 1 chỗ trống
@@ -175,7 +179,8 @@ export const Part1Page: React.FC = () => {
             </Space>
           </S.Header>
 
-          <S.MainContent>
+          <S.MainContent $hasBoard={total > 1}>
+            <S.PracticeColumn>
             <S.ContentCard>
               <S.TitleArea>
                 <h2>Hoàn thành các câu hỏi dưới đây</h2>
@@ -208,6 +213,19 @@ export const Part1Page: React.FC = () => {
               </div>
               <button className="btn-show">Show</button>
             </S.AdminExperienceCard>
+            </S.PracticeColumn>
+
+            {total > 1 && (
+              <QuestionBoard
+                items={boardItems}
+                activeKey={activeSetIndex}
+                onJump={goTo}
+                sectionLabel="Danh sách đoạn văn"
+                showPartial
+                answeredLabel="Đã nộp"
+                partialLabel="Đang làm"
+              />
+            )}
           </S.MainContent>
 
           <S.Footer>

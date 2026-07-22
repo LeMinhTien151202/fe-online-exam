@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ISubmitAnswer, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { IExamSubmitResult, ISubmitAnswer, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import { useListeningExamDetailQuery } from '../../../services/listeningExamQuery';
 import { ListeningExamData, buildListeningExam } from '../../../services/listeningExamMapper';
@@ -62,6 +62,7 @@ export const useMockTest = (testId: string) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [activeQuestionNum, setActiveQuestionNum] = useState(1);
+  const [submitResult, setSubmitResult] = useState<IExamSubmitResult | null>(null);
 
   const activeNavItem = useMemo(
     () => navItems.find((item) => item.qNum === activeQuestionNum) ?? navItems[0] ?? null,
@@ -226,10 +227,15 @@ export const useMockTest = (testId: string) => {
     return result;
   }, [answers, examData, navItems]);
 
-  const submitToServer = useCallback(() => {
+  const submitToServer = useCallback(async () => {
     if (!examId) return;
     const collected = collectAnswers();
-    submitMutation.mutate({ examId, payload: { answers: collected } });
+    try {
+      const r = await submitMutation.mutateAsync({ examId, payload: { answers: collected } });
+      setSubmitResult(r); // xếp band CEFR theo bảng kỹ năng (Nghe = skillId 2)
+    } catch {
+      // Interceptor đã hiện lỗi; báo cáo dùng band suy từ điểm cục bộ (fallback).
+    }
   }, [collectAnswers, examId, submitMutation]);
 
   const calculateScores = useCallback(() => {
@@ -284,14 +290,6 @@ export const useMockTest = (testId: string) => {
     const totalMax = maxP1 + maxP2 + maxP3 + maxP4;
     return { scoreP1, scoreP2, scoreP3, scoreP4, maxP1, maxP2, maxP3, maxP4, totalScore, totalMax };
   }, [answers, examData, navItems]);
-
-  const getAptisLevel = (score: number, maxScore: number) => {
-    const percent = maxScore > 0 ? (score / maxScore) * 100 : 0;
-    if (percent < 36) return 'A1/A2 (Dưới trung bình)';
-    if (percent < 64) return 'B1 (Trung cấp)';
-    if (percent < 88) return 'B2 (Trung cao cấp)';
-    return 'C (Cao cấp)';
-  };
 
   const saveProgressToLocalStorage = useCallback((totalScore: number, totalMax: number) => {
     const saved = localStorage.getItem('aptis_listening_mock_progress');
@@ -374,6 +372,7 @@ export const useMockTest = (testId: string) => {
     setTimeLeft(40 * 60);
     setIsSubmitted(false);
     setShowReport(false);
+    setSubmitResult(null);
     setActiveQuestionNum(navItems[0]?.qNum ?? 1);
   };
 
@@ -413,7 +412,7 @@ export const useMockTest = (testId: string) => {
     hasNextStep: !!nextNavItem,
     formatTime,
     calculateScores,
-    getAptisLevel,
+    submitResult,
     handleRetry,
     handleBackToLanding,
     handleNavigateQuestion,

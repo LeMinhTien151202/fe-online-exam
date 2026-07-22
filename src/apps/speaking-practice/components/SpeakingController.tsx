@@ -2,6 +2,9 @@ import {
 AudioFilled,
 CaretRightOutlined,
 CheckCircleOutlined,
+CloudUploadOutlined,
+ExclamationCircleOutlined,
+LoadingOutlined,
 PauseCircleFilled,
 PlayCircleFilled,
 ReloadOutlined
@@ -9,16 +12,22 @@ ReloadOutlined
 import { Button,Progress,Space,message } from 'antd';
 import React,{ useEffect,useRef,useState } from 'react';
 import styled,{ keyframes } from 'styled-components';
+import { uploadAudioBlob } from '@/shared/services/media';
 import { AudioWaveform } from './AudioWaveform';
 
 interface SpeakingControllerProps {
   prepTime: number; // thời gian chuẩn bị (s)
   recordingTime: number; // thời gian ghi âm (s)
+  // Trả URL audio CÔNG KHAI đã upload (null nếu chưa/không có bản ghi hợp lệ) — dùng cho AI chấm.
   onCompleted?: (audioUrl: string | null) => void;
   onReset?: () => void;
   statusColor?: string; // Tông màu chủ đạo
   title?: string;
+  uploadPrefix?: string; // thư mục lưu trên storage (vd 'speaking/practice/p1')
+  autoUpload?: boolean; // true: upload lên storage lấy URL công khai (khi có nộp bài + AI chấm)
 }
+
+type UploadState = 'idle' | 'uploading' | 'done' | 'error';
 
 export const SpeakingController: React.FC<SpeakingControllerProps> = ({
   prepTime,
@@ -26,13 +35,17 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
   onCompleted,
   onReset,
   statusColor = '#3b5b8c',
-  title = ''
+  title = '',
+  uploadPrefix = 'speaking/practice',
+  autoUpload = false
 }) => {
   const [step, setStep] = useState<'IDLE' | 'PREPARATION' | 'RECORDING' | 'COMPLETED'>('IDLE');
   const [prepCountdown, setPrepCountdown] = useState(prepTime);
   const [recCountdown, setRecCountdown] = useState(recordingTime);
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
-  
+  const [uploadState, setUploadState] = useState<UploadState>('idle');
+  const recordedBlobRef = useRef<Blob | null>(null);
+
   // Custom Audio playback state
   const [isPlayingBack, setIsPlayingBack] = useState(false);
   const playbackAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -120,6 +133,8 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
     setPrepCountdown(prepTime);
     setRecCountdown(recordingTime);
     setRecordedUrl(null);
+    setUploadState('idle');
+    recordedBlobRef.current = null;
     setAudioStream(null);
     mediaRecorderRef.current = null;
     chunksRef.current = [];
@@ -158,13 +173,18 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
 
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        recordedBlobRef.current = audioBlob;
         const url = URL.createObjectURL(audioBlob);
-        setRecordedUrl(url);
+        setRecordedUrl(url); // blob cục bộ để nghe lại
         setStep('COMPLETED');
-        if (onCompleted) onCompleted(url);
-        
-        // Stop stream tracks
         stream.getTracks().forEach(track => track.stop());
+        if (autoUpload) {
+          // Có nộp bài + AI chấm -> upload lên storage lấy URL công khai.
+          uploadBlob(audioBlob);
+        } else if (onCompleted) {
+          // Chế độ luyện tập cục bộ (không nộp BE) -> chỉ đánh dấu đã ghi.
+          onCompleted(url);
+        }
       };
 
       mediaRecorder.start();
@@ -177,16 +197,37 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
     }
   };
 
+  // Upload bản ghi lên storage → URL công khai; chỉ khi thành công mới trả URL cho phần nộp bài.
+  const uploadBlob = async (blob: Blob) => {
+    setUploadState('uploading');
+    try {
+      const url = await uploadAudioBlob(blob, uploadPrefix, `${title || 'rec'}.webm`);
+      setUploadState('done');
+      if (onCompleted) onCompleted(url);
+    } catch (err) {
+      console.warn('Upload audio thất bại:', err);
+      setUploadState('error');
+      message.error('Tải bản ghi âm lên thất bại. Hãy thử tải lại hoặc ghi âm lại.');
+      if (onCompleted) onCompleted(null); // chưa có URL hợp lệ để chấm
+    }
+  };
+
+  const retryUpload = () => {
+    if (recordedBlobRef.current) uploadBlob(recordedBlobRef.current);
+  };
+
   const stopRecording = () => {
     if (recTimerRef.current) clearTimeout(recTimerRef.current);
     playBeep();
-    
+
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
     } else {
-      // Handle fallback mode completion
+      // Không thu được micrô (chế độ giả lập) → không có audio để chấm.
       setStep('COMPLETED');
-      setRecordedUrl(null); // No actual audio URL
+      setRecordedUrl(null);
+      recordedBlobRef.current = null;
+      setUploadState('idle');
       if (onCompleted) onCompleted(null);
     }
   };
@@ -338,10 +379,23 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
             ✓ Đã hoàn thành ghi âm
           </StatusText>
           <PromptHint>
-            {recordedUrl 
+            {recordedUrl
               ? 'Nhấn nút Play để nghe lại câu trả lời của bạn, hoặc chọn Ghi âm lại.'
               : 'Ghi âm giả lập thành công (Chế độ demo không thu micrô).'}
           </PromptHint>
+
+          {recordedUrl && autoUpload && (
+            <UploadStatus $state={uploadState}>
+              {uploadState === 'uploading' && (<><LoadingOutlined /> Đang tải bản ghi lên máy chủ…</>)}
+              {uploadState === 'done' && (<><CloudUploadOutlined /> Đã lưu bản ghi — sẵn sàng để AI chấm.</>)}
+              {uploadState === 'error' && (
+                <>
+                  <ExclamationCircleOutlined /> Tải lên thất bại.
+                  <RetryLink onClick={retryUpload}>Thử lại</RetryLink>
+                </>
+              )}
+            </UploadStatus>
+          )}
 
           <AudioWaveform isRecording={false} />
 
@@ -483,6 +537,27 @@ const CompletedWrapper = styled.div`
   align-items: center;
   width: 100%;
   text-align: center;
+`;
+
+const UploadStatus = styled.div<{ $state: UploadState }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 1rem 0;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: ${p => (p.$state === 'error' ? '#dc2626' : p.$state === 'done' ? '#16a34a' : '#334155')};
+  background: ${p => (p.$state === 'error' ? '#fee2e2' : p.$state === 'done' ? '#dcfce7' : '#f1f5f9')};
+  border: 1px solid ${p => (p.$state === 'error' ? '#fecaca' : p.$state === 'done' ? '#bbf7d0' : '#e2e8f0')};
+`;
+
+const RetryLink = styled.span`
+  margin-left: 0.35rem;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 700;
 `;
 
 const PlaybackButton = styled.button<{ $color: string }>`

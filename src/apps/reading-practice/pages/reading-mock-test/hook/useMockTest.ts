@@ -1,6 +1,6 @@
 import { message } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ISubmitAnswer, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { IExamSubmitResult, ISubmitAnswer, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { useReadingExamDetailQuery } from '../../../services/readingExamQuery';
 import { flattenExam, ExamPartData } from '../../../services/readingExamMapper';
 import {
@@ -99,6 +99,7 @@ export const useMockTest = (testId: string) => {
   const [timeLeft, setTimeLeft] = useState(35 * 60);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [submitResult, setSubmitResult] = useState<IExamSubmitResult | null>(null);
 
   // ==================== INIT ORDERING POOLS ====================
 
@@ -209,14 +210,6 @@ export const useMockTest = (testId: string) => {
     return { scoreP1, scoreP2, scoreP3, scoreP4, scoreP5, totalScore };
   };
 
-  const getAptisLevel = (score: number) => {
-    const ratio = totalQuestions > 0 ? score / totalQuestions : 0;
-    if (ratio < 0.34) return 'A1/A2 (Dưới trung bình)';
-    if (ratio < 0.6) return 'B1 (Trung cấp)';
-    if (ratio < 0.85) return 'B2 (Trung cao cấp)';
-    return 'C (Cao cấp)';
-  };
-
   // ==================== COLLECT (state -> shape submit API) ====================
   // P1 gap-fill: mảng index đáp án theo từng gap; P2/P3 ordering: mảng index câu trong pool;
   // P4 speaker-match: mảng person key theo câu; P5 heading: { paragraph: label tiêu đề }.
@@ -262,9 +255,14 @@ export const useMockTest = (testId: string) => {
     return result;
   };
 
-  const submitToServer = () => {
+  const submitToServer = async () => {
     if (!examId) return;
-    submitMutation.mutate({ examId, payload: { answers: collectAnswers() } });
+    try {
+      const r = await submitMutation.mutateAsync({ examId, payload: { answers: collectAnswers() } });
+      setSubmitResult(r); // dùng để xếp band CEFR theo bảng kỹ năng (Đọc = skillId 3)
+    } catch {
+      // Interceptor đã hiện lỗi; báo cáo dùng band suy từ điểm cục bộ (fallback).
+    }
   };
 
   // ==================== PERSISTENCE ====================
@@ -350,6 +348,7 @@ export const useMockTest = (testId: string) => {
     setTimeLeft(35 * 60);
     setIsSubmitted(false);
     setShowReport(false);
+    setSubmitResult(null);
     setActiveQuestionNum(1);
   };
 
@@ -489,6 +488,7 @@ export const useMockTest = (testId: string) => {
     isSubmitted,
     showReport,
     setShowReport,
+    submitResult,
     handleManualSubmit,
     handleAutoSubmit,
     handleRetry,
@@ -507,6 +507,5 @@ export const useMockTest = (testId: string) => {
     totalAnsweredCount,
 
     calculateScores,
-    getAptisLevel,
   };
 };

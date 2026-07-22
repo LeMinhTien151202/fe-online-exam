@@ -18,9 +18,16 @@ import { SpeakingController } from '../../../components/SpeakingController';
 import { SpeakingSet } from '../../../services/mappers';
 import { SpeakingNavItem } from '../hook/useMockTest';
 import { useMockTest } from '../hook/useMockTest';
+import { Cefr } from '../../../../../shared/utils/cefrScale';
+import { singleSkillScore } from '../../../../../shared/utils/skillScore';
 import * as S from '../styles/styled';
 
 const { Title, Text, Paragraph } = Typography;
+
+const SPEAKING_SKILL_ID = 5;
+
+const bandColor = (band: Cefr | null) =>
+  band == null ? '#94a3b8' : band.startsWith('C') ? '#10b981' : band.startsWith('B') ? '#3b5b8c' : '#f59e0b';
 
 const PART_META: Record<number, { title: string; subtitle: string; color: string; header: string }> = {
   1: {
@@ -87,6 +94,14 @@ export const SpeakingMockTestPage = () => {
     nextStepIsSamePart,
     navigate,
   } = useMockTest();
+
+  // CEFR band kỹ năng Nói (skillId 5) theo đúng bảng quy đổi 0–50, suy từ điểm AI của BE.
+  // band = null khi AI chưa chấm xong (audio chưa upload / còn câu chờ chấm tay).
+  const overall = (() => {
+    if (!submitResult) return null;
+    const sk = singleSkillScore(submitResult, SPEAKING_SKILL_ID);
+    return { band: sk?.cefr ?? null, scaled: sk?.scaled ?? 0 };
+  })();
 
   if (isLoading) {
     return (
@@ -285,6 +300,8 @@ export const SpeakingMockTestPage = () => {
           recordingTime={recordTime}
           statusColor={meta.color}
           title={`speaking-exam-p${activePart}-s${activeSetIndex + 1}-q${activeSubIndex}`}
+          uploadPrefix={`speaking/set/p${activePart}`}
+          autoUpload
           onCompleted={markRecorded}
         />
         {renderSample(sampleAnswers, meta.color, activePart === 4 ? 'Xem đáp án mẫu (Tất cả câu)' : 'Xem đáp án mẫu')}
@@ -406,18 +423,23 @@ export const SpeakingMockTestPage = () => {
                 <S.ScoreRingWrapper>
                   <Progress
                     type="circle"
-                    percent={Math.round((answeredCount / totalQuestions) * 100)}
+                    percent={overall ? Math.round((overall.scaled / 50) * 100) : 0}
                     size={140}
                     strokeWidth={10}
-                    strokeColor="#10b981"
+                    strokeColor={bandColor(overall?.band ?? null)}
                     format={() => (
                       <S.ScoreLabel>
-                        <span className="score-val">{answeredCount}</span>
-                        <span className="score-max">/ {totalQuestions} câu ghi âm</span>
+                        <span className="score-val">{overall?.band ?? '—'}</span>
+                        <span className="score-max">CEFR Nói</span>
                       </S.ScoreLabel>
                     )}
                   />
                 </S.ScoreRingWrapper>
+                <Text type="secondary" style={{ display: 'block', marginBottom: '1rem', fontSize: '0.85rem' }}>
+                  {overall?.band == null
+                    ? '(AI chưa chấm xong — chưa xếp band, còn câu chờ chấm tay)'
+                    : `Điểm ước lượng ${overall.scaled}/50 (quy đổi tuyến tính, không phải scaled chính thức)`}
+                </Text>
                 <S.ReportGrid>
                   <S.ReportStatItem>
                     <span className="stat-label">Số câu đã ghi âm</span>

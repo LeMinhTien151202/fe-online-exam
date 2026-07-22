@@ -11,6 +11,7 @@ import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import { AudioPlayer } from '../../../components/AudioPlayer';
+import { QuestionBoard, type BoardStatus } from '@/shared/components/QuestionBoard';
 import { usePart1Action } from '../hook/usePart1Action';
 
 export const Part1Page: React.FC = () => {
@@ -65,7 +66,7 @@ export const Part1Page: React.FC = () => {
             </Space>
           </S.Header>
 
-          <S.MainContent>
+          <S.MainContent $hasBoard={hasData && mockQuestions.length > 1}>
             {isLoading ? (
               <ExamLoading />
             ) : !hasData ? (
@@ -133,6 +134,17 @@ export const Part1Page: React.FC = () => {
                 })}
               </div>
             </S.ContentCard>
+            )}
+            {hasData && mockQuestions.length > 1 && (
+              <QuestionBoard
+                items={mockQuestions.map((q) => ({
+                  key: q.id,
+                  label: q.id,
+                  status: (answers[q.id] ? 'answered' : 'unanswered') as BoardStatus,
+                }))}
+                activeKey={currentQuestionIndex}
+                onJump={setCurrentQuestionIndex}
+              />
             )}
           </S.MainContent>
 

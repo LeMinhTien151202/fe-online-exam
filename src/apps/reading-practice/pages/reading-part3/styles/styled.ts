@@ -50,13 +50,14 @@ export const TimerWrapper = styled.div`
   font-weight: bold;
 `;
 
-export const MainContent = styled.main`
+export const MainContent = styled.main<{ $hasBoard?: boolean }>`
   display: grid;
-  grid-template-columns: 4fr 6fr;
+  grid-template-columns: ${(props) => (props.$hasBoard ? '4fr 6fr 300px' : '4fr 6fr')};
   gap: 1.5rem;
   padding: 2rem 2rem;
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
+  align-content: start;
   background: #ffffff;
 
   @media (max-width: 1024px) {

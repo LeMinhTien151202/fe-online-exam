@@ -14,6 +14,7 @@ import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import { SpeakingController } from '../../speaking-part1/components/SpeakingController';
+import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import { usePart3 } from '../hook/usePart3';
 
 export const Part3Page: React.FC = () => {
@@ -41,6 +42,9 @@ export const Part3Page: React.FC = () => {
     totalSubQuestions,
     answeredCount,
     progressPercent,
+    goTo,
+    boardItems,
+    activeSetIndex,
   } = usePart3();
 
   return (
@@ -77,7 +81,7 @@ export const Part3Page: React.FC = () => {
             </Space>
           </S.Header>
 
-          <S.MainContent>
+          <S.MainContent $hasBoard={hasData && setCount > 1}>
             {isLoading ? (
               <ExamLoading />
             ) : !hasData ? (
@@ -141,6 +145,8 @@ export const Part3Page: React.FC = () => {
                   recordingTime={45} // Ghi âm 45 giây
                   statusColor="#ea580c"
                   title={`p3-q${currentSubIndex}`}
+                  uploadPrefix="speaking/part/p3"
+                  autoUpload
                   onCompleted={handleRecordComplete}
                 />
                 {/* Collapsible Sample Answer */}
@@ -182,6 +188,17 @@ export const Part3Page: React.FC = () => {
                 )}
               </S.RightColumn>
             </S.ContentGrid>
+            )}
+            {hasData && setCount > 1 && (
+              <QuestionBoard
+                items={boardItems}
+                activeKey={activeSetIndex}
+                onJump={goTo}
+                sectionLabel="Danh sách bộ"
+                showPartial
+                answeredLabel="Đã thu âm đủ"
+                unansweredLabel="Chưa thu âm"
+              />
             )}
           </S.MainContent>
 

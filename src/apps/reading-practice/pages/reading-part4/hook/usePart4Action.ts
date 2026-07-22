@@ -28,6 +28,7 @@ export const usePart4Action = () => {
   const [timeLeft, setTimeLeft] = useState(900);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
 
   const resetForNewQuestion = () => {
     setAnswers({});
@@ -42,6 +43,11 @@ export const usePart4Action = () => {
   const handlePrev = () => {
     if (safeIndex <= 0) return;
     setIndex(safeIndex - 1);
+    resetForNewQuestion();
+  };
+  const goTo = (idx: number) => {
+    if (idx === safeIndex) return;
+    setIndex(idx);
     resetForNewQuestion();
   };
 
@@ -74,6 +80,7 @@ export const usePart4Action = () => {
 
   const doSubmit = () => {
     setIsSubmitted(true);
+    setDoneSets((prev) => new Set(prev).add(safeIndex));
     const correctCount = Object.keys(correctAnswers).filter(
       (id) => answers[Number(id)] === correctAnswers[Number(id)]
     ).length;
@@ -112,6 +119,15 @@ export const usePart4Action = () => {
     (id) => answers[Number(id)] === correctAnswers[Number(id)]
   ).length;
 
+  const boardItems = Array.from({ length: total }, (_, i) => {
+    const status: 'unanswered' | 'partial' | 'answered' = doneSets.has(i)
+      ? 'answered'
+      : i === safeIndex && answeredCount > 0
+        ? 'partial'
+        : 'unanswered';
+    return { key: i, label: i + 1, status };
+  });
+
   return {
     isLoading,
     data,
@@ -123,6 +139,9 @@ export const usePart4Action = () => {
     hasPrev: safeIndex > 0,
     handleNext,
     handlePrev,
+    goTo,
+    boardItems,
+    activeSetIndex: safeIndex,
     timeLeft,
     answers,
     isSubmitted,

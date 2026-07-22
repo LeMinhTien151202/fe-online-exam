@@ -5,10 +5,10 @@ import { IExamSetDetail, IExamSetListItem } from '../../admin/pages/admin-exams/
 export const READING_SKILL_ID = 3;
 
 export const studentExamApi = {
-  // Danh sách đề Reading đã công khai
+  // Danh sách đề Reading đã công khai — luyện theo bộ đề = chỉ SKILL_FULL_SET.
   listReadingSets: (page = 1, limit = 50) =>
     axiosInstance.get<IApiEnvelope<IExamSetListItem[]>, IApiEnvelope<IExamSetListItem[]>>('/exam-sets', {
-      params: { skillId: READING_SKILL_ID, page, limit },
+      params: { type: 'SKILL_FULL_SET', skillId: READING_SKILL_ID, page, limit },
       _rawEnvelope: true,
     }),
 

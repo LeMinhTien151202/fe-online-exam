@@ -43,6 +43,15 @@ export const usePart4Action = () => {
 
   const handleNext = () => { if (safeGroup < groupCount - 1) setCurrentGroupIndex(safeGroup + 1); };
   const handlePrev = () => { if (safeGroup > 0) setCurrentGroupIndex(safeGroup - 1); else navigate({ to: '/listening' }); };
+  const goTo = (idx: number) => setCurrentGroupIndex(idx);
+
+  // Bảng câu hỏi: mỗi bài (group) = 1 nút; trạng thái theo số câu con đã chọn.
+  const boardItems = groups.map((group, i) => {
+    const filled = group.subQuestions.filter((sq) => answers[sq.id]).length;
+    const status: 'unanswered' | 'partial' | 'answered' =
+      filled === 0 ? 'unanswered' : filled >= group.subQuestions.length ? 'answered' : 'partial';
+    return { key: i, label: i + 1, status };
+  });
 
   const handleSubmit = () => {
     confirmSubmitExam({ onOk: doSubmit });
@@ -93,6 +102,9 @@ export const usePart4Action = () => {
     totalSub,
     progressPercent,
     currentGroup,
-    formatTime
+    formatTime,
+    boardItems,
+    activeGroupIndex: safeGroup,
+    goTo,
   };
 };

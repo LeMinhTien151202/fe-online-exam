@@ -5,6 +5,7 @@ import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
+import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import { usePart4Action } from '../hook/usePart4Action';
 import * as S from '../styles/styled';
 
@@ -30,7 +31,10 @@ export const Part4Page: React.FC = () => {
     answeredCount,
     progressPercent,
     correctCount,
-    formatTime
+    formatTime,
+    goTo,
+    boardItems,
+    activeSetIndex
   } = usePart4Action();
 
   const paragraphs = data?.paragraphs ?? [];
@@ -80,7 +84,7 @@ export const Part4Page: React.FC = () => {
               <ExamEmpty />
             </div>
           ) : (
-          <S.MainContent>
+          <S.MainContent $hasBoard={total > 1}>
             <S.ScrollableColumn>
               <S.SectionHeader>
                 <Badge status="processing" text={<S.SectionTitle>VĂN BẢN ĐỌC HIỂU ({paragraphCount} ĐOẠN VĂN)</S.SectionTitle>} />
@@ -141,6 +145,18 @@ export const Part4Page: React.FC = () => {
                 );
               })}
             </S.ScrollableColumn>
+
+            {total > 1 && (
+              <QuestionBoard
+                items={boardItems}
+                activeKey={activeSetIndex}
+                onJump={goTo}
+                sectionLabel="Danh sách đoạn văn"
+                showPartial
+                answeredLabel="Đã nộp"
+                partialLabel="Đang làm"
+              />
+            )}
           </S.MainContent>
           )}
 

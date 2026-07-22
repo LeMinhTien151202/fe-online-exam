@@ -119,7 +119,8 @@ const SpeakingSection = React.forwardRef<SpeakingHandle, SpeakingSectionProps>((
     }, [units]);
 
     React.useEffect(() => {
-        onProgressUpdate?.(Object.keys(answers).length, activePart, currentUnit);
+        const answeredCount = Object.values(answers).filter((v) => !!v).length;
+        onProgressUpdate?.(answeredCount, activePart, currentUnit);
     }, [answers, activePart, currentUnit, onProgressUpdate]);
 
     const renderQuestionContent = () => {
@@ -213,7 +214,9 @@ const SpeakingSection = React.forwardRef<SpeakingHandle, SpeakingSectionProps>((
                     recordingTime={recordingTime}
                     statusColor={PART_COLOR[unit.part]}
                     title={`mock-exam-speaking-u${currentUnit}`}
-                    onCompleted={(url) => setAnswers(prev => ({ ...prev, [currentUnit]: url || 'recorded' }))}
+                    uploadPrefix={`speaking/mock/p${unit.part}`}
+                    // Chỉ lưu URL CÔNG KHAI đã upload; upload lỗi/không có audio -> '' (coi như chưa trả lời).
+                    onCompleted={(url) => setAnswers(prev => ({ ...prev, [currentUnit]: url ?? '' }))}
                 />
             </div>
         );

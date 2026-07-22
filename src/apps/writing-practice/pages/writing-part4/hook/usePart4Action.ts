@@ -13,6 +13,7 @@ export const usePart4Action = () => {
   const timer = useWritingTimer(20 * 60);
   const [informalEmail, setInformalEmail] = useState('');
   const [formalEmail, setFormalEmail] = useState('');
+  const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
 
   // Luyện theo phần = đề PART_PRACTICE (skill 4, part 4 — ESSAY 2 email).
   const { examId, examDetail, isLoading } = usePartPracticeExam(4, 4);
@@ -68,6 +69,7 @@ export const usePart4Action = () => {
 
   const doSubmit = () => {
     message.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
+    setDoneSets((prev) => new Set(prev).add(safeIndex));
 
     // Nộp lên BE để tăng student_progress (skill 4, part 4). ESSAY = [email thân mật, email trang trọng].
     const dbQuestion = list[safeIndex];
@@ -93,6 +95,21 @@ export const usePart4Action = () => {
     setInformalEmail('');
     setFormalEmail('');
   };
+  const goTo = (idx: number) => {
+    if (idx === safeIndex) return;
+    setIndex(idx);
+    setInformalEmail('');
+    setFormalEmail('');
+  };
+
+  const boardItems = Array.from({ length: total }, (_, i) => {
+    const status: 'unanswered' | 'partial' | 'answered' = doneSets.has(i)
+      ? 'answered'
+      : i === safeIndex && (informalEmail.trim() || formalEmail.trim())
+        ? 'partial'
+        : 'unanswered';
+    return { key: i, label: i + 1, status };
+  });
 
   return {
     isLoading,
@@ -103,6 +120,9 @@ export const usePart4Action = () => {
     hasPrev: safeIndex > 0,
     handleNext,
     handlePrev,
+    goTo,
+    boardItems,
+    activeSetIndex: safeIndex,
     situation: data?.situation ?? '',
     informalPrompt: data?.informalPrompt ?? '',
     formalPrompt: data?.formalPrompt ?? '',

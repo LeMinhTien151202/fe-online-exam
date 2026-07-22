@@ -5,6 +5,7 @@ import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { SampleAnswerModal } from '../../writing-part1/components/SampleAnswerModal';
+import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import * as S from '../../writing-part1/styles/styled';
 import { usePart2Action } from '../hook/usePart2Action';
 
@@ -29,6 +30,9 @@ export const Part2Page: React.FC = () => {
     hasPrev,
     handleNext,
     handlePrev,
+    goTo,
+    boardItems,
+    activeSetIndex,
   } = usePart2Action();
 
   const wordCount = getWordCount(answer);
@@ -59,7 +63,7 @@ export const Part2Page: React.FC = () => {
             </S.TimerWrapper>
           </S.Header>
 
-          <S.MainContent>
+          <S.MainContent $hasBoard={total > 1}>
             <S.CenteredContainer>
               <S.ContentCard>
                 <S.TitleArea>
@@ -113,6 +117,18 @@ export const Part2Page: React.FC = () => {
                 )}
               </S.ContentCard>
             </S.CenteredContainer>
+
+            {total > 1 && (
+              <QuestionBoard
+                items={boardItems}
+                activeKey={activeSetIndex}
+                onJump={goTo}
+                sectionLabel="Danh sách đề"
+                showPartial
+                answeredLabel="Đã nộp"
+                partialLabel="Đang viết"
+              />
+            )}
           </S.MainContent>
 
           <S.Footer>

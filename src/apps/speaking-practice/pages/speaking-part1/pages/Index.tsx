@@ -14,6 +14,7 @@ import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import { SpeakingController } from '../components/SpeakingController';
+import { QuestionBoard, type BoardStatus } from '@/shared/components/QuestionBoard';
 import { usePart1 } from '../hook/usePart1';
 
 export const Part1Page: React.FC = () => {
@@ -71,7 +72,7 @@ export const Part1Page: React.FC = () => {
             </Space>
           </S.Header>
 
-          <S.MainContent>
+          <S.MainContent $hasBoard={hasData && mockQuestions.length > 1}>
             {isLoading ? (
               <ExamLoading />
             ) : !hasData ? (
@@ -132,6 +133,8 @@ export const Part1Page: React.FC = () => {
                   recordingTime={30} // Ghi âm 30 giây
                   statusColor="#0284c7"
                   title={`p1-q${currentQuestionIndex}`}
+                  uploadPrefix="speaking/part/p1"
+                  autoUpload
                   onCompleted={handleRecordComplete}
                 />
                 {/* Collapsible Sample Answer */}
@@ -173,6 +176,23 @@ export const Part1Page: React.FC = () => {
                 )}
               </S.RightColumn>
             </S.ContentGrid>
+            )}
+            {hasData && mockQuestions.length > 1 && (
+              <QuestionBoard
+                items={mockQuestions.map((q) => ({
+                  key: q.id,
+                  label: q.id,
+                  status: (answers[q.id] ? 'answered' : 'unanswered') as BoardStatus,
+                }))}
+                activeKey={currentQuestionIndex}
+                onJump={(k) => {
+                  setCurrentQuestionIndex(k);
+                  setShowSampleAnswer(false);
+                  setActiveSampleIdx(0);
+                }}
+                answeredLabel="Đã thu âm"
+                unansweredLabel="Chưa thu âm"
+              />
             )}
           </S.MainContent>
 

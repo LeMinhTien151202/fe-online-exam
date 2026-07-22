@@ -3,6 +3,18 @@
 // Khớp .docs/EXAM_SUBMIT_SAMPLES.md + .docs/API_PLAN.md (2.8, 2.9, 3.2, 3.3, 3.6)
 // ============================================================
 import { ExamType } from '../../../apps/admin/pages/admin-exams/services/types';
+import { Cefr } from '../../utils/cefrScale';
+
+// Điểm + CEFR theo từng kỹ năng (xem .docs/SCORING_CEFR_PLAN.md). Grammar(skillId 1): cefr = null.
+export interface ISkillScore {
+  skillId: number;
+  name: string;
+  earned?: number; // kỹ năng trắc nghiệm (1,2,3)
+  total?: number;
+  aiScore?: number | null; // kỹ năng AI chấm (4,5), 0–100
+  scaled: number; // 0–50 (ước lượng tuyến tính)
+  cefr: Cefr | null; // null cho Grammar
+}
 
 // Giá trị `response` đa hình theo từng dạng câu hỏi:
 //  - MC thường           -> number (index 0-based)
@@ -28,10 +40,12 @@ export interface ISubmitExamPayload {
   answers: ISubmitAnswer[];
 }
 
-// Chi tiết chấm trắc nghiệm (1 dòng / câu)
+// Chi tiết chấm trắc nghiệm (1 dòng / câu). skillId/partNumber để gộp theo kỹ năng.
 export interface IAutoGradeDetail {
   questionId: number;
   questionType: string;
+  skillId?: number;
+  partNumber?: number;
   earned: number;
   total: number;
   autoGraded: boolean;
@@ -42,8 +56,10 @@ export interface IAutoGradeDetail {
 export interface IAiGradeDetail {
   questionId: number;
   questionType: string; // 'ESSAY' | 'RECORD'
+  skillId?: number;
+  partNumber?: number;
   aiScore: number | null; // null khi Gemini lỗi / chưa cấu hình -> cần chấm tay
-  band: string | null; // 'A1'..'C'
+  band: string | null; // 'A0'..'C1' (có thể 'C' -> chuẩn hoá về 'C1')
   feedback: string;
   needsManualReview: boolean;
 }
@@ -60,18 +76,26 @@ export interface IExamSubmitResult {
   needsManualReviewCount: number;
   details: IAutoGradeDetail[];
   ai: IAiGradeDetail[];
+  // MOCK_TEST: điểm + CEFR theo kỹ năng (gồm Grammar) và CEFR tổng.
+  skills?: ISkillScore[];
+  overallCefr?: Cefr | null; // null khi thiếu kỹ năng / còn câu chờ chấm tay
 }
 
-// GET /attempts/me — 1 dòng lịch sử làm bài
+// GET /attempts/me — 1 dòng lịch sử làm bài.
+// BE trả `examId` + `exam{}`; giữ `examSetId` optional để tương thích ngược.
 export interface IAttemptItem {
   id: number;
-  examSetId: number;
-  type: ExamType;
+  examId?: number;
+  examSetId?: number;
+  type?: ExamType;
   totalScore: number | null; // NULL với SKILL_FULL_SET (chỉ đánh dấu đã làm)
-  status: string; // 'SUBMITTED'
+  status?: string; // 'SUBMITTED'
+  overallCefr?: Cefr | null; // MOCK_TEST: CEFR tổng lúc nộp
+  skillCefr?: ISkillScore[] | null; // snapshot điểm/CEFR từng kỹ năng lúc nộp
   startedAt?: string | null;
   finishedAt?: string | null;
   createdAt: string;
+  exam?: { id: number; title: string; type: ExamType };
 }
 
 // GET /attempts/me — envelope kèm điểm trung bình MOCK_TEST

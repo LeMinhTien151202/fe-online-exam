@@ -91,8 +91,20 @@ export const usePart4 = () => {
   };
 
   const handleRecordComplete = (audioUrl: string | null) => {
-    setAnswers((prev) => ({ ...prev, [safeSet]: audioUrl || 'recorded_mock' }));
+    setAnswers((prev) => ({ ...prev, [safeSet]: audioUrl ?? '' }));
   };
+
+  const goTo = (idx: number) => {
+    setCurrentSetIndex(idx);
+    setShowSampleAnswer(false);
+    setActiveSampleIdx(0);
+  };
+  // Bảng câu hỏi: mỗi bộ = 1 nút; trạng thái theo bản ghi âm của bộ đó.
+  const boardItems = sets.map((_, i) => ({
+    key: i,
+    label: i + 1,
+    status: (answers[i] ? 'answered' : 'unanswered') as 'unanswered' | 'partial' | 'answered',
+  }));
 
   const answeredCount = answers[safeSet] ? 1 : 0;
   const progressPercent = answeredCount * 100;
@@ -123,5 +135,8 @@ export const usePart4 = () => {
     currentSetNumber: safeSet + 1,
     hasNext: safeSet < setCount - 1,
     hasPrev: safeSet > 0,
+    goTo,
+    boardItems,
+    activeSetIndex: safeSet,
   };
 };

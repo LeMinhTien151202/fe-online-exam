@@ -5,6 +5,7 @@ import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
+import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import { usePart3Action } from '../hook/usePart3Action';
 import * as S from '../styles/styled';
 
@@ -30,7 +31,10 @@ export const Part3Page: React.FC = () => {
     answeredCount,
     progressPercent,
     correctCount,
-    formatTime
+    formatTime,
+    goTo,
+    boardItems,
+    activeSetIndex
   } = usePart3Action();
 
   const opinions = data?.opinions ?? [];
@@ -80,7 +84,7 @@ export const Part3Page: React.FC = () => {
               <ExamEmpty />
             </div>
           ) : (
-          <S.MainContent>
+          <S.MainContent $hasBoard={total > 1}>
             <S.Column>
               <S.SectionHeader>
                 <Badge status="processing" text={<S.SectionTitle>Ý KIẾN CỦA {opinions.length} NGƯỜI</S.SectionTitle>} />
@@ -152,6 +156,18 @@ export const Part3Page: React.FC = () => {
                 );
               })}
             </S.Column>
+
+            {total > 1 && (
+              <QuestionBoard
+                items={boardItems}
+                activeKey={activeSetIndex}
+                onJump={goTo}
+                sectionLabel="Danh sách đoạn văn"
+                showPartial
+                answeredLabel="Đã nộp"
+                partialLabel="Đang làm"
+              />
+            )}
           </S.MainContent>
           )}
 

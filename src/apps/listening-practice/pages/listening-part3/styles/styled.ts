@@ -50,15 +50,20 @@ export const TimerWrapper = styled.div`
   font-weight: bold;
 `;
 
-export const MainContent = styled.main`
+export const MainContent = styled.main<{ $hasBoard?: boolean }>`
   flex: 1;
   overflow-y: auto;
   padding: 2rem 2rem;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: ${(props) => (props.$hasBoard ? 'minmax(0, 1fr) 300px' : '1fr')};
+  align-items: start;
   gap: 1.5rem;
   width: 100%;
   background: #ffffff;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const ContentCard = styled.div`

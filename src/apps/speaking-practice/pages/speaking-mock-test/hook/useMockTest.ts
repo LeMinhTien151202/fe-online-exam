@@ -218,7 +218,8 @@ export const useMockTest = () => {
   };
 
   const markRecorded = (audioUrl: string | null) => {
-    const value = audioUrl || 'recorded_mock';
+    // Chỉ lưu URL CÔNG KHAI đã upload; upload lỗi/không có audio -> '' (coi như chưa trả lời).
+    const value = audioUrl ?? '';
     if (activePart === 4) {
       const part4Items = navItems.filter(
         (item) => item.partNumber === 4 && item.setIndex === activeSetIndex

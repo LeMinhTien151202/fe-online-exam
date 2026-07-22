@@ -30,6 +30,7 @@ export const usePart2Action = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [pool, setPool] = useState<Part2Sentence[]>([]);
   const [slots, setSlots] = useState<Record<number, Part2Sentence | null>>({});
+  const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
 
   // Nạp lại pool/slots khi bộ câu hỏi đổi (kèm index để phân biệt câu trùng thứ tự)
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
@@ -49,6 +50,11 @@ export const usePart2Action = () => {
   const handlePrev = () => {
     if (safeIndex <= 0) return;
     setIndex(safeIndex - 1);
+    setTimeLeft(1077);
+  };
+  const goTo = (idx: number) => {
+    if (idx === safeIndex) return;
+    setIndex(idx);
     setTimeLeft(1077);
   };
 
@@ -134,6 +140,7 @@ export const usePart2Action = () => {
 
   const doSubmit = () => {
     setIsSubmitted(true);
+    setDoneSets((prev) => new Set(prev).add(safeIndex));
     const correct = countCorrect();
     const progressPercent = slotCount ? Math.round((correct / slotCount) * 100) : 0;
     const savedProgress = localStorage.getItem('aptis_reading_progress');
@@ -171,6 +178,15 @@ export const usePart2Action = () => {
   const progressPercent = slotCount ? Math.round((placedCount / slotCount) * 100) : 0;
   const correctCount = countCorrect();
 
+  const boardItems = Array.from({ length: total }, (_, i) => {
+    const status: 'unanswered' | 'partial' | 'answered' = doneSets.has(i)
+      ? 'answered'
+      : i === safeIndex && placedCount > 0
+        ? 'partial'
+        : 'unanswered';
+    return { key: i, label: i + 1, status };
+  });
+
   return {
     isLoading,
     data,
@@ -181,6 +197,9 @@ export const usePart2Action = () => {
     hasPrev: safeIndex > 0,
     handleNext,
     handlePrev,
+    goTo,
+    boardItems,
+    activeSetIndex: safeIndex,
     timeLeft,
     isSubmitted,
     pool,

@@ -16,9 +16,13 @@ import { Sidebar } from '../../../../home/components/Sidebar';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import * as HomeS from '../../../../home/pages/styled';
 import { WritingPromptItem } from '../../../services/writingExamMapper';
+import { Cefr } from '../../../../../shared/utils/cefrScale';
+import { singleSkillScore } from '../../../../../shared/utils/skillScore';
 import * as W from '../../writing-part1/styles/styled';
 import { useWritingMockTest } from '../hook/useWritingMockTest';
 import * as S from '../styles/styled';
+
+const WRITING_SKILL_ID = 4;
 
 const { Title, Text } = Typography;
 
@@ -85,31 +89,20 @@ export const WritingMockTestPage = () => {
     formatTime,
   } = useWritingMockTest(testId);
 
-  // Điểm tổng dạng band A1..C. Dùng thẳng `score` BE trả về (tính trên TOÀN đề,
-  // câu bỏ trống = 0% — đúng số đã lưu vào exam_attempts). Nếu AI chưa chấm được
-  // câu nào (score = 0 do toàn bộ chờ chấm tay) thì tạm tính "nhẹ tay" theo số từ.
-  const scoreToBand = (score: number): string => {
-    if (score >= 85) return 'C';
-    if (score >= 70) return 'B2';
-    if (score >= 55) return 'B1';
-    if (score >= 40) return 'A2';
-    return 'A1';
-  };
-
+  // CEFR band kỹ năng Viết (skillId 4) theo ĐÚNG bảng quy đổi 0–50 (xem cefrScale.ts),
+  // suy từ điểm AI của BE. band = null khi AI chưa chấm xong (còn câu chờ chấm tay).
   const overall = (() => {
     if (!submitResult) return null;
-    const hasScored = submitResult.ai.some((a) => a.aiScore != null);
-    if (hasScored) {
-      const percent = Math.round(submitResult.score);
-      return { band: scoreToBand(percent), percent, fromAi: true };
-    }
-    // AI chưa chấm được phần nào (needsManualReview) -> tạm tính theo số phần đạt đủ số từ.
-    const validCount = prompts.filter((p) => isWordCountValid(p.id)).length;
-    const percent = prompts.length ? Math.round((validCount / prompts.length) * 100) : 0;
-    return { band: scoreToBand(percent), percent, fromAi: false };
+    const sk = singleSkillScore(submitResult, WRITING_SKILL_ID);
+    return {
+      band: sk?.cefr ?? null,
+      scaled: sk?.scaled ?? 0,
+      percent: Math.round(submitResult.score),
+    };
   })();
 
-  const bandColor = (band: string) => (band === 'C' ? '#10b981' : band.startsWith('B') ? '#3b5b8c' : '#f59e0b');
+  const bandColor = (band: Cefr | null) =>
+    band == null ? '#94a3b8' : band.startsWith('C') ? '#10b981' : band.startsWith('B') ? '#3b5b8c' : '#f59e0b';
 
   // Chưa có kết quả AI (đang chấm) -> chờ, không hiện điểm/đáp án mẫu vội.
   const isGrading = isSubmitted && (isSubmitting || !submitResult);
@@ -505,23 +498,23 @@ export const WritingMockTestPage = () => {
                 <S.ScoreRingWrapper>
                   <Progress
                     type="circle"
-                    percent={overall?.percent ?? 0}
+                    percent={overall ? Math.round((overall.scaled / 50) * 100) : 0}
                     size={140}
                     strokeWidth={10}
-                    strokeColor={bandColor(overall?.band ?? 'A1')}
+                    strokeColor={bandColor(overall?.band ?? null)}
                     format={() => (
                       <S.ScoreLabel>
                         <span className="score-val">{overall?.band ?? '—'}</span>
-                        <span className="score-max">Band tổng</span>
+                        <span className="score-max">CEFR Viết</span>
                       </S.ScoreLabel>
                     )}
                   />
                 </S.ScoreRingWrapper>
-                {overall && !overall.fromAi && (
-                  <Text type="secondary" style={{ display: 'block', marginBottom: '1rem', fontSize: '0.85rem' }}>
-                    (AI chưa chấm được — điểm tạm tính theo số phần đạt đủ số từ)
-                  </Text>
-                )}
+                <Text type="secondary" style={{ display: 'block', marginBottom: '1rem', fontSize: '0.85rem' }}>
+                  {overall?.band == null
+                    ? '(AI chưa chấm xong — chưa xếp band, còn câu chờ chấm tay)'
+                    : `Điểm ước lượng ${overall.scaled}/50 (quy đổi tuyến tính, không phải scaled chính thức)`}
+                </Text>
                 <S.ReportGrid>
                   <S.ReportStatItem>
                     <span className="stat-label">Số câu đã hoàn thành</span>

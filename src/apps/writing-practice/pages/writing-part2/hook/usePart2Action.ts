@@ -12,6 +12,7 @@ export const usePart2Action = () => {
   const navigate = useNavigate();
   const timer = useWritingTimer(3 * 60);
   const [answer, setAnswer] = useState('');
+  const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
 
   // Luyện theo phần = đề PART_PRACTICE (skill 4, part 2 — ESSAY).
   const { examId, examDetail, isLoading } = usePartPracticeExam(4, 2);
@@ -55,6 +56,7 @@ export const usePart2Action = () => {
 
   const doSubmit = () => {
     message.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
+    setDoneSets((prev) => new Set(prev).add(safeIndex));
 
     // Nộp lên BE để tăng student_progress (skill 4, part 2). ESSAY = mảng 1 bài viết.
     const dbQuestion = list[safeIndex];
@@ -75,6 +77,20 @@ export const usePart2Action = () => {
     setIndex(safeIndex - 1);
     setAnswer('');
   };
+  const goTo = (idx: number) => {
+    if (idx === safeIndex) return;
+    setIndex(idx);
+    setAnswer('');
+  };
+
+  const boardItems = Array.from({ length: total }, (_, i) => {
+    const status: 'unanswered' | 'partial' | 'answered' = doneSets.has(i)
+      ? 'answered'
+      : i === safeIndex && answer.trim()
+        ? 'partial'
+        : 'unanswered';
+    return { key: i, label: i + 1, status };
+  });
 
   return {
     isLoading,
@@ -96,5 +112,8 @@ export const usePart2Action = () => {
     hasPrev: safeIndex > 0,
     handleNext,
     handlePrev,
+    goTo,
+    boardItems,
+    activeSetIndex: safeIndex,
   };
 };

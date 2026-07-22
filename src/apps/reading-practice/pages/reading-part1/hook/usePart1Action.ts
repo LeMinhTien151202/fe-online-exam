@@ -29,6 +29,8 @@ export const usePart1Action = () => {
   const [timeLeft, setTimeLeft] = useState(598); // 09:58
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  // Reading reset đáp án khi đổi bộ, nên lưu riêng các bộ đã nộp để tô bảng câu hỏi.
+  const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (timeLeft <= 0 || isSubmitted) return;
@@ -61,6 +63,7 @@ export const usePart1Action = () => {
 
   const doSubmit = () => {
     setIsSubmitted(true);
+    setDoneSets((prev) => new Set(prev).add(safeIndex));
     const correctCount = Object.keys(correctAnswers).filter(
       (id) => answers[Number(id)] === correctAnswers[Number(id)]
     ).length;
@@ -107,11 +110,27 @@ export const usePart1Action = () => {
     resetForNewQuestion();
   };
 
+  const goTo = (idx: number) => {
+    if (idx === safeIndex) return;
+    setIndex(idx);
+    resetForNewQuestion();
+  };
+
   const answeredCount = Object.keys(answers).length;
   const progressPercent = gapCount ? Math.round((answeredCount / gapCount) * 100) : 0;
   const correctCount = Object.keys(correctAnswers).filter(
     (id) => answers[Number(id)] === correctAnswers[Number(id)]
   ).length;
+
+  // Bảng câu hỏi: mỗi bộ (đoạn văn) = 1 nút. Bộ đã nộp -> "đã trả lời"; bộ đang làm dở -> "làm dở".
+  const boardItems = Array.from({ length: total }, (_, i) => {
+    const status: 'unanswered' | 'partial' | 'answered' = doneSets.has(i)
+      ? 'answered'
+      : i === safeIndex && answeredCount > 0
+        ? 'partial'
+        : 'unanswered';
+    return { key: i, label: i + 1, status };
+  });
 
   return {
     isLoading,
@@ -124,6 +143,9 @@ export const usePart1Action = () => {
     hasPrev: safeIndex > 0,
     handleNext,
     handlePrev,
+    goTo,
+    boardItems,
+    activeSetIndex: safeIndex,
     timeLeft,
     answers,
     isSubmitted,

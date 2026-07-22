@@ -21,7 +21,10 @@ import {
   keyForP4,
   useMockTest,
 } from '../hook/useMockTest';
+import { percentToBand, singleSkillScore } from '../../../../../shared/utils/skillScore';
 import * as S from '../styles/styled';
+
+const LISTENING_SKILL_ID = 2;
 
 const { Title, Text } = Typography;
 
@@ -81,7 +84,7 @@ export const ListeningMockTestPage: React.FC = () => {
     hasNextStep,
     formatTime,
     calculateScores,
-    getAptisLevel,
+    submitResult,
     handleRetry,
     handleBackToLanding,
     handleNavigateQuestion,
@@ -105,6 +108,12 @@ export const ListeningMockTestPage: React.FC = () => {
   } = calculateScores();
 
   const scorePercent = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
+
+  // Band CEFR kỹ năng Nghe (skillId 2) theo ĐÚNG bảng quy đổi 0–50: ưu tiên kết quả BE,
+  // fallback suy từ % đúng cục bộ (bằng nhau vì Nghe là trắc nghiệm).
+  const beSkill = submitResult ? singleSkillScore(submitResult, LISTENING_SKILL_ID) : null;
+  const listeningBand = beSkill?.cefr ?? percentToBand(LISTENING_SKILL_ID, scorePercent).cefr;
+  const listeningScaled = beSkill?.scaled ?? percentToBand(LISTENING_SKILL_ID, scorePercent).scaled;
 
   const renderPart1 = () => {
     if (!examData || !activeNavItem) return null;
@@ -446,8 +455,8 @@ export const ListeningMockTestPage: React.FC = () => {
 
                 <S.ReportGrid>
                   <S.ReportStatItem>
-                    <span className="stat-label">Cấp độ Nghe</span>
-                    <span className="stat-value">{getAptisLevel(totalScore, totalMax)}</span>
+                    <span className="stat-label">CEFR Nghe (ước lượng)</span>
+                    <span className="stat-value">{listeningBand ? `${listeningBand} · ${listeningScaled}/50` : 'Chưa xếp loại'}</span>
                   </S.ReportStatItem>
                   <S.ReportStatItem>
                     <span className="stat-label">Tỷ lệ đúng</span>
