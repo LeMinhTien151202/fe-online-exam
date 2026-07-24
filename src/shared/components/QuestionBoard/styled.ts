@@ -1,7 +1,8 @@
 import styled from 'styled-components';
 
 // Bảng câu hỏi dùng chung cho "luyện theo phần" (giống panel ở luyện theo bộ đề).
-// Là 1 cột bên phải, dính (sticky) và tự cuộn khi nhiều câu.
+// Cột bên phải, dính (sticky); chỉ VÙNG LƯỚI SỐ CÂU cuộn bên trong khi nhiều câu
+// (tiêu đề luôn ghim trên, chú thích luôn ghim dưới — giống bảng của Ngữ pháp).
 export const NavPanel = styled.div`
   background: white;
   border-radius: 1rem;
@@ -12,8 +13,12 @@ export const NavPanel = styled.div`
   align-self: start;
   position: sticky;
   top: 1rem;
-  max-height: calc(100vh - 8rem);
-  overflow-y: auto;
+  /* Trừ header (4.5rem) + footer (4.5rem) + padding MainContent + offset sticky
+     để tiêu đề/lưới/chú thích lọt trọn màn hình, không phải lăn mới thấy "Tiến độ". */
+  max-height: calc(100vh - 12rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 
   @media (max-width: 1200px) {
     position: static;
@@ -26,6 +31,19 @@ export const PanelTitle = styled.h4`
   font-weight: 800;
   color: #0f172a;
   margin: 0 0 0.75rem;
+  flex-shrink: 0;
+`;
+
+// Chỉ vùng này cuộn khi số câu nhiều -> không phải lăn cả trang.
+export const GridScrollContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  margin-bottom: 0.75rem;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 export const SectionLabel = styled.div`
@@ -41,7 +59,6 @@ export const ButtonGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0.375rem;
-  margin-bottom: 0.75rem;
 `;
 
 export const NavGridButton = styled.button<{
@@ -95,6 +112,7 @@ export const Legend = styled.div`
   font-size: 0.8rem;
   color: #64748b;
   font-weight: 500;
+  flex-shrink: 0;
 `;
 
 export const LegendItem = styled.div`

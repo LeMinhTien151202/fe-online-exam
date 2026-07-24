@@ -345,7 +345,7 @@ export const SectionLabel = styled.div`
 
 export const ButtonGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 0.375rem;
   margin-bottom: 0.5rem;
 `;

@@ -57,24 +57,26 @@ export const QuestionBoard: React.FC<QuestionBoardProps> = ({
   return (
     <S.NavPanel>
       <S.PanelTitle>{title}</S.PanelTitle>
-      <S.SectionLabel>{sectionLabel}</S.SectionLabel>
-      <S.ButtonGrid>
-        {items.map((item) => (
-          <Tooltip
-            key={item.key}
-            title={item.tooltip ?? defaultTooltip(item.label, item.status, answeredLabel, unansweredLabel, partialLabel)}
-            mouseEnterDelay={0.15}
-          >
-            <S.NavGridButton
-              $status={item.status}
-              $active={activeKey === item.key}
-              onClick={() => onJump(item.key)}
+      <S.GridScrollContainer>
+        <S.SectionLabel>{sectionLabel}</S.SectionLabel>
+        <S.ButtonGrid>
+          {items.map((item) => (
+            <Tooltip
+              key={item.key}
+              title={item.tooltip ?? defaultTooltip(item.label, item.status, answeredLabel, unansweredLabel, partialLabel)}
+              mouseEnterDelay={0.15}
             >
-              {item.label}
-            </S.NavGridButton>
-          </Tooltip>
-        ))}
-      </S.ButtonGrid>
+              <S.NavGridButton
+                $status={item.status}
+                $active={activeKey === item.key}
+                onClick={() => onJump(item.key)}
+              >
+                {item.label}
+              </S.NavGridButton>
+            </Tooltip>
+          ))}
+        </S.ButtonGrid>
+      </S.GridScrollContainer>
 
       <S.Legend>
         <S.LegendItem>

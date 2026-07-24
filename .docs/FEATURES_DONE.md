@@ -146,3 +146,7 @@ _Mỗi khi hoàn thành task, phải dùng lệnh /save để cập nhật vắn
   - Gắn bảng câu hỏi vào 16 trang luyện theo phần (Reading/Listening/Writing/Speaking part 1–4). Mỗi hook thêm `goTo(index)` + `boardItems` (Reading/Writing reset đáp án theo bộ nên lưu thêm `doneSets` để tô "đã nộp"). Grammar part 1/2 vốn đã có `QuestionNav` nên giữ nguyên. Đổi `overflow` các `MainContent` dạng grid/editor sang cuộn dọc để bảng luôn thấy được.
   - Sửa lỗi "luyện theo bộ đề lấy cả đề theo phần": 5 API list ([speaking/writing/listening/reading/grammar]PracticeApi.ts) trước chỉ truyền `skillId` nên trả mọi type; nay thêm `type: 'SKILL_FULL_SET'` để chỉ lấy đúng bộ đề đầy đủ.
   - typecheck sạch; lint scoped các file sửa sạch.
+- _2026-07-23_: **Sidebar học viên tự thu gọn khi làm bài**:
+  - Giữ nguyên toàn bộ màu sắc và phong cách navy hiện có của sidebar.
+  - Sidebar tự thu gọn về chế độ chỉ hiển thị icon khi vào các route làm bài: `/{skill}/part/{number}`, `/{skill}/mock-test/{testId}`, `/grammar/test`, `/mock-exam/main/{testId}`. Nút đóng/mở vẫn hiển thị để người dùng chủ động mở lại; khi chuyển sang route bài thi khác, sidebar tự thu gọn lại.
+  - Thêm tooltip cho icon khi sidebar thu gọn; click icon kỹ năng trong lúc thi quay về landing của kỹ năng tương ứng. Lint scoped sạch, build/typecheck thành công.

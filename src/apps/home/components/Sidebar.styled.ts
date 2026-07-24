@@ -2,7 +2,8 @@ import styled from "styled-components";
 
 export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
   width: ${(props) => (props.$collapsed ? "5.5rem" : "18rem")};
-  background: linear-gradient(180deg, #0f1d36 0%, #0a1426 100%);
+  /* Khớp với header trang làm bài (#0D2245), gradient tối nhẹ xuống đáy cho có chiều sâu */
+  background: linear-gradient(180deg, #0d2245 0%, #0a1a37 100%);
   backdrop-filter: blur(20px);
   color: white;
   display: flex;
@@ -10,7 +11,9 @@ export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
   height: 100vh;
   position: sticky;
   top: 0;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  /* Border phải + bóng nhẹ để tách khỏi vùng nội dung sáng */
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.06);
   z-index: 100;
   /* Đồng bộ tốc độ thu gọn với sidebar admin */
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -28,7 +31,7 @@ export const SidebarContainer = styled.aside<{ $collapsed?: boolean }>`
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: #1a2b4b;
+    background: #24487a;
     border: 1px solid rgba(255, 255, 255, 0.15);
     color: white;
     display: flex;
@@ -284,7 +287,7 @@ export const UserProfileCard = styled.div<{
   $collapsed?: boolean;
   $isActive?: boolean;
 }>`
-  background: ${(props) => (props.$isActive ? "#1e2e4d" : "transparent")};
+  background: ${(props) => (props.$isActive ? "#24487a" : "transparent")};
   padding: 0.625rem;
   border-radius: 0.75rem;
   display: flex;
@@ -372,7 +375,7 @@ export const NotificationBadge = styled.span`
   font-weight: 700;
   padding: 0.125rem 0.3125rem;
   border-radius: 6.25rem;
-  border: 0.125rem solid #1a2b4b;
+  border: 0.125rem solid #0d2245;
   min-width: 1rem;
   text-align: center;
   animation: pulse-ring 2s infinite;
@@ -407,7 +410,7 @@ export const DropdownMenu = styled.div<{
   bottom: 100%;
   left: 0.75rem;
   right: 0.75rem;
-  background: #1a2b4b;
+  background: #24487a;
   border-radius: 0.75rem;
   padding: 0.5rem;
   margin-bottom: 0.75rem;
@@ -436,7 +439,7 @@ export const DropdownMenu = styled.div<{
     left: ${(props) => (props.$collapsed ? "50%" : "2.5rem")};
     margin-left: -0.375rem;
     border: 0.375rem solid transparent;
-    border-top-color: #1a2b4b;
+    border-top-color: #24487a;
   }
 `;
 
@@ -682,7 +685,7 @@ export const EntryContent = styled.div`
   }
 `;
 export const LoginCTAWrapper = styled.div<{ $collapsed?: boolean }>`
-  background: #1a2b4b; /* 8-10% lighter than #0f1d36 */
+  background: #24487a; /* Surface nổi, sáng hơn nền base #1a365d */
   border: 0.0625rem solid rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
   padding: ${(props) => (props.$collapsed ? "0.75rem 0.5rem" : "1.25rem")};
@@ -784,7 +787,7 @@ export const SecondaryCTAButton = styled.button`
 export const CollapsedLoginBtn = styled.div`
   width: 2.5rem;
   height: 2.5rem;
-  background: #1a2b4b;
+  background: #24487a;
   border-radius: 0.75rem;
   display: flex;
   align-items: center;

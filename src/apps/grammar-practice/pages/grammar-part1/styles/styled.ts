@@ -56,8 +56,8 @@ export const MainContent = styled.main`
   overflow-y: auto;
   padding: 2rem;
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 2rem;
+  grid-template-columns: 1fr 300px;
+  gap: 1.5rem;
   width: 100%;
   background: #ffffff;
   scrollbar-width: none;
@@ -257,7 +257,7 @@ export const CustomDropdownWrapper = styled.div`
 export const NavPanel = styled.div`
   background: white;
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
   display: flex;
@@ -267,16 +267,16 @@ export const NavPanel = styled.div`
 `;
 
 export const PanelTitle = styled.h4`
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #0f172a;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 `;
 
 export const GridScrollContainer = styled.div`
   flex: 1;
   overflow-y: auto;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
@@ -299,7 +299,7 @@ export const SectionLabel = styled.div`
 export const ButtonGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 0.5rem;
+  gap: 0.375rem;
 `;
 
 export const NavGridButton = styled.button<{
@@ -312,35 +312,31 @@ export const NavGridButton = styled.button<{
   justify-content: center;
   border-radius: 0.5rem;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
   position: relative;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   // Background and border logic
   background: ${props => {
-    if (props.$status === 'answered') return '#e6f4ff';
+    if (props.$status === 'answered') return '#eff6ff';
     return '#f1f5f9';
   }};
 
   border: 1.5px solid ${props => {
-    if (props.$active) return '#1677ff';
-    if (props.$status === 'answered') return 'rgba(22, 119, 255, 0.3)';
+    if (props.$active) return '#1a365d';
+    if (props.$status === 'answered') return '#bfdbfe';
     return 'transparent';
   }};
 
   color: ${props => {
-    if (props.$active) return '#1677ff';
-    if (props.$status === 'answered') return '#1677ff';
-    return '#475569';
+    if (props.$active) return '#1a365d';
+    if (props.$status === 'answered') return '#2f4a6b';
+    return '#64748b';
   }};
 
   &:hover {
-    background: ${props => {
-      if (props.$status === 'answered') return '#bae0ff';
-      return '#e2e8f0';
-    }};
-    border-color: #1677ff;
+    border-color: #1a365d;
   }
 `;
 
@@ -349,8 +345,8 @@ export const Legend = styled.div`
   flex-direction: column;
   gap: 0.5rem;
   border-top: 1px solid #f1f5f9;
-  padding-top: 1rem;
-  font-size: 0.85rem;
+  padding-top: 0.875rem;
+  font-size: 0.8rem;
   color: #64748b;
   font-weight: 500;
 `;
@@ -462,13 +458,13 @@ export const LegendColorDot = styled.div<{ $type: 'unanswered' | 'answered' | 'a
   
   background: ${props => {
     if (props.$type === 'unanswered') return '#f1f5f9';
-    if (props.$type === 'answered') return '#e6f4ff';
+    if (props.$type === 'answered') return '#eff6ff';
     return 'white';
   }};
-  
+
   border: ${props => {
-    if (props.$type === 'answered') return '1px solid rgba(22, 119, 255, 0.3)';
-    if (props.$type === 'active') return '1.5px solid #1677ff';
+    if (props.$type === 'answered') return '1px solid #bfdbfe';
+    if (props.$type === 'active') return '1.5px solid #1a365d';
     return 'none';
   }};
 `;

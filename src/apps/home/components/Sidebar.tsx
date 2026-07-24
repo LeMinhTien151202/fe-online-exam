@@ -22,6 +22,15 @@ const SKILL_MENUS = [
   { key: 'writing', label: 'Viết', icon: 'edit_document', path: '/writing' },
 ] as const;
 
+const EXAM_ROUTE_PATTERNS = [
+  /^\/(grammar|reading|listening|speaking|writing)\/part\/\d+$/,
+  /^\/(grammar|reading|listening|speaking|writing)\/mock-test\/[^/]+$/,
+  /^\/grammar\/test$/,
+  /^\/mock-exam\/main\/[^/]+$/,
+];
+
+const isExamRoute = (path: string) => EXAM_ROUTE_PATTERNS.some((pattern) => pattern.test(path));
+
 export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
@@ -42,7 +51,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     if (onClose) onClose();
   };
 
-  const [collapsed, setCollapsed] = useState(false);
+  const isExamMode = isExamRoute(currentPath);
+  const [sidebarOverride, setSidebarOverride] = useState<{
+    path: string;
+    collapsed: boolean;
+  } | null>(null);
+  const collapsed = sidebarOverride?.path === currentPath
+    ? sidebarOverride.collapsed
+    : isExamMode;
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
@@ -68,7 +84,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   }, []);
 
   const toggleMenu = (key: string) => {
-    if (collapsed) setCollapsed(false);
+    if (collapsed) {
+      setSidebarOverride({ path: currentPath, collapsed: false });
+    }
     setOpenMenus(prev => ({
       ...Object.fromEntries(SKILL_MENUS.map((menu) => [menu.key, false])),
       [key]: !prev[key],
@@ -115,10 +133,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     <S.SidebarContainer onClick={(e) => e.stopPropagation()} $collapsed={collapsed}>
       <button
         className="collapse-btn"
-        aria-label="Toggle Sidebar"
+        aria-label={collapsed ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng'}
         onClick={(e) => {
           e.stopPropagation();
-          setCollapsed(!collapsed);
+          setSidebarOverride({ path: currentPath, collapsed: !collapsed });
         }}
       >
         <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>
@@ -138,25 +156,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             <div className="line" />
           </S.SectionTitle>
           <div className="space-y-1">
-            <S.NavLink as="div" $active={currentPath === '/'} onClick={handleHomeClick} $collapsed={collapsed}>
-              <span className="material-symbols-outlined">dashboard</span>
-              <span className="nav-text">Bảng điều khiển</span>
-            </S.NavLink>
+            <Tooltip title={collapsed ? 'Bảng điều khiển' : ''} placement="right">
+              <S.NavLink as="div" $active={currentPath === '/'} onClick={handleHomeClick} $collapsed={collapsed}>
+                <span className="material-symbols-outlined">dashboard</span>
+                <span className="nav-text">Bảng điều khiển</span>
+              </S.NavLink>
+            </Tooltip>
 
             {/* 5 kỹ năng: mỗi kỹ năng có 2 mục con thống nhất */}
             {SKILL_MENUS.map((menu) => (
               <S.NavItemWrapper key={menu.key}>
-                <S.NavLink
-                  as="div"
-                  onClick={() => toggleMenu(menu.key)}
-                  $collapsed={collapsed}
-                  $active={currentPath.startsWith(menu.path)}
-                  $isOpen={openMenus[menu.key]}
-                >
-                  <span className="material-symbols-outlined">{menu.icon}</span>
-                  <span className="nav-text">{menu.label}</span>
-                  {renderArrow(openMenus[menu.key])}
-                </S.NavLink>
+                <Tooltip title={collapsed ? menu.label : ''} placement="right">
+                  <S.NavLink
+                    as="div"
+                    onClick={() => isExamMode && collapsed ? goToSkillTab(menu.path) : toggleMenu(menu.key)}
+                    $collapsed={collapsed}
+                    $active={currentPath.startsWith(menu.path)}
+                    $isOpen={openMenus[menu.key]}
+                  >
+                    <span className="material-symbols-outlined">{menu.icon}</span>
+                    <span className="nav-text">{menu.label}</span>
+                    {renderArrow(openMenus[menu.key])}
+                  </S.NavLink>
+                </Tooltip>
                 <S.SubMenuWrapper $isOpen={openMenus[menu.key]} $collapsed={collapsed}>
                   <S.NavLink
                     as="div"
@@ -188,28 +210,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             <div className="line" />
           </S.SectionTitle>
           <div className="space-y-1">
-            <S.ProLink as="div" $active={currentPath.startsWith('/mock-exam')} onClick={() => {
-              navigate({ to: '/mock-exam' });
-              if (onClose) onClose();
-            }} $collapsed={collapsed}>
-              <span className="material-symbols-outlined">stars</span>
-              <span className="nav-text">Thi thử</span>
-              <Badge status="processing" className="ml-auto" />
-            </S.ProLink>
-            <S.NavLink as="div" $active={currentPath === '/materials'} onClick={() => {
-              navigate({ to: '/materials' });
-              if (onClose) onClose();
-            }} $collapsed={collapsed}>
-              <span className="material-symbols-outlined">library_books</span>
-              <span className="nav-text">Tài liệu học tập</span>
-            </S.NavLink>
-            <S.NavLink as="div" $active={currentPath === '/faq'} onClick={() => {
-              navigate({ to: '/faq' });
-              if (onClose) onClose();
-            }} $collapsed={collapsed}>
-              <span className="material-symbols-outlined">forum</span>
-              <span className="nav-text">Góc giải đáp (Q&A)</span>
-            </S.NavLink>
+            <Tooltip title={collapsed ? 'Thi thử' : ''} placement="right">
+              <S.ProLink as="div" $active={currentPath.startsWith('/mock-exam')} onClick={() => {
+                navigate({ to: '/mock-exam' });
+                if (onClose) onClose();
+              }} $collapsed={collapsed}>
+                <span className="material-symbols-outlined">stars</span>
+                <span className="nav-text">Thi thử</span>
+                <Badge status="processing" className="ml-auto" />
+              </S.ProLink>
+            </Tooltip>
+            <Tooltip title={collapsed ? 'Tài liệu học tập' : ''} placement="right">
+              <S.NavLink as="div" $active={currentPath === '/materials'} onClick={() => {
+                navigate({ to: '/materials' });
+                if (onClose) onClose();
+              }} $collapsed={collapsed}>
+                <span className="material-symbols-outlined">library_books</span>
+                <span className="nav-text">Tài liệu học tập</span>
+              </S.NavLink>
+            </Tooltip>
+            <Tooltip title={collapsed ? 'Góc giải đáp' : ''} placement="right">
+              <S.NavLink as="div" $active={currentPath === '/faq'} onClick={() => {
+                navigate({ to: '/faq' });
+                if (onClose) onClose();
+              }} $collapsed={collapsed}>
+                <span className="material-symbols-outlined">forum</span>
+                <span className="nav-text">Góc giải đáp (Q&A)</span>
+              </S.NavLink>
+            </Tooltip>
           </div>
         </S.NavSection>
       </S.NavContainer>
