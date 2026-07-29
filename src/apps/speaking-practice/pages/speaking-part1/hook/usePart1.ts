@@ -5,6 +5,7 @@ import { mapSpeakingP1, SpeakingP1Item } from '../../../services/mappers';
 import { flattenSpeakingExam } from '../../../services/speakingExamMapper';
 import { ISubmitAnswer, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
+import { usePerQuestionGrading } from '../../../hooks/usePerQuestionGrading';
 
 export const usePart1 = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export const usePart1 = () => {
   const total = questions.length;
 
   const submitMutation = useSubmitExamMutation();
+  const { grades, gradingKey, gradeOne } = usePerQuestionGrading();
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
@@ -84,6 +86,18 @@ export const usePart1 = () => {
     setAnswers((prev) => ({ ...prev, [safeIndex]: audioUrl ?? '' }));
   };
 
+  // Chấm ngay câu hiện tại (P1: 1 câu = 1 URL). Khoá theo questionId thật để giữ kết quả.
+  const currentQ = questions[safeIndex - 1];
+  const currentGradeKey = currentQ?.questionId != null ? `p1-${currentQ.questionId}` : '';
+  const currentGrade = currentGradeKey ? grades[currentGradeKey] : undefined;
+  const isGradingCurrent = !!currentGradeKey && gradingKey === currentGradeKey;
+  const currentAudio = answers[safeIndex];
+  const canGradeCurrent = !!currentAudio && currentQ?.questionId != null;
+  const gradeCurrent = () => {
+    if (!currentQ?.questionId || !currentAudio) return;
+    gradeOne({ key: currentGradeKey, examId, questionId: currentQ.questionId, response: currentAudio });
+  };
+
   const currentQuestion = questions[safeIndex - 1] ?? { id: 0, questionText: '', sampleAnswers: [] };
   const answeredCount = Object.values(answers).filter((v) => !!v).length;
   const progressPercent = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
@@ -108,6 +122,10 @@ export const usePart1 = () => {
     handleSubmit,
     handleRecordComplete,
     currentQuestion,
+    currentGrade,
+    isGradingCurrent,
+    canGradeCurrent,
+    gradeCurrent,
     answeredCount,
     progressPercent,
     mockQuestions: questions,

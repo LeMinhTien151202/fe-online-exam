@@ -5,6 +5,7 @@ import { mapSpeakingSets } from '../../../services/mappers';
 import { flattenSpeakingExam } from '../../../services/speakingExamMapper';
 import { ISubmitAnswer, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
+import { usePerQuestionGrading } from '../../../hooks/usePerQuestionGrading';
 
 export const usePart3 = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export const usePart3 = () => {
   const setCount = sets.length;
 
   const submitMutation = useSubmitExamMutation();
+  const { grades, gradingKey, gradeOne } = usePerQuestionGrading();
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
@@ -100,6 +102,17 @@ export const usePart3 = () => {
   };
   const isSubDone = (sub: number) => !!answers[keyOf(sub)];
 
+  // Chấm ngay CẢ BỘ hiện tại (P3: 1 bộ = 1 bản ghi = mảng URL theo thứ tự câu con).
+  const currentGradeKey = raw?.questionId != null ? `p3-set${safeSet}` : '';
+  const currentGrade = currentGradeKey ? grades[currentGradeKey] : undefined;
+  const isGradingCurrent = !!currentGradeKey && gradingKey === currentGradeKey;
+  const currentResponses = (raw?.questions ?? []).map((_, qi) => answers[`${safeSet}-${qi + 1}`] ?? '');
+  const canGradeCurrent = raw?.questionId != null && currentResponses.some((v) => v !== '');
+  const gradeCurrent = () => {
+    if (raw?.questionId == null || !currentResponses.some((v) => v !== '')) return;
+    gradeOne({ key: currentGradeKey, examId, questionId: raw.questionId, response: currentResponses });
+  };
+
   const goTo = (setIdx: number) => {
     setCurrentSetIndex(setIdx);
     setCurrentSubIndex(1);
@@ -141,6 +154,10 @@ export const usePart3 = () => {
     handleRecordComplete,
     currentCompareSet,
     activeQuestion,
+    currentGrade,
+    isGradingCurrent,
+    canGradeCurrent,
+    gradeCurrent,
     totalSubQuestions,
     answeredCount,
     progressPercent,

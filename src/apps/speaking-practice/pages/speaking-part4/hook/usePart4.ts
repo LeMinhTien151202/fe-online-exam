@@ -5,6 +5,7 @@ import { mapSpeakingSets } from '../../../services/mappers';
 import { flattenSpeakingExam } from '../../../services/speakingExamMapper';
 import { ISubmitAnswer, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
+import { usePerQuestionGrading } from '../../../hooks/usePerQuestionGrading';
 
 export const usePart4 = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export const usePart4 = () => {
   const setCount = sets.length;
 
   const submitMutation = useSubmitExamMutation();
+  const { grades, gradingKey, gradeOne } = usePerQuestionGrading();
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
@@ -94,6 +96,18 @@ export const usePart4 = () => {
     setAnswers((prev) => ({ ...prev, [safeSet]: audioUrl ?? '' }));
   };
 
+  // Chấm ngay CẢ BỘ hiện tại (P4: 1 bản ghi/bộ, lặp URL cho mọi câu con).
+  const currentGradeKey = raw?.questionId != null ? `p4-set${safeSet}` : '';
+  const currentGrade = currentGradeKey ? grades[currentGradeKey] : undefined;
+  const isGradingCurrent = !!currentGradeKey && gradingKey === currentGradeKey;
+  const currentUrl = answers[safeSet];
+  const canGradeCurrent = raw?.questionId != null && !!currentUrl;
+  const gradeCurrent = () => {
+    if (raw?.questionId == null || !currentUrl) return;
+    const response = raw.questions.length ? raw.questions.map(() => currentUrl) : [currentUrl];
+    gradeOne({ key: currentGradeKey, examId, questionId: raw.questionId, response });
+  };
+
   const goTo = (idx: number) => {
     setCurrentSetIndex(idx);
     setShowSampleAnswer(false);
@@ -129,6 +143,10 @@ export const usePart4 = () => {
     handleSubmit,
     handleRecordComplete,
     currentSet,
+    currentGrade,
+    isGradingCurrent,
+    canGradeCurrent,
+    gradeCurrent,
     answeredCount,
     progressPercent,
     setCount,

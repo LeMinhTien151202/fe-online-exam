@@ -13,6 +13,7 @@ import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { SpeakingController } from '../../speaking-part1/components/SpeakingController';
+import { QuestionGradeCard } from '../../../components/QuestionGradeCard';
 import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import { usePart4 } from '../hook/usePart4';
 import * as S from '../styles/styled';
@@ -35,6 +36,10 @@ export const Part4Page: React.FC = () => {
     handleSubmit,
     handleRecordComplete,
     currentSet,
+    currentGrade,
+    isGradingCurrent,
+    canGradeCurrent,
+    gradeCurrent,
     answeredCount,
     progressPercent,
     goTo,
@@ -122,6 +127,12 @@ export const Part4Page: React.FC = () => {
                   uploadPrefix="speaking/part/p4"
                   autoUpload
                   onCompleted={handleRecordComplete}
+                />
+                <QuestionGradeCard
+                  canGrade={canGradeCurrent}
+                  loading={isGradingCurrent}
+                  grade={currentGrade}
+                  onGrade={gradeCurrent}
                 />
                 {/* Collapsible Sample Answer */}
                 {currentSet.sampleAnswers.length > 0 && (
