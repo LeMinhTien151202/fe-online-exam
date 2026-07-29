@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { examApi } from './examApi';
 import { mapQuestionToBank } from './examBank';
 import { questionApi } from '../../admin-questions/services/questionApi';
-import { IAssignQuestion, IExamFilter, IUpdateExamPayload } from './types';
+import { FE_SKILL_TO_ID, IAssignQuestion, IExamFilter, IUpdateExamPayload } from './types';
 
 export const EXAMS_KEY = ['admin', 'exam-sets'];
 export const EXAM_BANK_KEY = ['admin', 'exam-bank'];
@@ -22,11 +22,18 @@ export const useExamDetailQuery = (id: number | null) => {
   });
 };
 
-// Toàn bộ ngân hàng câu hỏi -> map về shape Selection dùng
+// Toàn bộ ngân hàng câu hỏi -> map về shape Selection dùng.
+// Lấy theo TỪNG kỹ năng rồi gộp, tránh bị 1 lần gọi phẳng chặn giới hạn -> rớt kỹ năng.
 export const useExamQuestionBank = () => {
   const query = useQuery({
     queryKey: EXAM_BANK_KEY,
-    queryFn: () => questionApi.list({ limit: 500 }),
+    queryFn: async () => {
+      const skillIds = Object.values(FE_SKILL_TO_ID);
+      const perSkill = await Promise.all(
+        skillIds.map((skillId) => questionApi.list({ skillId, limit: 9999 })),
+      );
+      return perSkill.flat();
+    },
   });
   return {
     ...query,

@@ -56,7 +56,7 @@ const GrammarSelection: React.FC<Props> = ({
                                 >
                                     <List
                                         size="small"
-                                        pagination={{ pageSize: 10, size: 'small', simple: true }}
+                                        pagination={{ pageSize: 10, size: 'small', simple: true, showSizeChanger: false }}
                                         dataSource={bankQuestions.filter((q: IBankQuestion) => q.type === 'Grammar' && (searchText === '' || q.content.toLowerCase().includes(searchText.toLowerCase())))}
                                         renderItem={(record: IBankQuestion) => (
                                             <List.Item
@@ -81,7 +81,7 @@ const GrammarSelection: React.FC<Props> = ({
                                     >
                                         <List
                                             size="small"
-                                            pagination={{ pageSize: 6, size: 'small', simple: true }}
+                                            pagination={{ pageSize: 6, size: 'small', simple: true, showSizeChanger: false }}
                                             dataSource={vocabQs}
 
                                             renderItem={(record: IBankQuestion) => (

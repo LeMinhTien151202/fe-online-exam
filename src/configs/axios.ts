@@ -4,7 +4,7 @@ import { tokenManager } from '@/shared/utils/tokenManager';
 import { store } from '@/shared/store/store';
 import { logout } from '@/shared/store/authSlice';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:6969/api/v1';
 
 export interface IPageMeta {
   page: number;

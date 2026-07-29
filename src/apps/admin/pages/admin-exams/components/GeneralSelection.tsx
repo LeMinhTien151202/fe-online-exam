@@ -23,7 +23,7 @@ const GeneralSelection: React.FC<Props> = ({
                     <Table
                         dataSource={filteredQuestions}
                         size="small"
-                        pagination={{ pageSize: 8 }}
+                        pagination={{ pageSize: 8, showSizeChanger: false }}
                         columns={[
                             { title: 'Nội dung', dataIndex: 'content', key: 'content', ellipsis: true },
                             {
@@ -44,7 +44,7 @@ const GeneralSelection: React.FC<Props> = ({
                     <Table
                         dataSource={selectedQuestions}
                         size="small"
-                        pagination={{ pageSize: 8 }}
+                        pagination={{ pageSize: 8, showSizeChanger: false }}
                         columns={[
                             { title: 'Nội dung', dataIndex: 'content', key: 'content', ellipsis: true },
                             {

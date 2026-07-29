@@ -62,7 +62,7 @@ const ReadingSelection: React.FC<Props> = ({
                                     >
                                         <List
                                             size="small"
-                                            pagination={{ pageSize: 6, size: 'small', simple: true }}
+                                            pagination={{ pageSize: 6, size: 'small', simple: true, showSizeChanger: false }}
                                             dataSource={partQuestions}
                                             renderItem={(record: IBankQuestion) => (
 

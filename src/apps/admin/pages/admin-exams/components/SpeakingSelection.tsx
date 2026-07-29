@@ -7,6 +7,9 @@ import { IBankQuestion } from '../services/types';
 const { Text } = Typography;
 const { Panel } = Collapse;
 
+// Ô "slot" khi dựng đề: có thể là câu hỏi thật hoặc ô trống placeholder
+type SpeakingSlot = Partial<IBankQuestion> & { _slotIndex: number; isPlaceholder?: boolean };
+
 interface Props {
     selectedQuestions: IBankQuestion[];
     handleAddQuestion: (record: IBankQuestion) => void;
@@ -73,7 +76,7 @@ const SpeakingSelection: React.FC<Props> = ({
                                     >
                                         <List
                                             size="small"
-                                            pagination={{ pageSize: 6, size: 'small', simple: true }}
+                                            pagination={{ pageSize: 6, size: 'small', simple: true, showSizeChanger: false }}
                                             dataSource={partQuestions}
 
                                             renderItem={(record: IBankQuestion) => (
@@ -145,8 +148,8 @@ const SpeakingSelection: React.FC<Props> = ({
                                             <List
                                                 size="small"
                                                 dataSource={Array.from({ length: totalSlots }).map((_, i) => partQs[i] ? { ...partQs[i], _slotIndex: i } : { _slotIndex: i, isPlaceholder: true })}
-                                                rowKey={(item: any) => item?.id || item?.key || `slot-${item?._slotIndex}`}
-                                                renderItem={(item: any) => (
+                                                rowKey={(item: SpeakingSlot) => item?.id || item?.key || `slot-${item?._slotIndex}`}
+                                                renderItem={(item: SpeakingSlot) => (
                                                     <div style={{ padding: '8px 12px', background: !item?.isPlaceholder ? '#fff' : '#fafafa', border: '1px solid #f1f5f9', marginBottom: '4px', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                         <Space>
                                                             <Text type="secondary" style={{ fontSize: '11px' }}>Slot {item?._slotIndex + 1}:</Text>

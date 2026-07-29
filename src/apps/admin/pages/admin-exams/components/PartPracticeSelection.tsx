@@ -62,6 +62,7 @@ const PartPracticeSelection: React.FC<Props> = ({
                         <List
                             size="small"
                             dataSource={filteredBank}
+                            pagination={{ pageSize: 6, size: 'small', simple: true, showSizeChanger: false }}
                             locale={{ emptyText: <Empty description="Không có câu hỏi cho phần này" /> }}
                             renderItem={(record: IBankQuestion) => {
                                 const added = selectedKeys.has(record.key);

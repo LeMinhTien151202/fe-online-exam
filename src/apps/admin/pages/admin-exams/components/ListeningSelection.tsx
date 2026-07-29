@@ -64,7 +64,7 @@ const ListeningSelection: React.FC<Props> = ({
                                     >
                                         <List
                                             size="small"
-                                            pagination={{ pageSize: 6, size: 'small', simple: true }}
+                                            pagination={{ pageSize: 6, size: 'small', simple: true, showSizeChanger: false }}
                                             dataSource={partQuestions}
                                             rowKey={(item: IBankQuestion) => item?.id || item?.key}
 
