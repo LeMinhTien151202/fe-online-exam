@@ -125,7 +125,7 @@ export const Part3Page: React.FC = () => {
                         <S.SubTab
                           key={idx}
                           $active={currentSubIndex === idx}
-                          $color="#ea580c"
+                          $color="#1a365d"
                           onClick={() => handleSubTabChange(idx)}
                         >
                           Câu {idx} {isSubDone(idx) && '✓'}
@@ -134,7 +134,7 @@ export const Part3Page: React.FC = () => {
                     })}
                   </S.SubTabContainer>
 
-                  <S.QuestionBox $borderColor="#ea580c">
+                  <S.QuestionBox $borderColor="#1a365d">
                     <div className="q-badge">
                       {currentSubIndex === 1 ? 'So sánh hai tranh (Compare)' : 'Giải thích nguyên nhân (Reasons)'}
                     </div>
@@ -147,7 +147,7 @@ export const Part3Page: React.FC = () => {
                 <SpeakingController 
                   prepTime={45} // 45 giây chuẩn bị
                   recordingTime={45} // Ghi âm 45 giây
-                  statusColor="#ea580c"
+                  statusColor="#1a365d"
                   title={`p3-q${currentSubIndex}`}
                   uploadPrefix="speaking/part/p3"
                   autoUpload
@@ -164,7 +164,7 @@ export const Part3Page: React.FC = () => {
                 <S.CollapsibleWrapper>
                   <S.CollapsibleHeader onClick={() => setShowSampleAnswer(!showSampleAnswer)}>
                     <span>
-                      <UnlockOutlined style={{ marginRight: '8px', color: '#ea580c' }} /> 
+                      <UnlockOutlined style={{ marginRight: '8px', color: '#1a365d' }} /> 
                       Xem đáp án mẫu
                     </span>
                     {showSampleAnswer ? <UpOutlined /> : <DownOutlined />}
@@ -182,8 +182,8 @@ export const Part3Page: React.FC = () => {
                               style={{ 
                                 borderRadius: '12px', 
                                 fontSize: '12px',
-                                background: activeSampleIdx === sIdx ? '#ea580c' : undefined,
-                                borderColor: activeSampleIdx === sIdx ? '#ea580c' : undefined,
+                                background: activeSampleIdx === sIdx ? '#1a365d' : undefined,
+                                borderColor: activeSampleIdx === sIdx ? '#1a365d' : undefined,
                               }}
                             >
                               Đáp án {sIdx + 1}

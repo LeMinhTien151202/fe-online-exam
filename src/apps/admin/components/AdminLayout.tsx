@@ -15,7 +15,7 @@ import {
   SettingOutlined,
   QuestionCircleOutlined,
 } from '@ant-design/icons';
-import { useRouterState, useNavigate, Outlet, Link } from '@tanstack/react-router';
+import { useRouterState, useNavigate, Outlet, Link, type LinkProps } from '@tanstack/react-router';
 import * as S from '../styles/layout.styled';
 import { ADMIN_THEME, ADMIN_COLORS } from '../constants';
 import { GlobalAdminStyle } from '../styles/GlobalAdminStyle';
@@ -123,7 +123,7 @@ const AdminLayout: React.FC = () => {
       else if (path === 'create') label = 'Tạo bộ đề';
 
       breadcrumbItems.push({
-        title: index === paths.length - 1 ? <span>{label}</span> : <Link to={currentAcc as any}>{label}</Link>,
+        title: index === paths.length - 1 ? <span>{label}</span> : <Link to={currentAcc as LinkProps['to']}>{label}</Link>,
       });
     });
 
@@ -298,8 +298,8 @@ const AdminLayout: React.FC = () => {
             closable={false}
             onClose={() => setMobileOpen(false)}
             open={mobileOpen}
-            width={260}
-            bodyStyle={{ padding: 0, background: ADMIN_COLORS.sidebarBg }}
+            size={260}
+            styles={{ body: { padding: 0, background: ADMIN_COLORS.sidebarBg } }}
           >
             {renderSidebarContent()}
           </Drawer>

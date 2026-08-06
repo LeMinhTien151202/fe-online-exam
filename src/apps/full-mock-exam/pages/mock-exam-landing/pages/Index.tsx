@@ -1,7 +1,7 @@
 import React from 'react';
 import { Empty, Spin } from 'antd';
 import { DashboardLayout } from '../../../../home/components/DashboardLayout';
-import { useMockExamLanding, TARGET_SCORE } from '../hook/useMockExamLanding';
+import { useMockExamLanding, TARGET_SCORE, TARGET_LEVEL } from '../hook/useMockExamLanding';
 import * as S from '../styles/styled';
 
 const EMPTY_TEXT: Record<string, string> = {
@@ -17,7 +17,6 @@ const MockExamLandingPage: React.FC = () => {
         setActiveTab,
         filteredExams,
         takenExamIds,
-        latestScores,
         history,
         averageScore,
         cefrLevel,
@@ -38,8 +37,8 @@ const MockExamLandingPage: React.FC = () => {
                     <div className="banner-right">
                         <div className="stat-row">
                             <div className="stat-item">
-                                <span className="val">{averageScore != null ? averageScore.toFixed(1) : '--'}</span>
-                                <span className="label">Điểm Trung Bình</span>
+                                <span className="val">{averageScore != null ? Math.round(averageScore) : '--'}</span>
+                                <span className="label">Điểm Trung Bình /200</span>
                             </div>
                             <div className="stat-item">
                                 <span
@@ -55,7 +54,7 @@ const MockExamLandingPage: React.FC = () => {
                         <S.TargetProgressWidget>
                             <div className="progress-info">
                                 <span>Tiến độ mục tiêu</span>
-                                <span className="target">Mục tiêu C · {TARGET_SCORE} điểm</span>
+                                <span className="target">Mục tiêu {TARGET_LEVEL} · {TARGET_SCORE} điểm</span>
                             </div>
                             <div className="progress-rail">
                                 <div className="progress-fill" style={{ width: `${targetProgress}%` }}></div>
@@ -64,6 +63,11 @@ const MockExamLandingPage: React.FC = () => {
                     </div>
                 </S.HeroBanner>
 
+                {isLoading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '5rem 0' }}>
+                        <Spin size="large" description="Đang tải đề thi thử..." />
+                    </div>
+                ) : (
                 <S.MainGrid>
                     {/* Left Column - Test List */}
                     <S.TestListSection>
@@ -73,15 +77,12 @@ const MockExamLandingPage: React.FC = () => {
                             <button className={activeTab === 'taken' ? 'active' : ''} onClick={() => setActiveTab('taken')}>Đã thi</button>
                         </div>
 
-                        {isLoading ? (
-                            <div style={{ textAlign: 'center', padding: '3rem' }}><Spin size="large" /></div>
-                        ) : filteredExams.length === 0 ? (
+                        {filteredExams.length === 0 ? (
                             <div style={{ padding: '2rem' }}>
                                 <Empty description={EMPTY_TEXT[activeTab]} />
                             </div>
                         ) : (
                             filteredExams.map((exam, idx) => {
-                                const latestScore = latestScores.get(exam.id);
                                 const isTaken = takenExamIds.has(exam.id);
                                 return (
                                     <S.TestCard key={exam.id}>
@@ -89,15 +90,7 @@ const MockExamLandingPage: React.FC = () => {
                                         <div className="info">
                                             <div className="top">
                                                 <h3>{exam.title}</h3>
-                                            </div>
-                                            <div className="meta">
-                                                {exam._count?.sections ?? 0} kỹ năng{exam.description ? ` · ${exam.description}` : ''}
-                                            </div>
-                                        </div>
-                                        <div className="score-display">
-                                            <div className="big">
-                                                {latestScore != null ? Math.round(latestScore) : '--'}
-                                                <span>/100</span>
+                                                {isTaken && <span className="taken-tag">Đã thi</span>}
                                             </div>
                                         </div>
                                         <S.ActionButton
@@ -125,10 +118,8 @@ const MockExamLandingPage: React.FC = () => {
                                 ) : (
                                     history.map((item) => (
                                         <div className="history-item" key={item.id}>
-                                            <div className="left">
-                                                <span className="date">{item.date}</span>
-                                                <span className="name">{item.name}</span>
-                                            </div>
+                                            <span className="date">{item.date}</span>
+                                            <span className="name">{item.name}</span>
                                             <div className="right">
                                                 {item.cefr && <span className="cefr">{item.cefr}</span>}
                                                 <span className="score">{item.score != null ? Math.round(item.score) : '--'}</span>
@@ -140,6 +131,7 @@ const MockExamLandingPage: React.FC = () => {
                         </S.SidebarCard>
                     </div>
                 </S.MainGrid>
+                )}
             </S.Container>
         </DashboardLayout>
     );

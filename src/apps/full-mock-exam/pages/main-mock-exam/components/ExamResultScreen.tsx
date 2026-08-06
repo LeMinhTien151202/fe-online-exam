@@ -2,7 +2,7 @@ import { CheckOutlined, ClockCircleOutlined, RobotOutlined, WarningFilled } from
 import { Button, Tag, Tooltip } from 'antd';
 import React, { useMemo } from 'react';
 import { IExamSubmitResult } from '../../../../../shared/services/student-exam';
-import { cefrTagColor } from '../../../../../shared/utils/cefrScale';
+import { cefrTagColor, mockTotalScaled } from '../../../../../shared/utils/cefrScale';
 import { resolveSkillScores } from '../../../services/mockExamScore';
 import * as R from '../styles/result.styles';
 
@@ -19,6 +19,8 @@ const ExamResultScreen: React.FC<ExamResultScreenProps> = ({ result, onBack }) =
     const hasAi = result.ai.length > 0;
     const { skills, overallCefr } = useMemo(() => resolveSkillScores(result), [result]);
     const pendingCount = result.needsManualReviewCount;
+    // Điểm tổng Aptis 0–200 = tổng scaled 4 kỹ năng ngôn ngữ (Grammar là Core, không cộng).
+    const totalScore = useMemo(() => mockTotalScaled(skills), [skills]);
 
     return (
         <R.ResultPage>
@@ -46,7 +48,7 @@ const ExamResultScreen: React.FC<ExamResultScreenProps> = ({ result, onBack }) =
 
                     <R.ScoreStrip>
                         <R.ScorePill>
-                            <span className="val">{Math.round(result.score)}<small>/100</small></span>
+                            <span className="val">{totalScore != null ? totalScore : '--'}<small>/200</small></span>
                             <span className="lbl">Điểm tổng</span>
                         </R.ScorePill>
                         <R.ScorePill>

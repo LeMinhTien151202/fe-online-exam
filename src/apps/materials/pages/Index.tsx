@@ -68,8 +68,8 @@ export const MaterialsPage: React.FC = () => {
         placement="left"
         onClose={() => setIsMobileMenuOpen(false)}
         open={isMobileMenuOpen}
-        bodyStyle={{ padding: 0, background: '#0d2245' }}
-        width={280}
+        styles={{ body: { padding: 0, background: '#0d2245' } }}
+        size={280}
         closable={false}
       >
         <Sidebar onClose={() => setIsMobileMenuOpen(false)} />

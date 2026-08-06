@@ -5,16 +5,14 @@ import {
   TrophyOutlined,
   LineChartOutlined
 } from '@ant-design/icons';
-import { IHomeStats } from '../services/types';
+import { IHomeStatsView } from '../services/types';
 import * as S from './StatsSection.styled';
 
 interface StatsSectionProps {
-  stats: IHomeStats;
-  isStreakLoading?: boolean;
-  isStreakError?: boolean;
+  stats: IHomeStatsView;
 }
 
-export const StatsSection: React.FC<StatsSectionProps> = ({ stats, isStreakLoading, isStreakError }) => {
+export const StatsSection: React.FC<StatsSectionProps> = ({ stats }) => {
   return (
     <S.StatsGrid>
       <S.StatCard>
@@ -23,7 +21,7 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ stats, isStreakLoadi
         </S.IconWrapper>
         <div>
           <S.Label>Tiến độ Tổng quan</S.Label>
-          <S.Value>{stats.overallProgress}%</S.Value>
+          <S.Value>{stats.overallProgress}</S.Value>
         </div>
       </S.StatCard>
 
@@ -33,11 +31,9 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ stats, isStreakLoadi
         </S.IconWrapper>
         <div>
           <S.Label>Chuỗi học tập</S.Label>
-          <S.Value>{isStreakLoading || isStreakError ? '—' : `${stats.learningStreak} ngày`}</S.Value>
+          <S.Value>{stats.learningStreak}</S.Value>
         </div>
       </S.StatCard>
-
-
 
       <S.StatCard>
         <S.IconWrapper $bgColor="#fef3c7" $color="#d97706">

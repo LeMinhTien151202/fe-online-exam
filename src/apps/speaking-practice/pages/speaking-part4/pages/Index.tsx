@@ -108,7 +108,7 @@ export const Part4Page: React.FC = () => {
                   {/* Vertically stacked question list */}
                   <S.QListWrapper>
                     {currentSet.questions.map((q, idx) => (
-                      <S.QListItem key={idx} $borderColor="#7c3aed">
+                      <S.QListItem key={idx} $borderColor="#1a365d">
                         <div className="q-num">{idx + 1}</div>
                         <div className="q-content">{q}</div>
                       </S.QListItem>
@@ -121,7 +121,7 @@ export const Part4Page: React.FC = () => {
                 <SpeakingController 
                   prepTime={60} // 60 giây chuẩn bị (1 phút)
                   recordingTime={120} // Ghi âm 120 giây (2 phút) liên tục
-                  statusColor="#7c3aed"
+                  statusColor="#1a365d"
                   title={`p4-s1`}
                   uploadPrefix="speaking/part/p4"
                   autoUpload
@@ -136,7 +136,7 @@ export const Part4Page: React.FC = () => {
                 <S.CollapsibleWrapper>
                   <S.CollapsibleHeader onClick={() => setShowSampleAnswer(!showSampleAnswer)}>
                     <span>
-                      <UnlockOutlined style={{ marginRight: '8px', color: '#7c3aed' }} /> 
+                      <UnlockOutlined style={{ marginRight: '8px', color: '#1a365d' }} /> 
                       Xem đáp án mẫu (Tất cả 3 câu)
                     </span>
                     {showSampleAnswer ? <UpOutlined /> : <DownOutlined />}
@@ -154,8 +154,8 @@ export const Part4Page: React.FC = () => {
                               style={{ 
                                 borderRadius: '12px', 
                                 fontSize: '12px',
-                                background: activeSampleIdx === sIdx ? '#7c3aed' : undefined,
-                                borderColor: activeSampleIdx === sIdx ? '#7c3aed' : undefined,
+                                background: activeSampleIdx === sIdx ? '#1a365d' : undefined,
+                                borderColor: activeSampleIdx === sIdx ? '#1a365d' : undefined,
                               }}
                             >
                               Đáp án {sIdx + 1}

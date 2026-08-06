@@ -297,7 +297,7 @@ const MainMockExamPage: React.FC = () => {
     if (isLoading) {
         return (
             <S.FullPageCenter>
-                <Spin size="large" tip="Đang tải đề thi thử..." />
+                <Spin size="large" description="Đang tải đề thi thử..." />
             </S.FullPageCenter>
         );
     }

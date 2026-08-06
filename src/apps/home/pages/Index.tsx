@@ -20,7 +20,7 @@ const { Title, Text } = Typography;
  * Smart Component: Trang chủ (Dashboard)
  */
 const HomePage: React.FC = () => {
-  const { stats, modules, isLoading, isStreakLoading, isStreakError } = useHomeData();
+  const { stats, modules, isLoading } = useHomeData();
 
   if (isLoading) return <div>Loading...</div>;
 
@@ -30,11 +30,7 @@ const HomePage: React.FC = () => {
       <HeroSection />
 
       {/* Stats Section - Dumb Component */}
-      <StatsSection
-        stats={stats}
-        isStreakLoading={isStreakLoading}
-        isStreakError={isStreakError}
-      />
+      <StatsSection stats={stats} />
 
       {/* Modules Grid - Dumb Component */}
       <S.SectionTitleWrapper>

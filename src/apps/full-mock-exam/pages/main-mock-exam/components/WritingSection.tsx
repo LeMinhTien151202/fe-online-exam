@@ -19,11 +19,14 @@ interface WritingSectionProps {
     onProgressUpdate?: (answered: number, part: number, question: number) => void;
 }
 
+// Màu accent đồng bộ navy thương hiệu cho mọi part (thay accent cầu vồng cũ).
+const PART_ACCENT = '#1a365d';
+
 const PART_TITLE: Record<number, { title: string; subtitle: string; color: string }> = {
-    1: { title: 'Word-level Writing', subtitle: 'Writing Part 1 • Trả lời ngắn cho từng câu', color: '#0284c7' },
-    2: { title: 'Short Text Writing', subtitle: 'Writing Part 2 • Viết đoạn văn ngắn', color: '#4f46e5' },
-    3: { title: 'Social Network Chat', subtitle: 'Writing Part 3 • Trả lời từng thành viên trong nhóm chat', color: '#f59e0b' },
-    4: { title: 'Formal & Informal Email', subtitle: 'Writing Part 4 • Viết 2 email theo tình huống', color: '#9333ea' },
+    1: { title: 'Word-level Writing', subtitle: 'Writing Part 1 • Trả lời ngắn cho từng câu', color: PART_ACCENT },
+    2: { title: 'Short Text Writing', subtitle: 'Writing Part 2 • Viết đoạn văn ngắn', color: PART_ACCENT },
+    3: { title: 'Social Network Chat', subtitle: 'Writing Part 3 • Trả lời từng thành viên trong nhóm chat', color: PART_ACCENT },
+    4: { title: 'Formal & Informal Email', subtitle: 'Writing Part 4 • Viết 2 email theo tình huống', color: PART_ACCENT },
 };
 
 const WritingSection = React.forwardRef<WritingHandle, WritingSectionProps>(({ prompts, onProgressUpdate }, ref) => {
@@ -168,7 +171,7 @@ const WritingSection = React.forwardRef<WritingHandle, WritingSectionProps>(({ p
                 </WS.TitleArea>
 
                 {instruction && (
-                    <WS.InstructionBox $borderColor={meta?.color ?? '#0284c7'}>
+                    <WS.InstructionBox $borderColor={meta?.color ?? PART_ACCENT}>
                         <span style={{ whiteSpace: 'pre-line' }}>{instruction}</span>
                     </WS.InstructionBox>
                 )}

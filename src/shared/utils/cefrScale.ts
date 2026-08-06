@@ -52,6 +52,36 @@ export const averageCefr = (bands: (Cefr | null)[]): Cefr | null => {
   return ORDER[Math.round(idx.reduce((a, b) => a + b, 0) / idx.length)];
 };
 
+// Tổng điểm mock Aptis: 4 kỹ năng ngôn ngữ (Nghe/Đọc/Viết/Nói) × 0–50 = 0–200.
+// Grammar & Vocabulary (skill 1) là Core riêng, KHÔNG cộng vào tổng (giống overallCefr).
+export const MOCK_SKILL_IDS = [2, 3, 4, 5];
+export const MOCK_MAX_SCORE = 200;
+
+// Tổng scaled 0–200 từ snapshot điểm từng kỹ năng. null nếu không có kỹ năng ngôn ngữ nào.
+export const mockTotalScaled = (
+  skills?: { skillId: number; scaled: number }[] | null,
+): number | null => {
+  if (!skills || skills.length === 0) return null;
+  const rows = skills.filter((s) => MOCK_SKILL_IDS.includes(s.skillId));
+  if (rows.length === 0) return null;
+  return rows.reduce((sum, s) => sum + Math.max(0, Math.min(50, Math.round(s.scaled))), 0);
+};
+
+// Mục tiêu trình độ mặc định của nền tảng (đồng bộ với Home/AuthLayout/Sidebar).
+export const DEFAULT_TARGET_CEFR: Cefr = 'B2';
+
+// Điểm tổng tối thiểu (0–200) để ĐẠT band mục tiêu trên cả 4 kỹ năng ngôn ngữ (2,3,4,5).
+// = tổng "ngưỡng vào band" từng kỹ năng (max của band ngay dưới + 1); band đầu (A0) = 0.
+// Ví dụ B2 = 34(Nghe)+38(Đọc)+40(Viết)+41(Nói) = 153.
+export const cefrTargetTotal = (band: Cefr): number =>
+  MOCK_SKILL_IDS.reduce((sum, skillId) => {
+    const table = BANDS[skillId];
+    if (!table) return sum;
+    const idx = table.findIndex((r) => r.band === band);
+    const min = idx <= 0 ? 0 : table[idx - 1].max + 1;
+    return sum + min;
+  }, 0);
+
 // Màu tag theo band (dùng cho antd Tag)
 export const cefrTagColor = (band: Cefr | null): string => {
   switch (band) {

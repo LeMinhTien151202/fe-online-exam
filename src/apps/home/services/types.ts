@@ -1,9 +1,9 @@
-export interface IHomeStats {
-  overallProgress: number;
-  completedModules: number;
-  totalModules: number;
+// Giá trị hiển thị đã chuẩn hoá cho 4 thẻ thống kê ở dashboard.
+// Dạng chuỗi để bao trọn mọi trạng thái: số liệu thật, đang tải ("…"), hoặc chưa có/khách ("—").
+export interface IHomeStatsView {
+  overallProgress: string;
+  learningStreak: string;
   targetLevel: string;
-  learningStreak: number;
   predictedScore: string;
 }
 

@@ -70,24 +70,24 @@ export const WritingPracticePage: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<'parts' | 'mock-tests'>('parts');
   const navigate = useNavigate();
 
-  const [writingProgress, setWritingProgress] = React.useState<Record<string, number>>(() => {
+  const [writingProgress] = React.useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('aptis_writing_progress');
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
     return { w1: 0, w2: 0, w3: 0, w4: 0 };
   });
 
-  const [mockProgress, setMockProgress] = React.useState<Record<string, number>>(() => {
+  const [mockProgress] = React.useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('aptis_writing_mock_progress');
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
@@ -107,7 +107,7 @@ export const WritingPracticePage: React.FC = () => {
   };
 
   const handleMockClick = (mockId: string) => {
-    navigate({ to: `/writing/mock-test/${mockId}` as any });
+    navigate({ to: `/writing/mock-test/${mockId}` });
   };
 
   return (
@@ -119,7 +119,7 @@ export const WritingPracticePage: React.FC = () => {
         onClose={() => setIsMobileMenuOpen(false)}
         open={isMobileMenuOpen}
         styles={{ body: { padding: 0, background: '#0D2245' } }}
-        width={280}
+        size={280}
         closable={false}
       >
         <Sidebar onClose={() => setIsMobileMenuOpen(false)} />
@@ -177,7 +177,7 @@ export const WritingPracticePage: React.FC = () => {
             <S.TabSectionWrapper>
               <Segmented
                 value={activeTab}
-                onChange={(value) => setActiveTab(value as any)}
+                onChange={(value) => setActiveTab(value as 'parts' | 'mock-tests')}
                 options={[
                   { label: 'Luyện tập theo phần', value: 'parts' },
                   { label: 'Luyện tập theo bộ đề', value: 'mock-tests' }

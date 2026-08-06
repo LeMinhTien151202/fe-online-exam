@@ -26,7 +26,8 @@ interface SpeakUnit {
     label: string;
 }
 
-const PART_COLOR: Record<number, string> = { 1: '#0284c7', 2: '#059669', 3: '#d97706', 4: '#7c3aed' };
+// Đồng bộ navy thương hiệu cho mọi part (thay các accent cầu vồng cũ) — khớp trang luyện Nói.
+const PART_COLOR: Record<number, string> = { 1: '#1a365d', 2: '#1a365d', 3: '#1a365d', 4: '#1a365d' };
 
 const SpeakingSection = React.forwardRef<SpeakingHandle, SpeakingSectionProps>(({ data, onProgressUpdate }, ref) => {
     const units = useMemo<SpeakUnit[]>(() => {

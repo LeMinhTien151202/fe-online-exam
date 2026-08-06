@@ -13,7 +13,7 @@ interface RequireRoleProps {
 
 const FullScreenSpin: React.FC = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-    <Spin size="large" tip="Đang kiểm tra quyền truy cập..." />
+    <Spin size="large" description="Đang kiểm tra quyền truy cập..." />
   </div>
 );
 

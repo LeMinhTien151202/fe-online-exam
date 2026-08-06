@@ -313,9 +313,7 @@ const ReadingSection = React.forwardRef<ReadingHandle, ReadingSectionProps>(({ d
 
                 <RS.TwoColumnLayout>
                     <RS.Part2Column>
-                        <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.95rem', marginBottom: '0.25rem' }}>
-                            Khung văn bản hoàn chỉnh
-                        </div>
+                        <RS.OrderingColumnHeader>Sắp xếp đoạn văn</RS.OrderingColumnHeader>
                         <RS.StoryContainer>
                             {ordering.fixedSentence && <RS.FixedSentenceCard>{ordering.fixedSentence}</RS.FixedSentenceCard>}
                             {Array.from({ length: count }, (_, i) => i + 1).map((idx) => {
@@ -336,11 +334,11 @@ const ReadingSection = React.forwardRef<ReadingHandle, ReadingSectionProps>(({ d
                                                     <span style={{ color: '#94a3b8', marginRight: '6px', fontWeight: 'bold' }}>({idx})</span>
                                                     {item.text}
                                                 </span>
-                                                <button className="btn-remove" onClick={() => handleRemove(part, idx, item)}>✕</button>
+                                                <button className="btn-remove" onClick={(e) => { e.stopPropagation(); handleRemove(part, idx, item); }}>✕</button>
                                             </RS.PlacedItemCard>
                                         ) : (
                                             <RS.EmptySlotDropzone $isOver={dragPart === part && dragOverSlot === idx}>
-                                                Kéo thả câu vào vị trí số ({idx})
+                                                Kéo câu vào đây cho vị trí số {idx}
                                             </RS.EmptySlotDropzone>
                                         )}
                                     </div>
@@ -350,9 +348,12 @@ const ReadingSection = React.forwardRef<ReadingHandle, ReadingSectionProps>(({ d
                     </RS.Part2Column>
 
                     <RS.Part2Column>
-                        <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.95rem', marginBottom: '0.25rem' }}>
-                            Kho câu (click hoặc kéo vào ô)
-                        </div>
+                        <RS.OrderingColumnHeader>
+                            <span>← Kéo hoặc click để chọn câu</span>
+                            <span className="counter">
+                                {Object.values(slots).filter(Boolean).length}/{count} Đã xếp
+                            </span>
+                        </RS.OrderingColumnHeader>
                         <RS.OptionsPool>
                             {pool.map((item) => (
                                 <RS.DraggableCard
@@ -366,9 +367,7 @@ const ReadingSection = React.forwardRef<ReadingHandle, ReadingSectionProps>(({ d
                                 </RS.DraggableCard>
                             ))}
                             {pool.length === 0 && (
-                                <div style={{ textAlign: 'center', padding: '2rem', border: '1.5px dashed #10b981', borderRadius: '0.5rem', background: '#f6fdfa', color: '#059669', fontWeight: 600 }}>
-                                    ✓ Đã xếp đủ tất cả câu!
-                                </div>
+                                <RS.CompletedMessage>✓ Đã sắp xếp tất cả các câu!</RS.CompletedMessage>
                             )}
                         </RS.OptionsPool>
                     </RS.Part2Column>

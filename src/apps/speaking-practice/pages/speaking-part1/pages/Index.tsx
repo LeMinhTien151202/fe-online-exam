@@ -98,7 +98,7 @@ export const Part1Page: React.FC = () => {
                     </div>
                   </S.TitleArea>
 
-                  <S.QuestionBox $borderColor="#0284c7">
+                  <S.QuestionBox $borderColor="#1a365d">
                     <div className="q-badge">Câu hỏi {currentQuestionIndex}</div>
                     <div className="q-text">{currentQuestion.questionText}</div>
                   </S.QuestionBox>
@@ -109,7 +109,7 @@ export const Part1Page: React.FC = () => {
                 <SpeakingController 
                   prepTime={0} // Không có thời gian chuẩn bị
                   recordingTime={30} // Ghi âm 30 giây
-                  statusColor="#0284c7"
+                  statusColor="#1a365d"
                   title={`p1-q${currentQuestionIndex}`}
                   uploadPrefix="speaking/part/p1"
                   autoUpload
@@ -124,7 +124,7 @@ export const Part1Page: React.FC = () => {
                 <S.CollapsibleWrapper>
                   <S.CollapsibleHeader onClick={() => setShowSampleAnswer(!showSampleAnswer)}>
                     <span>
-                      <UnlockOutlined style={{ marginRight: '8px', color: '#0284c7' }} /> 
+                      <UnlockOutlined style={{ marginRight: '8px', color: '#1a365d' }} /> 
                       Xem đáp án mẫu
                     </span>
                     {showSampleAnswer ? <UpOutlined /> : <DownOutlined />}
@@ -142,8 +142,8 @@ export const Part1Page: React.FC = () => {
                               style={{ 
                                 borderRadius: '12px', 
                                 fontSize: '12px',
-                                background: activeSampleIdx === sIdx ? '#0284c7' : undefined,
-                                borderColor: activeSampleIdx === sIdx ? '#0284c7' : undefined,
+                                background: activeSampleIdx === sIdx ? '#1a365d' : undefined,
+                                borderColor: activeSampleIdx === sIdx ? '#1a365d' : undefined,
                               }}
                             >
                               Đáp án {sIdx + 1}

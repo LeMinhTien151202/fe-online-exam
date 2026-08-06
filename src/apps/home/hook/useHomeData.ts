@@ -1,22 +1,78 @@
 import { useMemo, useState } from "react";
-import { IHomeStats,ILearningModule,IUserInfo } from "../services/types";
-import { useMyStreakQuery } from '@/shared/services/student-exam';
+import { IHomeStatsView, ILearningModule, IUserInfo } from "../services/types";
+import {
+  useMyAttemptsQuery,
+  useMyProgressQuery,
+  useMyStreakQuery,
+} from '@/shared/services/student-exam';
+import { mockTotalScaled, DEFAULT_TARGET_CEFR } from '@/shared/utils/cefrScale';
+import { useAppSelector } from '@/shared/store/hooks';
+
+// Mục tiêu trình độ mặc định của nền tảng (chưa có API mục tiêu riêng theo học viên).
+const DEFAULT_TARGET_LEVEL = DEFAULT_TARGET_CEFR;
+const DASH = '—';
 
 export const useHomeData = () => {
-  const streakQuery = useMyStreakQuery();
-  const [baseStats] = useState<IHomeStats>({
-    overallProgress: 26,
-    completedModules: 4,
-    totalModules: 15,
-    targetLevel: "B2",
-    learningStreak: 0,
-    predictedScore: "139/200",
-  });
+  const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated);
 
-  const stats = useMemo<IHomeStats>(() => ({
-    ...baseStats,
-    learningStreak: streakQuery.data?.currentStreak ?? 0,
-  }), [baseStats, streakQuery.data?.currentStreak]);
+  // Chỉ gọi API khi đã đăng nhập — khách vãng lai không có dữ liệu cá nhân.
+  const streakQuery = useMyStreakQuery(isAuthenticated);
+  const progressQuery = useMyProgressQuery(isAuthenticated);
+  const attemptsQuery = useMyAttemptsQuery({}, isAuthenticated);
+
+  // Tiến độ tổng quan = tổng câu đã làm / tổng câu (gộp mọi kỹ năng, mọi phần).
+  const overallProgress = useMemo(() => {
+    const rows = progressQuery.data ?? [];
+    const sum = rows.reduce(
+      (acc, r) => ({ answered: acc.answered + (r.answered || 0), total: acc.total + (r.total || 0) }),
+      { answered: 0, total: 0 },
+    );
+    return sum.total > 0 ? Math.round((sum.answered / sum.total) * 100) : 0;
+  }, [progressQuery.data]);
+
+  // Điểm dự đoán = trung bình tổng điểm các bài thi thử (MOCK_TEST) trên thang Aptis 0–200
+  // (tổng scaled 4 kỹ năng từ snapshot skillCefr), nhất quán với Mock Exam Center.
+  const predictedScore = useMemo(() => {
+    const totals = (attemptsQuery.data?.result ?? [])
+      // Attempt có thể để type ở cấp trên (bản cũ) hoặc lồng trong exam{} (bản mới).
+      .filter((att) => (att.type ?? att.exam?.type) === 'MOCK_TEST')
+      .map((att) => mockTotalScaled(att.skillCefr))
+      .filter((t): t is number => t != null);
+    if (totals.length === 0) return null;
+    return totals.reduce((a, b) => a + b, 0) / totals.length;
+  }, [attemptsQuery.data]);
+
+  // Giá trị hiển thị đã chuẩn hoá: khách vãng lai -> "—"; đang tải -> "…"; có dữ liệu -> giá trị thật.
+  const stats = useMemo<IHomeStatsView>(() => {
+    if (!isAuthenticated) {
+      return {
+        overallProgress: DASH,
+        learningStreak: DASH,
+        targetLevel: DASH,
+        predictedScore: DASH,
+      };
+    }
+    return {
+      overallProgress: progressQuery.isPending ? '…' : `${overallProgress}%`,
+      learningStreak:
+        streakQuery.isPending || streakQuery.isError ? DASH : `${streakQuery.data?.currentStreak ?? 0} ngày`,
+      targetLevel: DEFAULT_TARGET_LEVEL,
+      predictedScore: attemptsQuery.isPending
+        ? '…'
+        : predictedScore != null
+          ? `${Math.round(predictedScore)}/200`
+          : DASH,
+    };
+  }, [
+    isAuthenticated,
+    overallProgress,
+    progressQuery.isPending,
+    streakQuery.isPending,
+    streakQuery.isError,
+    streakQuery.data?.currentStreak,
+    attemptsQuery.isPending,
+    predictedScore,
+  ]);
 
   const [modules] = useState<ILearningModule[]>([
     {
@@ -92,7 +148,5 @@ export const useHomeData = () => {
     modules,
     userInfo,
     isLoading: false,
-    isStreakLoading: streakQuery.isPending,
-    isStreakError: streakQuery.isError,
   };
 };

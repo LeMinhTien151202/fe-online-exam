@@ -39,7 +39,7 @@ export const GrammarPracticePage: React.FC = () => {
         onClose={() => setIsMobileMenuOpen(false)}
         open={isMobileMenuOpen}
         styles={{ body: { padding: 0, background: '#0D2245' } }}
-        width={280}
+        size={280}
         closable={false}
       >
         <Sidebar onClose={() => setIsMobileMenuOpen(false)} />

@@ -22,8 +22,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 placement="left"
                 onClose={() => setIsMobileMenuOpen(false)}
                 open={isMobileMenuOpen}
-                bodyStyle={{ padding: 0, background: '#0D2245' }}
-                width={280}
+                styles={{ body: { padding: 0, background: '#0D2245' } }}
+                size={280}
                 closable={false}
             >
                 <Sidebar onClose={() => setIsMobileMenuOpen(false)} />

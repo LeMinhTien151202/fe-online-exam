@@ -182,7 +182,7 @@ export const TargetProgressWidget = styled.div`
 
 export const MainGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 350px;
+  grid-template-columns: 1fr 420px;
   gap: 2.5rem;
 
   @media (max-width: ${breakpoints.tablet}) {
@@ -276,7 +276,6 @@ export const TestCard = styled.div`
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      margin-bottom: 0.25rem;
       flex-wrap: wrap;
 
       h3 {
@@ -285,11 +284,16 @@ export const TestCard = styled.div`
         font-weight: 800;
         color: #1a365d;
       }
-    }
-    .meta {
-      color: #64748b;
-      font-size: 0.85rem;
-      font-weight: 600;
+
+      .taken-tag {
+        padding: 0.15rem 0.55rem;
+        border-radius: 0.5rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        background: #eaf1fb;
+        color: #1a365d;
+        white-space: nowrap;
+      }
     }
   }
 
@@ -397,9 +401,10 @@ export const SkillBarRow = styled.div`
 
 export const HistoryList = styled.div`
   .history-item {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 3rem 1fr auto;
     align-items: center;
+    column-gap: 0.85rem;
     padding: 0.85rem 0;
     border-bottom: 1px solid #f1f5f9;
 
@@ -407,39 +412,44 @@ export const HistoryList = styled.div`
       border: none;
     }
 
-    .left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      .date {
-        font-size: 0.85rem;
-        color: #94a3b8;
-        font-weight: 600;
-      }
-      .name {
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: #1a365d;
-      }
+    /* Ngày: cột cố định, hiển thị 1 dòng (dd/mm) tránh bị đẩy xuống */
+    .date {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* Tên đề: co giãn, cắt bớt bằng ellipsis thay vì xuống dòng lộn xộn */
+    .name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #1a365d;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
     }
 
     .right {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.6rem;
       .cefr {
-        padding: 0.15rem 0.4rem;
+        padding: 0.15rem 0.45rem;
         border-radius: 4px;
-        font-size: 0.65rem;
+        font-size: 0.68rem;
         font-weight: 800;
         background: #f8fafc;
         color: #64748b;
         border: 1px solid #e2e8f0;
+        white-space: nowrap;
       }
       .score {
-        font-size: 0.9rem;
+        font-size: 1rem;
         font-weight: 800;
         color: #1a365d;
+        white-space: nowrap;
       }
     }
   }

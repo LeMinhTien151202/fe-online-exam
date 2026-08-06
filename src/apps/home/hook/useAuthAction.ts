@@ -1,13 +1,15 @@
 import { useMutation } from '@tanstack/react-query';
+import { App } from 'antd';
+import { IRegisterPayload } from '@apps/auth/services/types';
 import { authService } from '../services/auth';
-import { notification } from 'antd';
 
 export const useAuthAction = () => {
+  const { notification } = App.useApp();
   const registerMutation = useMutation({
-    mutationFn: (payload: any) => authService.register(payload),
+    mutationFn: (payload: IRegisterPayload) => authService.register(payload),
     onSuccess: () => {
       notification.success({
-        message: 'Thành công',
+        title: 'Thành công',
         description: 'Đăng ký tài khoản thành công!',
       });
     },

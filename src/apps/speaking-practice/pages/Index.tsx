@@ -69,24 +69,24 @@ export const SpeakingPracticePage: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<'parts' | 'mock-tests'>('parts');
   const navigate = useNavigate();
 
-  const [speakingProgress, setSpeakingProgress] = React.useState<Record<string, number>>(() => {
+  const [speakingProgress] = React.useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('aptis_speaking_progress');
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
     return { s1: 0, s2: 0, s3: 0, s4: 0 };
   });
 
-  const [mockProgress, setMockProgress] = React.useState<Record<string, number>>(() => {
+  const [mockProgress] = React.useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('aptis_speaking_mock_progress');
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
@@ -106,7 +106,7 @@ export const SpeakingPracticePage: React.FC = () => {
   };
 
   const handleMockClick = (mockId: string) => {
-    navigate({ to: `/speaking/mock-test/${mockId}` as any });
+    navigate({ to: `/speaking/mock-test/${mockId}` });
   };
 
   return (
@@ -118,7 +118,7 @@ export const SpeakingPracticePage: React.FC = () => {
         onClose={() => setIsMobileMenuOpen(false)}
         open={isMobileMenuOpen}
         styles={{ body: { padding: 0, background: '#0D2245' } }}
-        width={280}
+        size={280}
         closable={false}
       >
         <Sidebar onClose={() => setIsMobileMenuOpen(false)} />
@@ -176,7 +176,7 @@ export const SpeakingPracticePage: React.FC = () => {
             <S.TabSectionWrapper>
               <Segmented
                 value={activeTab}
-                onChange={(value) => setActiveTab(value as any)}
+                onChange={(value) => setActiveTab(value as 'parts' | 'mock-tests')}
                 options={[
                   { label: 'Luyện tập theo phần', value: 'parts' },
                   { label: 'Luyện tập theo bộ đề', value: 'mock-tests' }

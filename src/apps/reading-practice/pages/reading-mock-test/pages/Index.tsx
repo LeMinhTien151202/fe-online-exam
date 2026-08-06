@@ -119,7 +119,7 @@ export const ReadingMockTestPage: React.FC = () => {
               </Space>
             </S.Header>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Spin size="large" tip="Đang tải đề thi từ hệ thống..." />
+              <Spin size="large" description="Đang tải đề thi từ hệ thống..." />
             </div>
           </S.PageContainer>
         </HomeS.RightColumn>
@@ -273,9 +273,7 @@ export const ReadingMockTestPage: React.FC = () => {
     return (
       <S.TwoColumnLayout>
         <S.Part2Column>
-          <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.95rem', marginBottom: '0.25rem' }}>
-            Khung văn bản hoàn chỉnh
-          </div>
+          <S.OrderingColumnHeader>Sắp xếp đoạn văn</S.OrderingColumnHeader>
           <S.StoryContainer>
             {data.fixedSentence && <S.FixedSentenceCard>{data.fixedSentence}</S.FixedSentenceCard>}
             {Array.from({ length: count }, (_, i) => i + 1).map((idx) => {
@@ -296,7 +294,7 @@ export const ReadingMockTestPage: React.FC = () => {
                       )}
                     </S.PlacedItemCard>
                   ) : (
-                    <S.EmptySlotDropzone $isOver={isOver}>Kéo thả câu vào vị trí số ({idx})</S.EmptySlotDropzone>
+                    <S.EmptySlotDropzone $isOver={isOver}>Kéo câu vào đây cho vị trí số {idx}</S.EmptySlotDropzone>
                   )}
                 </div>
               );
@@ -307,22 +305,27 @@ export const ReadingMockTestPage: React.FC = () => {
         <S.Part2Column>
           {isSubmitted ? (
             <>
-              <div style={{ fontWeight: 700, color: '#14532d', fontSize: '0.95rem', marginBottom: '0.25rem' }}>Đáp án chính xác theo thứ tự</div>
+              <S.OrderingColumnHeader>Đáp án đúng</S.OrderingColumnHeader>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {correctOrder.map((id, index) => {
                   const text = data.initialSentences.find((s) => s.id === id)?.text;
                   return (
-                    <div key={id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '1rem 1.25rem', borderRadius: '0.5rem' }}>
-                      <span style={{ background: '#10b981', color: 'white', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.85rem', flexShrink: 0 }}>{index + 1}</span>
-                      <span style={{ color: '#14532d', fontWeight: 600, fontSize: '0.9rem' }}>{text}</span>
-                    </div>
+                    <S.CorrectAnswerRow key={id}>
+                      <S.CorrectBadgeNumber>{index + 1}</S.CorrectBadgeNumber>
+                      <S.CorrectAnswerText>{text}</S.CorrectAnswerText>
+                    </S.CorrectAnswerRow>
                   );
                 })}
               </div>
             </>
           ) : (
             <>
-              <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.95rem', marginBottom: '0.25rem' }}>Kho câu (click hoặc kéo vào ô)</div>
+              <S.OrderingColumnHeader>
+                <span>← Kéo hoặc click để chọn câu</span>
+                <span className="counter">
+                  {Object.values(slots).filter(Boolean).length}/{count} Đã xếp
+                </span>
+              </S.OrderingColumnHeader>
               <S.OptionsPool>
                 {pool.map((item) => (
                   <S.DraggableCard key={item.id} draggable onDragStart={() => handleDragStart(part, item, null)} onClick={() => handleAutoPlace(part, item)}>
@@ -331,7 +334,7 @@ export const ReadingMockTestPage: React.FC = () => {
                   </S.DraggableCard>
                 ))}
                 {pool.length === 0 && (
-                  <div style={{ textAlign: 'center', padding: '2rem', border: '1.5px dashed #10b981', borderRadius: '0.5rem', background: '#f6fdfa', color: '#059669', fontWeight: 600 }}>✓ Đã xếp đủ tất cả câu!</div>
+                  <S.CompletedMessage>✓ Đã sắp xếp tất cả các câu!</S.CompletedMessage>
                 )}
               </S.OptionsPool>
             </>

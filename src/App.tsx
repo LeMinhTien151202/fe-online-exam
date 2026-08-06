@@ -1,7 +1,8 @@
-import React from 'react';
-import { ConfigProvider } from 'antd';
+import React, { useEffect } from 'react';
+import { App as AntdApp, ConfigProvider } from 'antd';
 import { Provider as ReduxProvider } from 'react-redux';
 import { antThemeConfig } from './configs/antDesign';
+import { setAppNotification } from './configs/notification';
 import { QueryProvider } from './shared/providers/QueryProvider';
 import { store } from './shared/store/store';
 import { useAuthBootstrap } from './shared/hooks/useAuthBootstrap';
@@ -106,6 +107,17 @@ const AuthBootstrap: React.FC = () => {
   return null;
 };
 
+// Cầu nối: đưa instance notification của <App> ra cho nơi ngoài React (axios interceptor) dùng,
+// tránh cảnh báo "Static function can not consume context" của antd v6.
+const NotificationBridge: React.FC = () => {
+  const { notification } = AntdApp.useApp();
+  useEffect(() => {
+    setAppNotification(notification);
+    return () => setAppNotification(null);
+  }, [notification]);
+  return null;
+};
+
 /**
  * Root Component của ứng dụng
  */
@@ -114,8 +126,12 @@ function App() {
     <ReduxProvider store={store}>
       <QueryProvider>
         <ConfigProvider theme={antThemeConfig}>
-          <AuthBootstrap />
-          <RouterProvider router={router} />
+          {/* display:contents -> App vẫn có element thật cho cssVar nhưng không chèn box phá layout */}
+          <AntdApp style={{ display: 'contents' }}>
+            <AuthBootstrap />
+            <NotificationBridge />
+            <RouterProvider router={router} />
+          </AntdApp>
         </ConfigProvider>
       </QueryProvider>
     </ReduxProvider>

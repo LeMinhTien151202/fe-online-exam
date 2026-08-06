@@ -57,17 +57,19 @@ export const useMyExamProgressQuery = () => {
   });
 };
 
-export const useMyProgressQuery = () => {
+export const useMyProgressQuery = (enabled: boolean = true) => {
   return useQuery({
     queryKey: PROGRESS_KEY,
     queryFn: () => studentExamApi.myProgress(),
+    enabled,
   });
 };
 
-export const useMyStreakQuery = () => {
+export const useMyStreakQuery = (enabled: boolean = true) => {
   return useQuery({
     queryKey: STREAK_KEY,
     queryFn: () => studentExamApi.myStreak(),
+    enabled,
   });
 };
 
@@ -105,10 +107,11 @@ export const useSubmitExamMutation = () => {
   });
 };
 
-export const useMyAttemptsQuery = (filter: IAttemptFilter = {}) => {
+export const useMyAttemptsQuery = (filter: IAttemptFilter = {}, enabled: boolean = true) => {
   return useQuery({
     queryKey: [...ATTEMPTS_KEY, filter],
     queryFn: () => studentExamApi.myAttempts(filter),
+    enabled,
   });
 };
 

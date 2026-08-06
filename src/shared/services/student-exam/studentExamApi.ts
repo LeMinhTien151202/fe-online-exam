@@ -31,9 +31,17 @@ export const studentExamApi = {
       timeout: 120_000,
     }),
 
-  // Lịch sử làm bài của mình (+ điểm trung bình MOCK_TEST)
-  myAttempts: (filter: IAttemptFilter = {}) =>
-    axiosInstance.get<IAttemptsResponse, IAttemptsResponse>('/attempts/me', { params: filter }),
+  // Lịch sử làm bài của mình (+ điểm trung bình MOCK_TEST).
+  // BE trả `data` là MẢNG attempts trực tiếp (không bọc { result, averageMockScore }),
+  // và có thể (bản cũ) bọc trong { result }. Chuẩn hoá về IAttemptsResponse để UI dùng thống nhất.
+  myAttempts: async (filter: IAttemptFilter = {}): Promise<IAttemptsResponse> => {
+    const raw = await axiosInstance.get<unknown, unknown>('/attempts/me', { params: filter });
+    const result = Array.isArray(raw)
+      ? (raw as IAttemptsResponse['result'])
+      : ((raw as IAttemptsResponse)?.result ?? []);
+    const averageMockScore = (raw as IAttemptsResponse)?.averageMockScore ?? null;
+    return { result, averageMockScore };
+  },
 
   // Tập exam_set_id đã làm (để gắn nhãn Đã làm/Chưa làm cho SKILL_FULL_SET & MOCK_TEST)
   myDone: () =>

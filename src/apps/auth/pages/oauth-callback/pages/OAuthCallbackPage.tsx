@@ -8,7 +8,7 @@ const OAuthCallbackPage: React.FC = () => {
 
   return (
     <S.CenterWrapper>
-      <Spin size="large" tip="Đang xử lý đăng nhập..." />
+      <Spin size="large" description="Đang xử lý đăng nhập..." />
     </S.CenterWrapper>
   );
 };

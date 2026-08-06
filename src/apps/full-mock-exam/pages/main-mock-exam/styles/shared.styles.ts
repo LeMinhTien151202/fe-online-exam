@@ -101,6 +101,9 @@ export const ExamFooter = styled.footer`
 
 export const FullPageCenter = styled.div`
   height: 100vh;
+  /* width:100% + flex:1 để lấp đầy #root (là flex row) — nếu không sẽ co theo nội dung, lệch trái */
+  width: 100%;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;

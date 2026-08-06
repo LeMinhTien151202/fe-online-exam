@@ -1,5 +1,5 @@
 import axios, { InternalAxiosRequestConfig, AxiosError, AxiosRequestConfig } from 'axios';
-import { notification } from 'antd';
+import { getNotification } from './notification';
 import { tokenManager } from '@/shared/utils/tokenManager';
 import { store } from '@/shared/store/store';
 import { logout } from '@/shared/store/authSlice';
@@ -204,8 +204,8 @@ axiosInstance.interceptors.response.use(
     const shouldNotify = error.response?.status !== 401 || isLoud401;
 
     if (shouldNotify) {
-      notification.error({
-        message: title,
+      getNotification().error({
+        title,
         description,
       });
     }

@@ -33,25 +33,25 @@ const PART_META: Record<number, { label: string; title: string; subtitle: string
     label: 'Part 1',
     title: 'Nhập thông tin cơ bản vào biểu mẫu đăng ký',
     subtitle: 'Writing Part 1 • Fill out the form',
-    color: '#0284c7',
+    color: '#1a365d',
   },
   2: {
     label: 'Part 2',
     title: 'Giới thiệu bản thân ngắn gọn cho câu lạc bộ',
     subtitle: 'Writing Part 2 • Write in sentences',
-    color: '#4f46e5',
+    color: '#1a365d',
   },
   3: {
     label: 'Part 3',
     title: 'Tương tác trong nhóm chat/diễn đàn câu lạc bộ',
     subtitle: 'Writing Part 3 • Chat with other members',
-    color: '#d97706',
+    color: '#1a365d',
   },
   4: {
     label: 'Part 4',
     title: 'Question 4 of 4 - Email Writing',
     subtitle: 'Write a short email to your friend, and a longer formal email.',
-    color: '#7c3aed',
+    color: '#1a365d',
   },
 };
 
@@ -138,7 +138,7 @@ export const WritingMockTestPage = () => {
               </Space>
             </S.Header>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Spin size="large" tip="Đang tải đề viết từ hệ thống..." />
+              <Spin size="large" description="Đang tải đề viết từ hệ thống..." />
             </div>
           </S.PageContainer>
         </HomeS.RightColumn>
@@ -231,7 +231,7 @@ export const WritingMockTestPage = () => {
     return (
       <S.SectionColumn>
         {firstPrompt?.instruction && (
-          <W.InstructionBox $borderColor="#0284c7" className="mb-4 text-[0.9rem] py-3 px-4">
+          <W.InstructionBox $borderColor="#1a365d" className="mb-4 text-[0.9rem] py-3 px-4">
             {firstPrompt.instruction}
           </W.InstructionBox>
         )}
@@ -266,7 +266,7 @@ export const WritingMockTestPage = () => {
     const answer = answers[prompt.id] ?? '';
     return (
       <S.SectionColumn>
-        <W.InstructionBox $borderColor="#4f46e5">
+        <W.InstructionBox $borderColor="#1a365d">
           Write in sentences. Use {prompt.minWords}-{prompt.maxWords} words. (Khuyên dùng: Dành ra khoảng 3 phút cho phần này).
         </W.InstructionBox>
         <div className="text-[1.05rem] font-bold text-[#0f172a]">
@@ -566,7 +566,6 @@ export const WritingMockTestPage = () => {
                       <S.TitleArea>
                         <h2>{activeMeta.title}</h2>
                         <div className="subtitle">{activeMeta.subtitle}</div>
-                        <Tag color="blue">{activeMeta.label}</Tag>
                       </S.TitleArea>
                       {renderActivePart()}
                     </S.ContentCard>

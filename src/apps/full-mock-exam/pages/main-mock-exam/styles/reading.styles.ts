@@ -197,6 +197,7 @@ export const FixedSentenceCard = styled.div`
   line-height: 1.5;
   color: #0f172a;
   font-weight: 600;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01);
   min-height: 56px;
   display: flex;
   align-items: center;
@@ -232,7 +233,7 @@ export const PlacedItemCard = styled.div<{
     ${(props) => {
       if (props.$status === "success") return "#10b981";
       if (props.$status === "error") return "#ef4444";
-      return "#3b82f6";
+      return "#1a365d";
     }};
   border-radius: 0.5rem;
   padding: 1rem 1.25rem;
@@ -249,6 +250,7 @@ export const PlacedItemCard = styled.div<{
     font-weight: 600;
     line-height: 1.5;
     flex: 1;
+    padding-right: 1rem;
   }
 
   .btn-remove {
@@ -258,9 +260,15 @@ export const PlacedItemCard = styled.div<{
     font-weight: 700;
     cursor: pointer;
     font-size: 1.1rem;
+    padding: 0 0.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #dc2626;
+    }
   }
 `;
 
@@ -271,27 +279,34 @@ export const OptionsPool = styled.div`
 `;
 
 export const DraggableCard = styled.div`
-  background: white;
+  background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 0.5rem;
   padding: 1rem 1.25rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01);
   cursor: grab;
   transition: all 0.2s;
   min-height: 56px;
 
   &:hover {
     border-color: #cbd5e1;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.03);
+  }
+
+  &:active {
+    cursor: grabbing;
   }
 `;
 
 export const DragGripHandle = styled.div`
   color: #94a3b8;
   font-size: 1.15rem;
+  line-height: 1;
   user-select: none;
+  font-weight: bold;
 `;
 
 export const DraggableText = styled.span`
@@ -395,4 +410,62 @@ export const BadgeNumber = styled.div`
   font-weight: 700;
   font-size: 0.9rem;
   flex-shrink: 0;
+`;
+
+/* ==== Ordering (Part 2/3) — đồng bộ với giao diện luyện "theo phần" ==== */
+export const OrderingColumnHeader = styled.div`
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  .counter {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+  }
+`;
+
+export const CorrectAnswerRow = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+`;
+
+export const CorrectBadgeNumber = styled.span`
+  background: #10b981;
+  color: #ffffff;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+`;
+
+export const CorrectAnswerText = styled.span`
+  color: #14532d;
+  font-weight: 600;
+  font-size: 0.9rem;
+`;
+
+export const CompletedMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  border: 1.5px dashed #10b981;
+  border-radius: 0.5rem;
+  background: #f6fdfa;
+  color: #059669;
+  font-weight: 600;
 `;

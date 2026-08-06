@@ -33,25 +33,25 @@ const PART_META: Record<number, { title: string; subtitle: string; color: string
   1: {
     title: 'Trả lời 3 câu hỏi ngắn về bản thân',
     subtitle: 'Speaking Part 1 • Personal Information',
-    color: '#0284c7',
+    color: '#1a365d',
     header: 'Part 1: Personal Information',
   },
   2: {
     title: 'Miêu tả tranh và trả lời câu hỏi',
     subtitle: 'Speaking Part 2 • Describe, Express Opinion & Explain',
-    color: '#059669',
+    color: '#1a365d',
     header: 'Part 2: Describe, Express Opinion & Explain',
   },
   3: {
     title: 'So sánh hai bức tranh và trả lời câu hỏi',
     subtitle: 'Speaking Part 3 • Compare & Provide Reasons',
-    color: '#ea580c',
+    color: '#1a365d',
     header: 'Part 3: Compare & Provide Reasons',
   },
   4: {
     title: 'Trả lời liên tục 3 câu hỏi về chủ đề',
     subtitle: 'Speaking Part 4 • Abstract Topic',
-    color: '#7c3aed',
+    color: '#1a365d',
     header: 'Part 4: Abstract Topic',
   },
 };
@@ -120,7 +120,7 @@ export const SpeakingMockTestPage = () => {
               </Space>
             </S.Header>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Spin size="large" tip="Đang tải đề nói từ hệ thống..." />
+              <Spin size="large" description="Đang tải đề nói từ hệ thống..." />
             </div>
           </S.PageContainer>
         </HomeS.RightColumn>
@@ -183,7 +183,7 @@ export const SpeakingMockTestPage = () => {
     const question = examData.part1[activeSubIndex - 1] ?? examData.part1[0];
     if (!question) return <Empty description="Part 1 chưa có câu hỏi." />;
     return (
-      <S.QuestionBox $borderColor="#0284c7">
+      <S.QuestionBox $borderColor="#1a365d">
         <div className="q-badge">Câu hỏi {activeSubIndex}</div>
         <div className="q-text">{question.questionText}</div>
       </S.QuestionBox>
@@ -207,13 +207,13 @@ export const SpeakingMockTestPage = () => {
           {set.questions.map((_, index) => {
             const subIndex = index + 1;
             return (
-              <S.SubTab key={subIndex} $active={activeSubIndex === subIndex} $color="#059669" onClick={() => handleSubTabChange(subIndex)}>
+              <S.SubTab key={subIndex} $active={activeSubIndex === subIndex} $color="#1a365d" onClick={() => handleSubTabChange(subIndex)}>
                 Câu {subIndex} {isSubDone(2, activeSetIndex, subIndex) && '✓'}
               </S.SubTab>
             );
           })}
         </S.SubTabContainer>
-        <S.QuestionBox $borderColor="#059669">
+        <S.QuestionBox $borderColor="#1a365d">
           <div className="q-badge">{activeSubIndex === 1 ? 'Mô tả tranh (Describe)' : 'Câu hỏi mở rộng (Explain)'}</div>
           <div className="q-text">{question.questionText}</div>
         </S.QuestionBox>
@@ -238,13 +238,13 @@ export const SpeakingMockTestPage = () => {
           {set.questions.map((_, index) => {
             const subIndex = index + 1;
             return (
-              <S.SubTab key={subIndex} $active={activeSubIndex === subIndex} $color="#ea580c" onClick={() => handleSubTabChange(subIndex)}>
+              <S.SubTab key={subIndex} $active={activeSubIndex === subIndex} $color="#1a365d" onClick={() => handleSubTabChange(subIndex)}>
                 Câu {subIndex} {isSubDone(3, activeSetIndex, subIndex) && '✓'}
               </S.SubTab>
             );
           })}
         </S.SubTabContainer>
-        <S.QuestionBox $borderColor="#ea580c">
+        <S.QuestionBox $borderColor="#1a365d">
           <div className="q-badge">{activeSubIndex === 1 ? 'So sánh hai tranh (Compare)' : 'Giải thích nguyên nhân (Reasons)'}</div>
           <div className="q-text">{question.questionText}</div>
         </S.QuestionBox>
@@ -264,7 +264,7 @@ export const SpeakingMockTestPage = () => {
         )}
         <S.QListWrapper>
           {set.questions.map((question, index) => (
-            <S.QListItem key={question.id} $borderColor="#7c3aed">
+            <S.QListItem key={question.id} $borderColor="#1a365d">
               <div className="q-num">{index + 1}</div>
               <div className="q-content">{question.questionText}</div>
             </S.QListItem>
