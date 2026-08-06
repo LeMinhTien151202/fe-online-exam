@@ -5,6 +5,7 @@ import {
   IAttemptsResponse,
   IExamProgressRow,
   IExamSubmitResult,
+  ILearningStreak,
   IStudentProgressRow,
   ISubmitExamPayload,
 } from './types';
@@ -25,7 +26,10 @@ export const studentExamApi = {
   // Nộp bài: BE tự phân luồng theo type của đề (PART_PRACTICE / SKILL_FULL_SET / MOCK_TEST).
   // Trả review nóng: điểm trắc nghiệm + kết quả AI (ESSAY/RECORD) ngay trong response.
   submit: (examId: number, payload: ISubmitExamPayload) =>
-    axiosInstance.post<IExamSubmitResult, IExamSubmitResult>(`/exams/${examId}/submit`, payload),
+    axiosInstance.post<IExamSubmitResult, IExamSubmitResult>(`/exams/${examId}/submit`, payload, {
+      // AI grading is synchronous and can take longer when a Speaking answer contains several audio files.
+      timeout: 120_000,
+    }),
 
   // Lịch sử làm bài của mình (+ điểm trung bình MOCK_TEST)
   myAttempts: (filter: IAttemptFilter = {}) =>
@@ -43,4 +47,8 @@ export const studentExamApi = {
   // Tiến độ tích lũy theo (skill, part) — dashboard "đã luyện bao nhiêu" (gộp mọi đề).
   myProgress: () =>
     axiosInstance.get<IStudentProgressRow[], IStudentProgressRow[]>('/progress/me'),
+
+  // Chuỗi ngày học hiện tại; BE đã tính hiệu lực theo ngày nghiệp vụ.
+  myStreak: () =>
+    axiosInstance.get<ILearningStreak, ILearningStreak>('/streaks/me'),
 };

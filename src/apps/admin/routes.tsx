@@ -1,12 +1,26 @@
 import { createRoute } from '@tanstack/react-router';
+import React from 'react';
 import { rootRoute } from '../../shared/router/root';
 import AdminLayoutPage from './components/AdminLayout';
+import { RequireRole } from '@/shared/auth/RequireRole';
+import { ROLE_ACCESS, UserRole } from '@/shared/auth/roleAccess';
 
-// 1. Layout Route
+// Bọc component trong guard vai trò. Toàn khu /admin dành cho ADMIN + TEACHER;
+// một số trang chỉ ADMIN sẽ được bọc thêm bằng adminOnly.
+const guard = (Component: React.ComponentType, allow: UserRole[]): React.FC => {
+  const Guarded: React.FC = () => (
+    <RequireRole allow={allow}>
+      <Component />
+    </RequireRole>
+  );
+  return Guarded;
+};
+
+// 1. Layout Route — chặn STUDENT / khách ngay từ khung quản trị.
 export const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin',
-  component: AdminLayoutPage,
+  component: guard(AdminLayoutPage, ROLE_ACCESS.contentManagers),
 });
 
 // 2. Child pages lazy components or direct imports
@@ -27,13 +41,13 @@ import AdminNotificationsPage from './pages/admin-notifications/pages/Index';
 export const adminDashboardRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/',
-  component: AdminDashboardPage,
+  component: guard(AdminDashboardPage, ROLE_ACCESS.adminOnly),
 });
 
 export const adminUsersRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/users',
-  component: AdminUsersPage,
+  component: guard(AdminUsersPage, ROLE_ACCESS.adminOnly),
 });
 
 import { redirect } from '@tanstack/react-router';
@@ -97,7 +111,7 @@ export const adminGradingDetailRoute = createRoute({
 export const adminSettingsRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/settings',
-  component: AdminSettingsPage,
+  component: guard(AdminSettingsPage, ROLE_ACCESS.adminOnly),
 });
 
 export const adminFaqRoute = createRoute({
@@ -109,7 +123,7 @@ export const adminFaqRoute = createRoute({
 export const adminNotificationsRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/notifications',
-  component: AdminNotificationsPage,
+  component: guard(AdminNotificationsPage, ROLE_ACCESS.adminOnly),
 });
 
 // Helper collection of all child routes to add to routeTree in App.tsx

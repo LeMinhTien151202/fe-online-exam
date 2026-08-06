@@ -1,10 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { message } from 'antd';
 import { mapSpeakingSets } from '../../../services/mappers';
 import { flattenSpeakingExam } from '../../../services/speakingExamMapper';
-import { ISubmitAnswer, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
-import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
+import { usePartPracticeExam } from '../../../../../shared/services/student-exam';
 import { usePerQuestionGrading } from '../../../hooks/usePerQuestionGrading';
 
 export const usePart2 = () => {
@@ -25,7 +23,6 @@ export const usePart2 = () => {
   }, [examDetail]);
   const setCount = sets.length;
 
-  const submitMutation = useSubmitExamMutation();
   const { grades, gradingKey, gradeOne } = usePerQuestionGrading();
 
   useEffect(() => {
@@ -78,25 +75,6 @@ export const usePart2 = () => {
     }
   };
 
-  const handleSubmit = () => {
-    confirmSubmitExam({ onOk: doSubmit });
-  };
-
-  const doSubmit = () => {
-    message.success('Đã ghi nhận phần trả lời của bạn! Bạn có thể luyện câu tiếp theo.');
-
-    // Nộp lên BE để tăng student_progress (skill 5, part 2). RECORD = mảng URL theo thứ tự câu con mỗi bộ.
-    if (examId) {
-      const submitAnswers: ISubmitAnswer[] = [];
-      sets.forEach((set, setIndex) => {
-        if (set.questionId == null) return;
-        const response = set.questions.map((_, qIndex) => answers[`${setIndex}-${qIndex + 1}`] ?? '');
-        if (response.some((v) => v !== '')) submitAnswers.push({ questionId: set.questionId, response });
-      });
-      if (submitAnswers.length) submitMutation.mutate({ examId, payload: { answers: submitAnswers } });
-    }
-  };
-
   const keyOf = (sub: number) => `${safeSet}-${sub}`;
   const handleRecordComplete = (audioUrl: string | null) => {
     setAnswers((prev) => ({ ...prev, [keyOf(currentSubIndex)]: audioUrl ?? '' }));
@@ -108,9 +86,10 @@ export const usePart2 = () => {
   const currentGrade = currentGradeKey ? grades[currentGradeKey] : undefined;
   const isGradingCurrent = !!currentGradeKey && gradingKey === currentGradeKey;
   const currentResponses = (raw?.questions ?? []).map((_, qi) => answers[`${safeSet}-${qi + 1}`] ?? '');
-  const canGradeCurrent = raw?.questionId != null && currentResponses.some((v) => v !== '');
+  const hasCompletedCurrentSet = currentResponses.length > 0 && currentResponses.every(Boolean);
+  const canGradeCurrent = raw?.questionId != null && hasCompletedCurrentSet;
   const gradeCurrent = () => {
-    if (raw?.questionId == null || !currentResponses.some((v) => v !== '')) return;
+    if (raw?.questionId == null || !hasCompletedCurrentSet) return;
     gradeOne({ key: currentGradeKey, examId, questionId: raw.questionId, response: currentResponses });
   };
 
@@ -151,7 +130,6 @@ export const usePart2 = () => {
     handleSubTabChange,
     handleNext,
     handleBack,
-    handleSubmit,
     handleRecordComplete,
     currentSet,
     activeQuestion,

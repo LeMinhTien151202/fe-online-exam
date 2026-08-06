@@ -10,6 +10,7 @@ import {
 import { Link } from '@tanstack/react-router';
 import { Button, Drawer, Empty, Progress, Segmented, Spin } from 'antd';
 import React from 'react';
+import { LearningStreakValue } from '@/shared/components/LearningStreakValue';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { PartCard } from '../components/PartCard';
@@ -80,7 +81,7 @@ export const ListeningPracticePage: React.FC = () => {
                   <div className="icon" style={{ color: '#ea580c' }}>🔥</div>
                   <div className="info">
                     <span>Chuỗi ngày</span>
-                    <span>5 Ngày</span>
+                    <span><LearningStreakValue /></span>
                   </div>
                 </S.StatPill>
               </S.StatsContainer>

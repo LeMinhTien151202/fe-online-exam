@@ -1,10 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { message } from 'antd';
 import { mapSpeakingP1, SpeakingP1Item } from '../../../services/mappers';
 import { flattenSpeakingExam } from '../../../services/speakingExamMapper';
-import { ISubmitAnswer, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
-import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
+import { usePartPracticeExam } from '../../../../../shared/services/student-exam';
 import { usePerQuestionGrading } from '../../../hooks/usePerQuestionGrading';
 
 export const usePart1 = () => {
@@ -25,7 +23,6 @@ export const usePart1 = () => {
   }, [examDetail]);
   const total = questions.length;
 
-  const submitMutation = useSubmitExamMutation();
   const { grades, gradingKey, gradeOne } = usePerQuestionGrading();
 
   useEffect(() => {
@@ -56,29 +53,6 @@ export const usePart1 = () => {
       setActiveSampleIdx(0);
     } else {
       navigate({ to: '/speaking' });
-    }
-  };
-
-  const handleSubmit = () => {
-    confirmSubmitExam({
-      unansweredCount: total - Object.values(answers).filter((v) => !!v).length,
-      totalQuestions: total,
-      onOk: doSubmit,
-    });
-  };
-
-  const doSubmit = () => {
-    message.success('Đã ghi nhận phần trả lời của bạn! Bạn có thể luyện câu tiếp theo.');
-
-    // Nộp lên BE để tăng student_progress (skill 5, part 1). RECORD P1 = 1 URL cho mỗi câu.
-    if (examId) {
-      const submitAnswers: ISubmitAnswer[] = [];
-      questions.forEach((q, i) => {
-        if (q.questionId == null) return;
-        const url = answers[i + 1];
-        if (url) submitAnswers.push({ questionId: q.questionId, response: url });
-      });
-      if (submitAnswers.length) submitMutation.mutate({ examId, payload: { answers: submitAnswers } });
     }
   };
 
@@ -119,7 +93,6 @@ export const usePart1 = () => {
     formatTime,
     handleNext,
     handleBack,
-    handleSubmit,
     handleRecordComplete,
     currentQuestion,
     currentGrade,

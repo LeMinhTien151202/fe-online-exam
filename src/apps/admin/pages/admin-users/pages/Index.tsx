@@ -7,7 +7,7 @@ import * as S from '../styles/styled';
 
 import UserList from '../components/UserList';
 import UserDetailModal from '../components/UserDetailModal';
-import PermissionMatrix from '../components/PermissionMatrix';
+import RoleInfo from '../components/RoleInfo';
 
 const { Title } = Typography;
 
@@ -25,8 +25,6 @@ const UsersIndex: React.FC = () => {
     selectedStudent,
     detailOpen,
     setDetailOpen,
-    permissions,
-    setPermissions,
     handleStatusChange,
     handleCreate,
     handleOpenDetail,
@@ -44,8 +42,8 @@ const UsersIndex: React.FC = () => {
           activeKey={activeTab}
           onChange={setActiveTab}
           items={[
-            { key: 'list', label: 'Danh sách học viên' },
-            { key: 'roles', label: 'Phân quyền & Vai trò' },
+            { key: 'list', label: 'Danh sách người dùng' },
+            { key: 'roles', label: 'Quyền theo vai trò' },
           ]}
         />
       </S.Header>
@@ -63,7 +61,7 @@ const UsersIndex: React.FC = () => {
           onCreate={handleCreate}
         />
       ) : (
-        <PermissionMatrix permissions={permissions} setPermissions={setPermissions} />
+        <RoleInfo />
       )}
 
       <UserDetailModal

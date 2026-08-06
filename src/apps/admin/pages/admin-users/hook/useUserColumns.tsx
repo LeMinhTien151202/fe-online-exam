@@ -49,10 +49,10 @@ export const useUserColumns = (
             title: 'Chuỗi ngày',
             dataIndex: 'streak',
             key: 'streak',
-            render: (streak: number) => (
+            render: (streak: IUserRow['streak']) => (
                 <Space>
                     <span>🔥</span>
-                    <Text strong>{streak} ngày</Text>
+                    <Text strong>{streak ? `${streak.currentStreak} ngày` : '—'}</Text>
                 </Space>
             ),
         },

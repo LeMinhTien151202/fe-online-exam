@@ -1,10 +1,9 @@
 import React from 'react';
-import { Space, Progress, Button, Select } from 'antd';
+import { Space, Progress, Button } from 'antd';
 import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import { 
   LeftOutlined, 
   RightOutlined,
-  CheckCircleOutlined,
   ClockCircleOutlined,
   DownOutlined,
   UpOutlined,
@@ -15,6 +14,7 @@ import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import { SpeakingController } from '../components/SpeakingController';
 import { QuestionGradeCard } from '../../../components/QuestionGradeCard';
+import { AiGradeButton } from '../../../components/AiGradeButton';
 import { QuestionBoard, type BoardStatus } from '@/shared/components/QuestionBoard';
 import { usePart1 } from '../hook/usePart1';
 
@@ -34,7 +34,6 @@ export const Part1Page: React.FC = () => {
     formatTime,
     handleNext,
     handleBack,
-    handleSubmit,
     handleRecordComplete,
     currentQuestion,
     currentGrade,
@@ -89,38 +88,12 @@ export const Part1Page: React.FC = () => {
               <S.LeftColumn>
                 <S.ContentCard>
                   <S.TitleArea>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div>
                       <div>
                         <h2>Trả lời 3 câu hỏi ngắn về bản thân</h2>
                         <div className="subtitle">
                           Speaking Part 1 • Question {currentQuestionIndex} of {mockQuestions.length}
                         </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontWeight: 600, color: '#475569', fontSize: '0.9rem' }}>Chọn câu:</span>
-                        <Select
-                          value={currentQuestionIndex}
-                          onChange={(val) => {
-                            setCurrentQuestionIndex(val as number);
-                            setShowSampleAnswer(false);
-                            setActiveSampleIdx(0);
-                          }}
-                          style={{ width: 140 }}
-                          dropdownStyle={{ maxHeight: 300, overflowY: 'auto' }}
-                          showSearch
-                          optionFilterProp="label"
-                          options={mockQuestions.map((q) => ({
-                            value: q.id,
-                            label: `Câu ${q.id}`,
-                            labelNode: (
-                              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                                <span>Câu {q.id}</span>
-                                {answers[q.id] ? <span style={{ color: '#10b981', fontWeight: 'bold' }}>✓</span> : <span style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>Chưa làm</span>}
-                              </div>
-                            )
-                          }))}
-                          optionRender={(option) => (option.data as { labelNode?: React.ReactNode }).labelNode}
-                        />
                       </div>
                     </div>
                   </S.TitleArea>
@@ -143,10 +116,8 @@ export const Part1Page: React.FC = () => {
                   onCompleted={handleRecordComplete}
                 />
                 <QuestionGradeCard
-                  canGrade={canGradeCurrent}
                   loading={isGradingCurrent}
                   grade={currentGrade}
-                  onGrade={gradeCurrent}
                 />
                 {/* Collapsible Sample Answer */}
                 {currentQuestion.sampleAnswers.length > 0 && (
@@ -219,22 +190,12 @@ export const Part1Page: React.FC = () => {
             </Button>
 
             <Space size="middle">
-              <Button
-                type="primary"
-                icon={<CheckCircleOutlined />}
-                size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#1a365d',
-                  borderColor: '#1a365d',
-                  padding: '0 2rem',
-                  boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.25)'
-                }}
-                onClick={handleSubmit}
-              >
-                Nộp bài
-              </Button>
+              <AiGradeButton
+                canGrade={canGradeCurrent}
+                loading={isGradingCurrent}
+                hasGrade={!!currentGrade}
+                onGrade={gradeCurrent}
+              />
               {hasNext && (
                 <Button
                   type="primary"

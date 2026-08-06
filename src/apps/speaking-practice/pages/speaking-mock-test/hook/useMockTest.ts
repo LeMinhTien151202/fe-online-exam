@@ -96,6 +96,7 @@ export const useMockTest = () => {
     () => navItems.filter((item) => answers[keyOf(item.partNumber, item.setIndex, item.subIndex)]).length,
     [answers, navItems]
   );
+  const isReadyForAiGrading = totalQuestions > 0 && answeredCount === totalQuestions;
 
   const saveProgressToLocalStorage = useCallback(() => {
     const saved = localStorage.getItem('aptis_speaking_mock_progress');
@@ -138,22 +139,26 @@ export const useMockTest = () => {
   }, [answers, examData]);
 
   const submitToServer = useCallback(async () => {
-    if (!examId) return;
+    if (!examId || !isReadyForAiGrading) return;
     try {
       const result = await submitMutation.mutateAsync({ examId, payload: { answers: collectAnswers() } });
       setSubmitResult(result);
     } catch {
       // Interceptor đã hiện notification lỗi.
     }
-  }, [collectAnswers, examId, submitMutation]);
+  }, [collectAnswers, examId, isReadyForAiGrading, submitMutation]);
 
   const handleAutoSubmit = useCallback(() => {
     setIsSubmitted(true);
     setShowReport(true);
-    message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
-    saveProgressToLocalStorage();
-    submitToServer();
-  }, [saveProgressToLocalStorage, submitToServer]);
+    if (isReadyForAiGrading) {
+      message.warning('Đã hết thời gian làm bài! Hệ thống tự động gửi bài để AI chấm.');
+      saveProgressToLocalStorage();
+      submitToServer();
+      return;
+    }
+    message.warning('Đã hết thời gian. Bài chưa hoàn thành đầy đủ nên chưa thể chấm bằng AI.');
+  }, [isReadyForAiGrading, saveProgressToLocalStorage, submitToServer]);
 
   useEffect(() => {
     if (timeLeft <= 0 || isSubmitted) return;
@@ -244,9 +249,13 @@ export const useMockTest = () => {
     !!answers[keyOf(partNumber, setIndex, subIndex)];
 
   const handleManualSubmit = () => {
+    if (!isReadyForAiGrading) {
+      message.warning('Hãy hoàn thành tất cả câu hỏi trước khi chấm bằng AI.');
+      return;
+    }
     setIsSubmitted(true);
     setShowReport(true);
-    message.success('Bạn đã nộp bài thi nói thành công!');
+    message.success('Đã gửi toàn bộ bài nói để AI chấm!');
     saveProgressToLocalStorage();
     submitToServer();
   };
@@ -275,6 +284,10 @@ export const useMockTest = () => {
   };
 
   const handleSubmitClick = () => {
+    if (!isReadyForAiGrading) {
+      message.warning('Hãy hoàn thành tất cả câu hỏi trước khi chấm bằng AI.');
+      return;
+    }
     const unansweredCount = totalQuestions - answeredCount;
     confirmSubmitExam({ unansweredCount, totalQuestions, onOk: handleManualSubmit });
   };
@@ -304,6 +317,8 @@ export const useMockTest = () => {
     availableParts,
     formatTime,
     answeredCount,
+    isReadyForAiGrading,
+    isSubmitting: submitMutation.isPending,
     handleRetry,
     handleBackToLanding,
     handleNavigateQuestion,

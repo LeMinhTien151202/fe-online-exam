@@ -30,14 +30,19 @@ export const usePerQuestionGrading = () => {
     try {
       const answer: ISubmitAnswer = { questionId, response };
       const result = await submitMutation.mutateAsync({ examId, payload: { answers: [answer] } });
-      const ai = result.ai.find((a) => a.questionId === questionId) ?? result.ai[0] ?? null;
+      const aiResults = Array.isArray(result.ai) ? result.ai : [];
+      const ai = aiResults.find((a) => a.questionId === questionId) ?? aiResults[0] ?? null;
       if (!ai) {
         message.info('Chưa có kết quả chấm cho câu này.');
         return;
       }
       setGrades((prev) => ({ ...prev, [key]: ai }));
-      if (ai.aiScore != null) message.success(`Đã chấm xong: ${ai.aiScore}/100`);
-      else message.info('Câu này cần chấm tay.');
+      if (ai.aiScore != null) {
+        message.success(`Đã chấm xong: ${ai.aiScore}/100`);
+      } else {
+        // AI không chấm được -> nêu đúng lý do backend trả về (thiếu audio, chưa cấu hình, lỗi tạm thời...).
+        message.warning(ai.feedback?.trim() || 'Câu này cần chấm tay.');
+      }
     } catch {
       // Interceptor axios đã hiện notification lỗi.
     } finally {

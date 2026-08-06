@@ -10,9 +10,11 @@ import * as S from './StatsSection.styled';
 
 interface StatsSectionProps {
   stats: IHomeStats;
+  isStreakLoading?: boolean;
+  isStreakError?: boolean;
 }
 
-export const StatsSection: React.FC<StatsSectionProps> = ({ stats }) => {
+export const StatsSection: React.FC<StatsSectionProps> = ({ stats, isStreakLoading, isStreakError }) => {
   return (
     <S.StatsGrid>
       <S.StatCard>
@@ -31,7 +33,7 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ stats }) => {
         </S.IconWrapper>
         <div>
           <S.Label>Chuỗi học tập</S.Label>
-          <S.Value>{stats.learningStreak} ngày</S.Value>
+          <S.Value>{isStreakLoading || isStreakError ? '—' : `${stats.learningStreak} ngày`}</S.Value>
         </div>
       </S.StatCard>
 

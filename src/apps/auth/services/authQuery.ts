@@ -1,6 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { authApi } from './authApi';
-import { tokenManager } from '@/shared/utils/tokenManager';
 
 export const AUTH_ACCOUNT_QUERY_KEY = ['auth', 'account'];
 
@@ -16,12 +15,12 @@ export const useLoginMutation = () => {
   });
 };
 
-// Chỉ gọi khi đã có access_token, phục vụ khôi phục phiên đăng nhập / hiển thị thông tin user
+// Luôn kiểm tra tài khoản khi khởi động. Interceptor sẽ dùng refresh cookie
+// để khôi phục phiên nếu access token đang thiếu hoặc đã hết hạn.
 export const useAccountQuery = () => {
   return useQuery({
     queryKey: AUTH_ACCOUNT_QUERY_KEY,
     queryFn: authApi.getAccount,
-    enabled: !!tokenManager.getAccessToken(),
     retry: false,
   });
 };

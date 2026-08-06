@@ -1,10 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { message } from 'antd';
 import { mapSpeakingSets } from '../../../services/mappers';
 import { flattenSpeakingExam } from '../../../services/speakingExamMapper';
-import { ISubmitAnswer, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
-import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
+import { usePartPracticeExam } from '../../../../../shared/services/student-exam';
 import { usePerQuestionGrading } from '../../../hooks/usePerQuestionGrading';
 
 export const usePart4 = () => {
@@ -25,7 +23,6 @@ export const usePart4 = () => {
   }, [examDetail]);
   const setCount = sets.length;
 
-  const submitMutation = useSubmitExamMutation();
   const { grades, gradingKey, gradeOne } = usePerQuestionGrading();
 
   useEffect(() => {
@@ -68,27 +65,6 @@ export const usePart4 = () => {
       setActiveSampleIdx(0);
     } else {
       navigate({ to: '/speaking' });
-    }
-  };
-
-  const handleSubmit = () => {
-    confirmSubmitExam({ onOk: doSubmit });
-  };
-
-  const doSubmit = () => {
-    message.success('Đã ghi nhận phần trả lời của bạn! Bạn có thể luyện bộ câu hỏi tiếp theo.');
-
-    // Nộp lên BE để tăng student_progress (skill 5, part 4). 1 bản ghi/bộ, lặp URL cho mọi câu con.
-    if (examId) {
-      const submitAnswers: ISubmitAnswer[] = [];
-      sets.forEach((set, setIndex) => {
-        if (set.questionId == null) return;
-        const url = answers[setIndex];
-        if (!url) return;
-        const response = set.questions.length ? set.questions.map(() => url) : [url];
-        submitAnswers.push({ questionId: set.questionId, response });
-      });
-      if (submitAnswers.length) submitMutation.mutate({ examId, payload: { answers: submitAnswers } });
     }
   };
 
@@ -140,7 +116,6 @@ export const usePart4 = () => {
     formatTime,
     handleNext,
     handleBack,
-    handleSubmit,
     handleRecordComplete,
     currentSet,
     currentGrade,

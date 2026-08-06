@@ -6,6 +6,7 @@ export const ATTEMPTS_KEY = ['student', 'attempts'];
 export const PART_PRACTICE_KEY = ['student', 'part-practice'];
 export const PROGRESS_KEY = ['student', 'progress'];
 export const EXAM_PROGRESS_KEY = ['student', 'exam-progress'];
+export const STREAK_KEY = ['student', 'streak'];
 
 // % hoàn thành theo TỪNG ĐỀ. Chuẩn hoá về Map examId -> percent (0-100).
 // Chấp nhận camelCase/snake_case + mảng hoặc bọc { data: [...] }; nếu thiếu percent thì suy từ answered/total.
@@ -63,6 +64,13 @@ export const useMyProgressQuery = () => {
   });
 };
 
+export const useMyStreakQuery = () => {
+  return useQuery({
+    queryKey: STREAK_KEY,
+    queryFn: () => studentExamApi.myStreak(),
+  });
+};
+
 // Tra đề PART_PRACTICE theo kỹ năng (để suy examId theo partNumber).
 export const usePartPracticeListQuery = (skillId: number | null) => {
   return useQuery({
@@ -92,6 +100,7 @@ export const useSubmitExamMutation = () => {
       // Tiến độ đổi sau khi nộp -> làm mới cả % theo đề (card) lẫn tích lũy (dashboard).
       queryClient.invalidateQueries({ queryKey: EXAM_PROGRESS_KEY });
       queryClient.invalidateQueries({ queryKey: PROGRESS_KEY });
+      queryClient.invalidateQueries({ queryKey: STREAK_KEY });
     },
   });
 };

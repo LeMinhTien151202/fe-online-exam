@@ -3,7 +3,13 @@ const ACCESS_TOKEN_KEY = 'access_token';
 let accessToken: string | null = localStorage.getItem(ACCESS_TOKEN_KEY);
 
 export const tokenManager = {
-  getAccessToken: (): string | null => accessToken,
+  getAccessToken: (): string | null => {
+    const storedAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (storedAccessToken !== accessToken) {
+      accessToken = storedAccessToken;
+    }
+    return accessToken;
+  },
 
   setAccessToken: (token: string): void => {
     accessToken = token;

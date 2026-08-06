@@ -427,12 +427,12 @@ const CardContainer = styled.div`
   background: #f8fafc;
   border-radius: 1rem;
   border: 1px dashed #cbd5e1;
-  padding: 2.5rem 1.5rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 320px;
+  min-height: 220px;
   width: 100%;
   max-width: 480px;
   margin: 0 auto;

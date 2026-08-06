@@ -1,16 +1,19 @@
-export type UserRole = 'ADMIN' | 'TEACHER' | 'STUDENT';
+// Vai trò & nhãn dùng chung toàn app (xem src/shared/auth/roleAccess.ts).
+import type { UserRole } from '@/shared/auth/roleAccess';
+export type { UserRole };
+export { ROLE_LABEL } from '@/shared/auth/roleAccess';
 export type UserStatus = 'ACTIVE' | 'LOCKED';
-
-export const ROLE_LABEL: Record<UserRole, string> = {
-  ADMIN: 'Quản trị',
-  TEACHER: 'Giáo viên',
-  STUDENT: 'Học viên',
-};
 
 export interface IUserProfile {
   userId: number;
   fullName: string;
   aptisGoal?: string | null;
+}
+
+export interface IUserStreakSummary {
+  currentStreak: number;
+  longestStreak: number;
+  lastActivity: string | null;
 }
 
 export interface IAdminUser {
@@ -20,6 +23,7 @@ export interface IAdminUser {
   status: UserStatus;
   createdAt: string;
   profile?: IUserProfile;
+  streak: IUserStreakSummary | null;
 }
 
 export interface ICreateUserPayload {
@@ -42,7 +46,7 @@ export interface IUserFilter {
   search?: string;
 }
 
-// Dòng hiển thị ở bảng (đã map từ IAdminUser). `streak` tạm fake — chưa có API.
+// Dòng hiển thị ở bảng quản trị, dùng streak thật từ API /users.
 export interface IUserRow {
   key: string;
   id: number;
@@ -52,6 +56,6 @@ export interface IUserRow {
   target: string;
   registeredDate: string;
   active: boolean;
-  streak: number;
+  streak: IUserStreakSummary | null;
   raw: IAdminUser;
 }

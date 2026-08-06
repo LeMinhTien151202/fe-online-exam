@@ -6,6 +6,9 @@ import { IUserRow, ROLE_LABEL } from '../services/types';
 
 const { Title, Text } = Typography;
 
+const formatActivityDate = (value: string | null | undefined) =>
+    value ? new Date(`${value}T00:00:00`).toLocaleDateString('vi-VN') : 'Chưa có';
+
 interface UserDetailModalProps {
     open: boolean;
     onCancel: () => void;
@@ -54,7 +57,15 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ open, onCancel, stude
                     <Descriptions.Item label="Email">{student.email}</Descriptions.Item>
                     <Descriptions.Item label="Vai trò">{ROLE_LABEL[student.role]}</Descriptions.Item>
                     <Descriptions.Item label="Mục tiêu Aptis">{student.target}</Descriptions.Item>
-                    <Descriptions.Item label="Chuỗi ngày (tạm tính)">🔥 {student.streak} ngày</Descriptions.Item>
+                    <Descriptions.Item label="Chuỗi ngày hiện tại">
+                        {student.streak ? `🔥 ${student.streak.currentStreak} ngày` : '—'}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Chuỗi dài nhất">
+                        {student.streak ? `${student.streak.longestStreak} ngày` : '—'}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Hoạt động học gần nhất">
+                        {student.streak ? formatActivityDate(student.streak.lastActivity) : '—'}
+                    </Descriptions.Item>
                     <Descriptions.Item label="Ngày tham gia">{student.registeredDate}</Descriptions.Item>
                     <Descriptions.Item label="Trạng thái">
                         <Tag color={student.active ? 'success' : 'default'}>
@@ -64,7 +75,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ open, onCancel, stude
                 </Descriptions>
 
                 <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '16px' }}>
-                    Tiến độ học và lịch sử thi sẽ hiển thị khi có API thống kê. "Chuỗi ngày" hiện đang tạm tính.
+                    Chuỗi ngày được tính từ những ngày học viên nộp bài thành công.
                 </Text>
             </div>
         </Modal>

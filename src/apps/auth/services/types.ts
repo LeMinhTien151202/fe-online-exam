@@ -1,4 +1,6 @@
-export type UserRole = 'STUDENT' | 'ADMIN';
+// Dùng chung một nguồn vai trò cho toàn app (gồm cả TEACHER).
+import type { UserRole } from '@/shared/auth/roleAccess';
+export type { UserRole };
 
 export interface IUserProfile {
   userId: number;

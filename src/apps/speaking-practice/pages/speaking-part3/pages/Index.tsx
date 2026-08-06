@@ -4,7 +4,6 @@ import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import { 
   LeftOutlined, 
   RightOutlined,
-  CheckCircleOutlined,
   ClockCircleOutlined,
   DownOutlined,
   UpOutlined,
@@ -15,6 +14,7 @@ import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import { SpeakingController } from '../../speaking-part1/components/SpeakingController';
 import { QuestionGradeCard } from '../../../components/QuestionGradeCard';
+import { AiGradeButton } from '../../../components/AiGradeButton';
 import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import { usePart3 } from '../hook/usePart3';
 
@@ -36,7 +36,6 @@ export const Part3Page: React.FC = () => {
     handleSubTabChange,
     handleNext,
     handleBack,
-    handleSubmit,
     handleRecordComplete,
     currentCompareSet,
     activeQuestion,
@@ -154,12 +153,12 @@ export const Part3Page: React.FC = () => {
                   autoUpload
                   onCompleted={handleRecordComplete}
                 />
-                <QuestionGradeCard
-                  canGrade={canGradeCurrent}
-                  loading={isGradingCurrent}
-                  grade={currentGrade}
-                  onGrade={gradeCurrent}
-                />
+                {(canGradeCurrent || isGradingCurrent || currentGrade) && (
+                  <QuestionGradeCard
+                    loading={isGradingCurrent}
+                    grade={currentGrade}
+                  />
+                )}
                 {/* Collapsible Sample Answer */}
                 {activeQuestion.sampleAnswers.length > 0 && (
                 <S.CollapsibleWrapper>
@@ -225,22 +224,12 @@ export const Part3Page: React.FC = () => {
             </Button>
 
             <Space size="middle">
-              <Button
-                type="primary"
-                icon={<CheckCircleOutlined />}
-                size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#1a365d',
-                  borderColor: '#1a365d',
-                  padding: '0 2rem',
-                  boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.25)'
-                }}
-                onClick={handleSubmit}
-              >
-                Nộp bài
-              </Button>
+              <AiGradeButton
+                canGrade={canGradeCurrent}
+                loading={isGradingCurrent}
+                hasGrade={!!currentGrade}
+                onGrade={gradeCurrent}
+              />
               {hasNext && (
                 <Button
                   type="primary"

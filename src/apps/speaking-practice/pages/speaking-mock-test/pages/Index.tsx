@@ -2,7 +2,6 @@ import {
   AlertOutlined,
   ArrowLeftOutlined,
   ArrowRightOutlined,
-  CheckCircleOutlined,
   ClockCircleOutlined,
   DownOutlined,
   LeftOutlined,
@@ -15,6 +14,7 @@ import { Button, Card, Empty, Progress, Space, Spin, Tag, Tooltip, Typography } 
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { SpeakingController } from '../../../components/SpeakingController';
+import { AiGradeButton } from '../../../components/AiGradeButton';
 import { SpeakingSet } from '../../../services/mappers';
 import { SpeakingNavItem } from '../hook/useMockTest';
 import { useMockTest } from '../hook/useMockTest';
@@ -78,6 +78,8 @@ export const SpeakingMockTestPage = () => {
     availableParts,
     formatTime,
     answeredCount,
+    isReadyForAiGrading,
+    isSubmitting,
     handleRetry,
     handleBackToLanding,
     handleNavigateQuestion,
@@ -523,9 +525,12 @@ export const SpeakingMockTestPage = () => {
 
                 <Space size="middle">
                   {!isSubmitted && (
-                    <Button type="primary" icon={<CheckCircleOutlined />} size="large" style={{ borderRadius: '2rem', fontWeight: 600, background: '#1a365d', borderColor: '#1a365d', padding: '0 2rem', boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.25)' }} onClick={handleSubmitClick}>
-                      Nộp bài
-                    </Button>
+                    <AiGradeButton
+                      canGrade={isReadyForAiGrading}
+                      loading={isSubmitting}
+                      hasGrade={false}
+                      onGrade={handleSubmitClick}
+                    />
                   )}
                   {isSubmitted && (
                     <Button type="default" icon={<RollbackOutlined />} size="large" style={{ borderRadius: '2rem', fontWeight: 600, padding: '0 1.5rem', border: '1px solid #cbd5e1' }} onClick={() => navigate({ to: '/speaking' })}>

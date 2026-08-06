@@ -1,5 +1,4 @@
 import {
-CheckCircleOutlined,
 ClockCircleOutlined,
 DownOutlined,
 LeftOutlined,
@@ -14,6 +13,7 @@ import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { SpeakingController } from '../../speaking-part1/components/SpeakingController';
 import { QuestionGradeCard } from '../../../components/QuestionGradeCard';
+import { AiGradeButton } from '../../../components/AiGradeButton';
 import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import { usePart4 } from '../hook/usePart4';
 import * as S from '../styles/styled';
@@ -33,7 +33,6 @@ export const Part4Page: React.FC = () => {
     formatTime,
     handleNext,
     handleBack,
-    handleSubmit,
     handleRecordComplete,
     currentSet,
     currentGrade,
@@ -129,10 +128,8 @@ export const Part4Page: React.FC = () => {
                   onCompleted={handleRecordComplete}
                 />
                 <QuestionGradeCard
-                  canGrade={canGradeCurrent}
                   loading={isGradingCurrent}
                   grade={currentGrade}
-                  onGrade={gradeCurrent}
                 />
                 {/* Collapsible Sample Answer */}
                 {currentSet.sampleAnswers.length > 0 && (
@@ -198,22 +195,12 @@ export const Part4Page: React.FC = () => {
             </Button>
 
             <Space size="middle">
-              <Button
-                type="primary"
-                icon={<CheckCircleOutlined />}
-                size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#1a365d',
-                  borderColor: '#1a365d',
-                  padding: '0 2rem',
-                  boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.25)'
-                }}
-                onClick={handleSubmit}
-              >
-                Nộp bài
-              </Button>
+              <AiGradeButton
+                canGrade={canGradeCurrent}
+                loading={isGradingCurrent}
+                hasGrade={!!currentGrade}
+                onGrade={gradeCurrent}
+              />
               {hasNext && (
                 <Button
                   type="primary"

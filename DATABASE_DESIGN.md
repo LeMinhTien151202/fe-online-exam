@@ -28,23 +28,13 @@ Tài liệu này đặc tả chi tiết 100% các trường dữ liệu cho mọ
 | aptis_goal  | VARCHAR(10)  | Yes      | 'B1', 'B2', 'C'.        |
 | school_name | VARCHAR(255) | Yes      | Nơi học tập/công tác.   |
 
-### 1.3. Bảng `system_menus` (Quản lý Sidebar)
+### 1.3. Phân quyền: RBAC cố định (không còn bảng menu động)
 
-| Column     | Type         | Nullable | Description                    |
-| :--------- | :----------- | :------- | :----------------------------- |
-| id         | SERIAL (PK)  | No       | Định danh menu.                |
-| label      | VARCHAR(100) | No       | Tên hiển thị (vd: Luyện tập).  |
-| path       | VARCHAR(255) | No       | Route (vd: /practice).         |
-| icon       | VARCHAR(50)  | Yes      | Tên icon (Material Symbols).   |
-| parent_id  | INT          | Yes      | ID menu cha (nếu là menu con). |
-| sort_order | INT          | No       | Thứ tự sắp xếp.                |
+> Từ migration `V4`, hai bảng `system_menus` và `role_menu_access` đã bị loại bỏ. Hệ thống dùng **RBAC cố định theo vai trò**, không cấu hình menu/quyền trong database.
 
-### 1.4. Bảng `role_menu_access` (Phân quyền Menu)
-
-| Column  | Type        | Nullable | Description                              |
-| :------ | :---------- | :------- | :--------------------------------------- |
-| role    | VARCHAR(20) | No       | Vai trò ('ADMIN', 'TEACHER', 'STUDENT'). |
-| menu_id | INT (FK)    | No       | Liên kết `system_menus(id)`.             |
+- `users.role` (`ADMIN` / `TEACHER` / `STUDENT`) được nhúng vào JWT → Spring Security `ROLE_*` → `@PreAuthorize` ở controller (lớp bảo vệ thật).
+- Frontend chỉ dùng vai trò để guard route và ẩn/hiện menu cho khớp backend (xem `src/shared/auth/roleAccess.ts`).
+- Ma trận quyền: `ADMIN` toàn quyền; `TEACHER` quản lý nội dung học thuật (câu hỏi, bộ đề, tài liệu, Q&A, chấm điểm); `STUDENT` chỉ khu vực làm bài.
 
 ---
 

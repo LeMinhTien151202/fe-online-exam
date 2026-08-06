@@ -13,14 +13,6 @@ export const correctVsIncorrect = [
   { name: 'Writing', Correct: 440, Incorrect: 310 },
 ];
 
-export const leaderboard = [
-  { rank: 1, name: 'Nguyễn Văn A', progress: 88, streak: 15, avgScore: '86%', level: 'B2' },
-  { rank: 2, name: 'Phạm Minh D', progress: 84, streak: 34, avgScore: '82%', level: 'C' },
-  { rank: 3, name: 'Hoàng Văn E', progress: 76, streak: 12, avgScore: '78%', level: 'B2' },
-  { rank: 4, name: 'Trần Thị B', progress: 68, streak: 6, avgScore: '74%', level: 'B1' },
-  { rank: 5, name: 'Lê Hoàng C', progress: 42, streak: 0, avgScore: '60%', level: 'A2' },
-];
-
 export const skillGauges = [
   { title: 'Ngữ pháp', value: 75, color: '#f97316', students: 1200 },
   { title: 'Đọc hiểu', value: 68, color: '#0ea5e9', students: 950 },

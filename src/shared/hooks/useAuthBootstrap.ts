@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
+import axios from 'axios';
 import { useAccountQuery } from '@apps/auth/services/authQuery';
 import { useAppDispatch } from '@/shared/store/hooks';
 import { logout, setUser } from '@/shared/store/authSlice';
 
-// Khôi phục phiên đăng nhập khi tải lại trang (nếu còn access_token hợp lệ).
-// Thất bại thì âm thầm về trạng thái khách, KHÔNG chặn app (không bắt buộc đăng nhập).
+// Khôi phục phiên bằng access token hoặc refresh cookie.
+// Lỗi mạng, timeout, 429 hoặc 5xx không được xóa phiên đang có.
 export const useAuthBootstrap = (): void => {
   const dispatch = useAppDispatch();
-  const { data: user, isError } = useAccountQuery();
+  const { data: user, error } = useAccountQuery();
 
   useEffect(() => {
     if (user) {
@@ -16,8 +17,8 @@ export const useAuthBootstrap = (): void => {
   }, [user, dispatch]);
 
   useEffect(() => {
-    if (isError) {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
       dispatch(logout());
     }
-  }, [isError, dispatch]);
+  }, [error, dispatch]);
 };

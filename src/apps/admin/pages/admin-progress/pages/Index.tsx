@@ -27,6 +27,7 @@ const ProgressIndex: React.FC = () => {
     timelineProgress,
     correctVsIncorrect,
     leaderboard,
+    leaderboardLoading,
     skillGauges,
     getGaugeData,
   } = useProgress();
@@ -131,6 +132,7 @@ const ProgressIndex: React.FC = () => {
       <Card title="Bảng xếp hạng thành tích học tập" bordered={false}>
         <Table
           dataSource={leaderboard}
+          loading={leaderboardLoading}
           pagination={false}
           size="middle"
           columns={[
@@ -158,7 +160,9 @@ const ProgressIndex: React.FC = () => {
               title: 'Tiến độ hoàn thành',
               dataIndex: 'progress',
               key: 'progress',
-              render: (prog: number) => <Progress percent={prog} style={{ width: 150 }} strokeColor={ADMIN_COLORS.primary} />,
+              render: (prog: number | null) => prog == null
+                ? <Text type="secondary">—</Text>
+                : <Progress percent={prog} style={{ width: 150 }} strokeColor={ADMIN_COLORS.primary} />,
             },
             {
               title: 'Chuỗi ngày liên tiếp',
@@ -170,13 +174,17 @@ const ProgressIndex: React.FC = () => {
               title: 'Điểm số TB',
               dataIndex: 'avgScore',
               key: 'avgScore',
-              render: (score: string) => <Tag color="success">{score}</Tag>,
+              render: (score: string | null) => score
+                ? <Tag color="success">{score}</Tag>
+                : <Text type="secondary">—</Text>,
             },
             {
               title: 'Trình độ',
               dataIndex: 'level',
               key: 'level',
-              render: (lvl: string) => <Tag color="cyan">{lvl}</Tag>,
+              render: (lvl: string | null) => lvl
+                ? <Tag color="cyan">{lvl}</Tag>
+                : <Text type="secondary">—</Text>,
             },
           ]}
         />

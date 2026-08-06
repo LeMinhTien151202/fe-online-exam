@@ -21,6 +21,8 @@ import { ADMIN_THEME, ADMIN_COLORS } from '../constants';
 import { GlobalAdminStyle } from '../styles/GlobalAdminStyle';
 import { useGeneralSettings } from '../pages/admin-settings/hook/useGeneralSettings';
 import { useExamDetailQuery } from '../pages/admin-exams/services/examQuery';
+import { useAppSelector } from '@/shared/store/hooks';
+import { ROLE_ACCESS, ROLE_LABEL, UserRole, hasAnyRole } from '@/shared/auth/roleAccess';
 
 const AdminLayout: React.FC = () => {
   const routerState = useRouterState();
@@ -28,6 +30,12 @@ const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
 
   const { generalSettings } = useGeneralSettings();
+
+  // Vai trò của người dùng đang đăng nhập -> lọc menu và hiển thị đúng danh tính.
+  const user = useAppSelector((s) => s.auth.user);
+  const role = (user?.role as UserRole | undefined) ?? undefined;
+  const displayName = user?.fullName || user?.profile?.fullName || user?.email || 'Người dùng';
+  const roleLabel = role ? ROLE_LABEL[role] : '';
 
   // Áp dụng nhận diện nền tảng (tên + favicon) từ cài đặt hệ thống
   useEffect(() => {
@@ -122,24 +130,29 @@ const AdminLayout: React.FC = () => {
     return breadcrumbItems;
   };
 
-  const menuItems = [
+  // allowedRoles ánh xạ theo @PreAuthorize: adminOnly (Tổng quan/Người dùng/Thông báo/Cài đặt),
+  // còn lại là nội dung học thuật cho ADMIN + TEACHER.
+  const allMenuItems = [
     {
       key: '/admin',
       icon: <DashboardOutlined />,
       label: 'Tổng quan',
+      allowedRoles: ROLE_ACCESS.adminOnly,
     },
     {
       key: 'users-group',
       icon: <TeamOutlined />,
       label: 'Người dùng',
+      allowedRoles: ROLE_ACCESS.adminOnly,
       children: [
-        { key: '/admin/users', label: 'Danh sách học viên' },
+        { key: '/admin/users', label: 'Danh sách người dùng' },
       ],
     },
     {
       key: 'questions-group',
       icon: <BookOutlined />,
       label: 'Ngân hàng câu hỏi',
+      allowedRoles: ROLE_ACCESS.contentManagers,
       children: [
         { key: '/admin/questions/grammar', label: 'Ngữ pháp & Từ vựng' },
         { key: '/admin/questions/reading', label: 'Đọc hiểu' },
@@ -152,6 +165,7 @@ const AdminLayout: React.FC = () => {
       key: 'exams-group',
       icon: <FileTextOutlined />,
       label: 'Bộ đề thi',
+      allowedRoles: ROLE_ACCESS.contentManagers,
       children: [
         { key: '/admin/exams', label: 'Danh sách bộ đề' },
         { key: '/admin/exams/create', label: 'Tạo bộ đề mới' },
@@ -161,33 +175,48 @@ const AdminLayout: React.FC = () => {
       key: '/admin/materials',
       icon: <FolderOpenOutlined />,
       label: 'Tài liệu học tập',
+      allowedRoles: ROLE_ACCESS.contentManagers,
     },
     {
       key: '/admin/progress',
       icon: <BarChartOutlined />,
       label: 'Tiến độ học viên',
+      allowedRoles: ROLE_ACCESS.contentManagers,
     },
     {
       key: '/admin/grading',
       icon: <CheckSquareOutlined />,
       label: 'Kết quả & Lịch sử thi',
+      allowedRoles: ROLE_ACCESS.contentManagers,
     },
     {
       key: '/admin/faq',
       icon: <QuestionCircleOutlined />,
       label: 'Quản lý Q&A',
+      allowedRoles: ROLE_ACCESS.contentManagers,
     },
     {
       key: '/admin/notifications',
       icon: <BellOutlined />,
       label: 'Quản lý thông báo',
+      allowedRoles: ROLE_ACCESS.adminOnly,
     },
     {
       key: '/admin/settings',
       icon: <SettingOutlined />,
       label: 'Cài đặt hệ thống',
+      allowedRoles: ROLE_ACCESS.adminOnly,
     },
   ];
+
+  // Lọc menu theo vai trò rồi bỏ trường allowedRoles trước khi đưa vào antd Menu.
+  const menuItems = allMenuItems
+    .filter((item) => hasAnyRole(role, item.allowedRoles))
+    .map((item) => {
+      const rest = { ...item };
+      delete (rest as Partial<typeof item>).allowedRoles;
+      return rest;
+    });
 
   const getSelectedKeys = () => {
     if (currentPath === '/admin') return ['/admin'];
@@ -233,10 +262,10 @@ const AdminLayout: React.FC = () => {
         />
       </S.MenuWrapper>
       <S.UserCard $collapsed={collapsed}>
-        <div className="avatar">A</div>
+        <div className="avatar">{displayName.charAt(0).toUpperCase()}</div>
         <div className="info">
-          <span className="name">Administrator</span>
-          <span className="role">Super Admin</span>
+          <span className="name">{displayName}</span>
+          <span className="role">{roleLabel}</span>
         </div>
       </S.UserCard>
     </>
@@ -325,7 +354,7 @@ const AdminLayout: React.FC = () => {
                 </div>
                 {!isMobile && (
                   <span style={{ fontSize: '14px', fontWeight: 600, color: ADMIN_COLORS.textPrimary }}>
-                    Admin
+                    {displayName}
                   </span>
                 )}
               </div>

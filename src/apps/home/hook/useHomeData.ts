@@ -1,17 +1,24 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { IHomeStats,ILearningModule,IUserInfo } from "../services/types";
+import { useMyStreakQuery } from '@/shared/services/student-exam';
 
 export const useHomeData = () => {
-  const [stats, setStats] = useState<IHomeStats>({
+  const streakQuery = useMyStreakQuery();
+  const [baseStats] = useState<IHomeStats>({
     overallProgress: 26,
     completedModules: 4,
     totalModules: 15,
     targetLevel: "B2",
-    learningStreak: 12,
+    learningStreak: 0,
     predictedScore: "139/200",
   });
 
-  const [modules, setModules] = useState<ILearningModule[]>([
+  const stats = useMemo<IHomeStats>(() => ({
+    ...baseStats,
+    learningStreak: streakQuery.data?.currentStreak ?? 0,
+  }), [baseStats, streakQuery.data?.currentStreak]);
+
+  const [modules] = useState<ILearningModule[]>([
     {
       id: "focus",
       title: "Trọng tâm",
@@ -73,7 +80,7 @@ export const useHomeData = () => {
     },
   ]);
 
-  const [userInfo, setUserInfo] = useState<IUserInfo>({
+  const [userInfo] = useState<IUserInfo>({
     name: "Thí sinh",
     plan: "Miễn phí",
     avatarLetter: "T",
@@ -85,5 +92,7 @@ export const useHomeData = () => {
     modules,
     userInfo,
     isLoading: false,
+    isStreakLoading: streakQuery.isPending,
+    isStreakError: streakQuery.isError,
   };
 };

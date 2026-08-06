@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { message } from 'antd';
-import { initialPermissions } from '../services/mockData';
 import {
   useCreateUserMutation,
   useLockUserMutation,
@@ -9,9 +8,6 @@ import {
 } from '../services/userQuery';
 import { IAdminUser, IUserRow, UserRole } from '../services/types';
 import { usePagination } from '@/shared/hooks/usePagination';
-
-// Chuỗi ngày học tập chưa có API -> tạm fake theo id để giá trị ổn định giữa các lần render
-const fakeStreak = (id: number) => (id * 7) % 30;
 
 const mapRow = (u: IAdminUser): IUserRow => ({
   key: String(u.id),
@@ -22,7 +18,7 @@ const mapRow = (u: IAdminUser): IUserRow => ({
   target: u.profile?.aptisGoal || '—',
   registeredDate: u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : '',
   active: u.status === 'ACTIVE',
-  streak: fakeStreak(u.id),
+  streak: u.streak ?? null,
   raw: u,
 });
 
@@ -37,7 +33,6 @@ export const useUsers = () => {
   const [activeTab, setActiveTab] = useState('list');
   const [selectedStudent, setSelectedStudent] = useState<IUserRow | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [permissions, setPermissions] = useState(initialPermissions);
 
   const { page, pageSize, onChange, reset } = usePagination(10);
   const { data, isLoading } = useUsersQuery({ page, limit: pageSize });
@@ -92,8 +87,6 @@ export const useUsers = () => {
     selectedStudent,
     detailOpen,
     setDetailOpen,
-    permissions,
-    setPermissions,
     handleStatusChange,
     handleCreate,
     handleOpenDetail,

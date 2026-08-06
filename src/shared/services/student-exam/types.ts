@@ -52,6 +52,13 @@ export interface IAutoGradeDetail {
   needsAiGrading: boolean;
 }
 
+// Điểm + nhận xét theo TỪNG tiêu chí chấm (trôi chảy, ngữ pháp, từ vựng...).
+export interface IAiCriterion {
+  name: string; // tên tiêu chí (do BE quy định theo kỹ năng)
+  score: number | null; // 0–100
+  comment: string; // nhận xét ngắn tiếng Việt
+}
+
 // Chi tiết chấm tự luận qua AI (ESSAY / RECORD)
 export interface IAiGradeDetail {
   questionId: number;
@@ -61,6 +68,7 @@ export interface IAiGradeDetail {
   aiScore: number | null; // null khi Gemini lỗi / chưa cấu hình -> cần chấm tay
   band: string | null; // 'A0'..'C1' (có thể 'C' -> chuẩn hoá về 'C1')
   feedback: string;
+  criteria?: IAiCriterion[]; // điểm chi tiết từng tiêu chí (có thể rỗng)
   needsManualReview: boolean;
 }
 
@@ -115,6 +123,14 @@ export interface IStudentProgressRow {
   partNumber: number;
   answered: number;
   total: number;
+}
+
+// GET /streaks/me — chuỗi ngày học liên tiếp của học viên hiện tại.
+export interface ILearningStreak {
+  studentId: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastActivity: string | null;
 }
 
 // GET /progress/exams/me — % hoàn thành theo TỪNG ĐỀ (gắn examId). BE tự tính percent,
