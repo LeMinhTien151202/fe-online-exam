@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { message } from 'antd';
+import {
+  useState } from 'react';
 import { UploadRequestOption } from '@rc-component/upload/lib/interface';
+import { toast } from '../../../../../configs/toast';
 import { initialAuditLogs, initialPackages } from '../services/mockData';
 import { useUpdateSettingMutation } from '../services/settingQuery';
 import { GENERAL_SETTING_KEYS, settingApi } from '../services/settingApi';
@@ -24,7 +25,7 @@ export const useSettings = () => {
   const handleSaveSetting = (key: string, value: string) => {
     updateSetting.mutate(
       { key, value },
-      { onSuccess: () => message.success('Đã lưu cấu hình.') }
+      { onSuccess: () => toast.success('Đã lưu cấu hình.') }
     );
   };
 
@@ -46,9 +47,9 @@ export const useSettings = () => {
 
     try {
       await Promise.all(entries.map(([key, value]) => saveSetting(key, value)));
-      message.success('Đã lưu cấu hình cài đặt chung.');
+      toast.success('Đã lưu cấu hình cài đặt chung.');
     } catch {
-      message.error('Lưu cài đặt thất bại, vui lòng thử lại.');
+      toast.error('Lưu cài đặt thất bại, vui lòng thử lại.');
     }
   };
 
@@ -58,11 +59,11 @@ export const useSettings = () => {
     try {
       const uploaded = await settingApi.uploadImage(file as File, 'settings/logo');
       onSuccess?.(uploaded);
-      message.success('Upload logo thành công.');
+      toast.success('Upload logo thành công.');
       return uploaded.url;
     } catch (error) {
       onError?.(error as Error);
-      message.error('Upload logo thất bại.');
+      toast.error('Upload logo thất bại.');
       throw error;
     } finally {
       setIsUploadingLogo(false);

@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react';
+import {
+  useMemo,
+  useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { message } from 'antd';
+import { toast } from '../../../../../configs/toast';
 import { countWords } from '../../../utils/wordCounter';
 import { useWritingTimer } from './useWritingTimer';
 import { mapWPart1 } from '../../../services/mappers';
@@ -49,18 +51,18 @@ export const usePart1Action = () => {
     const hasEmpty = questions.some((q) => !(answers[q.id] || '').trim());
     const hasInvalid = questions.some((q) => getWordCount(answers[q.id] || '') > wordMax);
     if (hasEmpty) {
-      message.warning(`Vui lòng trả lời đầy đủ tất cả ${questions.length} câu hỏi!`);
+      toast.warning(`Vui lòng trả lời đầy đủ tất cả ${questions.length} câu hỏi!`);
       return;
     }
     if (hasInvalid) {
-      message.error(`Có câu hỏi vượt quá giới hạn ${wordMax} từ! Vui lòng chỉnh sửa lại.`);
+      toast.error(`Có câu hỏi vượt quá giới hạn ${wordMax} từ! Vui lòng chỉnh sửa lại.`);
       return;
     }
     confirmSubmitExam({ totalQuestions: questions.length, onOk: doSubmit });
   };
 
   const doSubmit = () => {
-    message.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
+    toast.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
     setDoneSets((prev) => new Set(prev).add(safeIndex));
 
     // Nộp lên BE để tăng student_progress (skill 4, part 1). ESSAY = mảng bài viết theo thứ tự câu con.

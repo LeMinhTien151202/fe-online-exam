@@ -1,12 +1,17 @@
 import axiosInstance, { API_BASE_URL } from '@/configs/axios';
 import {
+  IAuthMessageResponse,
   IChangePasswordPayload,
+  IForgotPasswordPayload,
   ILoginPayload,
   ILoginResponse,
   IRefreshResponse,
   IRegisterPayload,
   IRegisterResponse,
+  IResetPasswordPayload,
   IUser,
+  IVerifyOtpPayload,
+  IVerifyOtpResponse,
 } from './types';
 
 export const authApi = {
@@ -24,6 +29,15 @@ export const authApi = {
 
   changePassword: (payload: IChangePasswordPayload) =>
     axiosInstance.patch<void, void>('/auth/change-password', payload),
+
+  forgotPassword: (payload: IForgotPasswordPayload) =>
+    axiosInstance.post<IAuthMessageResponse, IAuthMessageResponse>('/auth/forgot-password', payload),
+
+  verifyOtp: (payload: IVerifyOtpPayload) =>
+    axiosInstance.post<IVerifyOtpResponse, IVerifyOtpResponse>('/auth/verify-otp', payload),
+
+  resetPassword: (payload: IResetPasswordPayload) =>
+    axiosInstance.post<IAuthMessageResponse, IAuthMessageResponse>('/auth/reset-password', payload),
 
   googleLoginUrl: () => `${API_BASE_URL}/auth/google`,
 };

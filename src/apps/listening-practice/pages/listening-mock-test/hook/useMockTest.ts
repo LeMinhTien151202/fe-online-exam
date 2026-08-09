@@ -1,6 +1,7 @@
-import { useNavigate } from '@tanstack/react-router';
-import { message } from 'antd';
+import {
+  useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from '../../../../../configs/toast';
 import { IExamSubmitResult, ISubmitAnswer, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import { useListeningExamDetailQuery } from '../../../services/listeningExamQuery';
@@ -310,7 +311,7 @@ export const useMockTest = (testId: string) => {
   const handleAutoSubmit = useCallback(() => {
     setIsSubmitted(true);
     setShowReport(true);
-    message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
+    toast.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
     const { totalScore, totalMax } = calculateScores();
     saveProgressToLocalStorage(totalScore, totalMax);
     submitToServer();
@@ -356,7 +357,7 @@ export const useMockTest = (testId: string) => {
   const handleManualSubmit = () => {
     setIsSubmitted(true);
     setShowReport(true);
-    message.success('Bạn đã nộp bài nghe thành công!');
+    toast.success('Bạn đã nộp bài nghe thành công!');
     const { totalScore, totalMax } = calculateScores();
     saveProgressToLocalStorage(totalScore, totalMax);
     submitToServer();

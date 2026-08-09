@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { toast } from '../../../../../configs/toast';
 import {
   Button,
   Card,
@@ -13,7 +14,6 @@ import {
   Tag,
   Typography,
   Upload,
-  message,
 } from 'antd';
 import {
   ClockCircleOutlined,
@@ -56,7 +56,7 @@ const SettingsIndex: React.FC = () => {
   const checkUploadSize = (file: File) => {
     const isWithinLimit = file.size / 1024 / 1024 <= maxUploadMb;
     if (!isWithinLimit) {
-      message.error(`Tệp vượt quá giới hạn ${maxUploadMb}MB.`);
+      toast.error(`Tệp vượt quá giới hạn ${maxUploadMb}MB.`);
     }
     return isWithinLimit;
   };

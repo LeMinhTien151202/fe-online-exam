@@ -1,5 +1,5 @@
-import { message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from '../../../../../configs/toast';
 import { mapPart4, Part4Data } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
 import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
@@ -72,7 +72,7 @@ export const usePart4Action = () => {
     const answeredCount = Object.keys(answers).length;
     if (paragraphCount === 0) return;
     if (answeredCount < paragraphCount) {
-      message.warning(`Bạn đã trả lời ${answeredCount}/${paragraphCount} tiêu đề. Vui lòng gán tiêu đề cho cả ${paragraphCount} đoạn văn!`);
+      toast.warning(`Bạn đã trả lời ${answeredCount}/${paragraphCount} tiêu đề. Vui lòng gán tiêu đề cho cả ${paragraphCount} đoạn văn!`);
       return;
     }
     confirmSubmitExam({ totalQuestions: paragraphCount, onOk: doSubmit });
@@ -95,7 +95,7 @@ export const usePart4Action = () => {
     }
     localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
 
-    message.success(`Chúc mừng! Bạn đã hoàn thành Part 4. Kết quả: ${correctCount}/${paragraphCount} câu đúng.`);
+    toast.success(`Chúc mừng! Bạn đã hoàn thành Part 4. Kết quả: ${correctCount}/${paragraphCount} câu đúng.`);
 
     // Nộp lên BE để tăng student_progress (skill 3, part 5). HEADING = { paragraph_num: heading_label }.
     if (examId && data?.questionId != null) {

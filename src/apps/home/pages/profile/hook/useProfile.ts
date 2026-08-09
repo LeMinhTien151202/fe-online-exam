@@ -1,6 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { message } from "antd";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient } from "@tanstack/react-query";
 import { getProfile, updateProfile } from "../services/profileApi";
+import { toast } from '../../../../../configs/toast';
 
 import { useAppSelector } from "@/shared/store/hooks";
 
@@ -20,7 +23,7 @@ export const useProfile = () => {
     mutationFn: updateProfile,
     onSuccess: (data) => {
       queryClient.setQueryData(PROFILE_QUERY_KEY, data);
-      message.success("Cập nhật hồ sơ thành công!");
+      toast.success("Cập nhật hồ sơ thành công!");
     },
   });
 

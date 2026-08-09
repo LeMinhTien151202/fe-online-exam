@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import {
+  useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { message } from 'antd';
+import { toast } from '../../../configs/toast';
 import { countWords } from '../utils/wordCounter';
 
 export const usePart2Action = (
@@ -17,15 +18,15 @@ export const usePart2Action = (
   const handleSubmit = () => {
     const wc = countWords(answer);
     if (!answer.trim()) {
-      message.warning("Vui lòng nhập câu trả lời của bạn!");
+      toast.warning("Vui lòng nhập câu trả lời của bạn!");
       return;
     }
     if (wc < 20 || wc > 30) {
-      message.error(`Số lượng từ hiện tại (${wc}) chưa nằm trong khoảng quy định 20-30 từ!`);
+      toast.error(`Số lượng từ hiện tại (${wc}) chưa nằm trong khoảng quy định 20-30 từ!`);
       return;
     }
 
-    message.success("Đã hoàn thành luyện tập Part 2!");
+    toast.success("Đã hoàn thành luyện tập Part 2!");
     navigate({ to: '/writing/part/3' });
   };
 

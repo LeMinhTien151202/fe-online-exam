@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react';
+import {
+  useMemo,
+  useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { message } from 'antd';
+import { toast } from '../../../../../configs/toast';
 import { countWords } from '../../../utils/wordCounter';
 import { useWritingTimer } from '../../writing-part1/hook/useWritingTimer';
 import { mapWPart2 } from '../../../services/mappers';
@@ -44,18 +46,18 @@ export const usePart2Action = () => {
   const handleSubmit = () => {
     const wc = countWords(answer);
     if (!answer.trim()) {
-      message.warning('Vui lòng nhập câu trả lời của bạn!');
+      toast.warning('Vui lòng nhập câu trả lời của bạn!');
       return;
     }
     if (wc < wordMin || wc > wordMax) {
-      message.error(`Số lượng từ hiện tại (${wc}) chưa nằm trong khoảng quy định ${wordMin}-${wordMax} từ!`);
+      toast.error(`Số lượng từ hiện tại (${wc}) chưa nằm trong khoảng quy định ${wordMin}-${wordMax} từ!`);
       return;
     }
     confirmSubmitExam({ totalQuestions: 1, onOk: doSubmit });
   };
 
   const doSubmit = () => {
-    message.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
+    toast.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
     setDoneSets((prev) => new Set(prev).add(safeIndex));
 
     // Nộp lên BE để tăng student_progress (skill 4, part 2). ESSAY = mảng 1 bài viết.

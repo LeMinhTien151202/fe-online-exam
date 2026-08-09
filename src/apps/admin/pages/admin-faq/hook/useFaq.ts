@@ -1,4 +1,3 @@
-import { message } from 'antd';
 import {
   useCreateFaqMutation,
   useDeleteFaqMutation,
@@ -6,6 +5,7 @@ import {
   useUpdateFaqMutation,
 } from '../services/faqQuery';
 import { ICreateFaqPayload, IFaq } from '../services/types';
+import { toast } from '../../../../../configs/toast';
 import { usePagination } from '@/shared/hooks/usePagination';
 
 export const useFaq = () => {
@@ -23,20 +23,20 @@ export const useFaq = () => {
     if (editingId) {
       updateMutation.mutate(
         { id: editingId, payload: values },
-        { onSuccess: () => message.success('Đã cập nhật FAQ.') }
+        { onSuccess: () => toast.success('Đã cập nhật FAQ.') }
       );
     } else {
       createMutation.mutate(values, {
         onSuccess: () => {
           reset();
-          message.success('Đã thêm FAQ.');
+          toast.success('Đã thêm FAQ.');
         },
       });
     }
   };
 
   const handleDelete = (id: number) => {
-    deleteMutation.mutate(id, { onSuccess: () => message.success('Đã xóa FAQ.') });
+    deleteMutation.mutate(id, { onSuccess: () => toast.success('Đã xóa FAQ.') });
   };
 
   return {

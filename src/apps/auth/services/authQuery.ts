@@ -39,3 +39,21 @@ export const useChangePasswordMutation = () => {
     mutationFn: authApi.changePassword,
   });
 };
+
+export const useForgotPasswordMutation = () => {
+  return useMutation({
+    mutationFn: authApi.forgotPassword,
+  });
+};
+
+export const useVerifyOtpMutation = () => {
+  return useMutation({
+    mutationFn: authApi.verifyOtp,
+  });
+};
+
+export const useResetPasswordMutation = () => {
+  return useMutation({
+    mutationFn: authApi.resetPassword,
+  });
+};

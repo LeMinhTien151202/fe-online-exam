@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react';
+import {
+  useMemo,
+  useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { message } from 'antd';
+import { toast } from '../../../../../configs/toast';
 import { countWords } from '../../../utils/wordCounter';
 import { useWritingTimer } from '../../writing-part1/hook/useWritingTimer';
 import { mapWPart4 } from '../../../services/mappers';
@@ -53,22 +55,22 @@ export const usePart4Action = () => {
     const infWc = countWords(informalEmail);
     const formWc = countWords(formalEmail);
     if (!informalEmail.trim() || !formalEmail.trim()) {
-      message.warning('Vui lòng hoàn thành cả 2 email!');
+      toast.warning('Vui lòng hoàn thành cả 2 email!');
       return;
     }
     if (infWc < informalMin || infWc > informalMax) {
-      message.error(`Email thân mật (${infWc} từ) chưa đúng giới hạn ${informalMin}-${informalMax} từ!`);
+      toast.error(`Email thân mật (${infWc} từ) chưa đúng giới hạn ${informalMin}-${informalMax} từ!`);
       return;
     }
     if (formWc < formalMin || formWc > formalMax) {
-      message.error(`Email trang trọng (${formWc} từ) chưa đúng giới hạn ${formalMin}-${formalMax} từ!`);
+      toast.error(`Email trang trọng (${formWc} từ) chưa đúng giới hạn ${formalMin}-${formalMax} từ!`);
       return;
     }
     confirmSubmitExam({ totalQuestions: 2, onOk: doSubmit });
   };
 
   const doSubmit = () => {
-    message.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
+    toast.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
     setDoneSets((prev) => new Set(prev).add(safeIndex));
 
     // Nộp lên BE để tăng student_progress (skill 4, part 4). ESSAY = [email thân mật, email trang trọng].

@@ -1,6 +1,9 @@
-import { useMemo } from 'react';
+import {
+  useMemo } from 'react';
 import { useState } from 'react';
-import { Modal, message } from 'antd';
+import { toast } from '../../../../../configs/toast';
+import { Modal,
+} from 'antd';
 import {
   useCreateMaterialMutation,
   useDeleteMaterialMutation,
@@ -49,7 +52,7 @@ export const useMaterials = () => {
         onSuccess: () => {
           setIsModalOpen(false);
           reset();
-          message.success('Đã thêm tài liệu học tập.');
+          toast.success('Đã thêm tài liệu học tập.');
         },
       }
     );
@@ -64,7 +67,7 @@ export const useMaterials = () => {
       cancelText: 'Huỷ',
       onOk: () =>
         deleteMutation.mutate(Number(key), {
-          onSuccess: () => message.success('Đã xoá tài liệu.'),
+          onSuccess: () => toast.success('Đã xoá tài liệu.'),
         }),
     });
   };

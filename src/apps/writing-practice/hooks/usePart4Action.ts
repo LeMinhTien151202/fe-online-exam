@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import {
+  useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { message } from 'antd';
+import { toast } from '../../../configs/toast';
 import { countWords } from '../utils/wordCounter';
 
 export const usePart4Action = (
@@ -25,21 +26,21 @@ export const usePart4Action = (
     const formWc = countWords(formalEmail);
 
     if (!informalEmail.trim() || !formalEmail.trim()) {
-      message.warning("Vui lòng hoàn thành cả 2 email!");
+      toast.warning("Vui lòng hoàn thành cả 2 email!");
       return;
     }
 
     if (infWc < 40 || infWc > 60) {
-      message.error(`Email thân mật (${infWc} từ) chưa đúng giới hạn khoảng 50 từ (40-60 từ)!`);
+      toast.error(`Email thân mật (${infWc} từ) chưa đúng giới hạn khoảng 50 từ (40-60 từ)!`);
       return;
     }
 
     if (formWc < 120 || formWc > 150) {
-      message.error(`Email trang trọng (${formWc} từ) chưa đúng giới hạn 120-150 từ!`);
+      toast.error(`Email trang trọng (${formWc} từ) chưa đúng giới hạn 120-150 từ!`);
       return;
     }
 
-    message.success("Xin chúc mừng! Bạn đã hoàn thành xuất sắc toàn bộ bài thi viết (Writing Practice)!");
+    toast.success("Xin chúc mừng! Bạn đã hoàn thành xuất sắc toàn bộ bài thi viết (Writing Practice)!");
     navigate({ to: '/writing' });
   };
 

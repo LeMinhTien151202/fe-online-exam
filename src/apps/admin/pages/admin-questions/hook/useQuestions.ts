@@ -1,6 +1,10 @@
-import { useMemo, useState } from "react";
-import { Form, message } from "antd";
+import {
+  useMemo,
+  useState } from "react";
+import { Form,
+} from 'antd';
 import { useParams, useNavigate } from "@tanstack/react-router";
+import { toast } from '../../../../../configs/toast';
 import {
   useCreateQuestionsMutation,
   useDeleteQuestionMutation,
@@ -182,14 +186,14 @@ export const useQuestions = () => {
 
     const invalid = payloads.find((p) => !p.content || !p.content.trim());
     if (payloads.length === 0 || invalid) {
-      message.warning("Chưa đủ dữ liệu hợp lệ (nội dung câu hỏi đang trống). Vui lòng kiểm tra lại các bước.");
+      toast.warning("Chưa đủ dữ liệu hợp lệ (nội dung câu hỏi đang trống). Vui lòng kiểm tra lại các bước.");
       return;
     }
 
     createMutation.mutate(payloads, {
       onSuccess: (created) => {
         setIsModalOpen(false);
-        message.success(`Đã lưu ${created.length} câu hỏi thành công!`);
+        toast.success(`Đã lưu ${created.length} câu hỏi thành công!`);
       },
     });
   };
@@ -206,7 +210,7 @@ export const useQuestions = () => {
         onSuccess: () => {
           setIsEditOpen(false);
           setEditingQuestion(null);
-          message.success("Đã cập nhật câu hỏi.");
+          toast.success("Đã cập nhật câu hỏi.");
         },
       }
     );
@@ -214,7 +218,7 @@ export const useQuestions = () => {
 
   const handleDeleteQuestion = (id: number) => {
     deleteMutation.mutate(id, {
-      onSuccess: () => message.success("Đã xóa câu hỏi."),
+      onSuccess: () => toast.success("Đã xóa câu hỏi."),
     });
   };
 

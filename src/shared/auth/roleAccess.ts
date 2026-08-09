@@ -4,6 +4,10 @@
 
 export type UserRole = 'ADMIN' | 'TEACHER' | 'STUDENT';
 
+// TẠM TẮT PHÂN QUYỀN THEO ROLE (guard route + lọc menu admin).
+// Đổi về false để bật lại RBAC như cũ.
+export const BYPASS_ROLE = true;
+
 export const ROLE_LABEL: Record<UserRole, string> = {
   ADMIN: 'Quản trị',
   TEACHER: 'Giáo viên',
@@ -29,7 +33,8 @@ export const roleHomePath = (role: UserRole | null | undefined): string => {
     case 'ADMIN':
       return '/admin';
     case 'TEACHER':
-      // TEACHER không được vào /admin (Tổng quan) nên mặc định về ngân hàng câu hỏi.
+      // TEACHER đã được phép vào /admin (Tổng quan), nhưng mặc định vẫn đưa về
+      // khu làm việc chính là ngân hàng câu hỏi.
       return '/admin/questions/grammar';
     default:
       // STUDENT hoặc chưa đăng nhập: về khu vực học viên.

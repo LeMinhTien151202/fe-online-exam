@@ -9,9 +9,11 @@ ReadOutlined,
 RightOutlined
 } from '@ant-design/icons';
 import { useNavigate,useParams } from '@tanstack/react-router';
-import { Button,Empty,Result,Space,Spin } from 'antd';
+import { toast } from '../../../../../configs/toast';
+import { Button,Empty,Result,Space,Spin,message } from 'antd';
+import { ThunderboltOutlined } from '@ant-design/icons';
 import React,{ useEffect,useMemo,useRef,useState } from 'react';
-import { confirmExamAction } from '../../../../../shared/utils/examDialogs';
+import { confirmExamAction, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 // Import các module kỹ năng tích hợp
 import GrammarVocabSection,{ GrammarVocabHandle } from '../components/GrammarVocabSection';
@@ -130,6 +132,9 @@ const MainMockExamPage: React.FC = () => {
     const [submitResult, setSubmitResult] = useState<IExamSubmitResult | null>(null);
 
     const [currentStatus, setCurrentStatus] = useState({ part: 1, question: 1, answered: 0 });
+    const [isPrefilling, setIsPrefilling] = useState(false);
+    // Ranh giới part của section đang active (đầu/cuối) để đặt nhãn nút điều hướng.
+    const [navEdge, setNavEdge] = useState({ atFirst: true, atLast: false });
 
     const grammarRef = useRef<GrammarVocabHandle>(null);
     const listeningRef = useRef<ListeningHandle>(null);
@@ -147,7 +152,13 @@ const MainMockExamPage: React.FC = () => {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const skillRefMap: Record<string, React.RefObject<{ next: () => boolean; prev: () => boolean; collect: () => ISubmitAnswer[] } | null>> = {
+    const skillRefMap: Record<string, React.RefObject<{
+        next: () => boolean;
+        prev: () => boolean;
+        collect: () => ISubmitAnswer[];
+        atFirstUnit: () => boolean;
+        atLastUnit: () => boolean;
+    } | null>> = {
         grammar: grammarRef,
         listening: listeningRef,
         reading: readingRef,
@@ -179,6 +190,13 @@ const MainMockExamPage: React.FC = () => {
 
         if (isAuto) {
             proceed();
+            return;
+        }
+
+        // Phần thi cuối + đã ở đơn vị cuối -> nộp bài: dùng đúng hộp thoại "Xác nhận nộp bài".
+        if (activeStep >= skills.length - 1) {
+            const totalQuestions = skills.reduce((sum, s) => sum + s.totalQuestions, 0);
+            confirmSubmitExam({ totalQuestions, onOk: handleSubmitFinal });
             return;
         }
 
@@ -227,6 +245,26 @@ const MainMockExamPage: React.FC = () => {
         }
     };
 
+    // Điền toàn bộ đáp án mẫu vào các section (để test luồng chấm điểm). Speaking cần upload audio nên chạy async.
+    const handlePrefillAll = async () => {
+        setIsPrefilling(true);
+        const hide = message.loading('Đang điền đáp án mẫu (upload audio phần Nói)...', 0);
+        try {
+            grammarRef.current?.prefill();
+            listeningRef.current?.prefill();
+            readingRef.current?.prefill();
+            writingRef.current?.prefill();
+            await speakingRef.current?.prefill();
+            hide();
+            toast.success('Đã điền đáp án mẫu. Bạn có thể chỉnh sửa rồi bấm Nộp bài.');
+        } catch {
+            hide();
+            toast.error('Điền đáp án mẫu thất bại (thường do upload audio). Vui lòng thử lại.');
+        } finally {
+            setIsPrefilling(false);
+        }
+    };
+
     // Chỉ nhận tiến độ từ kỹ năng đang hiển thị (các section ẩn vẫn mounted để giữ state).
     const activeSkillIdRef = useRef<SkillStep['id'] | undefined>(currentSkill?.id);
     useEffect(() => {
@@ -246,6 +284,23 @@ const MainMockExamPage: React.FC = () => {
             speaking: make('speaking'),
         } as Record<SkillStep['id'], (answered: number, part: number, question: number) => void>;
     }, []);
+
+    // Đọc ranh giới part từ handle của section đang active. Đọc ref trong effect (không đọc lúc render)
+    // để tránh lỗi react-hooks/refs; chạy lại mỗi khi đổi câu/đổi phần nên nhãn nút luôn khớp vị trí thực.
+    useEffect(() => {
+        const refs = {
+            grammar: grammarRef,
+            listening: listeningRef,
+            reading: readingRef,
+            writing: writingRef,
+            speaking: speakingRef,
+        };
+        const handle = currentSkill ? refs[currentSkill.id].current : null;
+        setNavEdge({
+            atFirst: handle?.atFirstUnit() ?? true,
+            atLast: handle?.atLastUnit() ?? false,
+        });
+    }, [currentSkill, currentStatus, activeStep]);
 
     // Đồng hồ đếm ngược: tick mỗi giây; hết giờ -> tự chuyển phần
     const handleNextRef = useRef(handleNextSection);
@@ -340,6 +395,15 @@ const MainMockExamPage: React.FC = () => {
         );
     }
 
+    const isFirstSection = activeStep === 0;
+    const isLastSection = activeStep === skills.length - 1;
+    const isSubmitStep = isLastSection && navEdge.atLast;
+    // Nhãn điều hướng theo ngữ cảnh: trong phần thì "Câu trước/Câu tiếp theo";
+    // ở ranh giới phần thì "Về phần trước / Sang phần sau"; câu cuối của phần cuối là "Nộp bài".
+    const nextLabel = isSubmitStep ? 'Nộp bài' : navEdge.atLast ? 'Sang phần sau' : 'Câu tiếp theo';
+    const prevLabel = navEdge.atFirst ? 'Về phần trước' : 'Câu trước';
+    const prevDisabled = isFirstSection && navEdge.atFirst;
+
     return (
         <S.ExamLayout>
             <S.ExamHeader>
@@ -353,6 +417,15 @@ const MainMockExamPage: React.FC = () => {
                 </Space>
 
                 <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
+                    <Button
+                        icon={<ThunderboltOutlined />}
+                        size="middle"
+                        loading={isPrefilling}
+                        onClick={handlePrefillAll}
+                        style={{ borderRadius: '2rem', fontWeight: 700, background: '#fbbf24', borderColor: '#fbbf24', color: '#1a365d' }}
+                    >
+                        Điền đáp án mẫu
+                    </Button>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.05em' }}>TIẾN ĐỘ:</span>
                         <div style={{ background: 'rgba(255,255,255,0.1)', padding: '0.3rem 0.75rem', borderRadius: '1rem', fontWeight: 700, fontSize: '0.9rem' }}>
@@ -377,9 +450,9 @@ const MainMockExamPage: React.FC = () => {
                     size="large"
                     style={{ borderRadius: '2rem', fontWeight: 700, padding: '0 1.5rem', border: '1px solid #e2e8f0', color: '#64748b', background: '#f8fafc', fontSize: '0.95rem' }}
                     onClick={handlePrevSection}
-                    disabled={activeStep === 0 && currentStatus.question === 1}
+                    disabled={prevDisabled}
                 >
-                    Quay lại
+                    {prevLabel}
                 </Button>
 
                 <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#64748b', letterSpacing: '0.02em' }}>
@@ -394,16 +467,16 @@ const MainMockExamPage: React.FC = () => {
                         style={{
                             borderRadius: '2rem',
                             fontWeight: 700,
-                            background: activeStep === skills.length - 1 ? '#10b981' : '#3b5b8c',
-                            borderColor: activeStep === skills.length - 1 ? '#10b981' : '#3b5b8c',
+                            background: isSubmitStep ? '#10b981' : '#3b5b8c',
+                            borderColor: isSubmitStep ? '#10b981' : '#3b5b8c',
                             padding: '0 2rem',
                             fontSize: '0.95rem',
                             boxShadow: `0 4px 15px rgba(59, 91, 140, 0.3)`
                         }}
                         onClick={() => handleNextSection(false)}
                     >
-                        {activeStep === skills.length - 1 ? 'Nộp bài' : 'Tiếp theo'}
-                        <RightOutlined style={{ fontSize: '12px', marginLeft: '6px' }} />
+                        {nextLabel}
+                        {!isSubmitStep && <RightOutlined style={{ fontSize: '12px', marginLeft: '6px' }} />}
                     </Button>
                 </Space>
             </S.ExamFooter>

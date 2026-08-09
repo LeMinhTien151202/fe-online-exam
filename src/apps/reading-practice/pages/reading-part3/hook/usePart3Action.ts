@@ -1,5 +1,5 @@
-import { message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from '../../../../../configs/toast';
 import { mapPart3, Part3Data } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
 import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
@@ -72,7 +72,7 @@ export const usePart3Action = () => {
     const answeredCount = Object.keys(answers).length;
     if (questionCount === 0) return;
     if (answeredCount < questionCount) {
-      message.warning(`Bạn đã trả lời ${answeredCount}/${questionCount} ý kiến. Vui lòng chọn đáp án cho tất cả các câu!`);
+      toast.warning(`Bạn đã trả lời ${answeredCount}/${questionCount} ý kiến. Vui lòng chọn đáp án cho tất cả các câu!`);
       return;
     }
     confirmSubmitExam({ totalQuestions: questionCount, onOk: doSubmit });
@@ -95,7 +95,7 @@ export const usePart3Action = () => {
     }
     localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
 
-    message.success(`Chúc mừng! Bạn đã hoàn thành Part 3. Kết quả: ${correctCount}/${questionCount} câu đúng.`);
+    toast.success(`Chúc mừng! Bạn đã hoàn thành Part 3. Kết quả: ${correctCount}/${questionCount} câu đúng.`);
 
     // Nộp lên BE để tăng student_progress (skill 3, part 4). SPEAKER_MATCH = mảng person key theo từng ý.
     if (examId && data?.questionId != null) {

@@ -1,5 +1,5 @@
-import { message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from '../../../../../configs/toast';
 import { mapPart1 } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
 import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
@@ -55,7 +55,7 @@ export const usePart1Action = () => {
     const answeredCount = Object.keys(answers).length;
     if (gapCount === 0) return;
     if (answeredCount < gapCount) {
-      message.warning(`Bạn mới trả lời ${answeredCount}/${gapCount} câu hỏi. Hãy hoàn thành tất cả nhé!`);
+      toast.warning(`Bạn mới trả lời ${answeredCount}/${gapCount} câu hỏi. Hãy hoàn thành tất cả nhé!`);
       return;
     }
     confirmSubmitExam({ totalQuestions: gapCount, onOk: doSubmit });
@@ -78,7 +78,7 @@ export const usePart1Action = () => {
     }
     localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
 
-    message.success(`Chúc mừng! Bạn đã hoàn thành câu ${safeIndex + 1}. Kết quả: ${correctCount}/${gapCount} câu đúng.`);
+    toast.success(`Chúc mừng! Bạn đã hoàn thành câu ${safeIndex + 1}. Kết quả: ${correctCount}/${gapCount} câu đúng.`);
 
     // Nộp lên BE để tăng student_progress (skill 3, part 1). P1 = mảng index đáp án theo từng gap.
     if (examId && data?.questionId != null) {

@@ -28,7 +28,7 @@ export const ResultPage = styled.div`
 
 export const ResultInner = styled.div`
   width: 100%;
-  max-width: 760px;
+  max-width: 840px;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -270,36 +270,69 @@ export const BandFill = styled.div<{ $pct: number; $color: string }>`
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
-// Dòng nhận xét AI
-export const AiRow = styled.div`
-  padding: 0.9rem 0;
-  border-bottom: 1px solid #f1f5f9;
-
-  &:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-  }
+// Lưới thẻ nhận xét AI — lấp đầy chiều ngang thay vì 1 cột dài, tối ưu khoảng trống.
+export const AiGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 0.85rem;
 `;
 
-export const AiTop = styled.div`
+// Một thẻ nhận xét (1 câu/phần)
+export const AiCard = styled.div`
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  background: #fafbfc;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
+  flex-direction: column;
   gap: 0.5rem;
+`;
+
+export const AiCardHead = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+`;
+
+// Nhãn phần/câu bên trái đầu thẻ
+export const AiPartLabel = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  .part {
+    font-weight: 800;
+    color: #0f172a;
+    font-size: 0.85rem;
+  }
+  .tags {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
 `;
 
 export const AiFeedback = styled.p`
   margin: 0;
   color: #475569;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   line-height: 1.55;
 `;
 
 export const AiScoreVal = styled.b<{ $color: string }>`
   color: ${({ $color }) => $color};
-  font-size: 0.95rem;
+  font-size: 1.15rem;
+  font-weight: 800;
   white-space: nowrap;
+  line-height: 1;
+
+  small {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+  }
 `;
 
 export const Footer = styled.div`

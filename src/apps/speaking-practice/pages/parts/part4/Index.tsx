@@ -1,13 +1,17 @@
 import {
-CheckCircleOutlined,
-ClockCircleOutlined,
-DownOutlined,
-LeftOutlined,
-UnlockOutlined,
-UpOutlined
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  DownOutlined,
+  LeftOutlined,
+  UnlockOutlined,
+  UpOutlined
 } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { Button,message,Progress,Space } from 'antd';
+import { toast } from '../../../../../configs/toast';
+import { Button,
+  Progress,
+  Space,
+} from 'antd';
 import React,{ useEffect,useState } from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
@@ -85,7 +89,7 @@ export const Part4Page: React.FC = () => {
       setCurrentSetIndex(prev => prev + 1);
       setShowSampleAnswer(false);
     } else {
-      message.info('Bạn đã hoàn thành bộ đề Speaking Practice!');
+      toast.info('Bạn đã hoàn thành bộ đề Speaking Practice!');
     }
   };
 
@@ -94,7 +98,7 @@ export const Part4Page: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    message.success('Xin chúc mừng! Bạn đã hoàn thành toàn bộ bài thi thử Speaking.');
+    toast.success('Xin chúc mừng! Bạn đã hoàn thành toàn bộ bài thi thử Speaking.');
     navigate({ to: '/speaking' });
   };
 

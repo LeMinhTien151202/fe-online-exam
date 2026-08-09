@@ -13,6 +13,9 @@ export interface ListeningHandle {
     next: () => boolean;
     prev: () => boolean;
     collect: () => ISubmitAnswer[];
+    prefill: () => void;
+    atFirstUnit: () => boolean;
+    atLastUnit: () => boolean;
 }
 
 interface ListeningSectionProps {
@@ -174,6 +177,30 @@ const ListeningSection = forwardRef<ListeningHandle, ListeningSectionProps>(({ d
             });
             return result;
         },
+        // Điền đáp án mẫu từ các trường correct* mapper đã trích sẵn.
+        prefill: () => {
+            const next: Record<string, string> = {};
+            data.part1.forEach((q, i) => {
+                if (q.correctIndex >= 0) next[`p1-${i}`] = q.options[q.correctIndex];
+            });
+            data.part2.forEach((set, i) => {
+                for (let s = 1; s <= set.speakerCount; s += 1) {
+                    const val = set.correctBySpeaker[s];
+                    if (val != null) next[`p2-${i}-${s}`] = val;
+                }
+            });
+            data.part3.forEach((set, i) => {
+                set.statements.forEach((st) => { next[`p3-${i}-${st.id}`] = st.correct; });
+            });
+            data.part4.forEach((group, i) => {
+                group.subQuestions.forEach((sq) => {
+                    if (sq.correctIndex >= 0) next[`p4-${i}-${sq.id}`] = sq.options[sq.correctIndex];
+                });
+            });
+            setAnswers(next);
+        },
+        atFirstUnit: () => currentUnit <= 1,
+        atLastUnit: () => currentUnit >= units.length,
     }), [currentUnit, units.length, data, answers]);
 
     const handleSelect = (key: string, val: string) => {

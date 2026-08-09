@@ -1,18 +1,26 @@
 import {
-AlertOutlined,
-ArrowLeftOutlined,
-ArrowRightOutlined,
-CheckCircleOutlined,
-ClockCircleOutlined,
-DownOutlined,
-LeftOutlined,
-RollbackOutlined,
-UnlockOutlined,
-UpOutlined
+  AlertOutlined,
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  DownOutlined,
+  LeftOutlined,
+  RollbackOutlined,
+  UnlockOutlined,
+  UpOutlined
 } from '@ant-design/icons';
-import { useNavigate,useParams } from '@tanstack/react-router';
-import { Button,Modal,Progress,Space,Tooltip,Typography,message } from 'antd';
+import { useNavigate,
+  useParams } from '@tanstack/react-router';
+import { Button,
+  Modal,
+  Progress,
+  Space,
+  Tooltip,
+  Typography,
+} from 'antd';
 import React,{ useEffect,useState } from 'react';
+import { toast } from '../../../../configs/toast';
 import { Sidebar } from '../../../home/components/Sidebar';
 import * as HomeS from '../../../home/pages/styled';
 import * as S from './styled';
@@ -84,14 +92,14 @@ export const WritingMockTestPage: React.FC = () => {
   const handleAutoSubmit = () => {
     setIsSubmitted(true);
     setShowReport(true);
-    message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
+    toast.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
     saveProgressToLocalStorage();
   };
 
   const handleManualSubmit = () => {
     setIsSubmitted(true);
     setShowReport(true);
-    message.success('Bạn đã nộp bài thi viết thành công!');
+    toast.success('Bạn đã nộp bài thi viết thành công!');
     saveProgressToLocalStorage();
   };
 

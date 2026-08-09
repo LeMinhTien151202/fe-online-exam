@@ -1,13 +1,19 @@
 import {
-ArrowLeftOutlined,
-ArrowRightOutlined,
-CheckCircleOutlined,
-ClockCircleOutlined,
-LeftOutlined,
-UndoOutlined
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  LeftOutlined,
+  UndoOutlined
 } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { Button,Modal,Progress,Space,Statistic,message } from 'antd';
+import { toast } from '../../../../../configs/toast';
+import { Button,
+  Modal,
+  Progress,
+  Space,
+  Statistic,
+} from 'antd';
 import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import React,{ useMemo, useState } from 'react';
 
@@ -120,7 +126,7 @@ export const Part2Page: React.FC = () => {
     resetExam();
     setShowResultModal(false);
     setScoreResult(null);
-    message.success('Đã làm mới. Chúc bạn làm bài tốt!');
+    toast.success('Đã làm mới. Chúc bạn làm bài tốt!');
   };
 
   return (

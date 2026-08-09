@@ -10,7 +10,6 @@ import {
   BookOutlined,
   FileTextOutlined,
   FolderOpenOutlined,
-  BarChartOutlined,
   CheckSquareOutlined,
   SettingOutlined,
   QuestionCircleOutlined,
@@ -22,7 +21,7 @@ import { GlobalAdminStyle } from '../styles/GlobalAdminStyle';
 import { useGeneralSettings } from '../pages/admin-settings/hook/useGeneralSettings';
 import { useExamDetailQuery } from '../pages/admin-exams/services/examQuery';
 import { useAppSelector } from '@/shared/store/hooks';
-import { ROLE_ACCESS, ROLE_LABEL, UserRole, hasAnyRole } from '@/shared/auth/roleAccess';
+import { BYPASS_ROLE, ROLE_ACCESS, ROLE_LABEL, UserRole, hasAnyRole } from '@/shared/auth/roleAccess';
 
 const AdminLayout: React.FC = () => {
   const routerState = useRouterState();
@@ -115,8 +114,7 @@ const AdminLayout: React.FC = () => {
       else if (path === 'questions') label = 'Ngân hàng câu hỏi';
       else if (path === 'exams') label = 'Bộ đề thi';
       else if (path === 'materials') label = 'Tài liệu học tập';
-      else if (path === 'progress') label = 'Tiến độ học viên';
-      else if (path === 'grading') label = 'Chấm điểm';
+      else if (path === 'grading') label = 'Kết quả & Lịch sử thi';
       else if (path === 'settings') label = 'Cài đặt';
       else if (path === 'faq') label = 'Quản lý Q&A';
       else if (path === 'notifications') label = 'Quản lý thông báo';
@@ -130,14 +128,14 @@ const AdminLayout: React.FC = () => {
     return breadcrumbItems;
   };
 
-  // allowedRoles ánh xạ theo @PreAuthorize: adminOnly (Tổng quan/Người dùng/Thông báo/Cài đặt),
-  // còn lại là nội dung học thuật cho ADMIN + TEACHER.
+  // allowedRoles ánh xạ theo @PreAuthorize: adminOnly (Người dùng/Cài đặt),
+  // còn lại (gồm cả Tổng quan & Thông báo) là ADMIN + TEACHER.
   const allMenuItems = [
     {
       key: '/admin',
       icon: <DashboardOutlined />,
       label: 'Tổng quan',
-      allowedRoles: ROLE_ACCESS.adminOnly,
+      allowedRoles: ROLE_ACCESS.contentManagers,
     },
     {
       key: 'users-group',
@@ -178,12 +176,6 @@ const AdminLayout: React.FC = () => {
       allowedRoles: ROLE_ACCESS.contentManagers,
     },
     {
-      key: '/admin/progress',
-      icon: <BarChartOutlined />,
-      label: 'Tiến độ học viên',
-      allowedRoles: ROLE_ACCESS.contentManagers,
-    },
-    {
       key: '/admin/grading',
       icon: <CheckSquareOutlined />,
       label: 'Kết quả & Lịch sử thi',
@@ -199,7 +191,7 @@ const AdminLayout: React.FC = () => {
       key: '/admin/notifications',
       icon: <BellOutlined />,
       label: 'Quản lý thông báo',
-      allowedRoles: ROLE_ACCESS.adminOnly,
+      allowedRoles: ROLE_ACCESS.contentManagers,
     },
     {
       key: '/admin/settings',
@@ -211,7 +203,7 @@ const AdminLayout: React.FC = () => {
 
   // Lọc menu theo vai trò rồi bỏ trường allowedRoles trước khi đưa vào antd Menu.
   const menuItems = allMenuItems
-    .filter((item) => hasAnyRole(role, item.allowedRoles))
+    .filter((item) => BYPASS_ROLE || hasAnyRole(role, item.allowedRoles))
     .map((item) => {
       const rest = { ...item };
       delete (rest as Partial<typeof item>).allowedRoles;
@@ -229,7 +221,6 @@ const AdminLayout: React.FC = () => {
     if (currentPath.startsWith('/admin/exams/create')) return ['/admin/exams/create'];
     if (currentPath.startsWith('/admin/exams')) return ['/admin/exams'];
     if (currentPath.startsWith('/admin/materials')) return ['/admin/materials'];
-    if (currentPath.startsWith('/admin/progress')) return ['/admin/progress'];
     if (currentPath.startsWith('/admin/grading')) return ['/admin/grading'];
     if (currentPath.startsWith('/admin/settings')) return ['/admin/settings'];
     if (currentPath.startsWith('/admin/faq')) return ['/admin/faq'];

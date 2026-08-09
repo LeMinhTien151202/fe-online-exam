@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { message } from 'antd';
+import { toast } from '../../../configs/toast';
+import {
+  useState } from 'react';
 import {
   IAiGradeDetail,
   ISubmitAnswer,
@@ -23,7 +24,7 @@ export const usePerQuestionGrading = () => {
 
   const gradeOne = async ({ key, examId, questionId, response }: GradeOneParams) => {
     if (!examId || questionId == null) {
-      message.warning('Chưa sẵn sàng để chấm câu này.');
+      toast.warning('Chưa sẵn sàng để chấm câu này.');
       return;
     }
     setGradingKey(key);
@@ -33,15 +34,15 @@ export const usePerQuestionGrading = () => {
       const aiResults = Array.isArray(result.ai) ? result.ai : [];
       const ai = aiResults.find((a) => a.questionId === questionId) ?? aiResults[0] ?? null;
       if (!ai) {
-        message.info('Chưa có kết quả chấm cho câu này.');
+        toast.info('Chưa có kết quả chấm cho câu này.');
         return;
       }
       setGrades((prev) => ({ ...prev, [key]: ai }));
       if (ai.aiScore != null) {
-        message.success(`Đã chấm xong: ${ai.aiScore}/100`);
+        toast.success(`Đã chấm xong: ${ai.aiScore}/100`);
       } else {
         // AI không chấm được -> nêu đúng lý do backend trả về (thiếu audio, chưa cấu hình, lỗi tạm thời...).
-        message.warning(ai.feedback?.trim() || 'Câu này cần chấm tay.');
+        toast.warning(ai.feedback?.trim() || 'Câu này cần chấm tay.');
       }
     } catch {
       // Interceptor axios đã hiện notification lỗi.

@@ -66,7 +66,7 @@ const LoginPage: React.FC = () => {
                     <label className="remember-cb">
                         <input type="checkbox" /> Ghi nhớ đăng nhập
                     </label>
-                    <Link to="/login" className="forgot-link">Quên mật khẩu?</Link>
+                    <Link to="/forgot-password" className="forgot-link">Quên mật khẩu?</Link>
                 </S.UtilityRow>
 
                 <S.PrimaryButton type="submit" disabled={isLoggingIn}>

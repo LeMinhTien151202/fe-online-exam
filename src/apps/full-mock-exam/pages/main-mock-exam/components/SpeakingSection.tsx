@@ -3,6 +3,7 @@ import React,{ useMemo,useState } from 'react';
 import { ExamQuestionNavigator,NavSection } from '../../../../../shared/components/ExamQuestionNavigator';
 import { ISubmitAnswer } from '../../../../../shared/services/student-exam';
 import { SpeakingExamData } from '../../../../speaking-practice/services/speakingExamMapper';
+import { uploadAudioBlob } from '../../../../../shared/services/media/mediaApi';
 import * as S from '../styles/shared.styles';
 import * as SS from '../styles/speaking.styles';
 import { SpeakingController } from './speaking/SpeakingController';
@@ -11,7 +12,18 @@ export interface SpeakingHandle {
     next: () => boolean;
     prev: () => boolean;
     collect: () => ISubmitAnswer[];
+    prefill: () => Promise<void>;
+    atFirstUnit: () => boolean;
+    atLastUnit: () => boolean;
 }
+
+// File audio mẫu (đặt trong public/sample-audio) dùng để điền nhanh phần Nói khi test chấm điểm.
+const SAMPLE_AUDIO: Record<number, string[]> = {
+    1: ['/sample-audio/part1_q1.mp3', '/sample-audio/part1_q2.mp3', '/sample-audio/part1_q3.mp3'],
+    2: ['/sample-audio/part2_q1.mp3', '/sample-audio/part2_q2.mp3', '/sample-audio/part2_q3.mp3'],
+    3: ['/sample-audio/part3_q1.mp3', '/sample-audio/part3_q2.mp3', '/sample-audio/part3_q3.mp3'],
+    4: ['/sample-audio/part4.mp3'],
+};
 
 interface SpeakingSectionProps {
     data: SpeakingExamData;
@@ -97,6 +109,34 @@ const SpeakingSection = React.forwardRef<SpeakingHandle, SpeakingSectionProps>((
 
             return result;
         },
+        // Điền đáp án mẫu: upload các file audio mẫu (mỗi file chỉ upload 1 lần) rồi gán URL cho mọi unit.
+        prefill: async () => {
+            const cache = new Map<string, string>();
+            const uploadOnce = async (path: string) => {
+                const cached = cache.get(path);
+                if (cached) return cached;
+                const resp = await fetch(path);
+                const blob = await resp.blob();
+                const fileName = path.split('/').pop() ?? 'sample.mp3';
+                const url = await uploadAudioBlob(blob, 'speaking/mock/sample', fileName);
+                cache.set(path, url);
+                return url;
+            };
+
+            const perPart: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0 };
+            const next: Record<number, string> = {};
+            for (let i = 0; i < units.length; i += 1) {
+                const u = units[i];
+                const list = SAMPLE_AUDIO[u.part] ?? SAMPLE_AUDIO[1];
+                const path = list[perPart[u.part] % list.length];
+                perPart[u.part] += 1;
+                // Upload tuần tự để tránh nghẽn nhiều request cùng lúc.
+                next[i + 1] = await uploadOnce(path);
+            }
+            setAnswers(next);
+        },
+        atFirstUnit: () => currentUnit <= 1,
+        atLastUnit: () => currentUnit >= units.length,
     }), [currentUnit, units, data, answers]);
 
     const navSections: NavSection[] = useMemo(() => {

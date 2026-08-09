@@ -7,18 +7,19 @@ import { ROLE_LABEL } from '@/shared/auth/roleAccess';
 
 const { Title, Text } = Typography;
 
-// Mô tả quyền CỐ ĐỊNH theo vai trò, khớp @PreAuthorize ở backend.
+// Mô tả quyền CỐ ĐỊNH theo vai trò, khớp @PreAuthorize ở backend và allowedRoles của menu admin.
 // Đây là bảng CHỈ ĐỌC: phân quyền không cấu hình động, muốn đổi phải sửa vai trò người dùng.
+// Thứ tự các dòng bám theo menu quản trị (AdminLayout) để dễ đối chiếu.
 const ACCESS_ROWS: { area: string; admin: boolean; teacher: boolean; student: boolean }[] = [
-  { area: 'Tổng quan hệ thống', admin: true, teacher: false, student: false },
+  { area: 'Tổng quan hệ thống', admin: true, teacher: true, student: false },
   { area: 'Quản lý người dùng', admin: true, teacher: false, student: false },
-  { area: 'Cài đặt hệ thống', admin: true, teacher: false, student: false },
-  { area: 'Quản lý thông báo', admin: true, teacher: false, student: false },
   { area: 'Ngân hàng câu hỏi', admin: true, teacher: true, student: false },
   { area: 'Bộ đề thi', admin: true, teacher: true, student: false },
   { area: 'Tài liệu học tập', admin: true, teacher: true, student: false },
+  { area: 'Kết quả & Lịch sử thi', admin: true, teacher: true, student: false },
   { area: 'Quản lý Q&A', admin: true, teacher: true, student: false },
-  { area: 'Chấm điểm & kết quả', admin: true, teacher: true, student: false },
+  { area: 'Quản lý thông báo', admin: true, teacher: true, student: false },
+  { area: 'Cài đặt hệ thống', admin: true, teacher: false, student: false },
   { area: 'Làm bài / luyện thi', admin: false, teacher: false, student: true },
 ];
 

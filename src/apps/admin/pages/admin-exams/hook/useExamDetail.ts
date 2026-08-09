@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { message } from 'antd';
+import {
+  useState } from 'react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
+import { toast } from '../../../../../configs/toast';
 import {
   useAssignQuestionsMutation,
   useExamDetailQuery,
@@ -44,28 +45,28 @@ export const useExamDetail = () => {
     if (!id) return;
     updateExam.mutate(
       { id, payload: { title, description } },
-      { onSuccess: () => message.success('Đã lưu thông tin đề.') }
+      { onSuccess: () => toast.success('Đã lưu thông tin đề.') }
     );
   };
 
   const handleToggleActive = () => {
     if (!id) return;
     toggleActive.mutate(id, {
-      onSuccess: (res) => message.success(res.isActive ? 'Đã công khai đề.' : 'Đã ẩn đề.'),
+      onSuccess: (res) => toast.success(res.isActive ? 'Đã công khai đề.' : 'Đã ẩn đề.'),
     });
   };
 
   const handleSaveDuration = (sectionId: number, durationMinutes: number) => {
     updateSection.mutate(
       { sectionId, durationMinutes },
-      { onSuccess: () => message.success('Đã cập nhật thời gian.') }
+      { onSuccess: () => toast.success('Đã cập nhật thời gian.') }
     );
   };
 
   const handleSavePart = (partId: number, payload: { instruction?: string; audioUrl?: string }) => {
     updatePart.mutate(
       { partId, payload },
-      { onSuccess: () => message.success('Đã cập nhật phần thi.') }
+      { onSuccess: () => toast.success('Đã cập nhật phần thi.') }
     );
   };
 
@@ -76,14 +77,14 @@ export const useExamDetail = () => {
     const questions = questionIds.map((questionId, i) => ({ questionId, orderIndex: startIndex + i }));
     assignQuestions.mutate(
       { partId: part.id, questions },
-      { onSuccess: () => message.success(`Đã thêm ${questionIds.length} câu hỏi vào Part ${part.partNumber}.`) }
+      { onSuccess: () => toast.success(`Đã thêm ${questionIds.length} câu hỏi vào Part ${part.partNumber}.`) }
     );
   };
 
   const handleRemoveQuestion = (partId: number, questionId: number) => {
     removeQuestion.mutate(
       { partId, questionId },
-      { onSuccess: () => message.success('Đã gỡ câu hỏi khỏi phần.') }
+      { onSuccess: () => toast.success('Đã gỡ câu hỏi khỏi phần.') }
     );
   };
 

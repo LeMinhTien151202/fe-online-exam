@@ -1,18 +1,31 @@
 import {
-ArrowLeftOutlined,
-ArrowRightOutlined,
-AudioOutlined,
-BulbOutlined,
-CameraOutlined,
-DeleteOutlined,
-FlagOutlined,
-PictureOutlined,
-SaveOutlined,
-TeamOutlined,
-UserOutlined
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
+  AudioOutlined,
+  BulbOutlined,
+  CameraOutlined,
+  DeleteOutlined,
+  FlagOutlined,
+  PictureOutlined,
+  SaveOutlined,
+  TeamOutlined,
+  UserOutlined
 } from '@ant-design/icons';
-import { Button,Card,Col,Divider,Form,Input,message,Row,Select,Space,Steps,Typography,Upload } from 'antd';
+import { Button,
+  Card,
+  Col,
+  Divider,
+  Form,
+  Input,
+  Row,
+  Select,
+  Space,
+  Steps,
+  Typography,
+  Upload,
+} from 'antd';
 import type { FormInstance } from 'antd';
+import { toast } from '../../../../../../configs/toast';
 import type { UploadRequestOption } from '@rc-component/upload/lib/interface';
 import React,{ useState } from 'react';
 import { ADMIN_COLORS } from '../../../../constants';
@@ -42,11 +55,11 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
             const res = await questionApi.upload(file as File, folderType);
             form.setFieldValue(formKey, res.url);
             onSuccess?.(res, file as unknown as XMLHttpRequest);
-            message.success('Upload file thành công!');
+            toast.success('Upload file thành công!');
         } catch (err) {
             onError?.(err as Error);
             const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-            message.error(msg || 'Upload file thất bại.');
+            toast.error(msg || 'Upload file thất bại.');
         }
     };
 

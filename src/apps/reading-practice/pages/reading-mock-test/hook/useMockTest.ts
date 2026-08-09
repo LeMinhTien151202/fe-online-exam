@@ -1,5 +1,6 @@
-import { message } from 'antd';
+
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from '../../../../../configs/toast';
 import { IExamSubmitResult, ISubmitAnswer, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { useReadingExamDetailQuery } from '../../../services/readingExamQuery';
 import { flattenExam, ExamPartData } from '../../../services/readingExamMapper';
@@ -296,7 +297,7 @@ export const useMockTest = (testId: string) => {
     if (timeLeft <= 0 || isSubmittedRef.current) {
       if (timeLeft <= 0 && !isSubmittedRef.current) {
         isSubmittedRef.current = true;
-        message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
+        toast.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
         const { totalScore } = calculateScoresRef.current();
         saveProgressRef.current(totalScore);
         submitToServerRef.current();
@@ -312,7 +313,7 @@ export const useMockTest = (testId: string) => {
   const handleAutoSubmit = () => {
     setIsSubmitted(true);
     setShowReport(true);
-    message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
+    toast.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
     const { totalScore } = calculateScores();
     saveProgressToLocalStorage(totalScore);
     submitToServer();
@@ -321,7 +322,7 @@ export const useMockTest = (testId: string) => {
   const handleManualSubmit = () => {
     setIsSubmitted(true);
     setShowReport(true);
-    message.success('Bạn đã nộp bài thi thành công!');
+    toast.success('Bạn đã nộp bài thi thành công!');
     const { totalScore } = calculateScores();
     saveProgressToLocalStorage(totalScore);
     submitToServer();

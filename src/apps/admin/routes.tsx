@@ -31,9 +31,7 @@ import AdminExamsPage from './pages/admin-exams/pages/Index';
 import AdminCreateExamPage from './pages/admin-exams/pages/CreateExam';
 import AdminExamDetailPage from './pages/admin-exams/pages/ExamDetail';
 import AdminMaterialsPage from './pages/admin-materials/pages/Index';
-import AdminProgressPage from './pages/admin-progress/pages/Index';
 import AdminGradingPage from './pages/admin-grading/pages/Index';
-import AdminGradingDetailPage from './pages/admin-grading/pages/Detail';
 import AdminSettingsPage from './pages/admin-settings/pages/Index';
 import AdminFaqPage from './pages/admin-faq/pages/Index';
 import AdminNotificationsPage from './pages/admin-notifications/pages/Index';
@@ -41,7 +39,7 @@ import AdminNotificationsPage from './pages/admin-notifications/pages/Index';
 export const adminDashboardRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/',
-  component: guard(AdminDashboardPage, ROLE_ACCESS.adminOnly),
+  component: guard(AdminDashboardPage, ROLE_ACCESS.contentManagers),
 });
 
 export const adminUsersRoute = createRoute({
@@ -90,22 +88,10 @@ export const adminMaterialsRoute = createRoute({
   component: AdminMaterialsPage,
 });
 
-export const adminProgressRoute = createRoute({
-  getParentRoute: () => adminRoute,
-  path: '/progress',
-  component: AdminProgressPage,
-});
-
 export const adminGradingRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/grading',
   component: AdminGradingPage,
-});
-
-export const adminGradingDetailRoute = createRoute({
-  getParentRoute: () => adminRoute,
-  path: '/grading/$resultId',
-  component: AdminGradingDetailPage,
 });
 
 export const adminSettingsRoute = createRoute({
@@ -123,7 +109,7 @@ export const adminFaqRoute = createRoute({
 export const adminNotificationsRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/notifications',
-  component: guard(AdminNotificationsPage, ROLE_ACCESS.adminOnly),
+  component: guard(AdminNotificationsPage, ROLE_ACCESS.contentManagers),
 });
 
 // Helper collection of all child routes to add to routeTree in App.tsx
@@ -137,9 +123,7 @@ export const adminRoutes = [
   adminCreateExamRoute,
   adminExamDetailRoute,
   adminMaterialsRoute,
-  adminProgressRoute,
   adminGradingRoute,
-  adminGradingDetailRoute,
   adminSettingsRoute,
   adminFaqRoute,
   adminNotificationsRoute,
@@ -153,9 +137,7 @@ export const adminRouteChildren = [
   adminCreateExamRoute,
   adminExamDetailRoute,
   adminMaterialsRoute,
-  adminProgressRoute,
   adminGradingRoute,
-  adminGradingDetailRoute,
   adminSettingsRoute,
   adminFaqRoute,
   adminNotificationsRoute,

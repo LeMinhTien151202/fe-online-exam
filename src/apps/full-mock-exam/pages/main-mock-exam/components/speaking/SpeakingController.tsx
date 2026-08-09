@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Space, Progress, message } from 'antd';
+import { toast } from '../../../../../../configs/toast';
+import { Button, Space, Progress } from 'antd';
 import {
     AudioFilled,
     PlayCircleFilled,
@@ -179,7 +180,7 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
             mediaRecorder.start();
         } catch (err) {
             console.warn('Microphone access denied or unavailable, using simulated recording mode.', err);
-            message.info('Sử dụng ghi âm giả lập do không kết nối được micrô.');
+            toast.info('Sử dụng ghi âm giả lập do không kết nối được micrô.');
             setStep('RECORDING');
         }
     };
@@ -194,7 +195,7 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
         } catch (err) {
             console.warn('Upload audio thất bại:', err);
             setUploadState('error');
-            message.error('Tải bản ghi âm lên thất bại. Hãy thử tải lại hoặc ghi âm lại.');
+            toast.error('Tải bản ghi âm lên thất bại. Hãy thử tải lại hoặc ghi âm lại.');
             if (onCompleted) onCompleted(null); // chưa có URL hợp lệ để chấm
         }
     };
@@ -221,7 +222,7 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
 
     const togglePlayback = () => {
         if (!recordedUrl) {
-            message.warning('Không có âm thanh thu âm thực tế để phát lại (chế độ giả lập).');
+            toast.warning('Không có âm thanh thu âm thực tế để phát lại (chế độ giả lập).');
             return;
         }
 

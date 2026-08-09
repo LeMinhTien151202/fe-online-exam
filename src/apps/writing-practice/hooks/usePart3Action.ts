@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import {
+  useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { message } from 'antd';
+import { toast } from '../../../configs/toast';
 import { countWords } from '../utils/wordCounter';
 
 export const usePart3Action = (
@@ -26,16 +27,16 @@ export const usePart3Action = (
     });
 
     if (hasEmpty) {
-      message.warning("Vui lòng trả lời đầy đủ cả 3 tin nhắn trong đoạn chat!");
+      toast.warning("Vui lòng trả lời đầy đủ cả 3 tin nhắn trong đoạn chat!");
       return;
     }
 
     if (hasInvalid) {
-      message.error("Có câu trả lời chưa đạt giới hạn 30-40 từ! Vui lòng kiểm tra lại.");
+      toast.error("Có câu trả lời chưa đạt giới hạn 30-40 từ! Vui lòng kiểm tra lại.");
       return;
     }
 
-    message.success("Đã hoàn thành luyện tập Part 3!");
+    toast.success("Đã hoàn thành luyện tập Part 3!");
     navigate({ to: '/writing/part/4' });
   };
 

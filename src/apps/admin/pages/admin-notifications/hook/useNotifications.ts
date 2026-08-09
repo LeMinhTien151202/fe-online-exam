@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { message } from 'antd';
+import {
+  useState } from 'react';
 import {
   useAdminNotificationsQuery,
   useCreateNotificationMutation,
@@ -7,6 +7,7 @@ import {
   useReadAllMutation,
 } from '../services/notificationQuery';
 import { ICreateNotificationPayload, NotificationAudience, NotificationType } from '../services/types';
+import { toast } from '../../../../../configs/toast';
 import { usePagination } from '@/shared/hooks/usePagination';
 
 export const useNotifications = () => {
@@ -32,7 +33,7 @@ export const useNotifications = () => {
     createMutation.mutate(payload, {
       onSuccess: () => {
         reset();
-        message.success('Đã gửi thông báo.');
+        toast.success('Đã gửi thông báo.');
       },
     });
   };
@@ -50,7 +51,7 @@ export const useNotifications = () => {
 
   const handleReadAll = () => {
     readAllMutation.mutate(undefined, {
-      onSuccess: (res) => message.success(`Đã đánh dấu đã đọc ${res.updated} thông báo.`),
+      onSuccess: (res) => toast.success(`Đã đánh dấu đã đọc ${res.updated} thông báo.`),
     });
   };
 

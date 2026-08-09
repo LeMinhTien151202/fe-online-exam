@@ -5,10 +5,19 @@ import {
   ClockCircleOutlined,
   LeftOutlined,
   UndoOutlined,
-} from '@ant-design/icons';
-import { useNavigate, useParams } from '@tanstack/react-router';
-import { Button, Empty, Modal, Progress, Space, Spin, Statistic, message } from 'antd';
+  } from '@ant-design/icons';
+import { useNavigate,
+  useParams } from '@tanstack/react-router';
+import { Button,
+  Empty,
+  Modal,
+  Progress,
+  Space,
+  Spin,
+  Statistic,
+} from 'antd';
 import React, { useMemo, useState } from 'react';
+import { toast } from '../../../../../configs/toast';
 
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
@@ -214,7 +223,7 @@ export const GrammarMockTestPage: React.FC = () => {
     resetExam();
     setShowResultModal(false);
     setScoreResult(null);
-    message.success('Đã tải lại đề thi. Chúc bạn làm bài tốt!');
+    toast.success('Đã tải lại đề thi. Chúc bạn làm bài tốt!');
   };
 
   return (

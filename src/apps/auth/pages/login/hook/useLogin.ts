@@ -1,6 +1,7 @@
-import { useNavigate } from '@tanstack/react-router';
+import {
+  useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { message } from 'antd';
+import { toast } from '../../../../../configs/toast';
 import { useLoginMutation } from '@apps/auth/services/authQuery';
 import { ILoginPayload } from '@apps/auth/services/types';
 import { useAppDispatch } from '@/shared/store/hooks';
@@ -18,7 +19,7 @@ export const useLogin = () => {
         // Xóa cache cũ (nếu tab này vừa đăng nhập tài khoản khác trước đó) trước khi lưu phiên mới
         queryClient.clear();
         dispatch(setCredentials({ user: res.user, accessToken: res.access_token }));
-        message.success('Đăng nhập thành công!');
+        toast.success('Đăng nhập thành công!');
         navigate({ to: '/' });
       },
     });

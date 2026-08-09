@@ -1,19 +1,33 @@
 import {
-ArrowLeftOutlined,
-ArrowRightOutlined,
-AudioOutlined,
-CheckCircleOutlined,
-DeleteOutlined,
-FlagOutlined,
-PlusOutlined,
-QuestionCircleOutlined,
-SaveOutlined,
-SoundOutlined,
-UploadOutlined,
-UserOutlined
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
+  AudioOutlined,
+  CheckCircleOutlined,
+  DeleteOutlined,
+  FlagOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+  SaveOutlined,
+  SoundOutlined,
+  UploadOutlined,
+  UserOutlined
 } from '@ant-design/icons';
-import { Button,Card,Col,Divider,Form,Input,Radio,Row,Select,Space,Steps,Tag,Upload,message } from 'antd';
+import { Button,
+  Card,
+  Col,
+  Divider,
+  Form,
+  Input,
+  Radio,
+  Row,
+  Select,
+  Space,
+  Steps,
+  Tag,
+  Upload,
+} from 'antd';
 import React,{ useState } from 'react';
+import { toast } from '../../../../../../configs/toast';
 import { ADMIN_COLORS } from '../../../../constants';
 import { questionApi } from '../../services/questionApi';
 
@@ -54,10 +68,10 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
             const res = await questionApi.upload(file as File, folderType);
             form.setFieldValue(formKey, res.url);
             onSuccess(res, file);
-            message.success('Upload file thành công!');
+            toast.success('Upload file thành công!');
         } catch (err: any) {
             onError(err);
-            message.error(err.response?.data?.message || 'Upload file thất bại.');
+            toast.error(err.response?.data?.message || 'Upload file thất bại.');
         } finally {
             setIsUploading(false);
         }

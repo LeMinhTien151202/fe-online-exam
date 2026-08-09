@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
-import { message } from 'antd';
+import {
+  useMemo,
+  useState } from 'react';
 import {
   useCreateUserMutation,
   useLockUserMutation,
@@ -7,6 +8,7 @@ import {
   useUsersQuery,
 } from '../services/userQuery';
 import { IAdminUser, IUserRow, UserRole } from '../services/types';
+import { toast } from '../../../../../configs/toast';
 import { usePagination } from '@/shared/hooks/usePagination';
 
 const mapRow = (u: IAdminUser): IUserRow => ({
@@ -49,10 +51,10 @@ export const useUsers = () => {
     if (active) {
       updateMutation.mutate(
         { id, payload: { status: 'ACTIVE' } },
-        { onSuccess: () => message.success('Đã mở khoá tài khoản.') }
+        { onSuccess: () => toast.success('Đã mở khoá tài khoản.') }
       );
     } else {
-      lockMutation.mutate(id, { onSuccess: () => message.success('Đã khoá tài khoản.') });
+      lockMutation.mutate(id, { onSuccess: () => toast.success('Đã khoá tài khoản.') });
     }
   };
 
@@ -62,7 +64,7 @@ export const useUsers = () => {
       {
         onSuccess: () => {
           reset();
-          message.success('Đã thêm người dùng.');
+          toast.success('Đã thêm người dùng.');
           onDone?.();
         },
       }

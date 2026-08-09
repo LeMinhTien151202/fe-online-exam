@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Space, Progress, Button, message } from 'antd';
+import { toast } from '../../../../../configs/toast';
+import { Space, Progress, Button } from 'antd';
 import { useNavigate } from '@tanstack/react-router';
 import { 
   LeftOutlined, 
@@ -118,7 +119,7 @@ export const Part3Page: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    message.success('Đã hoàn thành luyện tập Part 3!');
+    toast.success('Đã hoàn thành luyện tập Part 3!');
     navigate({ to: '/speaking/part/4' });
   };
 

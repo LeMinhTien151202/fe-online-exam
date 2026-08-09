@@ -1,6 +1,9 @@
-import { useState } from "react";
-import { Form, message } from "antd";
+import {
+  useState } from "react";
+import { Form,
+} from 'antd';
 import { useNavigate } from "@tanstack/react-router";
+import { toast } from '../../../../../configs/toast';
 import { useQueryClient } from "@tanstack/react-query";
 import { examApi } from "../services/examApi";
 import { EXAMS_KEY, useExamQuestionBank } from "../services/examQuery";
@@ -52,7 +55,7 @@ export const useCreateExam = () => {
       setCurrentStep((prev) => prev + 1);
     } catch (err) {
       console.error(err);
-      message.error("Vui lòng điền đủ các thông tin bắt buộc!");
+      toast.error("Vui lòng điền đủ các thông tin bắt buộc!");
     }
   };
 
@@ -61,7 +64,7 @@ export const useCreateExam = () => {
   const handleAddQuestion = (record: IBankQuestion) => {
     if (!record) return;
     if (selectedQuestions.some((q) => q?.key === record?.key)) {
-      message.warning("Câu hỏi này đã được chọn!");
+      toast.warning("Câu hỏi này đã được chọn!");
       return;
     }
 
@@ -96,11 +99,11 @@ export const useCreateExam = () => {
   const handleAddAll = (questions: IBankQuestion[]) => {
     const toAdd = questions.filter((q) => !selectedQuestions.some((s) => s?.key === q.key));
     if (toAdd.length === 0) {
-      message.info("Đã thêm hết câu hỏi của phần này.");
+      toast.info("Đã thêm hết câu hỏi của phần này.");
       return;
     }
     setSelectedQuestions([...selectedQuestions, ...toAdd]);
-    message.success(`Đã thêm ${toAdd.length} câu hỏi.`);
+    toast.success(`Đã thêm ${toAdd.length} câu hỏi.`);
   };
 
   const handleRemoveQuestion = (key: string) => {
@@ -124,19 +127,19 @@ export const useCreateExam = () => {
   const handleAddRandom = (count: number) => {
     const available = bankQuestions.filter((bq) => !selectedQuestions.some((sq) => sq?.key === bq?.key));
     if (available.length === 0) {
-      message.info("Không còn câu hỏi ngẫu nhiên trong ngân hàng!");
+      toast.info("Không còn câu hỏi ngẫu nhiên trong ngân hàng!");
       return;
     }
     const shuffled = [...available].sort(() => 0.5 - Math.random());
     const slice = shuffled.slice(0, Math.min(count, shuffled.length));
     setSelectedQuestions([...selectedQuestions, ...slice]);
-    message.success(`Đã thêm ${slice.length} câu hỏi ngẫu nhiên!`);
+    toast.success(`Đã thêm ${slice.length} câu hỏi ngẫu nhiên!`);
   };
 
   // Publish: POST /exam-sets -> gán câu hỏi từng part -> toggle-active
   const handlePublish = async () => {
     if (selectedQuestions.length === 0) {
-      message.warning("Vui lòng chọn ít nhất 1 câu hỏi cho đề.");
+      toast.warning("Vui lòng chọn ít nhất 1 câu hỏi cho đề.");
       return;
     }
 
@@ -192,7 +195,7 @@ export const useCreateExam = () => {
       await examApi.toggleActive(exam.id);
 
       queryClient.invalidateQueries({ queryKey: EXAMS_KEY });
-      message.success(`Đã tạo & xuất bản đề (gán ${assignedCount} câu hỏi).`);
+      toast.success(`Đã tạo & xuất bản đề (gán ${assignedCount} câu hỏi).`);
       navigate({ to: "/admin/exams" });
     } catch (err) {
       console.error("Publish exam failed:", err);

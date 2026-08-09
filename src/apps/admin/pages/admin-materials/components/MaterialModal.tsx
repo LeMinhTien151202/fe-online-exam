@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, Form, Input, Select, Button, Upload, message } from 'antd';
+import { toast } from '../../../../../configs/toast';
+import { Modal, Form, Input, Select, Button, Upload } from 'antd';
 import { CloudUploadOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { FileType } from '../services/types';
@@ -50,12 +51,12 @@ const MaterialModal: React.FC<MaterialModalProps> = ({ open, onCancel, onSuccess
       const res = await questionApi.upload(file as File, 'images');
       form.setFieldsValue({ fileUrl: res.url });
       setUploadedFileName(file.name);
-      message.success('Tải tệp lên thành công!');
+      toast.success('Tải tệp lên thành công!');
       if (onUploadSuccess) onUploadSuccess(res);
     } catch (err: any) {
       console.error('File upload error:', err);
       const errMsg = err?.response?.data?.message || 'Tải tệp lên thất bại!';
-      message.error(errMsg);
+      toast.error(errMsg);
       if (onUploadError) onUploadError(err);
     } finally {
       setIsUploading(false);

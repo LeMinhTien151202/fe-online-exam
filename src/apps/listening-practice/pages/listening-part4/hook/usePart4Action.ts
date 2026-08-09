@@ -1,5 +1,5 @@
-import { message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from '../../../../../configs/toast';
 import { useNavigate } from '@tanstack/react-router';
 import { flattenListeningExam } from '../../../services/listeningExamMapper';
 import { mapLPart4 } from '../../../services/mappers';
@@ -63,7 +63,7 @@ export const usePart4Action = () => {
     if (saved) { try { progressObj = JSON.parse(saved); } catch { /* bỏ qua lỗi */ } }
     progressObj['l4'] = 100;
     localStorage.setItem('aptis_listening_progress', JSON.stringify(progressObj));
-    message.success('Đã ghi nhận câu trả lời! Bạn có thể luyện bài tiếp theo.');
+    toast.success('Đã ghi nhận câu trả lời! Bạn có thể luyện bài tiếp theo.');
 
     // Nộp lên BE để tăng student_progress (skill 2, part 4). P4 = mảng index theo subQuestions mỗi bài.
     if (examId) {

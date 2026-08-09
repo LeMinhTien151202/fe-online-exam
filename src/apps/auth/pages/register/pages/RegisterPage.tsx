@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from '@tanstack/react-router';
-import { message } from 'antd';
+import { toast } from '../../../../../configs/toast';
+import {
+  Link } from '@tanstack/react-router';
 import AuthLayout from '../../../components/AuthLayout';
 import { useRegister } from '../hook/useRegister';
 import * as S from '../styles/register.styled';
@@ -15,7 +16,7 @@ const RegisterPage: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (password !== confirmPassword) {
-            message.error('Mật khẩu nhập lại không khớp!');
+            toast.error('Mật khẩu nhập lại không khớp!');
             return;
         }
         register({ full_name: fullName, email, password });

@@ -1,6 +1,9 @@
-import { useMemo } from 'react';
-import { Modal, message } from 'antd';
+import {
+  useMemo } from 'react';
+import { Modal,
+} from 'antd';
 import { useNavigate } from '@tanstack/react-router';
+import { toast } from '../../../../../configs/toast';
 import { useDeleteExamMutation, useExamSetsQuery, useToggleExamActiveMutation } from '../services/examQuery';
 import { ExamType, ID_TO_FE_SKILL, IExamSetListItem } from '../services/types';
 import { useState } from 'react';
@@ -88,14 +91,14 @@ export const useExams = () => {
       cancelText: 'Huỷ',
       onOk: () =>
         deleteMutation.mutate(Number(key), {
-          onSuccess: () => message.success('Đã xoá đề thi.'),
+          onSuccess: () => toast.success('Đã xoá đề thi.'),
         }),
     });
   };
 
   const handleToggle = (key: string) => {
     toggleMutation.mutate(Number(key), {
-      onSuccess: (res) => message.success(res.isActive ? 'Đã công khai đề thi.' : 'Đã ẩn đề thi.'),
+      onSuccess: (res) => toast.success(res.isActive ? 'Đã công khai đề thi.' : 'Đã ẩn đề thi.'),
     });
   };
 

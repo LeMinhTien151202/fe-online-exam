@@ -1,5 +1,5 @@
-import { message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from '../../../../../configs/toast';
 import {
   IExamSubmitResult,
   ISubmitAnswer,
@@ -90,7 +90,7 @@ export const useWritingMockTest = (testId: string) => {
   const handleAutoSubmit = useCallback(() => {
     setIsSubmitted(true);
     setShowReport(true);
-    message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
+    toast.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
     saveProgressToLocalStorage();
     submitToServer();
   }, [saveProgressToLocalStorage, submitToServer]);
@@ -112,7 +112,7 @@ export const useWritingMockTest = (testId: string) => {
   const handleManualSubmit = () => {
     setIsSubmitted(true);
     setShowReport(true);
-    message.success('Bạn đã nộp bài thi viết thành công!');
+    toast.success('Bạn đã nộp bài thi viết thành công!');
     saveProgressToLocalStorage();
     submitToServer();
   };

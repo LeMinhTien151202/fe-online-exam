@@ -1,28 +1,41 @@
-import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { initialGradingResults } from '../services/mockData';
+import { useMemo, useState } from 'react';
+import { usePagination } from '@/shared/hooks/usePagination';
+import { ExamType } from '../../admin-exams/services/types';
+import { useAttemptsQuery } from '../services/attemptQuery';
+
+// Mỗi tab = 1 loại đề. PART_PRACTICE không ghi attempt nên không có tab riêng.
+const TYPE_BY_TAB: Record<string, ExamType | undefined> = {
+  all: undefined,
+  mock: 'MOCK_TEST',
+  set: 'SKILL_FULL_SET',
+};
 
 export const useGrading = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
-  const [results] = useState(initialGradingResults);
+  const { page, pageSize, onChange, reset } = usePagination(10);
 
-  const handleGrade = (key: string) => {
-    navigate({ to: `/admin/grading/${key}` as any });
-  };
-
-  const filteredData = results.filter(item => {
-    if (activeTab === 'speaking') return item.skill.toLowerCase() === 'speaking';
-    if (activeTab === 'writing') return item.skill.toLowerCase() === 'writing';
-    if (activeTab === 'reading') return item.skill.toLowerCase() === 'reading';
-    if (activeTab === 'listening') return item.skill.toLowerCase() === 'listening';
-    return true;
+  const { data, isLoading } = useAttemptsQuery({
+    type: TYPE_BY_TAB[activeTab],
+    page,
+    limit: pageSize,
   });
+
+  const rows = useMemo(() => data?.data ?? [], [data]);
+  const total = data?.metaData?.total ?? 0;
+
+  const changeTab = (tab: string) => {
+    setActiveTab(tab);
+    reset();
+  };
 
   return {
     activeTab,
-    setActiveTab,
-    filteredData,
-    handleGrade,
+    setActiveTab: changeTab,
+    rows,
+    total,
+    page,
+    pageSize,
+    onPageChange: onChange,
+    isLoading,
   };
 };

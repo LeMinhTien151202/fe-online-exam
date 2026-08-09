@@ -1,5 +1,5 @@
-import { message } from 'antd';
 import React, { useEffect, useMemo, useState } from 'react';
+import { toast } from '../../../../../configs/toast';
 import { mapPart2, Part2Data, Part2Sentence } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
 import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
@@ -118,7 +118,7 @@ export const usePart2Action = () => {
       setSlots((prev) => ({ ...prev, [slotNum]: item }));
       setPool((prevPool) => prevPool.filter((p) => p.id !== item.id));
     } else {
-      message.warning('Tất cả các ô trống đã đầy! Hãy kéo bớt item ra.');
+      toast.warning('Tất cả các ô trống đã đầy! Hãy kéo bớt item ra.');
     }
   };
 
@@ -132,7 +132,7 @@ export const usePart2Action = () => {
   const handleSubmit = () => {
     const filledCount = Object.values(slots).filter((s) => s !== null).length;
     if (filledCount < slotCount) {
-      message.warning(`Vui lòng hoàn thành sắp xếp tất cả ${slotCount} ô trống! (Hiện tại: ${filledCount}/${slotCount})`);
+      toast.warning(`Vui lòng hoàn thành sắp xếp tất cả ${slotCount} ô trống! (Hiện tại: ${filledCount}/${slotCount})`);
       return;
     }
     confirmSubmitExam({ totalQuestions: slotCount, onOk: doSubmit });
@@ -151,7 +151,7 @@ export const usePart2Action = () => {
       } catch { /* bỏ qua lỗi */ }
     }
     localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
-    message.success(`Chúc mừng! Bạn đã hoàn thành Part 2. Kết quả: ${correct}/${slotCount} câu đúng.`);
+    toast.success(`Chúc mừng! Bạn đã hoàn thành Part 2. Kết quả: ${correct}/${slotCount} câu đúng.`);
 
     // Nộp lên BE để tăng student_progress (skill 3, part 2). P2 = mảng index theo thứ tự, prepend câu cố định.
     if (examId && data?.questionId != null) {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Input, Button, Space, Typography, List, Upload, message, Tag } from 'antd';
+import { toast } from '../../../../../configs/toast';
+import { Input, Button, Space, Typography, List, Upload, Tag } from 'antd';
 import { SaveOutlined, UploadOutlined, DeleteOutlined, ArrowUpOutlined, ArrowDownOutlined, SoundOutlined, PlusOutlined } from '@ant-design/icons';
 import { questionApi } from '../../admin-questions/services/questionApi';
 import { questionTypeLabel } from '../../admin-questions/services/types';
@@ -42,7 +43,7 @@ const ExamPartEditor: React.FC<Props> = ({ part, skillId, showAudio, readOnly, o
       const res = await questionApi.upload(file as File, 'audio', `listening/p${part.partNumber}`);
       setAudioUrl(res.url);
       onSuccess?.(res);
-      message.success('Tải audio thành công.');
+      toast.success('Tải audio thành công.');
     } catch (err) {
       onError?.(err as Error);
     } finally {

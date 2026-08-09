@@ -13,6 +13,9 @@ export interface ReadingHandle {
     next: () => boolean;
     prev: () => boolean;
     collect: () => ISubmitAnswer[];
+    prefill: () => void;
+    atFirstUnit: () => boolean;
+    atLastUnit: () => boolean;
 }
 
 interface ReadingSectionProps {
@@ -133,6 +136,44 @@ const ReadingSection = React.forwardRef<ReadingHandle, ReadingSectionProps>(({ d
 
             return result;
         },
+        // Điền đáp án mẫu: dùng các correct* mapper đã trích sẵn; ordering thì xếp câu theo correctOrder và dọn sạch pool.
+        prefill: () => {
+            const p1: Record<number, string> = {};
+            data.part1.forEach((pd) => {
+                Object.entries(pd.correctAnswers).forEach(([gapId, ans]) => {
+                    if (ans != null) p1[Number(gapId)] = ans;
+                });
+            });
+            setP1Answers(p1);
+
+            const orderedSlots = (ordering: typeof data.orderingP2) => {
+                const slots: Record<number, Part2Sentence | null> = {};
+                if (!ordering) return slots;
+                const byId = new Map(ordering.initialSentences.map((s) => [s.id, s]));
+                ordering.correctOrder.forEach((id, i) => { slots[i + 1] = byId.get(id) ?? null; });
+                return slots;
+            };
+            if (data.orderingP2) { setP2Slots(orderedSlots(data.orderingP2)); setP2Pool([]); }
+            if (data.orderingP3) { setP3Slots(orderedSlots(data.orderingP3)); setP3Pool([]); }
+
+            if (data.speakerP4) {
+                const p4: Record<number, string> = {};
+                Object.entries(data.speakerP4.correctAnswers).forEach(([qid, person]) => {
+                    if (person != null) p4[Number(qid)] = person;
+                });
+                setP4Answers(p4);
+            }
+
+            if (data.headingP5) {
+                const p5: Record<number, string> = {};
+                Object.entries(data.headingP5.correctAnswers).forEach(([num, value]) => {
+                    if (value != null) p5[Number(num)] = value;
+                });
+                setP5Answers(p5);
+            }
+        },
+        atFirstUnit: () => availableParts.indexOf(activePart) <= 0,
+        atLastUnit: () => availableParts.indexOf(activePart) >= availableParts.length - 1,
     }), [activePart, availableParts, data, p1Answers, p2Slots, p3Slots, p4Answers, p5Answers]);
 
     const PART_LABEL: Record<number, string> = {

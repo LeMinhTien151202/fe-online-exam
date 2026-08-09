@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { toast } from '../../../../../configs/toast';
+import {
+  useState,
+  useEffect } from 'react';
 
 export const useMockTest = (
   onSubmit: (finalAnswers: Record<number, string>) => void,
@@ -59,7 +61,7 @@ export const useMockTest = (
 
   const handleAutoSubmit = () => {
     setIsFinished(true);
-    message.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
+    toast.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
     clearStorage();
     onSubmit(answers);
   };

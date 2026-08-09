@@ -1,6 +1,8 @@
-import { useNavigate, useParams } from '@tanstack/react-router';
-import { message } from 'antd';
+import {
+  useNavigate,
+  useParams } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from '../../../../../configs/toast';
 import {
   IExamSubmitResult,
   ISubmitAnswer,
@@ -152,12 +154,12 @@ export const useMockTest = () => {
     setIsSubmitted(true);
     setShowReport(true);
     if (isReadyForAiGrading) {
-      message.warning('Đã hết thời gian làm bài! Hệ thống tự động gửi bài để AI chấm.');
+      toast.warning('Đã hết thời gian làm bài! Hệ thống tự động gửi bài để AI chấm.');
       saveProgressToLocalStorage();
       submitToServer();
       return;
     }
-    message.warning('Đã hết thời gian. Bài chưa hoàn thành đầy đủ nên chưa thể chấm bằng AI.');
+    toast.warning('Đã hết thời gian. Bài chưa hoàn thành đầy đủ nên chưa thể chấm bằng AI.');
   }, [isReadyForAiGrading, saveProgressToLocalStorage, submitToServer]);
 
   useEffect(() => {
@@ -250,12 +252,12 @@ export const useMockTest = () => {
 
   const handleManualSubmit = () => {
     if (!isReadyForAiGrading) {
-      message.warning('Hãy hoàn thành tất cả câu hỏi trước khi chấm bằng AI.');
+      toast.warning('Hãy hoàn thành tất cả câu hỏi trước khi chấm bằng AI.');
       return;
     }
     setIsSubmitted(true);
     setShowReport(true);
-    message.success('Đã gửi toàn bộ bài nói để AI chấm!');
+    toast.success('Đã gửi toàn bộ bài nói để AI chấm!');
     saveProgressToLocalStorage();
     submitToServer();
   };
@@ -285,7 +287,7 @@ export const useMockTest = () => {
 
   const handleSubmitClick = () => {
     if (!isReadyForAiGrading) {
-      message.warning('Hãy hoàn thành tất cả câu hỏi trước khi chấm bằng AI.');
+      toast.warning('Hãy hoàn thành tất cả câu hỏi trước khi chấm bằng AI.');
       return;
     }
     const unansweredCount = totalQuestions - answeredCount;

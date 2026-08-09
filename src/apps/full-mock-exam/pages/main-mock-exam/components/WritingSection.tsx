@@ -12,7 +12,14 @@ export interface WritingHandle {
     next: () => boolean;
     prev: () => boolean;
     collect: () => ISubmitAnswer[];
+    prefill: () => void;
+    atFirstUnit: () => boolean;
+    atLastUnit: () => boolean;
 }
+
+// Bài viết mẫu dự phòng khi bản ghi đề không kèm sample_answer (đủ dài để AI chấm được).
+const FALLBACK_ESSAY =
+    'I think this is an interesting topic that many people care about today. In my opinion, there are both advantages and disadvantages to consider. On the one hand, it can bring convenience and new opportunities for everyone. On the other hand, we should also be aware of the possible problems and try to find suitable solutions. Overall, I believe that with careful planning and cooperation, we can make the most of the situation and improve our daily lives.';
 
 interface WritingSectionProps {
     prompts: WritingPromptItem[];
@@ -74,6 +81,16 @@ const WritingSection = React.forwardRef<WritingHandle, WritingSectionProps>(({ p
             });
             return result;
         },
+        // Điền đáp án mẫu: ưu tiên sample_answer của đề, thiếu thì dùng bài viết mẫu dự phòng.
+        prefill: () => {
+            const next: Record<number, string> = {};
+            prompts.forEach((p) => {
+                next[p.id] = p.sampleAnswer?.trim() || FALLBACK_ESSAY;
+            });
+            setAnswers(next);
+        },
+        atFirstUnit: () => availableParts.indexOf(activePart) <= 0,
+        atLastUnit: () => availableParts.indexOf(activePart) >= availableParts.length - 1,
     }), [activePart, availableParts, prompts, answers]);
 
     const getWordCount = (text: string) => {

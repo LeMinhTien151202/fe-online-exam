@@ -161,30 +161,20 @@ export const ModernInput = styled.input<{ $isValid?: boolean; $hasText?: boolean
   width: 100%;
   height: 2.75rem;
   border-radius: 0.5rem;
-  border: 1.5px solid ${props => {
-    if (props.$hasText) {
-      return props.$isValid ? '#10b981' : '#ef4444';
-    }
-    return '#cbd5e1';
-  }};
+  border: 1.5px solid #cbd5e1;
   padding: 0 1rem;
   font-size: 0.95rem;
   font-weight: 600;
   color: #334155;
   outline: none;
-  background: ${props => {
-    if (props.$hasText) {
-      return props.$isValid ? '#f0fdf4' : '#fff5f5';
-    }
-    return 'white';
-  }};
+  background: white;
   transition: all 0.2s;
 
   &:focus {
-    border-color: ${props => props.$hasText && !props.$isValid ? '#ef4444' : '#3b5b8c'};
-    box-shadow: 0 0 0 3px ${props => props.$hasText && !props.$isValid ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 91, 140, 0.15)'};
+    border-color: #3b5b8c;
+    box-shadow: 0 0 0 3px rgba(59, 91, 140, 0.15);
   }
-  
+
   &:disabled {
     background: #f1f5f9;
     color: #64748b;
@@ -197,32 +187,22 @@ export const ModernTextArea = styled.textarea<{ $isValid?: boolean; $hasText?: b
   width: 100%;
   height: 12rem;
   border-radius: 0.5rem;
-  border: 1.5px solid ${props => {
-    if (props.$hasText) {
-      return props.$isValid ? '#10b981' : '#ef4444';
-    }
-    return '#cbd5e1';
-  }};
+  border: 1.5px solid #cbd5e1;
   padding: 1rem;
   font-size: 0.95rem;
   font-weight: 500;
   color: #334155;
   outline: none;
-  background: ${props => {
-    if (props.$hasText) {
-      return props.$isValid ? '#f0fdf4' : '#fff5f5';
-    }
-    return 'white';
-  }};
+  background: white;
   resize: vertical;
   line-height: 1.6;
   transition: all 0.2s;
 
   &:focus {
-    border-color: ${props => props.$hasText && !props.$isValid ? '#ef4444' : '#3b5b8c'};
-    box-shadow: 0 0 0 3px ${props => props.$hasText && !props.$isValid ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 91, 140, 0.15)'};
+    border-color: #3b5b8c;
+    box-shadow: 0 0 0 3px rgba(59, 91, 140, 0.15);
   }
-  
+
   &:disabled {
     background: #f1f5f9;
     color: #64748b;
@@ -236,14 +216,8 @@ export const WordCountBadge = styled.span<{ $isValid: boolean; $hasText: boolean
   font-weight: 700;
   padding: 0.25rem 0.625rem;
   border-radius: 1rem;
-  background: ${props => {
-    if (!props.$hasText) return '#f1f5f9';
-    return props.$isValid ? '#d1fae5' : '#fee2e2';
-  }};
-  color: ${props => {
-    if (!props.$hasText) return '#64748b';
-    return props.$isValid ? '#065f46' : '#991b1b';
-  }};
+  background: #eef2f7;
+  color: #475569;
 `;
 
 export const TwoColumnLayout = styled.div`

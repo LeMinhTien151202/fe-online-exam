@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import {
+  useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { message } from 'antd';
+import { toast } from '../../../configs/toast';
 import { useWritingTimer } from './useWritingTimer';
 import { countWords } from '../utils/wordCounter';
 
@@ -100,16 +101,16 @@ export const usePart1 = () => {
     });
 
     if (hasEmpty) {
-      message.warning("Vui lòng trả lời đầy đủ tất cả 5 câu hỏi!");
+      toast.warning("Vui lòng trả lời đầy đủ tất cả 5 câu hỏi!");
       return;
     }
 
     if (hasInvalid) {
-      message.error("Có câu hỏi vượt quá giới hạn 5 từ! Vui lòng chỉnh sửa lại.");
+      toast.error("Có câu hỏi vượt quá giới hạn 5 từ! Vui lòng chỉnh sửa lại.");
       return;
     }
 
-    message.success("Đã hoàn thành luyện tập Part 1!");
+    toast.success("Đã hoàn thành luyện tập Part 1!");
     navigate({ to: '/writing/part/2' });
   };
 

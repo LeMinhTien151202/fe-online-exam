@@ -1,14 +1,19 @@
 import {
-CheckCircleOutlined,
-ClockCircleOutlined,
-DownOutlined,
-LeftOutlined,
-RightOutlined,
-UnlockOutlined,
-UpOutlined
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  DownOutlined,
+  LeftOutlined,
+  RightOutlined,
+  UnlockOutlined,
+  UpOutlined
 } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { Button,Progress,Select,Space,message } from 'antd';
+import { toast } from '../../../../../configs/toast';
+import { Button,
+  Progress,
+  Select,
+  Space,
+} from 'antd';
 import React,{ useEffect,useState } from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
@@ -200,7 +205,7 @@ export const Part1Page: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    message.success('Đã hoàn thành luyện tập Part 1!');
+    toast.success('Đã hoàn thành luyện tập Part 1!');
     navigate({ to: '/speaking/part/2' });
   };
 

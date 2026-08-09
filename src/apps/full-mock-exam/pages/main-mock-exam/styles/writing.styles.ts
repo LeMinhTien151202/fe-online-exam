@@ -48,22 +48,13 @@ export const ModernInput = styled.input<{
   font-size: 0.95rem;
   background: #ffffff;
   color: #1e293b;
-  border: 1.5px solid
-    ${(props) =>
-      !props.$hasText ? "#cbd5e1" : props.$isValid ? "#10b981" : "#ef4444"};
+  border: 1.5px solid #cbd5e1;
   outline: none;
   transition: all 0.2s ease-in-out;
 
   &:focus {
-    border-color: ${(props) =>
-      !props.$hasText ? "#9333ea" : props.$isValid ? "#10b981" : "#ef4444"};
-    box-shadow: 0 0 0 3px
-      ${(props) =>
-        !props.$hasText
-          ? "rgba(147, 51, 234, 0.15)"
-          : props.$isValid
-            ? "rgba(16, 185, 129, 0.15)"
-            : "rgba(239, 68, 68, 0.15)"};
+    border-color: #3b5b8c;
+    box-shadow: 0 0 0 3px rgba(59, 91, 140, 0.15);
   }
 
   &::placeholder {
@@ -83,23 +74,14 @@ export const ModernTextArea = styled.textarea<{
   line-height: 1.5;
   background: #ffffff;
   color: #1e293b;
-  border: 1.5px solid
-    ${(props) =>
-      !props.$hasText ? "#cbd5e1" : props.$isValid ? "#10b981" : "#ef4444"};
+  border: 1.5px solid #cbd5e1;
   outline: none;
   resize: none;
   transition: all 0.2s ease-in-out;
 
   &:focus {
-    border-color: ${(props) =>
-      !props.$hasText ? "#9333ea" : props.$isValid ? "#10b981" : "#ef4444"};
-    box-shadow: 0 0 0 3px
-      ${(props) =>
-        !props.$hasText
-          ? "rgba(147, 51, 234, 0.15)"
-          : props.$isValid
-            ? "rgba(16, 185, 129, 0.15)"
-            : "rgba(239, 68, 68, 0.15)"};
+    border-color: #3b5b8c;
+    box-shadow: 0 0 0 3px rgba(59, 91, 140, 0.15);
   }
 
   &::placeholder {
@@ -115,25 +97,9 @@ export const ModernWordBadge = styled.span<{
   font-weight: 700;
   padding: 0.25rem 0.6rem;
   border-radius: 12px;
-  background: ${(props) =>
-    !props.$hasText
-      ? "#e2e8f0"
-      : props.$isValid || props.$isValid === undefined
-        ? "rgba(16, 185, 129, 0.1)"
-        : "rgba(239, 68, 68, 0.1)"};
-  color: ${(props) =>
-    !props.$hasText
-      ? "#64748b"
-      : props.$isValid || props.$isValid === undefined
-        ? "#10b981"
-        : "#ef4444"};
-  border: 1px solid
-    ${(props) =>
-      !props.$hasText
-        ? "#cbd5e1"
-        : props.$isValid || props.$isValid === undefined
-          ? "rgba(16, 185, 129, 0.2)"
-          : "rgba(239, 68, 68, 0.2)"};
+  background: #eef2f7;
+  color: #475569;
+  border: 1px solid #cbd5e1;
   transition: all 0.2s ease;
 `;
 
@@ -157,9 +123,7 @@ export const QuestionItem = styled.div`
 `;
 
 export const ErrorText = styled.span`
-  font-size: 0.7rem;
-  color: #ef4444;
-  font-weight: 600;
+  display: none;
 `;
 
 export const Part3Grid = styled.div`

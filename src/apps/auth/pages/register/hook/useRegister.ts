@@ -1,6 +1,7 @@
-import { useNavigate } from '@tanstack/react-router';
-import { message } from 'antd';
+import {
+  useNavigate } from '@tanstack/react-router';
 import { useRegisterMutation } from '@apps/auth/services/authQuery';
+import { toast } from '../../../../../configs/toast';
 import { IRegisterPayload } from '@apps/auth/services/types';
 
 export const useRegister = () => {
@@ -10,7 +11,7 @@ export const useRegister = () => {
   const register = (payload: IRegisterPayload) => {
     registerMutation.mutate(payload, {
       onSuccess: () => {
-        message.success('Đăng ký thành công! Vui lòng đăng nhập.');
+        toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
         navigate({ to: '/login' });
       },
     });

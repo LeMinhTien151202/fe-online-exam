@@ -1,7 +1,7 @@
-import { CheckOutlined, ClockCircleOutlined, RobotOutlined, WarningFilled } from '@ant-design/icons';
+import { AudioOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined, WarningFilled } from '@ant-design/icons';
 import { Button, Tag, Tooltip } from 'antd';
 import React, { useMemo } from 'react';
-import { IExamSubmitResult } from '../../../../../shared/services/student-exam';
+import { IAiGradeDetail, IExamSubmitResult } from '../../../../../shared/services/student-exam';
 import { cefrTagColor, mockTotalScaled } from '../../../../../shared/utils/cefrScale';
 import { resolveSkillScores } from '../../../services/mockExamScore';
 import * as R from '../styles/result.styles';
@@ -14,13 +14,67 @@ interface ExamResultScreenProps {
 // Màu theo điểm 0–100 cho thanh/điểm số.
 const scoreHex = (score: number) => (score >= 75 ? '#16a34a' : score >= 50 ? '#f59e0b' : '#ef4444');
 
+// AI trả điểm 0–100/câu; quy về thang 0–50 cho đồng bộ với điểm kỹ năng Aptis.
+const toScaled50 = (score: number) => Math.round(score / 2);
+
+// Tên phần theo kỹ năng để nêu rõ câu/phần trong nhận xét AI.
+const WRITING_PART_TITLE: Record<number, string> = {
+    1: 'Viết câu ngắn',
+    2: 'Đoạn văn ngắn',
+    3: 'Trả lời nhóm chat',
+    4: 'Email trang trọng & thân mật',
+};
+const SPEAKING_PART_TITLE: Record<number, string> = {
+    1: 'Thông tin cá nhân',
+    2: 'Miêu tả tranh',
+    3: 'So sánh tranh',
+    4: 'Chủ đề trừu tượng',
+};
+
 // Màn kết quả sau khi nộp MOCK_TEST: CEFR tổng + điểm/band từng kỹ năng + chi tiết AI chấm.
 const ExamResultScreen: React.FC<ExamResultScreenProps> = ({ result, onBack }) => {
-    const hasAi = result.ai.length > 0;
     const { skills, overallCefr } = useMemo(() => resolveSkillScores(result), [result]);
     const pendingCount = result.needsManualReviewCount;
     // Điểm tổng Aptis 0–200 = tổng scaled 4 kỹ năng ngôn ngữ (Grammar là Core, không cộng).
     const totalScore = useMemo(() => mockTotalScaled(skills), [skills]);
+
+    // Tách nhận xét AI theo kỹ năng: Viết (skill 4 / ESSAY) và Nói (skill 5 / RECORD).
+    const { writingAi, speakingAi } = useMemo(() => {
+        const isWriting = (it: IAiGradeDetail) => (it.skillId ?? (it.questionType === 'ESSAY' ? 4 : 5)) === 4;
+        const byPart = (a: IAiGradeDetail, b: IAiGradeDetail) => (a.partNumber ?? 0) - (b.partNumber ?? 0);
+        return {
+            writingAi: result.ai.filter(isWriting).sort(byPart),
+            speakingAi: result.ai.filter((it) => !isWriting(it)).sort(byPart),
+        };
+    }, [result.ai]);
+
+    // Render 1 thẻ nhận xét AI (nêu rõ phần/câu + điểm /50 + band).
+    const renderAiCard = (item: IAiGradeDetail, idx: number, partTitles: Record<number, string>) => {
+        const part = item.partNumber;
+        const partText = part != null
+            ? `Part ${part}${partTitles[part] ? ` · ${partTitles[part]}` : ''}`
+            : `Câu ${idx + 1}`;
+        return (
+            <R.AiCard key={item.questionId}>
+                <R.AiCardHead>
+                    <R.AiPartLabel>
+                        <span className="part">{partText}</span>
+                        <span className="tags">
+                            {item.band && <Tag color="green" style={{ margin: 0 }}>Band {item.band}</Tag>}
+                        </span>
+                    </R.AiPartLabel>
+                    {item.aiScore != null ? (
+                        <R.AiScoreVal $color={scoreHex(item.aiScore)}>
+                            {toScaled50(item.aiScore)}<small>/50</small>
+                        </R.AiScoreVal>
+                    ) : (
+                        <Tag color="warning" style={{ margin: 0 }}>Chờ chấm tay</Tag>
+                    )}
+                </R.AiCardHead>
+                <R.AiFeedback>{item.feedback || 'Chưa có nhận xét.'}</R.AiFeedback>
+            </R.AiCard>
+        );
+    };
 
     return (
         <R.ResultPage>
@@ -109,30 +163,31 @@ const ExamResultScreen: React.FC<ExamResultScreenProps> = ({ result, onBack }) =
                     </R.Panel>
                 )}
 
-                {/* Nhận xét AI cho Viết & Nói */}
-                {hasAi && (
+                {/* Nhận xét AI phần Viết (kỹ năng 4) */}
+                {writingAi.length > 0 && (
                     <R.Panel>
                         <R.PanelHead>
-                            <RobotOutlined style={{ color: '#6366f1', fontSize: 18 }} />
-                            <h3>AI chấm bài Viết & Nói</h3>
+                            <EditOutlined style={{ color: '#6366f1', fontSize: 18 }} />
+                            <h3>AI chấm phần Viết</h3>
+                            <span className="hint">{writingAi.length} câu</span>
                         </R.PanelHead>
+                        <R.AiGrid>
+                            {writingAi.map((item, i) => renderAiCard(item, i, WRITING_PART_TITLE))}
+                        </R.AiGrid>
+                    </R.Panel>
+                )}
 
-                        {result.ai.map((item) => (
-                            <R.AiRow key={item.questionId}>
-                                <R.AiTop>
-                                    <span>
-                                        <Tag color={item.questionType === 'ESSAY' ? 'purple' : 'geekblue'}>{item.questionType}</Tag>
-                                        {item.band && <Tag color="green">Band {item.band}</Tag>}
-                                    </span>
-                                    {item.aiScore != null ? (
-                                        <R.AiScoreVal $color={scoreHex(item.aiScore)}>{item.aiScore}/100</R.AiScoreVal>
-                                    ) : (
-                                        <Tag color="warning">Chờ chấm tay</Tag>
-                                    )}
-                                </R.AiTop>
-                                <R.AiFeedback>{item.feedback || 'Chưa có nhận xét.'}</R.AiFeedback>
-                            </R.AiRow>
-                        ))}
+                {/* Nhận xét AI phần Nói (kỹ năng 5) */}
+                {speakingAi.length > 0 && (
+                    <R.Panel>
+                        <R.PanelHead>
+                            <AudioOutlined style={{ color: '#0891b2', fontSize: 18 }} />
+                            <h3>AI chấm phần Nói</h3>
+                            <span className="hint">{speakingAi.length} câu</span>
+                        </R.PanelHead>
+                        <R.AiGrid>
+                            {speakingAi.map((item, i) => renderAiCard(item, i, SPEAKING_PART_TITLE))}
+                        </R.AiGrid>
                     </R.Panel>
                 )}
 
