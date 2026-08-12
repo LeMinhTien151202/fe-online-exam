@@ -1,9 +1,10 @@
 import {
 BellOutlined,
+ClockCircleOutlined,
 EditOutlined,
 MenuOutlined,
-QuestionCircleOutlined,
 ThunderboltOutlined,
+TrophyOutlined,
 } from '@ant-design/icons';
 import { Link } from '@tanstack/react-router';
 import { Button,Drawer,Empty,Segmented,Spin } from 'antd';
@@ -23,6 +24,7 @@ export const WritingPracticePage: React.FC = () => {
     activeTab,
     setActiveTab,
     writingProgress,
+    mockProgress,
     examSets,
     isExamsLoading,
     handlePartClick,
@@ -127,42 +129,51 @@ export const WritingPracticePage: React.FC = () => {
                     <Empty description="Chưa có đề viết nào" />
                   </div>
                 ) : (
-                  examSets.map((exam) => (
-                    <S.MockTestCard key={exam.id}>
-                      <S.MockTestTitle>{exam.title}</S.MockTestTitle>
+                  examSets.map((exam) => {
+                    const score = mockProgress[String(exam.id)] ?? 0;
 
-                      <S.MockTestMeta>
-                        <S.MetaItem>
-                          <QuestionCircleOutlined />
-                          <span>Số phần: {exam._count?.sections ?? 0} phần</span>
-                        </S.MetaItem>
-                        {exam.description && (
+                    return (
+                      <S.MockTestCard key={exam.id}>
+                        <S.MockTestTitle>{exam.title}</S.MockTestTitle>
+
+                        <S.MockTestMeta>
                           <S.MetaItem>
-                            <EditOutlined />
-                            <span>{exam.description}</span>
+                            <ClockCircleOutlined />
+                            <span>Thời gian: 50 phút</span>
                           </S.MetaItem>
-                        )}
-                      </S.MockTestMeta>
+                          <S.MetaItem>
+                            <TrophyOutlined />
+                            <span>
+                              Kết quả tốt nhất:{' '}
+                              {score > 0 ? (
+                                <strong style={{ color: '#10b981' }}>{score}%</strong>
+                              ) : (
+                                <span style={{ color: '#64748b' }}>Chưa làm</span>
+                              )}
+                            </span>
+                          </S.MetaItem>
+                        </S.MockTestMeta>
 
-                      <Button
-                        type="primary"
-                        icon={<ThunderboltOutlined />}
-                        style={{
-                          width: '100%',
-                          borderRadius: '8px',
-                          height: '40px',
-                          fontWeight: 700,
-                          background: '#1a365d',
-                          borderColor: '#1a365d',
-                          color: '#ffffff',
-                          boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.15)'
-                        }}
-                        onClick={() => handleMockClick(exam.id)}
-                      >
-                        Bắt đầu làm đề
-                      </Button>
-                    </S.MockTestCard>
-                  ))
+                        <Button
+                          type="primary"
+                          icon={<ThunderboltOutlined />}
+                          style={{
+                            width: '100%',
+                            borderRadius: '8px',
+                            height: '40px',
+                            fontWeight: 700,
+                            background: score > 0 ? '#eff6ff' : '#1a365d',
+                            borderColor: score > 0 ? '#bfdbfe' : '#1a365d',
+                            color: score > 0 ? '#2f4a6b' : '#ffffff',
+                            boxShadow: score > 0 ? 'none' : '0 4px 6px -1px rgba(26, 54, 93, 0.15)',
+                          }}
+                          onClick={() => handleMockClick(exam.id)}
+                        >
+                          {score > 0 ? 'Làm lại đề thi' : 'Bắt đầu làm đề'}
+                        </Button>
+                      </S.MockTestCard>
+                    );
+                  })
                 )}
               </S.MockTestGrid>
             )}

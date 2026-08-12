@@ -84,7 +84,7 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
 
     const next = async () => {
         try {
-            await form.validateFields(currentStep === 0 ? ['title', 'part', 'tags'] : []);
+            await form.validateFields(currentStep === 0 ? ['title', 'part'] : []);
             setCurrentStep(currentStep + 1);
         } catch (error) { console.log(error); }
     };
@@ -312,7 +312,7 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
                                 <Input placeholder="Ví dụ: Speaking Test - Social Life & Hobbies" />
                             </Form.Item>
                         </Col>
-                        <Col span={6}>
+                        <Col span={12}>
                             <Form.Item label="Phần thi" name="part" initialValue={part}>
                                 <Select>
                                     <Select.Option value="part1">Part 1: Personal Information</Select.Option>
@@ -320,11 +320,6 @@ const SpeakingForm: React.FC<SpeakingFormProps> = ({ form, part, onSubmit }) => 
                                     <Select.Option value="part3">Part 3: Compare & Contrast</Select.Option>
                                     <Select.Option value="part4">Part 4: Abstract Topic</Select.Option>
                                 </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={6}>
-                            <Form.Item label="Tags" name="tags">
-                                <Select mode="tags" placeholder="Ví dụ: Daily Life, B1..." />
                             </Form.Item>
                         </Col>
                     </Row>

@@ -6,36 +6,36 @@ export const listeningPartsData: Omit<IPracticePart, 'progress'>[] = [
   {
     id: 'l1',
     title: 'Phần 1',
-    subTitle: 'Questions 1 - 13',
+    subTitle: 'Nhận diện thông tin (Information Recognition)',
     difficulty: 'easy',
-    description: 'Identify specific information like phone numbers, times, or locations from short messages or brief dialogues.',
+    description: 'Nhận diện các thông tin cụ thể như số điện thoại, thời gian hoặc địa điểm từ các tin nhắn ngắn hoặc đoạn hội thoại ngắn (câu 1 - 13).',
     icon: React.createElement(AudioOutlined),
     theme: { bgColor: '#e0f2fe', textColor: '#0284c7', borderColor: '#e5e7eb' }
   },
   {
     id: 'l2',
     title: 'Phần 2',
-    subTitle: 'Question 14',
+    subTitle: 'Ghép thông tin (Information Matching)',
     difficulty: 'medium',
-    description: 'Listen to four short monologues on a shared topic and match each speaker to the correct piece of information.',
+    description: 'Nghe bốn đoạn độc thoại ngắn cùng một chủ đề và ghép mỗi người nói với thông tin phù hợp (câu 14).',
     icon: React.createElement(TeamOutlined),
     theme: { bgColor: '#e0e7ff', textColor: '#4f46e5', borderColor: '#e5e7eb' }
   },
   {
     id: 'l3',
     title: 'Phần 3',
-    subTitle: 'Question 15',
+    subTitle: 'Ghép ý kiến (Opinion Matching)',
     difficulty: 'medium',
-    description: 'Hear a man and a woman discuss a topic, then determine which speaker expresses each opinion.',
+    description: 'Nghe một nam và một nữ thảo luận về một chủ đề, sau đó xác định mỗi người nói thể hiện quan điểm nào (câu 15).',
     icon: React.createElement(MessageOutlined),
     theme: { bgColor: '#ffedd5', textColor: '#ea580c', borderColor: '#e5e7eb' }
   },
   {
     id: 'l4',
     title: 'Phần 4',
-    subTitle: 'Questions 16 - 17',
+    subTitle: 'Nghe hiểu bài nói dài (Monologue Comprehension)',
     difficulty: 'hard',
-    description: 'Listen to two longer monologues on different topics and identify each speaker\'s viewpoint on specific aspects.',
+    description: 'Nghe hai đoạn độc thoại dài về các chủ đề khác nhau và xác định quan điểm của mỗi người nói về từng khía cạnh cụ thể (câu 16 - 17).',
     icon: React.createElement(BookOutlined),
     theme: { bgColor: '#f3e8ff', textColor: '#9333ea', borderColor: '#e5e7eb' }
   }

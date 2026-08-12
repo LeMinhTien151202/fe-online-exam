@@ -10,8 +10,8 @@ import { IPracticePart } from '../components/PartCard';
 export const writingPartsData: Omit<IPracticePart, 'progress'>[] = [
   {
     id: 'w1',
-    title: 'Part 1: Word-level Writing',
-    subTitle: 'Viết cấp độ từ',
+    title: 'Phần 1',
+    subTitle: 'Viết cấp độ từ (Word-level Writing)',
     difficulty: 'easy',
     description: 'Bạn sẽ tham gia một câu lạc bộ/nhóm và cần trả lời 5 câu hỏi ngắn bằng các từ hoặc cụm từ (1-5 từ/câu).',
     icon: <AlignLeftOutlined />,
@@ -19,8 +19,8 @@ export const writingPartsData: Omit<IPracticePart, 'progress'>[] = [
   },
   {
     id: 'w2',
-    title: 'Part 2: Short Text Writing',
-    subTitle: 'Viết đoạn văn ngắn',
+    title: 'Phần 2',
+    subTitle: 'Viết đoạn văn ngắn (Short Text Writing)',
     difficulty: 'medium',
     description: 'Điền vào một biểu mẫu (form) của câu lạc bộ, yêu cầu viết các câu hoàn chỉnh (thường từ 20-30 từ).',
     icon: <UnorderedListOutlined />,
@@ -28,8 +28,8 @@ export const writingPartsData: Omit<IPracticePart, 'progress'>[] = [
   },
   {
     id: 'w3',
-    title: 'Part 3: Social Network Interaction',
-    subTitle: 'Tương tác mạng xã hội',
+    title: 'Phần 3',
+    subTitle: 'Tương tác mạng xã hội (Social Media Chat)',
     difficulty: 'medium',
     description: 'Bạn sẽ tương tác trong một nhóm chat/diễn đàn. Sẽ có 3 câu hỏi từ các thành viên khác và bạn cần trả lời mỗi câu (khoảng 30-40 từ/câu).',
     icon: <MessageOutlined />,
@@ -37,8 +37,8 @@ export const writingPartsData: Omit<IPracticePart, 'progress'>[] = [
   },
   {
     id: 'w4',
-    title: 'Part 4: Formal and Informal Emails',
-    subTitle: 'Viết email trang trọng & thân mật',
+    title: 'Phần 4',
+    subTitle: 'Viết email trang trọng & thân mật (Contextual Emails)',
     difficulty: 'hard',
     description: 'Bạn nhận được một thông báo về một vấn đề nào đó. Bạn phải viết 1 email ngắn gọn, thân mật cho một người bạn (khoảng 50 từ) và 1 email trang trọng gửi cho ban quản lý/công ty (khoảng 120-150 từ).',
     icon: <MailOutlined />,

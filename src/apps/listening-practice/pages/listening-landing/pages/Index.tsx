@@ -3,12 +3,11 @@ import {
   BellOutlined,
   ClockCircleOutlined,
   MenuOutlined,
-  QuestionCircleOutlined,
   ThunderboltOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
 import { Link } from '@tanstack/react-router';
-import { Button, Drawer, Empty, Progress, Segmented, Spin } from 'antd';
+import { Button, Drawer, Empty, Segmented, Spin } from 'antd';
 import React from 'react';
 import { LearningStreakValue } from '@/shared/components/LearningStreakValue';
 import { Sidebar } from '../../../../home/components/Sidebar';
@@ -131,10 +130,6 @@ export const ListeningPracticePage: React.FC = () => {
 
                         <S.MockTestMeta>
                           <S.MetaItem>
-                            <QuestionCircleOutlined />
-                            <span>Số phần: {exam._count?.sections ?? 0} phần</span>
-                          </S.MetaItem>
-                          <S.MetaItem>
                             <ClockCircleOutlined />
                             <span>Thời gian: 40 phút</span>
                           </S.MetaItem>
@@ -150,16 +145,6 @@ export const ListeningPracticePage: React.FC = () => {
                             </span>
                           </S.MetaItem>
                         </S.MockTestMeta>
-
-                        {score > 0 && (
-                          <div style={{ marginBottom: '1rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
-                              <span>Điểm số</span>
-                              <span>{score}%</span>
-                            </div>
-                            <Progress percent={score} size="small" strokeColor="#10b981" showInfo={false} />
-                          </div>
-                        )}
 
                         <Button
                           type="primary"

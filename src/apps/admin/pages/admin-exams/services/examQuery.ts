@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { examApi } from './examApi';
 import { mapQuestionToBank } from './examBank';
 import { questionApi } from '../../admin-questions/services/questionApi';
+import { IQuestion } from '../../admin-questions/services/types';
 import { FE_SKILL_TO_ID, IAssignQuestion, IExamFilter, IUpdateExamPayload } from './types';
 
 export const EXAMS_KEY = ['admin', 'exam-sets'];
@@ -22,6 +23,20 @@ export const useExamDetailQuery = (id: number | null) => {
   });
 };
 
+// Trần `limit` của backend cho /questions (>500 sẽ bị trả 400).
+const QUESTION_PAGE_SIZE = 500;
+
+// Lấy HẾT câu hỏi của 1 kỹ năng: lặp trang tới khi trang trả về ít hơn PAGE_SIZE.
+const fetchAllQuestionsForSkill = async (skillId: number) => {
+  const all: IQuestion[] = [];
+  for (let page = 1; ; page += 1) {
+    const batch = await questionApi.list({ skillId, page, limit: QUESTION_PAGE_SIZE });
+    all.push(...batch);
+    if (batch.length < QUESTION_PAGE_SIZE) break;
+  }
+  return all;
+};
+
 // Toàn bộ ngân hàng câu hỏi -> map về shape Selection dùng.
 // Lấy theo TỪNG kỹ năng rồi gộp, tránh bị 1 lần gọi phẳng chặn giới hạn -> rớt kỹ năng.
 export const useExamQuestionBank = () => {
@@ -29,9 +44,7 @@ export const useExamQuestionBank = () => {
     queryKey: EXAM_BANK_KEY,
     queryFn: async () => {
       const skillIds = Object.values(FE_SKILL_TO_ID);
-      const perSkill = await Promise.all(
-        skillIds.map((skillId) => questionApi.list({ skillId, limit: 9999 })),
-      );
+      const perSkill = await Promise.all(skillIds.map(fetchAllQuestionsForSkill));
       return perSkill.flat();
     },
   });

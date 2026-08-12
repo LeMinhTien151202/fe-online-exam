@@ -14,6 +14,15 @@ import { ADMIN_COLORS } from '../../../../constants';
 
 const { Text } = Typography;
 
+// Select "Phần thi" của Grammar dùng value grammar/vocab_task* (khác với sub-tab part1/part2).
+// Chuẩn hoá part truyền vào -> đúng option để không hiện trơ "part1".
+const GRAMMAR_PART_VALUES = ['grammar', 'vocab_task1', 'vocab_task2', 'vocab_task3', 'vocab_task4', 'vocab_task5'];
+const toGrammarPart = (p?: string): string => {
+    if (p && GRAMMAR_PART_VALUES.includes(p)) return p;
+    if (p === 'part2' || p?.includes('vocab')) return 'vocab_task1';
+    return 'grammar';
+};
+
 interface GrammarFormProps {
     form: FormInstance;
     part: string;
@@ -25,14 +34,16 @@ const GrammarForm: React.FC<GrammarFormProps> = ({ form, part, onSubmit }) => {
     const watchedPart = Form.useWatch('part', form);
     const watchedVocabPool = Form.useWatch('vocabPool', form);
 
-    // Sync prop part to form if store is empty
-    React.useEffect(() => {
-        if (part && !form.getFieldValue('part')) {
-            form.setFieldsValue({ part });
-        }
-    }, [part, form]);
+    const initialPart = toGrammarPart(part);
 
-    const activePart = watchedPart || part;
+    // Sync prop part to form if store is empty (đã chuẩn hoá về option hợp lệ)
+    React.useEffect(() => {
+        if (!form.getFieldValue('part')) {
+            form.setFieldsValue({ part: initialPart });
+        }
+    }, [initialPart, form]);
+
+    const activePart = watchedPart || initialPart;
 
     const isGrammar = activePart === 'grammar';
     const isVocab = activePart?.startsWith('vocab_');
@@ -55,7 +66,7 @@ const GrammarForm: React.FC<GrammarFormProps> = ({ form, part, onSubmit }) => {
 
     const next = async () => {
         try {
-            await form.validateFields(currentStep === 0 ? ['title', 'part', 'tags'] : []);
+            await form.validateFields(currentStep === 0 ? ['title', 'part'] : []);
             setCurrentStep(currentStep + 1);
         } catch (error) { console.log(error); }
     };
@@ -216,13 +227,13 @@ const GrammarForm: React.FC<GrammarFormProps> = ({ form, part, onSubmit }) => {
                                 <Input placeholder="Ví dụ: Placement Test - Grammar & Vocabulary" />
                             </Form.Item>
                         </Col>
-                        <Col span={6}>
-                            <Form.Item label="Phần thi" name="part" initialValue={part}>
+                        <Col span={12}>
+                            <Form.Item label="Phần thi" name="part" initialValue={initialPart}>
                                 <Select>
-                                    <Select.OptGroup label="Grammar">
-                                        <Select.Option value="grammar">Grammatical Knowledge (25 Qs)</Select.Option>
+                                    <Select.OptGroup label="Part 1: Grammar (25 questions)">
+                                        <Select.Option value="grammar">Grammatical Knowledge — 25 multiple-choice questions</Select.Option>
                                     </Select.OptGroup>
-                                    <Select.OptGroup label="Vocabulary (Matching)">
+                                    <Select.OptGroup label="Part 2: Vocabulary (Matching, 25 questions)">
                                         <Select.Option value="vocab_task1">Task 1: Word Definition</Select.Option>
                                         <Select.Option value="vocab_task2">Task 2: Word Collocation</Select.Option>
                                         <Select.Option value="vocab_task3">Task 3: Word Use</Select.Option>
@@ -230,11 +241,6 @@ const GrammarForm: React.FC<GrammarFormProps> = ({ form, part, onSubmit }) => {
                                         <Select.Option value="vocab_task5">Task 5: Antonym Matching</Select.Option>
                                     </Select.OptGroup>
                                 </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={6}>
-                            <Form.Item label="Tags" name="tags">
-                                <Select mode="tags" placeholder="Ví dụ: Core, Placement..." />
                             </Form.Item>
                         </Col>
                     </Row>

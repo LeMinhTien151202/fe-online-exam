@@ -5,20 +5,20 @@ import { IPracticePart } from '../components/PartCard';
 export const grammarParts: IPracticePart[] = [
   {
     id: 'g1',
-    title: 'Part 1: Grammar',
-    subTitle: '25 Multiple-choice questions',
+    title: 'Phần 1',
+    subTitle: 'Ngữ pháp (Grammar)',
     difficulty: 'medium',
-    description: 'Answer 25 multiple-choice questions. Read each complete sentence carefully before selecting the option that best completes it. Feel free to flag difficult items and revisit them later.',
+    description: 'Trả lời 25 câu hỏi trắc nghiệm. Đọc kỹ từng câu hoàn chỉnh trước khi chọn phương án phù hợp nhất. Bạn có thể đánh dấu các câu khó để xem lại sau.',
     progress: 0,
     icon: React.createElement(BookOutlined),
     theme: { bgColor: '#e6f4ff', textColor: '#1677ff', borderColor: '#e5e7eb' }
   },
   {
     id: 'g2',
-    title: 'Part 2: Vocabulary',
-    subTitle: '25 Multiple-choice questions',
+    title: 'Phần 2',
+    subTitle: 'Từ vựng (Vocabulary)',
     difficulty: 'medium',
-    description: 'Complete 25 questions covering definitions, synonyms, usage in context, and common word combinations. Use context clues to determine the most natural choice.',
+    description: 'Hoàn thành 25 câu hỏi bao gồm định nghĩa, từ đồng nghĩa, cách dùng từ trong ngữ cảnh và các cụm từ thường đi cùng nhau. Dựa vào ngữ cảnh để chọn đáp án tự nhiên nhất.',
     progress: 0,
     icon: React.createElement(FormOutlined),
     theme: { bgColor: '#f6ffed', textColor: '#52c41a', borderColor: '#e5e7eb' }

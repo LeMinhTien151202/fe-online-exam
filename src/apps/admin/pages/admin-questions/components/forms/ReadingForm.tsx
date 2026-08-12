@@ -272,7 +272,7 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
                                 <Col span={12}>
                                     <Form.Item name="title" label="Tiêu đề bài đọc" rules={[{ required: true }]}><Input placeholder="Nhập tiêu đề..." /></Form.Item>
                                 </Col>
-                                <Col span={6}>
+                                <Col span={12}>
                                     <Form.Item label="Phần thi" name="part" initialValue={part}>
                                         <Select>
                                             <Select.Option value="part1">Part 1: Sentence Comprehension</Select.Option>
@@ -281,9 +281,6 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
                                             <Select.Option value="part4">Part 4: Long Text</Select.Option>
                                         </Select>
                                     </Form.Item>
-                                </Col>
-                                <Col span={6}>
-                                    <Form.Item label="Tags" name="tags"><Select mode="tags" /></Form.Item>
                                 </Col>
                             </Row>
                         </Card>

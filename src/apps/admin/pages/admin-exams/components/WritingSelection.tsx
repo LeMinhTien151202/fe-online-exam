@@ -65,7 +65,7 @@ const WritingSelection: React.FC<Props> = ({
                                             <Space>
                                                 <Text strong>{p}: {
                                                     p === 'Part 1' ? 'Word-level Writing' :
-                                                        p === 'Part 2' ? 'Short Text' :
+                                                        p === 'Part 2' ? 'Short Text Writing' :
                                                             p === 'Part 3' ? 'Social Media Chat' : 'Contextual Emails'
                                                 }</Text>
                                                 <Tag style={{ fontSize: '10px' }}>{partQuestions.length} task</Tag>

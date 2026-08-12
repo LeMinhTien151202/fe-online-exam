@@ -159,8 +159,8 @@ const CreateExam: React.FC = () => {
 
                       {skillValue === 'Grammar' ? (
                         <>
-                          <Select.Option value="Part 1">Phần 1: Grammar (25 câu)</Select.Option>
-                          <Select.Option value="Part 2">Phần 2: Vocabulary (5 Tasks)</Select.Option>
+                          <Select.Option value="Part 1">Part 1: Grammar (25 questions)</Select.Option>
+                          <Select.Option value="Part 2">Part 2: Vocabulary (5 Tasks)</Select.Option>
                         </>
                       ) : skillValue === 'Reading' ? (
                         <>
@@ -180,16 +180,16 @@ const CreateExam: React.FC = () => {
                       ) : skillValue === 'Speaking' ? (
                         <>
                           <Select.Option value="Part 1">Part 1: Personal Information</Select.Option>
-                          <Select.Option value="Part 2">Part 2: Photo Description</Select.Option>
-                          <Select.Option value="Part 3">Part 3: Compare Two Photos</Select.Option>
+                          <Select.Option value="Part 2">Part 2: Describe & Opinion</Select.Option>
+                          <Select.Option value="Part 3">Part 3: Compare & Contrast</Select.Option>
                           <Select.Option value="Part 4">Part 4: Abstract Topic</Select.Option>
                         </>
                       ) : skillValue === 'Writing' ? (
                         <>
                           <Select.Option value="Part 1">Part 1: Word-level Writing</Select.Option>
-                          <Select.Option value="Part 2">Part 2: Short Text</Select.Option>
+                          <Select.Option value="Part 2">Part 2: Short Text Writing</Select.Option>
                           <Select.Option value="Part 3">Part 3: Social Media Chat</Select.Option>
-                          <Select.Option value="Part 4">Part 4: Contextual Email</Select.Option>
+                          <Select.Option value="Part 4">Part 4: Contextual Emails</Select.Option>
                         </>
                       ) : (
                         <>

@@ -64,9 +64,9 @@ const SpeakingSelection: React.FC<Props> = ({
                                         header={
                                             <Space>
                                                 <Text strong>{p}: {
-                                                    p === 'Part 1' ? 'Personal Info' :
-                                                        p === 'Part 2' ? 'Photo Description' :
-                                                            p === 'Part 3' ? 'Compare Two Photos' : 'Abstract Topic'
+                                                    p === 'Part 1' ? 'Personal Information' :
+                                                        p === 'Part 2' ? 'Describe & Opinion' :
+                                                            p === 'Part 3' ? 'Compare & Contrast' : 'Abstract Topic'
                                                 }</Text>
                                                 <Tag style={{ fontSize: '10px' }}>{partQuestions.length} task</Tag>
                                             </Space>

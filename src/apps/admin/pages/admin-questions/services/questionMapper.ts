@@ -439,7 +439,6 @@ export const mapQuestionToRow = (q: IQuestion) => ({
   type: q.questionType,
   part: PART_LABEL[q.partNumber] ?? `part${q.partNumber}`,
   difficulty: 'medium',
-  tags: [] as string[],
   useCount: 0,
   successRate: 100,
   status: q.deletedAt ? 'draft' : 'active',

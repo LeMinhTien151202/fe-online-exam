@@ -13,15 +13,15 @@ const SkillSubTabs: React.FC<SkillSubTabsProps> = ({ skill, activePart, onChange
             case 'grammar':
             case 'vocabulary':
                 return [
-                    { key: 'part1', label: 'Part 1: Grammar (25 câu)' },
-                    { key: 'part2', label: 'Part 2: Vocabulary (25 câu)' },
+                    { key: 'part1', label: 'Part 1: Grammar (25 questions)' },
+                    { key: 'part2', label: 'Part 2: Vocabulary (25 questions)' },
                 ];
             case 'reading':
                 return [
-                    { key: 'part1', label: 'Phần 1: Sentence Comprehension' },
-                    { key: 'part2', label: 'Phần 2: Text Cohesion' },
-                    { key: 'part3', label: 'Phần 3: Short Text' },
-                    { key: 'part4', label: 'Phần 4: Long Text' },
+                    { key: 'part1', label: 'Part 1: Sentence Comprehension' },
+                    { key: 'part2', label: 'Part 2: Text Cohesion' },
+                    { key: 'part3', label: 'Part 3: Short Text' },
+                    { key: 'part4', label: 'Part 4: Long Text' },
                 ];
             case 'listening':
                 return [
@@ -32,17 +32,17 @@ const SkillSubTabs: React.FC<SkillSubTabsProps> = ({ skill, activePart, onChange
                 ];
             case 'speaking':
                 return [
-                    { key: 'part1', label: 'Phần 1: Personal Information' },
-                    { key: 'part2', label: 'Phần 2: Mô tả hình ảnh' },
-                    { key: 'part3', label: 'Phần 3: Trả lời câu hỏi chủ đề' },
-                    { key: 'part4', label: 'Phần 4: Thảo luận tình huống' },
+                    { key: 'part1', label: 'Part 1: Personal Information' },
+                    { key: 'part2', label: 'Part 2: Describe & Opinion' },
+                    { key: 'part3', label: 'Part 3: Compare & Contrast' },
+                    { key: 'part4', label: 'Part 4: Abstract Topic' },
                 ];
             case 'writing':
                 return [
-                    { key: 'part1', label: 'Phần 1: Điền form' },
-                    { key: 'part2', label: 'Phần 2: Tin nhắn/Note ngắn' },
-                    { key: 'part3', label: 'Phần 3: Viết đoạn văn xã hội' },
-                    { key: 'part4', label: 'Phần 4: Viết email phản hồi' },
+                    { key: 'part1', label: 'Part 1: Word-level Writing' },
+                    { key: 'part2', label: 'Part 2: Short Text Writing' },
+                    { key: 'part3', label: 'Part 3: Social Media Chat' },
+                    { key: 'part4', label: 'Part 4: Contextual Emails' },
                 ];
             default:
                 return [];

@@ -3,11 +3,10 @@ import {
   ClockCircleOutlined,
   EditOutlined,
   MenuOutlined,
-  QuestionCircleOutlined,
   ThunderboltOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
-import { Button, Drawer, Empty, Progress, Segmented, Spin } from 'antd';
+import { Button, Drawer, Empty, Segmented, Spin } from 'antd';
 import React from 'react';
 import { LearningStreakValue } from '@/shared/components/LearningStreakValue';
 import { Sidebar } from '../../../../home/components/Sidebar';
@@ -126,10 +125,6 @@ export const GrammarPracticePage: React.FC = () => {
 
                         <S.MockTestMeta>
                           <S.MetaItem>
-                            <QuestionCircleOutlined />
-                            <span>Số phần: {exam._count?.sections ?? 0} phần</span>
-                          </S.MetaItem>
-                          <S.MetaItem>
                             <ClockCircleOutlined />
                             <span>Thời gian: 25 phút</span>
                           </S.MetaItem>
@@ -145,16 +140,6 @@ export const GrammarPracticePage: React.FC = () => {
                             </span>
                           </S.MetaItem>
                         </S.MockTestMeta>
-
-                        {score > 0 && (
-                          <S.ScoreProgressWrapper>
-                            <S.ScoreProgressHeader>
-                              <span>Điểm số</span>
-                              <span>{score}%</span>
-                            </S.ScoreProgressHeader>
-                            <Progress percent={score} size="small" strokeColor="#10b981" showInfo={false} />
-                          </S.ScoreProgressWrapper>
-                        )}
 
                         <S.MockStartButton
                           type="primary"

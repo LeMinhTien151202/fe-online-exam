@@ -11,36 +11,36 @@ export const speakingPartsData: Omit<IPracticePart, 'progress'>[] = [
   {
     id: 's1',
     title: 'Phần 1',
-    subTitle: 'Sentence Comprehension',
+    subTitle: 'Giới thiệu bản thân (Personal Information)',
     difficulty: 'easy',
-    description: 'Answer three personal questions about yourself and your interests. Aim for ~30 seconds each, keeping it clear and natural.',
+    description: 'Trả lời 3 câu hỏi cá nhân về bản thân và sở thích của bạn. Nói khoảng 30 giây mỗi câu, rõ ràng và tự nhiên.',
     icon: <AudioOutlined />,
     theme: { bgColor: '#e0f2fe', textColor: '#0284c7', borderColor: '#e5e7eb' }
   },
   {
     id: 's2',
     title: 'Phần 2',
-    subTitle: 'Describe, Express Opinion & Explain',
+    subTitle: 'Mô tả & Nêu ý kiến (Describe & Opinion)',
     difficulty: 'medium',
-    description: 'Describe a photo and answer two follow-up questions. Share your experience and broaden the topic for about 45 seconds each.',
+    description: 'Mô tả một bức tranh và trả lời hai câu hỏi mở rộng. Chia sẻ trải nghiệm cá nhân và mở rộng chủ đề trong khoảng 45 giây mỗi câu.',
     icon: <UnorderedListOutlined />,
     theme: { bgColor: '#e0e7ff', textColor: '#4f46e5', borderColor: '#e5e7eb' }
   },
   {
     id: 's3',
     title: 'Phần 3',
-    subTitle: 'Compare & Provide Reasons',
+    subTitle: 'So sánh & Giải thích (Compare & Contrast)',
     difficulty: 'medium',
-    description: 'Compare two related photos and respond to two questions asking for opinions or speculation. Target a structured 45-second answer.',
+    description: 'So sánh hai bức tranh liên quan và trả lời hai câu hỏi yêu cầu nêu ý kiến hoặc suy đoán. Hãy trả lời có bố cục rõ ràng trong khoảng 45 giây.',
     icon: <MessageOutlined />,
     theme: { bgColor: '#ffedd5', textColor: '#ea580c', borderColor: '#e5e7eb' }
   },
   {
     id: 's4',
     title: 'Phần 4',
-    subTitle: 'Discuss Experience & Opinion',
+    subTitle: 'Thảo luận chủ đề trừu tượng (Abstract Topic)',
     difficulty: 'hard',
-    description: 'Prepare for one minute, then speak for two minutes on three questions about an abstract topic. Use prep time to outline and note key ideas.',
+    description: 'Chuẩn bị trong 1 phút, sau đó nói trong 2 phút cho ba câu hỏi về một chủ đề trừu tượng. Dùng thời gian chuẩn bị để phác ý và ghi lại các ý chính.',
     icon: <TeamOutlined />,
     theme: { bgColor: '#f3e8ff', textColor: '#9333ea', borderColor: '#e5e7eb' }
   }

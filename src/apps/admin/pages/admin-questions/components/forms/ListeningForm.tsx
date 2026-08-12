@@ -97,7 +97,7 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
 
     const next = async () => {
         try {
-            await form.validateFields(currentStep === 0 ? ['audioUrl', 'transcript', 'tags', 'status'] : []);
+            await form.validateFields(currentStep === 0 ? ['audioUrl', 'transcript', 'status'] : []);
             setCurrentStep(currentStep + 1);
         } catch (error) {
             console.log('Validation failed:', error);
@@ -356,9 +356,6 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
                                     <Select.Option value="part3">Part 3: Opinion Matching</Select.Option>
                                     <Select.Option value="part4">Part 4: Monologue Comprehension</Select.Option>
                                 </Select>
-                            </Form.Item>
-                            <Form.Item label="Đề thi / Tags" name="tags">
-                                <Select mode="tags" placeholder="Ví dụ: Aptis General..." />
                             </Form.Item>
                             <Form.Item label="Trạng thái" name="status" initialValue="active">
                                 <Select>
