@@ -77,8 +77,8 @@ export const InfoCard = styled.div`
   align-items: center;
   gap: 1.25rem;
   box-shadow:
-    0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.05),
-    0 0.0625rem 0.125rem rgba(0, 0, 0, 0.02);
+    0 0 0.0625rem rgba(0, 0, 0, 0.04),
+    0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   @media (max-width: 40rem) {
