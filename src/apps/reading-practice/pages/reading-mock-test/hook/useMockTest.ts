@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
-import { IExamSubmitResult, ISubmitAnswer, summarizeAutoGrade, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { IExamSubmitResult, ISubmitAnswer, summarizeAutoGrade, useAttemptReviewQuery, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { useReadingExamDetailQuery } from '../../../services/readingExamQuery';
 import { flattenExam, ExamPartData } from '../../../services/readingExamMapper';
 import {
@@ -21,14 +21,17 @@ import {
 export const useMockTest = (testId: string) => {
   const examId = Number(testId);
   const { data: examDetail, isLoading, isError } = useReadingExamDetailQuery(examId || null);
+  const [reviewAttemptId, setReviewAttemptId] = useState<number | null>(null);
+  const { data: reviewDetail } = useAttemptReviewQuery(reviewAttemptId);
   const submitMutation = useSubmitExamMutation();
 
   // ==================== DERIVED DATA FROM API ====================
 
   const examParts = useMemo<ExamPartData[]>(() => {
-    if (!examDetail) return [];
-    return flattenExam(examDetail);
-  }, [examDetail]);
+    const detail = reviewDetail ?? examDetail;
+    if (!detail) return [];
+    return flattenExam(detail);
+  }, [examDetail, reviewDetail]);
 
   const getPart = (n: number) => examParts.find((ep) => ep.partNumber === n);
 
@@ -283,6 +286,7 @@ export const useMockTest = (testId: string) => {
     try {
       const r = await submitMutation.mutateAsync({ examId, payload: { answers: collectAnswers() } });
       setSubmitResult(r); // dùng để xếp band CEFR theo bảng kỹ năng (Đọc = skillId 3)
+      setReviewAttemptId(r.attemptId);
     } catch {
       // Interceptor đã hiện lỗi; báo cáo dùng band suy từ điểm cục bộ (fallback).
     }
@@ -372,6 +376,7 @@ export const useMockTest = (testId: string) => {
     setIsSubmitted(false);
     setShowReport(false);
     setSubmitResult(null);
+    setReviewAttemptId(null);
     setActiveQuestionNum(1);
   };
 

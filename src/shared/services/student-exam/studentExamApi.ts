@@ -32,17 +32,27 @@ export const studentExamApi = {
       timeout: 120_000,
     }),
 
-  // Lịch sử làm bài của mình (+ điểm trung bình MOCK_TEST).
-  // BE trả `data` là MẢNG attempts trực tiếp (không bọc { result, averageMockScore }),
-  // và có thể (bản cũ) bọc trong { result }. Chuẩn hoá về IAttemptsResponse để UI dùng thống nhất.
+  // Lịch sử làm bài phân trang + summary MOCK_TEST. Vẫn đọc được response mảng của BE cũ.
   myAttempts: async (filter: IAttemptFilter = {}): Promise<IAttemptsResponse> => {
-    const raw = await axiosInstance.get<unknown, unknown>('/attempts/me', { params: filter });
+    const envelope = await axiosInstance.get<IApiEnvelope<unknown>, IApiEnvelope<unknown>>('/attempts/me', {
+      params: filter,
+      _rawEnvelope: true,
+    });
+    const raw = envelope.data;
     const result = Array.isArray(raw)
       ? (raw as IAttemptsResponse['result'])
       : ((raw as IAttemptsResponse)?.result ?? []);
-    const averageMockScore = (raw as IAttemptsResponse)?.averageMockScore ?? null;
-    return { result, averageMockScore };
+    return {
+      result,
+      averageMockScore: Array.isArray(raw) ? null : ((raw as IAttemptsResponse)?.averageMockScore ?? null),
+      latestOverallCefr: Array.isArray(raw) ? null : ((raw as IAttemptsResponse)?.latestOverallCefr ?? null),
+      metaData: envelope.metaData,
+    };
   },
+
+  // Chỉ mở được sau khi attempt thuộc về học viên hiện tại; response có answer key để review.
+  reviewAttempt: (attemptId: number) =>
+    axiosInstance.get<IStudentExamTake, IStudentExamTake>(`/attempts/${attemptId}/review`),
 
   // Tập exam_set_id đã làm (để gắn nhãn Đã làm/Chưa làm cho SKILL_FULL_SET & MOCK_TEST)
   myDone: () =>

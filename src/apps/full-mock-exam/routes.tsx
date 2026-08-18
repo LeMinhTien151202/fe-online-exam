@@ -1,7 +1,8 @@
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, lazyRouteComponent } from '@tanstack/react-router';
 import { rootRoute } from '../../shared/router/root';
-import MockExamLandingPage from './pages/mock-exam-landing/pages/Index';
-import MainMockExamPage from './pages/main-mock-exam/pages/Index';
+
+const MockExamLandingPage = lazyRouteComponent(() => import('./pages/mock-exam-landing/pages/Index'));
+const MainMockExamPage = lazyRouteComponent(() => import('./pages/main-mock-exam/pages/Index'));
 
 // Route chính cho toàn bộ module Thi thử Full 5 kỹ năng
 export const mockExamRoute = createRoute({

@@ -1,10 +1,10 @@
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, lazyRouteComponent } from '@tanstack/react-router';
 import { rootRoute } from '../../shared/router/root';
-import GrammarPracticePage from './pages/grammar-landing/pages/Index';
-import Part1Page from './pages/grammar-part1/pages/Index';
-import Part2Page from './pages/grammar-part2/pages/Index';
-import GrammarMockTestPage from './pages/grammar-mock-test/pages/Index';
 
+const GrammarPracticePage = lazyRouteComponent(() => import('./pages/grammar-landing/pages/Index'));
+const Part1Page = lazyRouteComponent(() => import('./pages/grammar-part1/pages/Index'));
+const Part2Page = lazyRouteComponent(() => import('./pages/grammar-part2/pages/Index'));
+const GrammarMockTestPage = lazyRouteComponent(() => import('./pages/grammar-mock-test/pages/Index'));
 
 // Định nghĩa route cho Trang luyện tập Ngữ pháp & Từ vựng
 export const grammarRoute = createRoute({
@@ -12,7 +12,6 @@ export const grammarRoute = createRoute({
   path: '/grammar',
   component: GrammarPracticePage,
 });
-
 // Định nghĩa route cho Trang làm bài thi thử chính
 export const grammarTestRoute = createRoute({
   getParentRoute: () => rootRoute,

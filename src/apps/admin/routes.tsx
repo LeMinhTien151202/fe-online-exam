@@ -1,9 +1,21 @@
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, lazyRouteComponent, redirect } from '@tanstack/react-router';
 import React from 'react';
 import { rootRoute } from '../../shared/router/root';
-import AdminLayoutPage from './components/AdminLayout';
 import { RequireRole } from '@/shared/auth/RequireRole';
 import { ROLE_ACCESS, UserRole } from '@/shared/auth/roleAccess';
+
+const AdminLayoutPage = lazyRouteComponent(() => import('./components/AdminLayout'));
+const AdminDashboardPage = lazyRouteComponent(() => import('./pages/admin-dashboard/pages/Index'));
+const AdminUsersPage = lazyRouteComponent(() => import('./pages/admin-users/pages/Index'));
+const AdminQuestionsPage = lazyRouteComponent(() => import('./pages/admin-questions/pages/Index'));
+const AdminExamsPage = lazyRouteComponent(() => import('./pages/admin-exams/pages/Index'));
+const AdminCreateExamPage = lazyRouteComponent(() => import('./pages/admin-exams/pages/CreateExam'));
+const AdminExamDetailPage = lazyRouteComponent(() => import('./pages/admin-exams/pages/ExamDetail'));
+const AdminMaterialsPage = lazyRouteComponent(() => import('./pages/admin-materials/pages/Index'));
+const AdminGradingPage = lazyRouteComponent(() => import('./pages/admin-grading/pages/Index'));
+const AdminSettingsPage = lazyRouteComponent(() => import('./pages/admin-settings/pages/Index'));
+const AdminFaqPage = lazyRouteComponent(() => import('./pages/admin-faq/pages/Index'));
+const AdminNotificationsPage = lazyRouteComponent(() => import('./pages/admin-notifications/pages/Index'));
 
 // Bọc component trong guard vai trò. Toàn khu /admin dành cho ADMIN + TEACHER;
 // một số trang chỉ ADMIN sẽ được bọc thêm bằng adminOnly.
@@ -23,19 +35,6 @@ export const adminRoute = createRoute({
   component: guard(AdminLayoutPage, ROLE_ACCESS.contentManagers),
 });
 
-// 2. Child pages lazy components or direct imports
-import AdminDashboardPage from './pages/admin-dashboard/pages/Index';
-import AdminUsersPage from './pages/admin-users/pages/Index';
-import AdminQuestionsPage from './pages/admin-questions/pages/Index';
-import AdminExamsPage from './pages/admin-exams/pages/Index';
-import AdminCreateExamPage from './pages/admin-exams/pages/CreateExam';
-import AdminExamDetailPage from './pages/admin-exams/pages/ExamDetail';
-import AdminMaterialsPage from './pages/admin-materials/pages/Index';
-import AdminGradingPage from './pages/admin-grading/pages/Index';
-import AdminSettingsPage from './pages/admin-settings/pages/Index';
-import AdminFaqPage from './pages/admin-faq/pages/Index';
-import AdminNotificationsPage from './pages/admin-notifications/pages/Index';
-
 export const adminDashboardRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/',
@@ -48,13 +47,11 @@ export const adminUsersRoute = createRoute({
   component: guard(AdminUsersPage, ROLE_ACCESS.adminOnly),
 });
 
-import { redirect } from '@tanstack/react-router';
-
 export const adminQuestionsBaseRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/questions',
   beforeLoad: () => {
-    throw redirect({ to: '/admin/questions/grammar' as any });
+    throw redirect({ to: '/admin/questions/$skillId', params: { skillId: 'grammar' } });
   },
 });
 

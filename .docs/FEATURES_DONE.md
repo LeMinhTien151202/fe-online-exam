@@ -2,6 +2,8 @@ _Mỗi khi hoàn thành task, phải dùng lệnh /save để cập nhật vắn
 
 # Sổ tay tiến độ dự án (FEATURES_DONE)
 
+- _2026-08-18_: Lịch sử thi thử chuyển sang phân trang server 6 dòng/trang qua `/attempts/me?page=&limit=&type=MOCK_TEST`; dashboard lấy summary từ backend thay vì tải toàn bộ lịch sử. Sau submit SKILL_FULL_SET, Reading/Listening/Grammar/Writing/Speaking dùng `/attempts/{id}/review` để lấy đáp án/bài mẫu có kiểm tra owner. Xóa các service student `/questions` cũ không còn dùng, lazy-load route cho 5 kỹ năng/Mock Exam/Admin và thêm PostCSS Tailwind v4. Production build/typecheck đạt; CSS directive warnings đã hết.
+
 ## Phiên bản: 1.0.0 (Khởi tạo)
 
 ### 🚀 Giai đoạn 0: Khởi tạo hệ thống (Setup Base)

@@ -1,11 +1,15 @@
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, lazyRouteComponent } from '@tanstack/react-router';
 import { rootRoute } from '../../shared/router/root';
-import SpeakingPracticePage from './pages/speaking-landing/pages/Index';
-import Part1Page from './pages/speaking-part1/pages/Index';
-import Part2Page from './pages/speaking-part2/pages/Index';
-import Part3Page from './pages/speaking-part3/pages/Index';
-import Part4Page from './pages/speaking-part4/pages/Index';
-import { SpeakingMockTestPage } from './pages/speaking-mock-test/pages/Index';
+
+const SpeakingPracticePage = lazyRouteComponent(() => import('./pages/speaking-landing/pages/Index'));
+const Part1Page = lazyRouteComponent(() => import('./pages/speaking-part1/pages/Index'));
+const Part2Page = lazyRouteComponent(() => import('./pages/speaking-part2/pages/Index'));
+const Part3Page = lazyRouteComponent(() => import('./pages/speaking-part3/pages/Index'));
+const Part4Page = lazyRouteComponent(() => import('./pages/speaking-part4/pages/Index'));
+const SpeakingMockTestPage = lazyRouteComponent(
+  () => import('./pages/speaking-mock-test/pages/Index'),
+  'SpeakingMockTestPage',
+);
 
 // Định nghĩa route cho Trang luyện tập Nói
 export const speakingRoute = createRoute({

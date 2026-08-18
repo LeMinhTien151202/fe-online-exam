@@ -1,11 +1,12 @@
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, lazyRouteComponent } from '@tanstack/react-router';
 import { rootRoute } from '../../shared/router/root';
-import ReadingPracticePage from './pages/reading-landing/pages/Index';
-import Part1Page from './pages/reading-part1/pages/Index';
-import Part2Page from './pages/reading-part2/pages/Index';
-import Part3Page from './pages/reading-part3/pages/Index';
-import Part4Page from './pages/reading-part4/pages/Index';
-import ReadingMockTestPage from './pages/reading-mock-test/pages/Index';
+
+const ReadingPracticePage = lazyRouteComponent(() => import('./pages/reading-landing/pages/Index'));
+const Part1Page = lazyRouteComponent(() => import('./pages/reading-part1/pages/Index'));
+const Part2Page = lazyRouteComponent(() => import('./pages/reading-part2/pages/Index'));
+const Part3Page = lazyRouteComponent(() => import('./pages/reading-part3/pages/Index'));
+const Part4Page = lazyRouteComponent(() => import('./pages/reading-part4/pages/Index'));
+const ReadingMockTestPage = lazyRouteComponent(() => import('./pages/reading-mock-test/pages/Index'));
 
 // Định nghĩa route cho Trang luyện tập Đọc hiểu
 export const readingRoute = createRoute({
@@ -43,4 +44,3 @@ export const readingMockTestRoute = createRoute({
   path: '/reading/mock-test/$testId',
   component: ReadingMockTestPage,
 });
-

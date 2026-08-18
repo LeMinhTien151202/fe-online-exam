@@ -170,11 +170,21 @@ export interface IAttemptItem {
 export interface IAttemptsResponse {
   result: IAttemptItem[];
   averageMockScore: number | null; // AVG(total_score) các attempt MOCK_TEST
+  latestOverallCefr?: Cefr | null;
+  metaData?: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPage: number;
+  } | null;
 }
 
 export interface IAttemptFilter {
   type?: ExamType;
+  examId?: number;
   examSetId?: number;
+  page?: number;
+  limit?: number;
 }
 
 // GET /progress/me — tiến độ TÍCH LŨY theo (skill, part), gộp mọi đề (dashboard học tập).

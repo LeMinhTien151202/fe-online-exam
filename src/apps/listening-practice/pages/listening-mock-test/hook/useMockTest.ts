@@ -2,7 +2,7 @@ import {
   useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
-import { IExamSubmitResult, ISubmitAnswer, summarizeAutoGrade, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { IExamSubmitResult, ISubmitAnswer, summarizeAutoGrade, useAttemptReviewQuery, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import { useListeningExamDetailQuery } from '../../../services/listeningExamQuery';
 import { ListeningExamData, buildListeningExam } from '../../../services/listeningExamMapper';
@@ -52,8 +52,13 @@ export const useMockTest = (testId: string) => {
   const navigate = useNavigate();
   const examId = Number(testId);
   const { data: examDetail, isLoading, isError } = useListeningExamDetailQuery(examId || null);
+  const [reviewAttemptId, setReviewAttemptId] = useState<number | null>(null);
+  const { data: reviewDetail } = useAttemptReviewQuery(reviewAttemptId);
 
-  const examData = useMemo(() => (examDetail ? buildListeningExam(examDetail) : null), [examDetail]);
+  const examData = useMemo(() => {
+    const detail = reviewDetail ?? examDetail;
+    return detail ? buildListeningExam(detail) : null;
+  }, [examDetail, reviewDetail]);
   const navItems = useMemo(() => buildNavItems(examData), [examData]);
   const totalQuestions = navItems.length;
   const submitMutation = useSubmitExamMutation();
@@ -234,6 +239,7 @@ export const useMockTest = (testId: string) => {
     try {
       const r = await submitMutation.mutateAsync({ examId, payload: { answers: collected } });
       setSubmitResult(r); // xếp band CEFR theo bảng kỹ năng (Nghe = skillId 2)
+      setReviewAttemptId(r.attemptId);
     } catch {
       // Interceptor đã hiện lỗi; báo cáo dùng band suy từ điểm cục bộ (fallback).
     }
@@ -400,6 +406,7 @@ export const useMockTest = (testId: string) => {
     setIsSubmitted(false);
     setShowReport(false);
     setSubmitResult(null);
+    setReviewAttemptId(null);
     setActiveQuestionNum(navItems[0]?.qNum ?? 1);
   };
 

@@ -6,6 +6,7 @@ import { toast } from '../../../../../configs/toast';
 import {
   IExamSubmitResult,
   ISubmitAnswer,
+  useAttemptReviewQuery,
   useSubmitExamMutation,
 } from '../../../../../shared/services/student-exam';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
@@ -28,8 +29,13 @@ export const useMockTest = () => {
   const examId = Number(testId);
   const navigate = useNavigate();
   const { data: examDetail, isLoading, isError } = useSpeakingExamDetailQuery(examId || null);
+  const [reviewAttemptId, setReviewAttemptId] = useState<number | null>(null);
+  const { data: reviewDetail } = useAttemptReviewQuery(reviewAttemptId);
 
-  const examData = useMemo(() => (examDetail ? buildSpeakingExam(examDetail) : null), [examDetail]);
+  const examData = useMemo(() => {
+    const detail = reviewDetail ?? examDetail;
+    return detail ? buildSpeakingExam(detail) : null;
+  }, [examDetail, reviewDetail]);
   const submitMutation = useSubmitExamMutation();
 
   const navItems = useMemo<SpeakingNavItem[]>(() => {
@@ -145,6 +151,7 @@ export const useMockTest = () => {
     try {
       const result = await submitMutation.mutateAsync({ examId, payload: { answers: collectAnswers() } });
       setSubmitResult(result);
+      setReviewAttemptId(result.attemptId);
     } catch {
       // Interceptor đã hiện notification lỗi.
     }
@@ -272,6 +279,7 @@ export const useMockTest = () => {
     setActiveSubIndex(1);
     setShowSampleMap({});
     setSubmitResult(null);
+    setReviewAttemptId(null);
   };
 
   const handleBackToLanding = () => {

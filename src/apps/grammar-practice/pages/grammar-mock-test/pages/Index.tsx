@@ -23,7 +23,7 @@ import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { useGrammarExamDetailQuery } from '../../../services/grammarExamQuery';
 import { buildGrammarExam, collectGrammarAnswers } from '../../../services/grammarExamMapper';
-import { summarizeAutoGrade, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { summarizeAutoGrade, useAttemptReviewQuery, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import { GrammarSection } from '../components/GrammarSection';
 import { GrammarNavSection, QuestionNav } from '../components/QuestionNav';
@@ -38,7 +38,12 @@ export const GrammarMockTestPage: React.FC = () => {
   const examId = Number(activeTestId);
 
   const { data: examDetail, isLoading, isError } = useGrammarExamDetailQuery(examId || null);
-  const examData = useMemo(() => (examDetail ? buildGrammarExam(examDetail) : null), [examDetail]);
+  const [reviewAttemptId, setReviewAttemptId] = useState<number | null>(null);
+  const { data: reviewDetail } = useAttemptReviewQuery(reviewAttemptId);
+  const examData = useMemo(() => {
+    const detail = reviewDetail ?? examDetail;
+    return detail ? buildGrammarExam(detail) : null;
+  }, [examDetail, reviewDetail]);
   const submitMutation = useSubmitExamMutation();
   const grammarQuestions = useMemo(() => examData?.grammarQuestions ?? [], [examData]);
   const vocabularySets = useMemo(() => examData?.vocabularySets ?? [], [examData]);
@@ -63,6 +68,7 @@ export const GrammarMockTestPage: React.FC = () => {
   const totalUnits = grammarCount + vocabularySets.length;
 
   const [showResultModal, setShowResultModal] = useState(false);
+  const [showAnswerReview, setShowAnswerReview] = useState(false);
   const [scoreResult, setScoreResult] = useState<{
     grammarScore: number;
     vocabScore: number;
@@ -78,6 +84,7 @@ export const GrammarMockTestPage: React.FC = () => {
       const submitAnswers = collectGrammarAnswers(examData, finalAnswers);
       try {
         const result = await submitMutation.mutateAsync({ examId, payload: { answers: submitAnswers } });
+        setReviewAttemptId(result.attemptId);
         const grammar = summarizeAutoGrade(result, { skillId: 1, partNumber: 1 });
         const vocabulary = summarizeAutoGrade(result, { skillId: 1, partNumber: 2 });
         totalScore = grammar.earned + vocabulary.earned;
@@ -213,6 +220,8 @@ export const GrammarMockTestPage: React.FC = () => {
     resetExam();
     setShowResultModal(false);
     setScoreResult(null);
+    setReviewAttemptId(null);
+    setShowAnswerReview(false);
     toast.success('Đã tải lại đề thi. Chúc bạn làm bài tốt!');
   };
 
@@ -350,7 +359,7 @@ export const GrammarMockTestPage: React.FC = () => {
         open={showResultModal}
         footer={null}
         closable={false}
-        width={500}
+        width={showAnswerReview ? 760 : 500}
         centered
         styles={{ body: { padding: '2.5rem 2rem', textAlign: 'center' } }}
       >
@@ -386,6 +395,42 @@ export const GrammarMockTestPage: React.FC = () => {
                 Điểm số này giúp bạn đánh giá nhanh năng lực Grammar & Vocabulary trong bộ đề.
               </S.SummaryBoxDesc>
             </S.SummaryBox>
+
+            {reviewDetail && (
+              <div style={{ marginBottom: '1.25rem', textAlign: 'left' }}>
+                <Button block onClick={() => setShowAnswerReview((visible) => !visible)}>
+                  {showAnswerReview ? 'Ẩn đáp án chi tiết' : 'Xem đáp án chi tiết'}
+                </Button>
+                {showAnswerReview && (
+                  <div style={{ maxHeight: 320, overflowY: 'auto', marginTop: 12, paddingRight: 6 }}>
+                    {grammarQuestions.map((question) => {
+                      const selected = answers[question.questionNumber] || '(bỏ trống)';
+                      const correct = selected === question.correctAnswer;
+                      return (
+                        <div key={question.id} style={{ padding: '10px 12px', marginBottom: 8, borderRadius: 8, background: correct ? '#f0fdf4' : '#fff7ed' }}>
+                          <strong>Câu {question.questionNumber}:</strong> {question.sentence}
+                          <div style={{ color: correct ? '#15803d' : '#c2410c' }}>Bạn chọn: {selected}</div>
+                          {!correct && <div style={{ color: '#15803d' }}>Đáp án đúng: {question.correctAnswer}</div>}
+                        </div>
+                      );
+                    })}
+                    {vocabularySets.flatMap((set) =>
+                      set.subQuestions.map((question) => {
+                        const selected = answers[question.questionNumber] || '(bỏ trống)';
+                        const correct = selected === question.correctAnswer;
+                        return (
+                          <div key={`${set.id}-${question.id}`} style={{ padding: '10px 12px', marginBottom: 8, borderRadius: 8, background: correct ? '#f0fdf4' : '#fff7ed' }}>
+                            <strong>{set.title} — ý {question.id}:</strong> {question.leftLabel}
+                            <div style={{ color: correct ? '#15803d' : '#c2410c' }}>Bạn chọn: {selected}</div>
+                            {!correct && <div style={{ color: '#15803d' }}>Đáp án đúng: {question.correctAnswer}</div>}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             <S.ModalActionButtons size="middle">
               <Button

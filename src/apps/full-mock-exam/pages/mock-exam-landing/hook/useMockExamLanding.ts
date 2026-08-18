@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { IAttemptItem, useMyAttemptsQuery } from '@/shared/services/student-exam';
+import { IAttemptItem, useMyAttemptsQuery, useMyDoneExamsQuery } from '@/shared/services/student-exam';
 import {
   mockTotalScaled,
   MOCK_MAX_SCORE,
@@ -17,6 +17,7 @@ export const MAX_SCORE = MOCK_MAX_SCORE;
 export const TARGET_LEVEL = DEFAULT_TARGET_CEFR;
 // Điểm cần đạt = ngưỡng điểm tối thiểu để đạt B2 trên cả 4 kỹ năng (tính từ bảng CEFR) = 153/200.
 export const TARGET_SCORE = cefrTargetTotal(TARGET_LEVEL);
+export const HISTORY_PAGE_SIZE = 6;
 
 // Điểm tổng 0–200 của một attempt từ snapshot điểm từng kỹ năng (skillCefr). null nếu chưa có snapshot.
 const attemptTotal = (att: IAttemptItem): number | null => mockTotalScaled(att.skillCefr);
@@ -28,44 +29,34 @@ const attemptExamId = (att: IAttemptItem) => att.examSetId ?? att.examId ?? att.
 const attemptTime = (att: IAttemptItem) =>
   new Date(att.createdAt ?? att.finishedAt ?? att.startedAt ?? 0).getTime();
 
-// Chỉ giữ attempt thực sự là MOCK_TEST — BE hiện không lọc đúng type nên trả cả SKILL_FULL_SET (vd "Speaking Test 10").
+// Giữ thêm lớp lọc tương thích nếu FE tạm thời chạy với backend cũ chưa hỗ trợ query `type`.
 const isMockAttempt = (att: IAttemptItem) => (att.type ?? att.exam?.type) === 'MOCK_TEST';
 
 export const useMockExamLanding = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<MockExamTab>('all');
+  const [historyPage, setHistoryPage] = useState(1);
 
   const { data: examRes, isLoading } = useMockExamSetsQuery();
   const mockExams = useMemo(() => examRes?.data ?? [], [examRes]);
 
-  const { data: attemptsRes } = useMyAttemptsQuery({ type: 'MOCK_TEST' });
+  const { data: attemptsRes } = useMyAttemptsQuery({
+    type: 'MOCK_TEST',
+    page: historyPage,
+    limit: HISTORY_PAGE_SIZE,
+  });
   const attempts = useMemo(
     () => (attemptsRes?.result ?? []).filter(isMockAttempt),
     [attemptsRes],
   );
+  const { data: doneExamIds = [] } = useMyDoneExamsQuery();
 
   // Các đề đã từng nộp (kể cả attempt chưa có điểm)
   const takenExamIds = useMemo(() => {
     const set = new Set<number>();
-    attempts.forEach((att) => {
-      const id = attemptExamId(att);
-      if (id != null) set.add(id);
-    });
+    doneExamIds.forEach((id) => set.add(id));
     return set;
-  }, [attempts]);
-
-  // Điểm lần thi GẦN NHẤT theo từng đề (duyệt tăng dần, lần sau ghi đè lần trước) — thang 0–200.
-  const latestScores = useMemo(() => {
-    const map = new Map<number, number>();
-    [...attempts]
-      .sort((a, b) => attemptTime(a) - attemptTime(b))
-      .forEach((att) => {
-        const id = attemptExamId(att);
-        const total = attemptTotal(att);
-        if (id != null && total != null) map.set(id, total);
-      });
-    return map;
-  }, [attempts]);
+  }, [doneExamIds]);
 
   const filteredExams = useMemo(() => {
     if (activeTab === 'new') return mockExams.filter((exam) => !takenExamIds.has(exam.id));
@@ -73,7 +64,7 @@ export const useMockExamLanding = () => {
     return mockExams;
   }, [mockExams, activeTab, takenExamIds]);
 
-  // Toàn bộ lịch sử thi, mới nhất trước. Component chia 6 dòng/trang để sidebar không kéo dài.
+  // Một trang lịch sử từ backend, mới nhất trước; UI hiển thị 6 dòng/trang.
   const titleById = useMemo(() => new Map(mockExams.map((exam) => [exam.id, exam.title])), [mockExams]);
   const history = useMemo(
     () =>
@@ -94,18 +85,9 @@ export const useMockExamLanding = () => {
   );
 
   // Điểm trung bình 0–200: trung bình tổng scaled các lần thi ĐÃ có snapshot điểm (bỏ lần chưa chấm xong).
-  const averageScore = useMemo(() => {
-    const totals = attempts.map(attemptTotal).filter((t): t is number => t != null);
-    if (totals.length === 0) return null;
-    return totals.reduce((a, b) => a + b, 0) / totals.length;
-  }, [attempts]);
+  const averageScore = attemptsRes?.averageMockScore ?? null;
   // "Trình độ hiện tại" = CEFR tổng của lần thi gần nhất có xếp loại.
-  const cefrLevel = useMemo(() => {
-    const latest = [...attempts]
-      .sort((a, b) => attemptTime(b) - attemptTime(a))
-      .find((att) => att.overallCefr);
-    return latest?.overallCefr ?? null;
-  }, [attempts]);
+  const cefrLevel = attemptsRes?.latestOverallCefr ?? null;
   const targetProgress =
     averageScore != null ? Math.min(100, Math.round((averageScore / TARGET_SCORE) * 100)) : 0;
 
@@ -119,8 +101,10 @@ export const useMockExamLanding = () => {
     setActiveTab,
     filteredExams,
     takenExamIds,
-    latestScores,
     history,
+    historyPage,
+    historyTotal: attemptsRes?.metaData?.total ?? history.length,
+    setHistoryPage,
     averageScore,
     cefrLevel,
     targetProgress,

@@ -7,6 +7,7 @@ export const PART_PRACTICE_KEY = ['student', 'part-practice'];
 export const PROGRESS_KEY = ['student', 'progress'];
 export const EXAM_PROGRESS_KEY = ['student', 'exam-progress'];
 export const STREAK_KEY = ['student', 'streak'];
+export const ATTEMPT_REVIEW_KEY = ['student', 'attempt-review'];
 
 // % hoàn thành theo TỪNG ĐỀ. Chuẩn hoá về Map examId -> percent (0-100).
 // Chấp nhận camelCase/snake_case + mảng hoặc bọc { data: [...] }; nếu thiếu percent thì suy từ answered/total.
@@ -112,6 +113,14 @@ export const useMyAttemptsQuery = (filter: IAttemptFilter = {}, enabled: boolean
     queryKey: [...ATTEMPTS_KEY, filter],
     queryFn: () => studentExamApi.myAttempts(filter),
     enabled,
+  });
+};
+
+export const useAttemptReviewQuery = (attemptId: number | null) => {
+  return useQuery({
+    queryKey: [...ATTEMPT_REVIEW_KEY, attemptId],
+    queryFn: () => studentExamApi.reviewAttempt(attemptId as number),
+    enabled: attemptId != null,
   });
 };
 

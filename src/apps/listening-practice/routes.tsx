@@ -1,11 +1,15 @@
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, lazyRouteComponent } from '@tanstack/react-router';
 import { rootRoute } from '../../shared/router/root';
-import ListeningPracticePage from './pages/listening-landing/pages/Index';
-import Part1Page from './pages/listening-part1/pages/Index';
-import Part2Page from './pages/listening-part2/pages/Index';
-import Part3Page from './pages/listening-part3/pages/Index';
-import Part4Page from './pages/listening-part4/pages/Index';
-import { ListeningMockTestPage } from './pages/listening-mock-test/pages/Index';
+
+const ListeningPracticePage = lazyRouteComponent(() => import('./pages/listening-landing/pages/Index'));
+const Part1Page = lazyRouteComponent(() => import('./pages/listening-part1/pages/Index'));
+const Part2Page = lazyRouteComponent(() => import('./pages/listening-part2/pages/Index'));
+const Part3Page = lazyRouteComponent(() => import('./pages/listening-part3/pages/Index'));
+const Part4Page = lazyRouteComponent(() => import('./pages/listening-part4/pages/Index'));
+const ListeningMockTestPage = lazyRouteComponent(
+  () => import('./pages/listening-mock-test/pages/Index'),
+  'ListeningMockTestPage',
+);
 
 // Định nghĩa route cho Trang luyện tập Nghe
 export const listeningRoute = createRoute({
@@ -43,4 +47,3 @@ export const listeningMockTestRoute = createRoute({
   path: '/listening/mock-test/$testId',
   component: ListeningMockTestPage,
 });
-

@@ -1,11 +1,15 @@
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, lazyRouteComponent } from '@tanstack/react-router';
 import { rootRoute } from '../../shared/router/root';
-import WritingPracticePage from './pages/writing-landing/pages/Index';
-import Part1Page from './pages/writing-part1/pages/Index';
-import Part2Page from './pages/writing-part2/pages/Index';
-import Part3Page from './pages/writing-part3/pages/Index';
-import Part4Page from './pages/writing-part4/pages/Index';
-import { WritingMockTestPage } from './pages/writing-mock-test/pages/Index';
+
+const WritingPracticePage = lazyRouteComponent(() => import('./pages/writing-landing/pages/Index'));
+const Part1Page = lazyRouteComponent(() => import('./pages/writing-part1/pages/Index'));
+const Part2Page = lazyRouteComponent(() => import('./pages/writing-part2/pages/Index'));
+const Part3Page = lazyRouteComponent(() => import('./pages/writing-part3/pages/Index'));
+const Part4Page = lazyRouteComponent(() => import('./pages/writing-part4/pages/Index'));
+const WritingMockTestPage = lazyRouteComponent(
+  () => import('./pages/writing-mock-test/pages/Index'),
+  'WritingMockTestPage',
+);
 
 // Định nghĩa route cho Trang luyện tập Viết
 export const writingRoute = createRoute({

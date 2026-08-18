@@ -3,6 +3,7 @@ import { toast } from '../../../../../configs/toast';
 import {
   IExamSubmitResult,
   ISubmitAnswer,
+  useAttemptReviewQuery,
   useSubmitExamMutation,
 } from '../../../../../shared/services/student-exam';
 import { countWords } from '../../../utils/wordCounter';
@@ -12,8 +13,13 @@ import { buildWritingPrompts } from '../../../services/writingExamMapper';
 export const useWritingMockTest = (testId: string) => {
   const examId = Number(testId);
   const { data: examDetail, isLoading, isError } = useWritingExamDetailQuery(examId || null);
+  const [reviewAttemptId, setReviewAttemptId] = useState<number | null>(null);
+  const { data: reviewDetail } = useAttemptReviewQuery(reviewAttemptId);
 
-  const prompts = useMemo(() => (examDetail ? buildWritingPrompts(examDetail) : []), [examDetail]);
+  const prompts = useMemo(() => {
+    const detail = reviewDetail ?? examDetail;
+    return detail ? buildWritingPrompts(detail) : [];
+  }, [examDetail, reviewDetail]);
   const totalQuestions = prompts.length;
   const submitMutation = useSubmitExamMutation();
 
@@ -82,6 +88,7 @@ export const useWritingMockTest = (testId: string) => {
     try {
       const result = await submitMutation.mutateAsync({ examId, payload: { answers: collectAnswers() } });
       setSubmitResult(result);
+      setReviewAttemptId(result.attemptId);
     } catch {
       // Interceptor đã hiện notification lỗi.
     }
@@ -125,6 +132,7 @@ export const useWritingMockTest = (testId: string) => {
     setActivePart(1);
     setShowSampleMap({});
     setSubmitResult(null);
+    setReviewAttemptId(null);
   };
 
   const handleAnswerChange = (questionId: number, value: string) => {

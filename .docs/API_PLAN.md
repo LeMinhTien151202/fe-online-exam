@@ -118,9 +118,10 @@
 
 | Method | Path | Quyền | Mô tả |
 | :-- | :-- | :-- | :-- |
-| GET | `/attempts/me` | STUDENT | Lịch sử làm bài của mình (filter `type`, `exam_set_id`). MOCK_TEST kèm điểm; trả kèm **điểm trung bình** MOCK_TEST. |
+| GET | `/attempts/me` | STUDENT | Phân trang bằng `page`/`limit`, lọc `type`/`examId` (alias cũ `examSetId`); danh sách ở `data.result`, kèm `averageMockScore`, `latestOverallCefr` và `metaData`. |
 | GET | `/attempts/me/done` | STUDENT | Tập `exam_set_id` **đã làm** (để FE gắn nhãn Đã làm/Chưa làm cho SKILL_FULL_SET & MOCK_TEST). |
 | GET | `/attempts/:id` | STUDENT (chủ) / TEACHER / ADMIN | Chi tiết 1 lần làm (chỉ điểm tổng — DB không lưu chi tiết). |
+| GET | `/attempts/:id/review` | STUDENT (chủ) | Cây đề có đáp án/bài mẫu sau nộp; attempt người khác trả 404. |
 | GET | `/attempts` | TEACHER/ADMIN | Toàn bộ, filter `student_id`, `status`, `type`. |
 
 ### 2.10. `progress/` & `streaks/` — Tiến độ *(bảng `student_progress`, `learning_streaks`)*

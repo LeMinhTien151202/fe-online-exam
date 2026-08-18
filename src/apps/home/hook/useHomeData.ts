@@ -5,7 +5,7 @@ import {
   useMyProgressQuery,
   useMyStreakQuery,
 } from '@/shared/services/student-exam';
-import { mockTotalScaled, DEFAULT_TARGET_CEFR } from '@/shared/utils/cefrScale';
+import { DEFAULT_TARGET_CEFR } from '@/shared/utils/cefrScale';
 import { useAppSelector } from '@/shared/store/hooks';
 
 // Mục tiêu trình độ mặc định của nền tảng (chưa có API mục tiêu riêng theo học viên).
@@ -18,7 +18,7 @@ export const useHomeData = () => {
   // Chỉ gọi API khi đã đăng nhập — khách vãng lai không có dữ liệu cá nhân.
   const streakQuery = useMyStreakQuery(isAuthenticated);
   const progressQuery = useMyProgressQuery(isAuthenticated);
-  const attemptsQuery = useMyAttemptsQuery({}, isAuthenticated);
+  const attemptsQuery = useMyAttemptsQuery({ type: 'MOCK_TEST', page: 1, limit: 1 }, isAuthenticated);
 
   // Tiến độ tổng quan = tổng câu đã làm / tổng câu (gộp mọi kỹ năng, mọi phần).
   const overallProgress = useMemo(() => {
@@ -32,15 +32,7 @@ export const useHomeData = () => {
 
   // Điểm dự đoán = trung bình tổng điểm các bài thi thử (MOCK_TEST) trên thang Aptis 0–200
   // (tổng scaled 4 kỹ năng từ snapshot skillCefr), nhất quán với Mock Exam Center.
-  const predictedScore = useMemo(() => {
-    const totals = (attemptsQuery.data?.result ?? [])
-      // Attempt có thể để type ở cấp trên (bản cũ) hoặc lồng trong exam{} (bản mới).
-      .filter((att) => (att.type ?? att.exam?.type) === 'MOCK_TEST')
-      .map((att) => mockTotalScaled(att.skillCefr))
-      .filter((t): t is number => t != null);
-    if (totals.length === 0) return null;
-    return totals.reduce((a, b) => a + b, 0) / totals.length;
-  }, [attemptsQuery.data]);
+  const predictedScore = attemptsQuery.data?.averageMockScore ?? null;
 
   // Giá trị hiển thị đã chuẩn hoá: khách vãng lai -> "—"; đang tải -> "…"; có dữ liệu -> giá trị thật.
   const stats = useMemo<IHomeStatsView>(() => {
