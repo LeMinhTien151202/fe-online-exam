@@ -5,6 +5,66 @@
 import { ExamType } from '../../../apps/admin/pages/admin-exams/services/types';
 import { Cefr } from '../../utils/cefrScale';
 
+// GET /exams và GET /exams/{id}/take — contract riêng cho học viên.
+// Không dùng lại IExamSetDetail của admin vì response này đã được BE loại bỏ đáp án.
+export interface IStudentExamSkill {
+  id: number;
+  name: string;
+  totalParts: number;
+}
+
+export interface IStudentExamSummary {
+  id: number;
+  title: string;
+  description?: string | null;
+  type: ExamType;
+  skillId: number | null;
+  partNumber: number | null;
+  isActive: boolean;
+  createdBy: number;
+  createdAt: string;
+  deletedAt?: string | null;
+  skill?: IStudentExamSkill | null;
+}
+
+export interface IStudentExamQuestion {
+  id: number;
+  skillId: number;
+  partNumber: number;
+  questionType: string;
+  content: string;
+  mediaUrl?: string | null;
+  extraConfig?: unknown;
+}
+
+export interface IStudentExamPartQuestion {
+  examPartId: number;
+  questionId: number;
+  orderIndex: number;
+  question?: IStudentExamQuestion;
+}
+
+export interface IStudentExamPart {
+  id: number;
+  partNumber: number;
+  instruction?: string | null;
+  audioUrl?: string | null;
+  questions: IStudentExamPartQuestion[];
+}
+
+export interface IStudentExamSection {
+  id: number;
+  skillId: number;
+  durationMinutes: number;
+  orderIndex: number;
+  skill?: IStudentExamSkill | null;
+  parts: IStudentExamPart[];
+}
+
+export interface IStudentExamTake extends IStudentExamSummary {
+  sections: IStudentExamSection[];
+}
+
 // Điểm + CEFR theo từng kỹ năng (xem .docs/SCORING_CEFR_PLAN.md). Grammar(skillId 1): cefr = null.
 export interface ISkillScore {
   skillId: number;

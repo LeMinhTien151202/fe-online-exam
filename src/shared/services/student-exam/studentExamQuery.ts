@@ -82,11 +82,11 @@ export const usePartPracticeListQuery = (skillId: number | null) => {
   });
 };
 
-// Chi tiết 1 đề (kèm đáp án) để build câu hỏi + chấm cục bộ.
-export const useExamSetDetailQuery = (id: number | null) => {
+// Nội dung 1 đề dành cho học viên; đáp án đã được BE loại bỏ.
+export const useStudentExamTakeQuery = (id: number | null) => {
   return useQuery({
     queryKey: [...PART_PRACTICE_KEY, 'detail', id],
-    queryFn: () => studentExamApi.examSetDetail(id as number),
+    queryFn: () => studentExamApi.take(id as number),
     enabled: id != null,
   });
 };

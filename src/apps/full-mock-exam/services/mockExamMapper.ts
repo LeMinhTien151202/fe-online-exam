@@ -1,4 +1,4 @@
-import { IExamSetDetail } from '../../admin/pages/admin-exams/services/types';
+import { IStudentExamTake } from '@/shared/services/student-exam';
 import { buildGrammarExam, GrammarExamData } from '../../grammar-practice/services/grammarExamMapper';
 import { buildListeningExam, ListeningExamData } from '../../listening-practice/services/listeningExamMapper';
 import { flattenExam as flattenReadingExam } from '../../reading-practice/services/readingExamMapper';
@@ -17,7 +17,7 @@ import { buildSpeakingExam, SpeakingExamData } from '../../speaking-practice/ser
 
 // Đề MOCK_TEST: mỗi section 1 kỹ năng (skillId 1..5). Cắt exam theo skill rồi
 // tái dùng builder của từng app luyện tập để giữ shape dữ liệu nhất quán.
-const sliceBySkill = (exam: IExamSetDetail, skillId: number): IExamSetDetail => ({
+const sliceBySkill = (exam: IStudentExamTake, skillId: number): IStudentExamTake => ({
   ...exam,
   sections: (exam.sections ?? []).filter((s) => s.skillId === skillId),
 });
@@ -31,7 +31,7 @@ export interface ReadingExamData {
   headingP5: Part4Data | null;
 }
 
-const buildReadingExam = (exam: IExamSetDetail): ReadingExamData => {
+const buildReadingExam = (exam: IStudentExamTake): ReadingExamData => {
   const parts = flattenReadingExam(exam);
   const getPart = (n: number) => parts.find((p) => p.partNumber === n)?.questions ?? [];
   const firstOf = (n: number) => getPart(n)[0];
@@ -56,7 +56,7 @@ export interface FullMockExamData {
   speaking: SpeakingExamData; // skill 5
 }
 
-export const buildFullMockExam = (exam: IExamSetDetail): FullMockExamData => {
+export const buildFullMockExam = (exam: IStudentExamTake): FullMockExamData => {
   const durations: Record<number, number> = {};
   (exam.sections ?? []).forEach((s) => {
     if (s.skillId != null) durations[s.skillId] = s.durationMinutes;
@@ -71,4 +71,34 @@ export const buildFullMockExam = (exam: IExamSetDetail): FullMockExamData => {
     writing: buildWritingPrompts(sliceBySkill(exam, 4)),
     speaking: buildSpeakingExam(sliceBySkill(exam, 5)),
   };
+};
+
+// Không cho phép nút test báo thành công khi seed thiếu answer key ở câu tự động chấm.
+// Writing/Speaking là AI chấm nên không có một đáp án đúng duy nhất để kiểm tra tại đây.
+export const findMissingAutoGradeAnswers = (data: FullMockExamData): string[] => {
+  const missing: string[] = [];
+  if (data.grammar.grammarQuestions.some((question) => !question.correctAnswer)
+      || data.grammar.vocabularySets.some((set) => set.subQuestions.some((question) => !question.correctAnswer))) {
+    missing.push('Grammar & Vocabulary');
+  }
+
+  const listeningMissing = data.listening.part1.some((question) => question.correctIndex < 0)
+    || data.listening.part2.some((set) =>
+      Array.from({ length: set.speakerCount }, (_, index) => index + 1)
+        .some((speaker) => !set.correctBySpeaker[speaker]))
+    || data.listening.part3.some((set) => set.statements.some((statement) => !statement.correct))
+    || data.listening.part4.some((group) => group.subQuestions.some((question) => question.correctIndex < 0));
+  if (listeningMissing) missing.push('Listening');
+
+  const readingMissing = data.reading.part1.some((part) =>
+    part.questions.some((question) => !part.correctAnswers[question.id]))
+    || [data.reading.orderingP2, data.reading.orderingP3]
+      .some((part) => part != null && part.correctOrder.length !== part.initialSentences.length)
+    || (data.reading.speakerP4 != null
+      && data.reading.speakerP4.questions.some((question) => !data.reading.speakerP4?.correctAnswers[question.id]))
+    || (data.reading.headingP5 != null
+      && data.reading.headingP5.paragraphs.some((paragraph) => !data.reading.headingP5?.correctAnswers[paragraph.num]));
+  if (readingMissing) missing.push('Reading');
+
+  return missing;
 };

@@ -8,7 +8,8 @@
 ## 1. Nguyên tắc chung (3 bước)
 
 ```
-[1] POST /files/upload  ──►  { url, key, size, mimeType }
+[1] POST /files/upload (ADMIN/TEACHER) hoặc /files/student-answers (STUDENT)
+    ──►  { url, key, size, mimeType }
 [2] Lấy data.url
 [3] Gán url vào field phù hợp khi POST /questions (hoặc PATCH /exam-parts)
 ```
@@ -17,6 +18,8 @@
 - **Speaking = ảnh** → `folder_type=images`, gán vào `extraConfig.image_urls[]`.
 
 **Upload — `POST /files/upload?folder_type=audio&prefix=listening/p1`** (multipart, field `file`):
+
+> Luồng trên dành cho ADMIN/TEACHER quản trị media đề thi. Audio trả lời Speaking của học viên dùng `POST /files/student-answers`, chỉ gửi field `file`; BE tự tạo prefix theo studentId và không cho FE tự chọn thư mục.
 ```json
 {
   "code": 201,

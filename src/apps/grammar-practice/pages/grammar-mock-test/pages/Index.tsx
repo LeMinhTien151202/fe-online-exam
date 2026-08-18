@@ -23,7 +23,7 @@ import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { useGrammarExamDetailQuery } from '../../../services/grammarExamQuery';
 import { buildGrammarExam, collectGrammarAnswers } from '../../../services/grammarExamMapper';
-import { useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { summarizeAutoGrade, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import { GrammarSection } from '../components/GrammarSection';
 import { GrammarNavSection, QuestionNav } from '../components/QuestionNav';
@@ -69,33 +69,23 @@ export const GrammarMockTestPage: React.FC = () => {
     total: number;
   } | null>(null);
 
-  const handleExamSubmit = (finalAnswers: Record<number, string>) => {
-    let grammarScore = 0;
-    let vocabScore = 0;
+  const handleExamSubmit = async (finalAnswers: Record<number, string>) => {
+    let totalScore = 0;
+    let totalPoints = totalQuestions;
 
-    grammarQuestions.forEach((question) => {
-      const answer = finalAnswers[question.questionNumber];
-      if (answer && answer.toLowerCase() === question.correctAnswer.toLowerCase()) {
-        grammarScore += 1;
-      }
-    });
-
-    vocabularySets.forEach((set) => {
-      set.subQuestions.forEach((subQuestion) => {
-        const answer = finalAnswers[subQuestion.questionNumber];
-        if (answer && answer.toLowerCase() === subQuestion.correctAnswer.toLowerCase()) {
-          vocabScore += 1;
-        }
-      });
-    });
-
-    const totalScore = grammarScore + vocabScore;
-    setScoreResult({ grammarScore, vocabScore, total: totalScore });
-
-    // Nộp lên BE để đánh dấu "đã làm" bộ đề (SKILL_FULL_SET) — không chặn UI.
+    // Response take không chứa đáp án; điểm luôn lấy từ BE sau khi nộp.
     if (examData && examId) {
       const submitAnswers = collectGrammarAnswers(examData, finalAnswers);
-      submitMutation.mutate({ examId, payload: { answers: submitAnswers } });
+      try {
+        const result = await submitMutation.mutateAsync({ examId, payload: { answers: submitAnswers } });
+        const grammar = summarizeAutoGrade(result, { skillId: 1, partNumber: 1 });
+        const vocabulary = summarizeAutoGrade(result, { skillId: 1, partNumber: 2 });
+        totalScore = grammar.earned + vocabulary.earned;
+        totalPoints = grammar.total + vocabulary.total;
+        setScoreResult({ grammarScore: grammar.earned, vocabScore: vocabulary.earned, total: totalScore });
+      } catch {
+        return;
+      }
     }
 
     const saved = localStorage.getItem('aptis_grammar_mock_progress');
@@ -107,7 +97,7 @@ export const GrammarMockTestPage: React.FC = () => {
         progressObj = {};
       }
     }
-    const percent = totalQuestions > 0 ? Math.round((totalScore / totalQuestions) * 100) : 0;
+    const percent = totalPoints > 0 ? Math.round((totalScore / totalPoints) * 100) : 0;
     const currentBest = progressObj[activeTestId] ?? 0;
     progressObj[activeTestId] = Math.max(currentBest, percent);
     localStorage.setItem('aptis_grammar_mock_progress', JSON.stringify(progressObj));

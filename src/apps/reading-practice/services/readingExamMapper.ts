@@ -1,4 +1,4 @@
-import { IExamSetDetail } from '../../admin/pages/admin-exams/services/types';
+import { IStudentExamTake } from '@/shared/services/student-exam';
 import { IQuestion } from '../../admin/pages/admin-questions/services/types';
 
 // Bộ đề đầy đủ Reading giữ cả 5 phần theo API (partNumber 1..5).
@@ -11,7 +11,7 @@ export interface ExamPartData {
   questions: IQuestion[];
 }
 
-export const flattenExam = (exam: IExamSetDetail): ExamPartData[] => {
+export const flattenExam = (exam: IStudentExamTake): ExamPartData[] => {
   const byPart = new Map<number, ExamPartData>();
 
   [...(exam.sections ?? [])]
@@ -20,10 +20,10 @@ export const flattenExam = (exam: IExamSetDetail): ExamPartData[] => {
       [...(section.parts ?? [])]
         .sort((a, b) => a.partNumber - b.partNumber)
         .forEach((part) => {
-          const existing = byPart.get(part.partNumber) ?? {
+          const existing: ExamPartData = byPart.get(part.partNumber) ?? {
             partNumber: part.partNumber,
-            instruction: part.instruction,
-            audioUrl: part.audioUrl,
+            instruction: part.instruction ?? null,
+            audioUrl: part.audioUrl ?? null,
             questions: [],
           };
           [...(part.questions ?? [])]

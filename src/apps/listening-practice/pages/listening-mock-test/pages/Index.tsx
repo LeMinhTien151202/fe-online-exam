@@ -85,6 +85,7 @@ export const ListeningMockTestPage: React.FC = () => {
     formatTime,
     calculateScores,
     submitResult,
+    answerReviewAvailable,
     handleRetry,
     handleBackToLanding,
     handleNavigateQuestion,
@@ -139,7 +140,7 @@ export const ListeningMockTestPage: React.FC = () => {
           {question.options.map((option, idx) => {
             const letter = String.fromCharCode(65 + idx);
             const isSelected = answer === option;
-            const status = getOptionStatus(isSubmitted, answer, option, correctAnswer);
+            const status = getOptionStatus(isSubmitted && answerReviewAvailable, answer, option, correctAnswer);
 
             return (
               <S.OptionCard
@@ -177,7 +178,7 @@ export const ListeningMockTestPage: React.FC = () => {
             const answerKey = keyForP2(activeNavItem.qNum, speaker);
             const answer = answers[answerKey];
             const correctAnswer = set.correctBySpeaker[speaker];
-            const status = getSelectStatus(isSubmitted, answer, correctAnswer);
+            const status = getSelectStatus(isSubmitted && answerReviewAvailable, answer, correctAnswer);
 
             return (
               <S.PersonRow key={speaker}>
@@ -192,7 +193,7 @@ export const ListeningMockTestPage: React.FC = () => {
                     options={set.options}
                     disabled={isSubmitted}
                   />
-                  {isSubmitted && answer && answer !== correctAnswer && (
+                  {isSubmitted && answerReviewAvailable && answer && answer !== correctAnswer && (
                     <div style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 600, marginTop: '4px' }}>
                       Đáp án đúng: {correctAnswer}
                     </div>
@@ -223,7 +224,7 @@ export const ListeningMockTestPage: React.FC = () => {
           {set.statements.map((statement) => {
             const answerKey = keyForP3(activeNavItem.qNum, statement.id);
             const answer = answers[answerKey];
-            const status = getSelectStatus(isSubmitted, answer, statement.correct);
+            const status = getSelectStatus(isSubmitted && answerReviewAvailable, answer, statement.correct);
 
             return (
               <S.StatementRow key={statement.id}>
@@ -239,7 +240,7 @@ export const ListeningMockTestPage: React.FC = () => {
                     options={SPEAKER_OPTIONS}
                     disabled={isSubmitted}
                   />
-                  {isSubmitted && answer && answer !== statement.correct && (
+                  {isSubmitted && answerReviewAvailable && answer && answer !== statement.correct && (
                     <div style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 600, marginTop: '2px' }}>
                       Đáp án đúng: {SPEAKER_OPTIONS.find((option) => option.value === statement.correct)?.label}
                     </div>
@@ -280,7 +281,7 @@ export const ListeningMockTestPage: React.FC = () => {
               {subQuestion.options.map((option, idx) => {
                 const letter = String.fromCharCode(65 + idx);
                 const isSelected = answer === option;
-                const status = getOptionStatus(isSubmitted, answer, option, correctAnswer);
+                const status = getOptionStatus(isSubmitted && answerReviewAvailable, answer, option, correctAnswer);
 
                 return (
                   <S.OptionCard
@@ -351,7 +352,7 @@ export const ListeningMockTestPage: React.FC = () => {
       currentQuestion={activeQuestionNum}
       onNavigate={handleNavigateQuestion}
       isSubmitted={isSubmitted}
-      correctAnswers={navCorrectAnswers}
+      correctAnswers={answerReviewAvailable ? navCorrectAnswers : {}}
     />
   );
 

@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
-import { IExamSubmitResult, ISubmitAnswer, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { IExamSubmitResult, ISubmitAnswer, summarizeAutoGrade, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { useReadingExamDetailQuery } from '../../../services/readingExamQuery';
 import { flattenExam, ExamPartData } from '../../../services/readingExamMapper';
 import {
@@ -187,6 +187,21 @@ export const useMockTest = (testId: string) => {
   // ==================== SCORING ====================
 
   const calculateScores = () => {
+    if (submitResult) {
+      const p1 = summarizeAutoGrade(submitResult, { skillId: 3, partNumber: 1 });
+      const p2 = summarizeAutoGrade(submitResult, { skillId: 3, partNumber: 2 });
+      const p3 = summarizeAutoGrade(submitResult, { skillId: 3, partNumber: 3 });
+      const p4 = summarizeAutoGrade(submitResult, { skillId: 3, partNumber: 4 });
+      const p5 = summarizeAutoGrade(submitResult, { skillId: 3, partNumber: 5 });
+      return {
+        scoreP1: p1.earned,
+        scoreP2: p2.earned,
+        scoreP3: p3.earned,
+        scoreP4: p4.earned,
+        scoreP5: p5.earned,
+        totalScore: p1.earned + p2.earned + p3.earned + p4.earned + p5.earned,
+      };
+    }
     let scoreP1 = 0;
     Object.entries(correctP1).forEach(([id, ans]) => {
       if (p1Answers[Number(id)] === ans) scoreP1++;
@@ -210,6 +225,13 @@ export const useMockTest = (testId: string) => {
     const totalScore = scoreP1 + scoreP2 + scoreP3 + scoreP4 + scoreP5;
     return { scoreP1, scoreP2, scoreP3, scoreP4, scoreP5, totalScore };
   };
+
+  const answerReviewAvailable =
+    Object.keys(correctP1).length > 0
+    || correctP2.length > 0
+    || correctP3.length > 0
+    || Object.keys(correctP4).length > 0
+    || Object.keys(correctP5).length > 0;
 
   // ==================== COLLECT (state -> shape submit API) ====================
   // P1 gap-fill: mảng index đáp án theo từng gap; P2/P3 ordering: mảng index câu trong pool;
@@ -490,6 +512,7 @@ export const useMockTest = (testId: string) => {
     showReport,
     setShowReport,
     submitResult,
+    answerReviewAvailable,
     handleManualSubmit,
     handleAutoSubmit,
     handleRetry,

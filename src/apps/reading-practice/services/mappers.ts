@@ -45,14 +45,26 @@ const shuffle = <T,>(arr: T[]): T[] => {
 };
 
 export const mapPart2 = (q: IQuestion): Part2Data | null => {
-  const cfg = q.extraConfig as unknown as OrderingConfig;
-  if (!cfg?.options_pool?.length || !cfg?.correct_order?.length) return null;
-  const order = cfg.correct_order;
-  // Nếu fixed_first: câu đầu trong thứ tự đúng là câu cố định
-  const fixedPoolIdx = cfg.fixed_first ? order[0] : -1;
-  const restOrder = cfg.fixed_first ? order.slice(1) : order;
-  const correctOrder = restOrder.map((idx) => `s${idx}`);
-  const sentences = restOrder.map((idx) => ({ id: `s${idx}`, text: cfg.options_pool[idx] }));
+  const cfg = q.extraConfig as unknown as OrderingConfig & {
+    correct_order?: number[];
+    fixed_option_index?: number;
+  };
+  if (!cfg?.options_pool?.length) return null;
+
+  const answerOrder = cfg.correct_order ?? [];
+  const candidateFixedIndex = cfg.fixed_option_index ?? (cfg.fixed_first ? answerOrder[0] : -1);
+  const fixedPoolIdx = Number.isInteger(candidateFixedIndex)
+    && candidateFixedIndex >= 0
+    && candidateFixedIndex < cfg.options_pool.length
+    ? candidateFixedIndex
+    : -1;
+  const movableIndexes = cfg.options_pool
+    .map((_, index) => index)
+    .filter((index) => index !== fixedPoolIdx);
+  const correctOrder = answerOrder
+    .filter((index) => index !== fixedPoolIdx)
+    .map((index) => `s${index}`);
+  const sentences = movableIndexes.map((index) => ({ id: `s${index}`, text: cfg.options_pool[index] }));
   return {
     questionId: q.id,
     fixedSentence: fixedPoolIdx >= 0 ? cfg.options_pool[fixedPoolIdx] : '',
@@ -86,7 +98,11 @@ export const mapPart3 = (q: IQuestion): Part3Data | null => {
       text: p.passage,
     })),
     questions: cfg.questions.map((qq, i) => ({ id: i + 1, text: qq.statement })),
-    correctAnswers: Object.fromEntries(cfg.questions.map((qq, i) => [i + 1, qq.correct_person])),
+    correctAnswers: Object.fromEntries(
+      cfg.questions
+        .map((qq, i) => [i + 1, qq.correct_person] as const)
+        .filter((entry): entry is readonly [number, string] => typeof entry[1] === 'string')
+    ),
   };
 };
 

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { mapPart4, Part4Data } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
-import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart4Action = () => {
@@ -29,10 +29,12 @@ export const usePart4Action = () => {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
+  const [scoreResult, setScoreResult] = useState<{ earned: number; total: number } | null>(null);
 
   const resetForNewQuestion = () => {
     setAnswers({});
     setIsSubmitted(false);
+    setScoreResult(null);
     setTimeLeft(900);
   };
   const handleNext = () => {
@@ -78,25 +80,8 @@ export const usePart4Action = () => {
     confirmSubmitExam({ totalQuestions: paragraphCount, onOk: doSubmit });
   };
 
-  const doSubmit = () => {
+  const doSubmit = async () => {
     setIsSubmitted(true);
-    setDoneSets((prev) => new Set(prev).add(safeIndex));
-    const correctCount = Object.keys(correctAnswers).filter(
-      (id) => answers[Number(id)] === correctAnswers[Number(id)]
-    ).length;
-
-    const progressPercent = Math.round((correctCount / paragraphCount) * 100);
-    const savedProgress = localStorage.getItem('aptis_reading_progress');
-    let nextProgress = { r4: progressPercent };
-    if (savedProgress) {
-      try {
-        nextProgress = { ...JSON.parse(savedProgress), r4: progressPercent };
-      } catch { /* bỏ qua lỗi */ }
-    }
-    localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
-
-    toast.success(`Chúc mừng! Bạn đã hoàn thành Part 4. Kết quả: ${correctCount}/${paragraphCount} câu đúng.`);
-
     // Nộp lên BE để tăng student_progress (skill 3, part 5). HEADING = { paragraph_num: heading_label }.
     if (examId && data?.questionId != null) {
       const labelByValue = new Map(data.headings.map((h) => [h.value, h.label]));
@@ -106,7 +91,25 @@ export const usePart4Action = () => {
         if (val != null) response[String(pg.num)] = labelByValue.get(val) ?? val;
       });
       if (Object.keys(response).length > 0) {
-        submitMutation.mutate({ examId, payload: { answers: [{ questionId: data.questionId, response }] } });
+        try {
+          const result = await submitMutation.mutateAsync({
+            examId,
+            payload: { answers: [{ questionId: data.questionId, response }] },
+          });
+          const score = summarizeAutoGrade(result, { skillId: 3, partNumber: 5 });
+          setScoreResult(score);
+          setDoneSets((prev) => new Set(prev).add(safeIndex));
+          const scorePercent = score.total > 0 ? Math.round((score.earned / score.total) * 100) : 0;
+          const savedProgress = localStorage.getItem('aptis_reading_progress');
+          let nextProgress = { r4: scorePercent };
+          if (savedProgress) {
+            try { nextProgress = { ...JSON.parse(savedProgress), r4: scorePercent }; } catch { /* ignore */ }
+          }
+          localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
+          toast.success(`Chúc mừng! Bạn đã hoàn thành Part 4. Kết quả: ${score.earned}/${score.total} câu đúng.`);
+        } catch {
+          setIsSubmitted(false);
+        }
       }
     }
   };
@@ -115,9 +118,7 @@ export const usePart4Action = () => {
 
   const answeredCount = Object.keys(answers).length;
   const progressPercent = paragraphCount ? Math.round((answeredCount / paragraphCount) * 100) : 0;
-  const correctCount = Object.keys(correctAnswers).filter(
-    (id) => answers[Number(id)] === correctAnswers[Number(id)]
-  ).length;
+  const correctCount = scoreResult?.earned ?? 0;
 
   const boardItems = Array.from({ length: total }, (_, i) => {
     const status: 'unanswered' | 'partial' | 'answered' = doneSets.has(i)
@@ -133,6 +134,7 @@ export const usePart4Action = () => {
     data,
     paragraphCount,
     correctAnswers,
+    hasAnswerReview: Object.keys(correctAnswers).length > 0,
     total,
     currentNumber: total > 0 ? safeIndex + 1 : 0,
     hasNext: safeIndex < total - 1,

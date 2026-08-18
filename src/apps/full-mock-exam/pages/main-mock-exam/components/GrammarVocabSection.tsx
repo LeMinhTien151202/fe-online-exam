@@ -10,7 +10,7 @@ export interface GrammarVocabHandle {
     next: () => boolean;
     prev: () => boolean;
     collect: () => ISubmitAnswer[];
-    prefill: () => void;
+    prefill: (answerData?: GrammarExamData) => void;
     atFirstUnit: () => boolean;
     atLastUnit: () => boolean;
 }
@@ -51,12 +51,12 @@ const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSec
         // Grammar P1 (MC): index đáp án. Vocab P2 (WORD_BANK): { slot_id: từ }.
         collect: () => collectGrammarAnswers({ grammarQuestions, vocabularySets }, answers),
         // Điền đáp án mẫu: lấy đáp án đúng đã có sẵn trong mapper (correctAnswer).
-        prefill: () => {
+        prefill: (answerData = data) => {
             const next: Record<number, string> = {};
-            grammarQuestions.forEach((q) => {
+            answerData.grammarQuestions.forEach((q) => {
                 if (q.correctAnswer) next[q.questionNumber] = q.correctAnswer;
             });
-            vocabularySets.forEach((set) => {
+            answerData.vocabularySets.forEach((set) => {
                 set.subQuestions.forEach((sub) => {
                     if (sub.correctAnswer) next[sub.questionNumber] = sub.correctAnswer;
                 });
@@ -65,7 +65,7 @@ const GrammarVocabSection = React.forwardRef<GrammarVocabHandle, GrammarVocabSec
         },
         atFirstUnit: () => activeUnit <= 1,
         atLastUnit: () => activeUnit >= totalUnits,
-    }), [activeUnit, totalUnits, grammarQuestions, vocabularySets, answers]);
+    }), [activeUnit, totalUnits, grammarQuestions, vocabularySets, answers, data]);
 
     // Bảng câu hỏi: vocab mỗi task 1 ô, tô "đã trả lời" khi đủ hết ý
     const navAnswers = useMemo(() => {

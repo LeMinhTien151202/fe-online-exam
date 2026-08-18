@@ -1,4 +1,4 @@
-import { IExamSetDetail } from '../../admin/pages/admin-exams/services/types';
+import { IStudentExamTake } from '@/shared/services/student-exam';
 import { IQuestion } from '../../admin/pages/admin-questions/services/types';
 import { ISubmitAnswer } from '../../../shared/services/student-exam';
 import { IGrammarQuestion, IVocabularySet } from '../types';
@@ -14,7 +14,7 @@ export interface GrammarExamData {
   vocabularySets: IVocabularySet[];
 }
 
-export const flattenGrammarExam = (exam: IExamSetDetail): GrammarExamPartData[] => {
+export const flattenGrammarExam = (exam: IStudentExamTake): GrammarExamPartData[] => {
   const byPart = new Map<number, GrammarExamPartData>();
 
   [...(exam.sections ?? [])]
@@ -77,7 +77,7 @@ const offsetVocabularyNumbers = (sets: IVocabularySet[], offset: number): IVocab
     })),
   }));
 
-export const buildGrammarExam = (exam: IExamSetDetail): GrammarExamData => {
+export const buildGrammarExam = (exam: IStudentExamTake): GrammarExamData => {
   const parts = flattenGrammarExam(exam);
   const getPart = (partNumber: number) => parts.find((part) => part.partNumber === partNumber)?.questions ?? [];
   const grammarQuestions = mapGrammarQuestions(getPart(1));

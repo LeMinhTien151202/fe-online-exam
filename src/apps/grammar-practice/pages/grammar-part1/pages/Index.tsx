@@ -24,7 +24,7 @@ import { QuestionNav } from '../components/QuestionNav';
 import { usePart1Action } from '../hook/usePart1Action';
 import { flattenGrammarExam, collectGrammarAnswers } from '../../../services/grammarExamMapper';
 import { mapGrammarQuestions } from '../../../services/mappers';
-import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import * as S from '../styles/styled';
 
@@ -45,26 +45,24 @@ export const Part1Page: React.FC = () => {
   const [showResultModal, setShowResultModal] = useState(false);
   const [scoreResult, setScoreResult] = useState<number | null>(null);
 
-  const handleExamSubmit = (finalAnswers: Record<number, string>) => {
-    let grammarScore = 0;
-    questions.forEach((q) => {
-      const answer = finalAnswers[q.questionNumber];
-      if (answer && answer.toLowerCase() === q.correctAnswer.toLowerCase()) grammarScore++;
-    });
-    setScoreResult(grammarScore);
-
+  const handleExamSubmit = async (finalAnswers: Record<number, string>) => {
     const saved = localStorage.getItem('aptis_grammar_progress');
     let progressObj: Record<string, number> = {};
     if (saved) { try { progressObj = JSON.parse(saved); } catch { /* bỏ qua lỗi */ } }
     progressObj['g1'] = 100;
     localStorage.setItem('aptis_grammar_progress', JSON.stringify(progressObj));
 
-    setShowResultModal(true);
-
-    // Nộp lên BE để tăng student_progress (skill 1, part 1). Không chặn UI.
+    // Response take không chứa đáp án; điểm luôn lấy từ BE sau khi nộp.
     if (examId) {
       const submitAnswers = collectGrammarAnswers({ grammarQuestions: questions, vocabularySets: [] }, finalAnswers);
-      submitMutation.mutate({ examId, payload: { answers: submitAnswers } });
+      try {
+        const result = await submitMutation.mutateAsync({ examId, payload: { answers: submitAnswers } });
+        const summary = summarizeAutoGrade(result, { skillId: 1, partNumber: 1 });
+        setScoreResult(summary.earned);
+        setShowResultModal(true);
+      } catch {
+        // Axios interceptor đã hiển thị lỗi; không hiển thị điểm tự chấm sai ở FE.
+      }
     }
   };
 

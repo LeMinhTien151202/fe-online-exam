@@ -12,7 +12,7 @@ export interface WritingHandle {
     next: () => boolean;
     prev: () => boolean;
     collect: () => ISubmitAnswer[];
-    prefill: () => void;
+    prefill: (answerPrompts?: WritingPromptItem[]) => void;
     atFirstUnit: () => boolean;
     atLastUnit: () => boolean;
 }
@@ -82,9 +82,9 @@ const WritingSection = React.forwardRef<WritingHandle, WritingSectionProps>(({ p
             return result;
         },
         // Điền đáp án mẫu: ưu tiên sample_answer của đề, thiếu thì dùng bài viết mẫu dự phòng.
-        prefill: () => {
+        prefill: (answerPrompts = prompts) => {
             const next: Record<number, string> = {};
-            prompts.forEach((p) => {
+            answerPrompts.forEach((p) => {
                 next[p.id] = p.sampleAnswer?.trim() || FALLBACK_ESSAY;
             });
             setAnswers(next);

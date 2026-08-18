@@ -1,4 +1,4 @@
-import { IExamSetDetail } from '../../admin/pages/admin-exams/services/types';
+import { IStudentExamTake } from '@/shared/services/student-exam';
 import { IQuestion } from '../../admin/pages/admin-questions/services/types';
 import { mapWPart1, mapWPart2, mapWPart3, mapWPart4 } from './mappers';
 
@@ -22,7 +22,7 @@ export interface WritingPromptItem {
   sampleAnswer?: string;
 }
 
-export const flattenWritingExam = (exam: IExamSetDetail): WritingExamPartData[] => {
+export const flattenWritingExam = (exam: IStudentExamTake): WritingExamPartData[] => {
   const byPart = new Map<number, WritingExamPartData>();
 
   [...(exam.sections ?? [])]
@@ -31,9 +31,9 @@ export const flattenWritingExam = (exam: IExamSetDetail): WritingExamPartData[] 
       [...(section.parts ?? [])]
         .sort((a, b) => a.partNumber - b.partNumber)
         .forEach((part) => {
-          const existing = byPart.get(part.partNumber) ?? {
+          const existing: WritingExamPartData = byPart.get(part.partNumber) ?? {
             partNumber: part.partNumber,
-            instruction: part.instruction,
+            instruction: part.instruction ?? null,
             questions: [],
           };
 
@@ -52,7 +52,7 @@ export const flattenWritingExam = (exam: IExamSetDetail): WritingExamPartData[] 
   return Array.from(byPart.values()).sort((a, b) => a.partNumber - b.partNumber);
 };
 
-export const buildWritingPrompts = (exam: IExamSetDetail): WritingPromptItem[] => {
+export const buildWritingPrompts = (exam: IStudentExamTake): WritingPromptItem[] => {
   const parts = flattenWritingExam(exam);
   const prompts: WritingPromptItem[] = [];
 

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { mapPart1 } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
-import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart1Action = () => {
@@ -29,6 +29,7 @@ export const usePart1Action = () => {
   const [timeLeft, setTimeLeft] = useState(598); // 09:58
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [scoreResult, setScoreResult] = useState<{ earned: number; total: number } | null>(null);
   // Reading reset đáp án khi đổi bộ, nên lưu riêng các bộ đã nộp để tô bảng câu hỏi.
   const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
 
@@ -61,30 +62,31 @@ export const usePart1Action = () => {
     confirmSubmitExam({ totalQuestions: gapCount, onOk: doSubmit });
   };
 
-  const doSubmit = () => {
-    setIsSubmitted(true);
-    setDoneSets((prev) => new Set(prev).add(safeIndex));
-    const correctCount = Object.keys(correctAnswers).filter(
-      (id) => answers[Number(id)] === correctAnswers[Number(id)]
-    ).length;
-
-    const progressPercent = Math.round((correctCount / gapCount) * 100);
-    const savedProgress = localStorage.getItem('aptis_reading_progress');
-    let nextProgress = { r1: progressPercent };
-    if (savedProgress) {
-      try {
-        nextProgress = { ...JSON.parse(savedProgress), r1: progressPercent };
-      } catch { /* bỏ qua lỗi */ }
-    }
-    localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
-
-    toast.success(`Chúc mừng! Bạn đã hoàn thành câu ${safeIndex + 1}. Kết quả: ${correctCount}/${gapCount} câu đúng.`);
-
+  const doSubmit = async () => {
     // Nộp lên BE để tăng student_progress (skill 3, part 1). P1 = mảng index đáp án theo từng gap.
     if (examId && data?.questionId != null) {
       const response = data.questions.map((q) => q.options.indexOf(answers[q.id] ?? ''));
       if (response.some((v) => v >= 0)) {
-        submitMutation.mutate({ examId, payload: { answers: [{ questionId: data.questionId, response }] } });
+        setIsSubmitted(true);
+        try {
+          const result = await submitMutation.mutateAsync({
+            examId,
+            payload: { answers: [{ questionId: data.questionId, response }] },
+          });
+          const score = summarizeAutoGrade(result, { skillId: 3, partNumber: 1 });
+          setScoreResult(score);
+          setDoneSets((prev) => new Set(prev).add(safeIndex));
+          const scorePercent = score.total > 0 ? Math.round((score.earned / score.total) * 100) : 0;
+          const savedProgress = localStorage.getItem('aptis_reading_progress');
+          let nextProgress = { r1: scorePercent };
+          if (savedProgress) {
+            try { nextProgress = { ...JSON.parse(savedProgress), r1: scorePercent }; } catch { /* ignore */ }
+          }
+          localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
+          toast.success(`Chúc mừng! Bạn đã hoàn thành câu ${safeIndex + 1}. Kết quả: ${score.earned}/${score.total} câu đúng.`);
+        } catch {
+          setIsSubmitted(false);
+        }
       }
     }
   };
@@ -92,6 +94,7 @@ export const usePart1Action = () => {
   const resetForNewQuestion = () => {
     setAnswers({});
     setIsSubmitted(false);
+    setScoreResult(null);
     setTimeLeft(598);
   };
 
@@ -118,9 +121,7 @@ export const usePart1Action = () => {
 
   const answeredCount = Object.keys(answers).length;
   const progressPercent = gapCount ? Math.round((answeredCount / gapCount) * 100) : 0;
-  const correctCount = Object.keys(correctAnswers).filter(
-    (id) => answers[Number(id)] === correctAnswers[Number(id)]
-  ).length;
+  const correctCount = scoreResult?.earned ?? 0;
 
   // Bảng câu hỏi: mỗi bộ (đoạn văn) = 1 nút. Bộ đã nộp -> "đã trả lời"; bộ đang làm dở -> "làm dở".
   const boardItems = Array.from({ length: total }, (_, i) => {
@@ -137,6 +138,7 @@ export const usePart1Action = () => {
     data,
     gapCount,
     correctAnswers,
+    hasAnswerReview: Object.keys(correctAnswers).length > 0,
     total,
     currentNumber: total > 0 ? safeIndex + 1 : 0,
     hasNext: safeIndex < total - 1,

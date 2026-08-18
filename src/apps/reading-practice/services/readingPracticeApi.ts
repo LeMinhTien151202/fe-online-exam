@@ -1,5 +1,5 @@
 import axiosInstance, { IApiEnvelope } from '@/configs/axios';
-import { IExamSetDetail, IExamSetListItem } from '../../admin/pages/admin-exams/services/types';
+import { IStudentExamSummary, IStudentExamTake } from '@/shared/services/student-exam';
 
 // Học viên đọc đề Reading (skillId 3) đã publish (isActive=true)
 export const READING_SKILL_ID = 3;
@@ -7,12 +7,12 @@ export const READING_SKILL_ID = 3;
 export const studentExamApi = {
   // Danh sách đề Reading đã công khai — luyện theo bộ đề = chỉ SKILL_FULL_SET.
   listReadingSets: (page = 1, limit = 50) =>
-    axiosInstance.get<IApiEnvelope<IExamSetListItem[]>, IApiEnvelope<IExamSetListItem[]>>('/exam-sets', {
+    axiosInstance.get<IApiEnvelope<IStudentExamSummary[]>, IApiEnvelope<IStudentExamSummary[]>>('/exams', {
       params: { type: 'SKILL_FULL_SET', skillId: READING_SKILL_ID, page, limit },
       _rawEnvelope: true,
     }),
 
-  // Chi tiết đề (lấy toàn bộ sections → parts → questions)
+  // Nội dung đề dành cho học viên, không chứa đáp án.
   examDetail: (id: number) =>
-    axiosInstance.get<IExamSetDetail, IExamSetDetail>(`/exam-sets/${id}`),
+    axiosInstance.get<IStudentExamTake, IStudentExamTake>(`/exams/${id}/take`),
 };

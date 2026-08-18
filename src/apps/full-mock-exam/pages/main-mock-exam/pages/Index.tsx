@@ -24,7 +24,8 @@ import WritingSection,{ WritingHandle } from '../components/WritingSection';
 import ExamResultScreen from '../components/ExamResultScreen';
 
 import { useMockExamDetailQuery } from '../../../services/mockExamQuery';
-import { buildFullMockExam,FullMockExamData } from '../../../services/mockExamMapper';
+import { mockExamApi } from '../../../services/mockExamApi';
+import { buildFullMockExam,findMissingAutoGradeAnswers,FullMockExamData } from '../../../services/mockExamMapper';
 import {
     IExamSubmitResult,
     ISubmitAnswer,
@@ -49,6 +50,9 @@ const SKILL_ORDER: { id: SkillStep['id']; title: string; icon: React.ReactNode; 
     { id: 'reading', title: 'Đọc hiểu', icon: <ReadOutlined />, skillId: 3, defaultDuration: 35 },
     { id: 'writing', title: 'Viết', icon: <EditOutlined />, skillId: 4, defaultDuration: 50 },
 ];
+
+// Không thể bật trong production build. Ở local có thể đặt VITE_ENABLE_EXAM_PREFILL=false để ẩn.
+const TEST_PREFILL_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_EXAM_PREFILL !== 'false';
 
 // Đếm số câu/số phần từng kỹ năng từ dữ liệu đề thật
 const countSkill = (data: FullMockExamData, id: SkillStep['id']): { questions: number; parts: number } => {
@@ -248,18 +252,28 @@ const MainMockExamPage: React.FC = () => {
     // Điền toàn bộ đáp án mẫu vào các section (để test luồng chấm điểm). Speaking cần upload audio nên chạy async.
     const handlePrefillAll = async () => {
         setIsPrefilling(true);
-        const hide = message.loading('Đang điền đáp án mẫu (upload audio phần Nói)...', 0);
+        const hide = message.loading('Đang tải đáp án test và upload audio phần Nói...', 0);
         try {
-            grammarRef.current?.prefill();
-            listeningRef.current?.prefill();
-            readingRef.current?.prefill();
-            writingRef.current?.prefill();
+            // Dữ liệu làm bài bình thường đến từ /exams/{id}/take và không chứa answer key.
+            // Chỉ lúc bấm nút test ở Vite dev mới tải bản có đáp án từ route local-only của BE.
+            const answerDetail = await mockExamApi.answerKey(examId);
+            const answerData = buildFullMockExam(answerDetail);
+            const missingAnswers = findMissingAutoGradeAnswers(answerData);
+            if (missingAnswers.length > 0) {
+                throw new Error(`Dữ liệu đề đang thiếu đáp án: ${missingAnswers.join(', ')}`);
+            }
+            grammarRef.current?.prefill(answerData.grammar);
+            listeningRef.current?.prefill(answerData.listening);
+            readingRef.current?.prefill(answerData.reading);
+            writingRef.current?.prefill(answerData.writing);
             await speakingRef.current?.prefill();
             hide();
             toast.success('Đã điền đáp án mẫu. Bạn có thể chỉnh sửa rồi bấm Nộp bài.');
-        } catch {
+        } catch (error) {
             hide();
-            toast.error('Điền đáp án mẫu thất bại (thường do upload audio). Vui lòng thử lại.');
+            toast.error(error instanceof Error
+                ? error.message
+                : 'Điền đáp án mẫu thất bại (thường do upload audio). Vui lòng thử lại.');
         } finally {
             setIsPrefilling(false);
         }
@@ -417,15 +431,17 @@ const MainMockExamPage: React.FC = () => {
                 </Space>
 
                 <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
-                    <Button
-                        icon={<ThunderboltOutlined />}
-                        size="middle"
-                        loading={isPrefilling}
-                        onClick={handlePrefillAll}
-                        style={{ borderRadius: '2rem', fontWeight: 700, background: '#fbbf24', borderColor: '#fbbf24', color: '#1a365d' }}
-                    >
-                        Điền đáp án mẫu
-                    </Button>
+                    {TEST_PREFILL_ENABLED && (
+                        <Button
+                            icon={<ThunderboltOutlined />}
+                            size="middle"
+                            loading={isPrefilling}
+                            onClick={handlePrefillAll}
+                            style={{ borderRadius: '2rem', fontWeight: 700, background: '#fbbf24', borderColor: '#fbbf24', color: '#1a365d' }}
+                        >
+                            Điền đáp án mẫu
+                        </Button>
+                    )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.05em' }}>TIẾN ĐỘ:</span>
                         <div style={{ background: 'rgba(255,255,255,0.1)', padding: '0.3rem 0.75rem', borderRadius: '1rem', fontWeight: 700, fontSize: '0.9rem' }}>

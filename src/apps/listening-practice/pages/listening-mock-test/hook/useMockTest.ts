@@ -2,7 +2,7 @@ import {
   useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
-import { IExamSubmitResult, ISubmitAnswer, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { IExamSubmitResult, ISubmitAnswer, summarizeAutoGrade, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import { useListeningExamDetailQuery } from '../../../services/listeningExamQuery';
 import { ListeningExamData, buildListeningExam } from '../../../services/listeningExamMapper';
@@ -253,6 +253,25 @@ export const useMockTest = (testId: string) => {
       return { scoreP1, scoreP2, scoreP3, scoreP4, maxP1, maxP2, maxP3, maxP4, totalScore: 0, totalMax: 0 };
     }
 
+    if (submitResult) {
+      const p1 = summarizeAutoGrade(submitResult, { skillId: 2, partNumber: 1 });
+      const p2 = summarizeAutoGrade(submitResult, { skillId: 2, partNumber: 2 });
+      const p3 = summarizeAutoGrade(submitResult, { skillId: 2, partNumber: 3 });
+      const p4 = summarizeAutoGrade(submitResult, { skillId: 2, partNumber: 4 });
+      return {
+        scoreP1: p1.earned,
+        scoreP2: p2.earned,
+        scoreP3: p3.earned,
+        scoreP4: p4.earned,
+        maxP1: p1.total,
+        maxP2: p2.total,
+        maxP3: p3.total,
+        maxP4: p4.total,
+        totalScore: p1.earned + p2.earned + p3.earned + p4.earned,
+        totalMax: p1.total + p2.total + p3.total + p4.total,
+      };
+    }
+
     examData.part1.forEach((question, index) => {
       const qNum = navItems.find((item) => item.partNumber === 1 && item.itemIndex === index)?.qNum;
       if (!qNum) return;
@@ -290,7 +309,14 @@ export const useMockTest = (testId: string) => {
     const totalScore = scoreP1 + scoreP2 + scoreP3 + scoreP4;
     const totalMax = maxP1 + maxP2 + maxP3 + maxP4;
     return { scoreP1, scoreP2, scoreP3, scoreP4, maxP1, maxP2, maxP3, maxP4, totalScore, totalMax };
-  }, [answers, examData, navItems]);
+  }, [answers, examData, navItems, submitResult]);
+
+  const answerReviewAvailable = !!examData && (
+    examData.part1.some((question) => question.correctIndex >= 0)
+    || examData.part2.some((set) => Object.keys(set.correctBySpeaker).length > 0)
+    || examData.part3.some((set) => set.statements.some((statement) => !!statement.correct))
+    || examData.part4.some((group) => group.subQuestions.some((question) => question.correctIndex >= 0))
+  );
 
   const saveProgressToLocalStorage = useCallback((totalScore: number, totalMax: number) => {
     const saved = localStorage.getItem('aptis_listening_mock_progress');
@@ -414,6 +440,7 @@ export const useMockTest = (testId: string) => {
     formatTime,
     calculateScores,
     submitResult,
+    answerReviewAvailable,
     handleRetry,
     handleBackToLanding,
     handleNavigateQuestion,

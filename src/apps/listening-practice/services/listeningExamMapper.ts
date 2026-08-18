@@ -1,4 +1,4 @@
-import { IExamSetDetail } from '../../admin/pages/admin-exams/services/types';
+import { IStudentExamTake } from '@/shared/services/student-exam';
 import { IQuestion } from '../../admin/pages/admin-questions/services/types';
 import {
   LPart1Question,
@@ -23,7 +23,7 @@ export interface ListeningExamData {
   part4: LPart4Group[];
 }
 
-export const flattenListeningExam = (exam: IExamSetDetail): ListeningExamPartData[] => {
+export const flattenListeningExam = (exam: IStudentExamTake): ListeningExamPartData[] => {
   const byPart = new Map<number, ListeningExamPartData>();
 
   [...(exam.sections ?? [])]
@@ -52,7 +52,7 @@ export const flattenListeningExam = (exam: IExamSetDetail): ListeningExamPartDat
   return Array.from(byPart.values()).sort((a, b) => a.partNumber - b.partNumber);
 };
 
-export const buildListeningExam = (exam: IExamSetDetail): ListeningExamData => {
+export const buildListeningExam = (exam: IStudentExamTake): ListeningExamData => {
   const parts = flattenListeningExam(exam);
   const getPart = (partNumber: number) => parts.find((part) => part.partNumber === partNumber)?.questions ?? [];
 

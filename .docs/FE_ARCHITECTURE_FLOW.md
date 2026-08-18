@@ -279,16 +279,17 @@ Dùng chung qua `shared/services/student-exam/`:
 
 ```
 Vào trang luyện tập
-   ├─ studentExamApi.listPartPractice(skillId)   GET /exam-sets?type=PART_PRACTICE&skillId=..
+   ├─ studentExamApi.listPartPractice(skillId)   GET /exams?type=PART_PRACTICE&skillId=..
    │     -> tra examId theo partNumber
-   ├─ studentExamApi.examSetDetail(id)           GET /exam-sets/{id}   (kèm đáp án để review tại chỗ)
+   ├─ studentExamApi.take(id)                    GET /exams/{id}/take  (đã ẩn answer key)
    ├─ useMyExamProgressQuery()                   GET /progress/exams/me  -> % từng đề
    └─ useMyStreakQuery()                         GET /streaks/me
 
 Làm bài
    └─ Speaking/Writing có ghi âm:
         MediaRecorder -> Blob -> uploadAudioBlob()  (shared/services/media/mediaApi.ts)
-           POST /files/upload?folder_type=audio&prefix=speaking/mock
+           POST /files/student-answers
+           BE tự gắn prefix student-answers/{studentId}; FE không được tự chọn thư mục
            ⚠ headers: { 'Content-Type': null } — để axios tự sinh boundary, ép thủ công sẽ 400
         -> nhận về URL công khai, dùng URL đó làm `response` của câu hỏi
 
@@ -299,6 +300,11 @@ Nộp bài
         • Response trả review NÓNG: điểm trắc nghiệm + kết quả AI ngay trong 1 lần gọi
    └─ invalidate ATTEMPTS_KEY / PROGRESS_KEY / EXAM_PROGRESS_KEY / STREAK_KEY
 ```
+
+Riêng nút **Điền đáp án mẫu** trong thi thử full chỉ hiện khi chạy `vite dev`. Khi bấm, FE gọi
+`GET /test-support/exams/{id}/answer-key` rồi truyền answer key vào các section; không lấy đáp án
+từ response `/exams/{id}/take`. Backend không tạo endpoint test này ở staging/production. Có thể
+ẩn nút ở local bằng `VITE_ENABLE_EXAM_PREFILL=false`.
 
 **Lớp chuẩn hoá dữ liệu:** BE có chỗ trả mảng trực tiếp, có chỗ bọc `{ result }`, có chỗ `camelCase`/`snake_case` lẫn lộn. `studentExamQuery.ts` có sẵn `normalizeExamProgress()` / `normalizeProgress()` và `studentExamApi.myAttempts()` tự chuẩn hoá về một dạng — **không để component tự đoán hình dạng dữ liệu**.
 

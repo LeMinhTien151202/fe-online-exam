@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { mapPart3, Part3Data } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
-import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart3Action = () => {
@@ -29,10 +29,12 @@ export const usePart3Action = () => {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
+  const [scoreResult, setScoreResult] = useState<{ earned: number; total: number } | null>(null);
 
   const resetForNewQuestion = () => {
     setAnswers({});
     setIsSubmitted(false);
+    setScoreResult(null);
     setTimeLeft(900);
   };
   const handleNext = () => {
@@ -78,30 +80,31 @@ export const usePart3Action = () => {
     confirmSubmitExam({ totalQuestions: questionCount, onOk: doSubmit });
   };
 
-  const doSubmit = () => {
+  const doSubmit = async () => {
     setIsSubmitted(true);
-    setDoneSets((prev) => new Set(prev).add(safeIndex));
-    const correctCount = Object.keys(correctAnswers).filter(
-      (id) => answers[Number(id)] === correctAnswers[Number(id)]
-    ).length;
-
-    const progressPercent = Math.round((correctCount / questionCount) * 100);
-    const savedProgress = localStorage.getItem('aptis_reading_progress');
-    let nextProgress = { r3: progressPercent };
-    if (savedProgress) {
-      try {
-        nextProgress = { ...JSON.parse(savedProgress), r3: progressPercent };
-      } catch { /* bỏ qua lỗi */ }
-    }
-    localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
-
-    toast.success(`Chúc mừng! Bạn đã hoàn thành Part 3. Kết quả: ${correctCount}/${questionCount} câu đúng.`);
-
     // Nộp lên BE để tăng student_progress (skill 3, part 4). SPEAKER_MATCH = mảng person key theo từng ý.
     if (examId && data?.questionId != null) {
       const response = data.questions.map((q) => answers[q.id] ?? '');
       if (response.some((v) => v !== '')) {
-        submitMutation.mutate({ examId, payload: { answers: [{ questionId: data.questionId, response }] } });
+        try {
+          const result = await submitMutation.mutateAsync({
+            examId,
+            payload: { answers: [{ questionId: data.questionId, response }] },
+          });
+          const score = summarizeAutoGrade(result, { skillId: 3, partNumber: 4 });
+          setScoreResult(score);
+          setDoneSets((prev) => new Set(prev).add(safeIndex));
+          const scorePercent = score.total > 0 ? Math.round((score.earned / score.total) * 100) : 0;
+          const savedProgress = localStorage.getItem('aptis_reading_progress');
+          let nextProgress = { r3: scorePercent };
+          if (savedProgress) {
+            try { nextProgress = { ...JSON.parse(savedProgress), r3: scorePercent }; } catch { /* ignore */ }
+          }
+          localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
+          toast.success(`Chúc mừng! Bạn đã hoàn thành Part 3. Kết quả: ${score.earned}/${score.total} câu đúng.`);
+        } catch {
+          setIsSubmitted(false);
+        }
       }
     }
   };
@@ -110,9 +113,7 @@ export const usePart3Action = () => {
 
   const answeredCount = Object.keys(answers).length;
   const progressPercent = questionCount ? Math.round((answeredCount / questionCount) * 100) : 0;
-  const correctCount = Object.keys(correctAnswers).filter(
-    (id) => answers[Number(id)] === correctAnswers[Number(id)]
-  ).length;
+  const correctCount = scoreResult?.earned ?? 0;
 
   const boardItems = Array.from({ length: total }, (_, i) => {
     const status: 'unanswered' | 'partial' | 'answered' = doneSets.has(i)
@@ -128,6 +129,7 @@ export const usePart3Action = () => {
     data,
     questionCount,
     correctAnswers,
+    hasAnswerReview: Object.keys(correctAnswers).length > 0,
     total,
     currentNumber: total > 0 ? safeIndex + 1 : 0,
     hasNext: safeIndex < total - 1,

@@ -73,13 +73,12 @@ export const useMockExamLanding = () => {
     return mockExams;
   }, [mockExams, activeTab, takenExamIds]);
 
-  // Lịch sử thi gần nhất (tối đa 6 dòng), gắn tên đề từ danh sách hoặc `exam{}` của attempt
+  // Toàn bộ lịch sử thi, mới nhất trước. Component chia 6 dòng/trang để sidebar không kéo dài.
   const titleById = useMemo(() => new Map(mockExams.map((exam) => [exam.id, exam.title])), [mockExams]);
   const history = useMemo(
     () =>
       [...attempts]
         .sort((a, b) => attemptTime(b) - attemptTime(a))
-        .slice(0, 6)
         .map((att) => {
           const id = attemptExamId(att);
           const ts = attemptTime(att);

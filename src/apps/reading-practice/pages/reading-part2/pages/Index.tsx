@@ -118,7 +118,8 @@ export const Part2Page: React.FC = () => {
                 {slotIds.map((idx) => {
                   const item = slots[idx];
                   const isOver = dragOverSlot === idx;
-                  const isCorrect = item && item.id === data.correctOrder[idx - 1];
+                  const hasAnswerReview = data.correctOrder.length > 0;
+                  const isCorrect = hasAnswerReview && item && item.id === data.correctOrder[idx - 1];
 
                   return (
                     <div
@@ -131,7 +132,7 @@ export const Part2Page: React.FC = () => {
                         <S.PlacedItemCard
                           draggable={!isSubmitted}
                           onDragStart={() => handleDragStart(item, idx)}
-                          $status={isSubmitted ? (isCorrect ? 'success' : 'error') : 'default'}
+                          $status={isSubmitted && hasAnswerReview ? (isCorrect ? 'success' : 'error') : 'default'}
                         >
                           <span className="text">
                             <span className="text-[#94a3b8] mr-1.5">({idx})</span>
@@ -173,10 +174,10 @@ export const Part2Page: React.FC = () => {
             <S.Column>
               <div className="flex justify-between items-center mb-2">
                 <span className="font-bold text-[#0f172a] text-[0.95rem]">
-                  {isSubmitted ? 'Đáp án đúng' : '← Kéo hoặc click để chọn câu'}
+                  {isSubmitted ? (data.correctOrder.length > 0 ? 'Đáp án đúng' : 'Bài đã được chấm trên máy chủ') : '← Kéo hoặc click để chọn câu'}
                 </span>
                 <span className="text-[0.75rem] text-[#64748b] font-semibold">
-                  {isSubmitted ? 'Bảng đáp án' : `${placedCount}/${slotCount} Đã xếp`}
+                  {isSubmitted ? (data.correctOrder.length > 0 ? 'Bảng đáp án' : 'Đã nộp') : `${placedCount}/${slotCount} Đã xếp`}
                 </span>
               </div>
               <S.ColumnHeader className="invisible select-none">

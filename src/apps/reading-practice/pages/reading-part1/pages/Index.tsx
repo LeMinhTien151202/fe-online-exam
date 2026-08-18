@@ -23,6 +23,7 @@ export const Part1Page: React.FC = () => {
     data,
     gapCount,
     correctAnswers,
+    hasAnswerReview,
     total,
     currentNumber,
     hasNext,
@@ -46,7 +47,7 @@ export const Part1Page: React.FC = () => {
 
   // Ô chọn đáp án cho 1 chỗ trống
   const renderGapSelect = (gapId: number, options: string[]) => {
-    const status = isSubmitted
+    const status = isSubmitted && hasAnswerReview
       ? answers[gapId] === correctAnswers[gapId]
         ? 'success'
         : 'error'
@@ -66,7 +67,7 @@ export const Part1Page: React.FC = () => {
             <Select.Option key={opt} value={opt}>{opt}</Select.Option>
           ))}
         </S.InlineSentenceSelect>
-        {isSubmitted && answers[gapId] !== correctAnswers[gapId] && (
+        {isSubmitted && hasAnswerReview && answers[gapId] !== correctAnswers[gapId] && (
           <S.CorrectAnswerText>
             (Đáp án đúng: <strong>{correctAnswers[gapId]}</strong>)
           </S.CorrectAnswerText>

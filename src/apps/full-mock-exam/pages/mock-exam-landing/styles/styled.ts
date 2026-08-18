@@ -455,6 +455,17 @@ export const HistoryList = styled.div`
   }
 `;
 
+export const HistoryPagination = styled.div`
+  display: flex;
+  justify-content: center;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+
+  .ant-pagination {
+    margin: 0;
+  }
+`;
+
 export const ActionButton = styled.button`
   padding: 0.5rem 1.5rem;
   border-radius: 0.5rem;

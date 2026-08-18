@@ -1,4 +1,4 @@
-import { IExamSetDetail } from '../../admin/pages/admin-exams/services/types';
+import { IStudentExamTake } from '@/shared/services/student-exam';
 import { IQuestion } from '../../admin/pages/admin-questions/services/types';
 import { mapSpeakingP1, mapSpeakingSets, SpeakingP1Item, SpeakingSet } from './mappers';
 
@@ -14,7 +14,7 @@ export interface SpeakingExamData {
   part4: SpeakingSet[];
 }
 
-export const flattenSpeakingExam = (exam: IExamSetDetail): SpeakingExamPartData[] => {
+export const flattenSpeakingExam = (exam: IStudentExamTake): SpeakingExamPartData[] => {
   const byPart = new Map<number, SpeakingExamPartData>();
 
   [...(exam.sections ?? [])]
@@ -43,7 +43,7 @@ export const flattenSpeakingExam = (exam: IExamSetDetail): SpeakingExamPartData[
   return Array.from(byPart.values()).sort((a, b) => a.partNumber - b.partNumber);
 };
 
-export const buildSpeakingExam = (exam: IExamSetDetail): SpeakingExamData => {
+export const buildSpeakingExam = (exam: IStudentExamTake): SpeakingExamData => {
   const parts = flattenSpeakingExam(exam);
   const getPart = (partNumber: number) => parts.find((part) => part.partNumber === partNumber)?.questions ?? [];
 

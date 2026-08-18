@@ -107,6 +107,11 @@
 | GET | `/exams` | STUDENT | Danh sách đề `is_active` (lọc theo `type`: luyện tập / thi thử). |
 | GET | `/exams/:id/take` | STUDENT | Lấy đề để làm — **KHÔNG trả `is_correct` / `correct_*` trong `extra_config`**. |
 | POST | `/exams/:id/submit` | STUDENT | Nộp bài. Xử lý khác nhau theo `type` (xem mục 3.2 & 3.3). |
+| POST | `/files/student-answers` | STUDENT | Upload audio Speaking; BE tự gắn thư mục theo studentId, FE không truyền `prefix`. |
+
+> Local test: `GET /test-support/exams/:id/answer-key` trả cây đề kèm đáp án cho nút
+> **Điền đáp án mẫu** khi chạy `vite dev`. Endpoint không tồn tại ở staging/production và
+> không được dùng cho luồng làm bài thật.
 
 ### 2.9. `attempts/` — Lần làm bài *(bảng `exam_attempts` — MOCK_TEST + SKILL_FULL_SET)*
 > Ghi 1 dòng mỗi lần nộp cho **MOCK_TEST** (lưu điểm → tính TB) và **SKILL_FULL_SET** (đánh dấu đã làm đề). **PART_PRACTICE KHÔNG ghi attempt** (chỉ `student_progress`).
@@ -278,7 +283,7 @@ GEMINI_MAX_RETRIES=2
 - Tách provider sau lớp `GeminiService` để dễ đổi model/nhà cung cấp về sau.
 
 ### 3.7. Ẩn đáp án khi học viên làm bài
-`GET /exams/:id/take` loại bỏ mọi khóa `is_correct` và `correct_*` trong `extra_config` (`options[].is_correct`, `correct_order`, `correct_answer`, `correct_heading`, `correct_person`, `correct_index`, `correct`...). Đã cài đặt bằng `stripAnswers()` đệ quy trong `src/exams/grading.ts`.
+`GET /exams/:id/take` loại bỏ mọi khóa `is_correct`, `correct_*` và `sample_answer` trong `extra_config` (`options[].is_correct`, `correct_order`, `correct_answer`, `correct_heading`, `correct_person`, `correct_index`, `correct`...). Java BE thực hiện đệ quy bằng `AnswerSanitizer`. Riêng ORDERING có câu đầu được cho sẵn chỉ trả `fixed_option_index` để render, không trả thứ tự đúng còn lại.
 
 ---
 

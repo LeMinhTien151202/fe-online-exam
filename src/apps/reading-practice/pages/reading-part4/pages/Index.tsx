@@ -16,6 +16,7 @@ export const Part4Page: React.FC = () => {
     data,
     paragraphCount,
     correctAnswers,
+    hasAnswerReview,
     total,
     currentNumber,
     hasNext,
@@ -108,12 +109,12 @@ export const Part4Page: React.FC = () => {
 
               {paragraphs.map(({ num }) => {
                 const isAnswered = !!answers[num];
-                const isCorrect = answers[num] === correctAnswers[num];
+                const isCorrect = hasAnswerReview && answers[num] === correctAnswers[num];
                 return (
                   <S.QuestionSlot
                     key={num}
                     $isAnswered={isAnswered}
-                    $status={isSubmitted ? (isCorrect ? 'success' : 'error') : 'default'}
+                    $status={isSubmitted && hasAnswerReview ? (isCorrect ? 'success' : 'error') : 'default'}
                   >
                     <S.SlotInner>
                       <S.QuestionLabel>
@@ -135,7 +136,7 @@ export const Part4Page: React.FC = () => {
                         ))}
                       </Select>
 
-                      {isSubmitted && !isCorrect && (
+                      {isSubmitted && hasAnswerReview && !isCorrect && (
                         <S.CorrectAnswerText>
                           Đáp án đúng: {headings.find(h => h.value === correctAnswers[num])?.label}
                         </S.CorrectAnswerText>

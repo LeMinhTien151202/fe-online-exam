@@ -86,6 +86,7 @@ export const ReadingMockTestPage: React.FC = () => {
     showReport,
     setShowReport,
     submitResult,
+    answerReviewAvailable,
     handleManualSubmit,
     handleRetry,
 
@@ -164,7 +165,7 @@ export const ReadingMockTestPage: React.FC = () => {
 
   // ==================== PART 1: đoạn văn với ô chọn inline ====================
   const renderGapSelect = (gapId: number, options: string[]) => {
-    const status: 'success' | 'error' | 'default' = isSubmitted
+    const status: 'success' | 'error' | 'default' = isSubmitted && answerReviewAvailable
       ? p1Answers[gapId] === correctP1[gapId] ? 'success' : 'error'
       : 'default';
     return (
@@ -182,7 +183,7 @@ export const ReadingMockTestPage: React.FC = () => {
             <Select.Option key={opt} value={opt}>{opt}</Select.Option>
           ))}
         </S.InlineSentenceSelect>
-        {isSubmitted && p1Answers[gapId] !== correctP1[gapId] && (
+        {isSubmitted && answerReviewAvailable && p1Answers[gapId] !== correctP1[gapId] && (
           <span style={{ color: '#10b981', marginLeft: '10px', fontSize: '0.9rem', fontWeight: 600 }}>
             (Đáp án đúng: <strong>{correctP1[gapId]}</strong>)
           </span>
@@ -278,8 +279,8 @@ export const ReadingMockTestPage: React.FC = () => {
             {data.fixedSentence && <S.FixedSentenceCard>{data.fixedSentence}</S.FixedSentenceCard>}
             {Array.from({ length: count }, (_, i) => i + 1).map((idx) => {
               const item = slots[idx];
-              const isCorrect = isSubmitted && item ? item.id === correctOrder[idx - 1] : false;
-              const status: 'success' | 'error' | 'default' = isSubmitted ? (isCorrect ? 'success' : 'error') : 'default';
+              const isCorrect = isSubmitted && answerReviewAvailable && item ? item.id === correctOrder[idx - 1] : false;
+              const status: 'success' | 'error' | 'default' = isSubmitted && answerReviewAvailable ? (isCorrect ? 'success' : 'error') : 'default';
               const isOver = dragPart === part && dragOverSlot === idx;
               return (
                 <div key={idx} onDragOver={(e) => handleDragOver(e, idx)} onDragLeave={handleDragLeave} onDrop={() => handleDrop(part, idx)}>
@@ -303,7 +304,7 @@ export const ReadingMockTestPage: React.FC = () => {
         </S.Part2Column>
 
         <S.Part2Column>
-          {isSubmitted ? (
+          {isSubmitted && answerReviewAvailable ? (
             <>
               <S.OrderingColumnHeader>Đáp án đúng</S.OrderingColumnHeader>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -368,17 +369,17 @@ export const ReadingMockTestPage: React.FC = () => {
           {questions.map((q, idx) => {
             const answer = p4Answers[q.id];
             const correctAns = correctP4[q.id];
-            const isCorrect = answer === correctAns;
+            const isCorrect = answerReviewAvailable && answer === correctAns;
             return (
-              <S.StatementCard key={q.id} $isAnswered={!!answer} $status={isSubmitted ? (isCorrect ? 'success' : 'error') : 'default'}>
+              <S.StatementCard key={q.id} $isAnswered={!!answer} $status={isSubmitted && answerReviewAvailable ? (isCorrect ? 'success' : 'error') : 'default'}>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                  <Badge count={idx + 1} style={{ backgroundColor: isSubmitted ? (isCorrect ? '#10b981' : '#ef4444') : (answer ? '#3b5b8c' : '#94a3b8'), color: 'white', fontWeight: 'bold' }} />
+                  <Badge count={idx + 1} style={{ backgroundColor: isSubmitted && answerReviewAvailable ? (isCorrect ? '#10b981' : '#ef4444') : (answer ? '#3b5b8c' : '#94a3b8'), color: 'white', fontWeight: 'bold' }} />
                   <div style={{ flex: 1 }}>
                     <Text strong style={{ fontSize: '1rem', color: '#1e293b', display: 'block', marginBottom: '0.5rem', lineHeight: 1.4 }}>{q.text}</Text>
                     <S.StyledRadioGroup optionType="button" buttonStyle="solid" value={answer} onChange={(e) => setP4Answers((prev) => ({ ...prev, [q.id]: e.target.value as string }))} disabled={isSubmitted} style={{ marginTop: '0.25rem' }}>
                       {opinions.map((o) => (<Radio.Button key={o.id} value={o.id}>{o.id}</Radio.Button>))}
                     </S.StyledRadioGroup>
-                    {isSubmitted && !isCorrect && (
+                    {isSubmitted && answerReviewAvailable && !isCorrect && (
                       <div style={{ marginTop: '0.5rem', color: '#10b981', fontWeight: 600, fontSize: '0.9rem' }}>
                         Đáp án đúng: <strong>{correctAns}</strong> ({opinions.find((o) => o.id === correctAns)?.name})
                       </div>
@@ -414,15 +415,15 @@ export const ReadingMockTestPage: React.FC = () => {
           {paragraphs.map((p) => {
             const answer = p5Answers[p.num];
             const correctAns = correctP5[p.num];
-            const isCorrect = answer === correctAns;
+            const isCorrect = answerReviewAvailable && answer === correctAns;
             return (
-              <S.QuestionSlot key={p.num} $isAnswered={!!answer} $status={isSubmitted ? (isCorrect ? 'success' : 'error') : 'default'}>
+              <S.QuestionSlot key={p.num} $isAnswered={!!answer} $status={isSubmitted && answerReviewAvailable ? (isCorrect ? 'success' : 'error') : 'default'}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <Text strong style={{ color: '#334155', fontSize: '0.95rem' }}>Đoạn văn {p.num}:</Text>
                   <Select placeholder="Chọn tiêu đề phù hợp..." style={{ width: '100%' }} value={answer} onChange={(val) => setP5Answers((prev) => ({ ...prev, [p.num]: val as string }))} size="large" allowClear disabled={isSubmitted}>
                     {headings.map((h) => (<Select.Option key={h.value} value={h.value}>{h.label}</Select.Option>))}
                   </Select>
-                  {isSubmitted && !isCorrect && (
+                  {isSubmitted && answerReviewAvailable && !isCorrect && (
                     <div style={{ marginTop: '0.25rem', color: '#10b981', fontWeight: 600, fontSize: '0.9rem' }}>Đáp án đúng: {headings.find((h) => h.value === correctAns)?.label}</div>
                   )}
                 </div>

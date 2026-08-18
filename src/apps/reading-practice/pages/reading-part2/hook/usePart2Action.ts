@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { mapPart2, Part2Data, Part2Sentence } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
-import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart2Action = () => {
@@ -22,7 +22,7 @@ export const usePart2Action = () => {
     return q ? mapPart2(q) : null;
   }, [list, safeIndex]);
 
-  const slotCount = data?.correctOrder.length ?? 0;
+  const slotCount = data?.initialSentences.length ?? 0;
   const emptySlots = () =>
     Object.fromEntries(Array.from({ length: slotCount }, (_, i) => [i + 1, null])) as Record<number, Part2Sentence | null>;
 
@@ -31,10 +31,11 @@ export const usePart2Action = () => {
   const [pool, setPool] = useState<Part2Sentence[]>([]);
   const [slots, setSlots] = useState<Record<number, Part2Sentence | null>>({});
   const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
+  const [scoreResult, setScoreResult] = useState<{ earned: number; total: number } | null>(null);
 
   // Nạp lại pool/slots khi bộ câu hỏi đổi (kèm index để phân biệt câu trùng thứ tự)
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
-  const currentKey = data ? `${safeIndex}:${data.correctOrder.join('|')}` : null;
+  const currentKey = data ? `${safeIndex}:${data.initialSentences.map((item) => item.id).join('|')}` : null;
   if (currentKey && currentKey !== loadedKey) {
     setLoadedKey(currentKey);
     setPool(data!.initialSentences);
@@ -122,12 +123,7 @@ export const usePart2Action = () => {
     }
   };
 
-  const countCorrect = () =>
-    Object.keys(slots).filter((key) => {
-      const idx = Number(key);
-      const slotItem = slots[idx];
-      return slotItem && data && slotItem.id === data.correctOrder[idx - 1];
-    }).length;
+  const countCorrect = () => scoreResult?.earned ?? 0;
 
   const handleSubmit = () => {
     const filledCount = Object.values(slots).filter((s) => s !== null).length;
@@ -138,21 +134,8 @@ export const usePart2Action = () => {
     confirmSubmitExam({ totalQuestions: slotCount, onOk: doSubmit });
   };
 
-  const doSubmit = () => {
+  const doSubmit = async () => {
     setIsSubmitted(true);
-    setDoneSets((prev) => new Set(prev).add(safeIndex));
-    const correct = countCorrect();
-    const progressPercent = slotCount ? Math.round((correct / slotCount) * 100) : 0;
-    const savedProgress = localStorage.getItem('aptis_reading_progress');
-    let nextProgress = { r2: progressPercent };
-    if (savedProgress) {
-      try {
-        nextProgress = { ...JSON.parse(savedProgress), r2: progressPercent };
-      } catch { /* bỏ qua lỗi */ }
-    }
-    localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
-    toast.success(`Chúc mừng! Bạn đã hoàn thành Part 2. Kết quả: ${correct}/${slotCount} câu đúng.`);
-
     // Nộp lên BE để tăng student_progress (skill 3, part 2). P2 = mảng index theo thứ tự, prepend câu cố định.
     if (examId && data?.questionId != null) {
       const response: number[] = [];
@@ -162,7 +145,25 @@ export const usePart2Action = () => {
         response.push(item ? Number(item.id.replace(/^s/, '')) : -1);
       }
       if (response.some((v) => v >= 0)) {
-        submitMutation.mutate({ examId, payload: { answers: [{ questionId: data.questionId, response }] } });
+        try {
+          const result = await submitMutation.mutateAsync({
+            examId,
+            payload: { answers: [{ questionId: data.questionId, response }] },
+          });
+          const score = summarizeAutoGrade(result, { skillId: 3, partNumber: 2 });
+          setScoreResult(score);
+          setDoneSets((prev) => new Set(prev).add(safeIndex));
+          const scorePercent = score.total > 0 ? Math.round((score.earned / score.total) * 100) : 0;
+          const savedProgress = localStorage.getItem('aptis_reading_progress');
+          let nextProgress = { r2: scorePercent };
+          if (savedProgress) {
+            try { nextProgress = { ...JSON.parse(savedProgress), r2: scorePercent }; } catch { /* ignore */ }
+          }
+          localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
+          toast.success(`Chúc mừng! Bạn đã hoàn thành Part 2. Kết quả: ${score.earned}/${score.total} câu đúng.`);
+        } catch {
+          setIsSubmitted(false);
+        }
       }
     }
   };
@@ -171,6 +172,7 @@ export const usePart2Action = () => {
     setSlots(emptySlots());
     setPool(data?.initialSentences ?? []);
     setIsSubmitted(false);
+    setScoreResult(null);
     setTimeLeft(1077);
   };
 

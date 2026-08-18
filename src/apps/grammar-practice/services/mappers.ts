@@ -64,7 +64,7 @@ export const mapVocabularySets = (records: IQuestion[]): IVocabularySet[] => {
           id: s.slot_id || `v${counter}`,
           questionNumber: counter,
           leftLabel: normalizeBlank(s.prompt, variant),
-          correctAnswer: s.correct_answer,
+          correctAnswer: s.correct_answer ?? '',
         };
       }),
       optionsList: cfg?.options_pool ?? [],

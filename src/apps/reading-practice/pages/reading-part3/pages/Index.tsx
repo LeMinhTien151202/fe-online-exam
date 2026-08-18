@@ -16,6 +16,7 @@ export const Part3Page: React.FC = () => {
     data,
     questionCount,
     correctAnswers,
+    hasAnswerReview,
     total,
     currentNumber,
     hasNext,
@@ -111,18 +112,18 @@ export const Part3Page: React.FC = () => {
 
               {questions.map((q, idx) => {
                 const isAnswered = !!answers[q.id];
-                const isCorrect = answers[q.id] === correctAnswers[q.id];
+                const isCorrect = hasAnswerReview && answers[q.id] === correctAnswers[q.id];
                 return (
                   <S.StatementCard
                     key={q.id}
                     $isAnswered={isAnswered}
-                    $status={isSubmitted ? (isCorrect ? 'success' : 'error') : 'default'}
+                    $status={isSubmitted && hasAnswerReview ? (isCorrect ? 'success' : 'error') : 'default'}
                   >
                     <S.QuestionRowLayout>
                       <Badge
                         count={idx + 1}
                         style={{
-                          backgroundColor: isSubmitted
+                          backgroundColor: isSubmitted && hasAnswerReview
                             ? (isCorrect ? '#10b981' : '#ef4444')
                             : (isAnswered ? '#3b5b8c' : '#94a3b8'),
                           color: 'white',
@@ -145,7 +146,7 @@ export const Part3Page: React.FC = () => {
                           ))}
                         </S.StyledRadioGroup>
 
-                        {isSubmitted && !isCorrect && (
+                        {isSubmitted && hasAnswerReview && !isCorrect && (
                           <S.CorrectAnswerText>
                             Đáp án đúng: {correctAnswers[q.id]} ({opinions.find(o => o.id === correctAnswers[q.id])?.name})
                           </S.CorrectAnswerText>
