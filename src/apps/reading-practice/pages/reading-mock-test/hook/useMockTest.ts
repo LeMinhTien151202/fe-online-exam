@@ -292,30 +292,15 @@ export const useMockTest = (testId: string) => {
     }
   };
 
-  // ==================== PERSISTENCE ====================
-
-  const saveProgressToLocalStorage = (score: number) => {
-    const saved = localStorage.getItem('aptis_reading_mock_progress');
-    let progressObj: Record<string, number> = {};
-    if (saved) {
-      try { progressObj = JSON.parse(saved); } catch { /* ignore */ }
-    }
-    const currentBest = progressObj[testId] ?? 0;
-    progressObj[testId] = Math.max(currentBest, score);
-    localStorage.setItem('aptis_reading_mock_progress', JSON.stringify(progressObj));
-  };
-
   // ==================== TIMER (refs to avoid stale closures) ====================
 
   const isSubmittedRef = useRef(isSubmitted);
   const calculateScoresRef = useRef(calculateScores);
-  const saveProgressRef = useRef(saveProgressToLocalStorage);
   const submitToServerRef = useRef(submitToServer);
 
   useEffect(() => {
     isSubmittedRef.current = isSubmitted;
     calculateScoresRef.current = calculateScores;
-    saveProgressRef.current = saveProgressToLocalStorage;
     submitToServerRef.current = submitToServer;
   });
 
@@ -324,8 +309,6 @@ export const useMockTest = (testId: string) => {
       if (timeLeft <= 0 && !isSubmittedRef.current) {
         isSubmittedRef.current = true;
         toast.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
-        const { totalScore } = calculateScoresRef.current();
-        saveProgressRef.current(totalScore);
         submitToServerRef.current();
       }
       return;
@@ -340,8 +323,6 @@ export const useMockTest = (testId: string) => {
     setIsSubmitted(true);
     setShowReport(true);
     toast.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
-    const { totalScore } = calculateScores();
-    saveProgressToLocalStorage(totalScore);
     submitToServer();
   };
 
@@ -349,8 +330,6 @@ export const useMockTest = (testId: string) => {
     setIsSubmitted(true);
     setShowReport(true);
     toast.success('Bạn đã nộp bài thi thành công!');
-    const { totalScore } = calculateScores();
-    saveProgressToLocalStorage(totalScore);
     submitToServer();
   };
 

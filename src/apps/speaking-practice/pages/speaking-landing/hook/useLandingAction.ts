@@ -2,7 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import React from 'react';
 import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { useSpeakingSetsQuery } from '../../../services/speakingExamQuery';
-import { usePartPracticeProgress } from '../../../../../shared/services/student-exam';
+import { useExamBestScores, usePartPracticeProgress } from '../../../../../shared/services/student-exam';
 
 // Speaking: s1..s4 = API part 1..4.
 const SPEAKING_PART_MAP = [
@@ -20,17 +20,7 @@ export const useLandingAction = () => {
   // Tiến độ luyện theo phần lấy từ server (answered/total).
   const { progress: speakingProgress } = usePartPracticeProgress(5, SPEAKING_PART_MAP);
 
-  const [mockProgress] = React.useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem('aptis_speaking_mock_progress');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        // ignore
-      }
-    }
-    return {};
-  });
+  const { scoreByExamId: mockProgress } = useExamBestScores();
 
   const { data: examRes, isLoading: isExamsLoading } = useSpeakingSetsQuery();
   const examSets = React.useMemo(() => examRes?.data ?? [], [examRes]);

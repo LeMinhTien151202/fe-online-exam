@@ -2,103 +2,54 @@ import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
   LeftOutlined,
-  UndoOutlined
+  RollbackOutlined
 } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { toast } from '../../../../../configs/toast';
-import { Button,
-  Modal,
-  Progress,
+import { Progress,
   Space,
-  Statistic,
+  Tag,
 } from 'antd';
 import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
-import React,{ useMemo, useState } from 'react';
+import React from 'react';
 
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { GrammarSection } from '../components/GrammarSection';
 import { QuestionNav } from '../components/QuestionNav';
 import { usePart1Action } from '../hook/usePart1Action';
-import { flattenGrammarExam, collectGrammarAnswers } from '../../../services/grammarExamMapper';
-import { mapGrammarQuestions } from '../../../services/mappers';
-import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
-import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
+import { confirmExitExam } from '../../../../../shared/utils/examDialogs';
 import * as S from '../styles/styled';
 
 export const Part1Page: React.FC = () => {
   const navigate = useNavigate();
 
-  // Luyện theo phần = đề PART_PRACTICE (skill 1, part 1). Tải đề để build câu + nộp tăng tiến độ.
-  const { examId, examDetail, isLoading } = usePartPracticeExam(1, 1);
-  const questions = useMemo(() => {
-    if (!examDetail) return [];
-    const part = flattenGrammarExam(examDetail).find((p) => p.partNumber === 1);
-    return mapGrammarQuestions(part?.questions ?? []);
-  }, [examDetail]);
-  const total = questions.length;
-
-  const submitMutation = useSubmitExamMutation();
-
-  const [showResultModal, setShowResultModal] = useState(false);
-  const [scoreResult, setScoreResult] = useState<number | null>(null);
-
-  const handleExamSubmit = async (finalAnswers: Record<number, string>) => {
-    const saved = localStorage.getItem('aptis_grammar_progress');
-    let progressObj: Record<string, number> = {};
-    if (saved) { try { progressObj = JSON.parse(saved); } catch { /* bỏ qua lỗi */ } }
-    progressObj['g1'] = 100;
-    localStorage.setItem('aptis_grammar_progress', JSON.stringify(progressObj));
-
-    // Response take không chứa đáp án; điểm luôn lấy từ BE sau khi nộp.
-    if (examId) {
-      const submitAnswers = collectGrammarAnswers({ grammarQuestions: questions, vocabularySets: [] }, finalAnswers);
-      try {
-        const result = await submitMutation.mutateAsync({ examId, payload: { answers: submitAnswers } });
-        const summary = summarizeAutoGrade(result, { skillId: 1, partNumber: 1 });
-        setScoreResult(summary.earned);
-        setShowResultModal(true);
-      } catch {
-        // Axios interceptor đã hiển thị lỗi; không hiển thị điểm tự chấm sai ở FE.
-      }
-    }
-  };
-
   const {
+    isLoading,
+    questions,
+    total,
     answers,
+    results,
     currentQuestionIndex,
-    timeLeft,
-    progressPercent,
     setCurrentQuestionIndex,
     selectAnswer,
-    submitExamManual,
-    resetExam,
-    formatTime,
-    totalAnswered
-  } = usePart1Action(handleExamSubmit, 12 * 60 + 30, 'aptis_grammar_part_1', total || 1);
-
-  const handlePrevQuestion = () => { if (currentQuestionIndex > 1) setCurrentQuestionIndex(currentQuestionIndex - 1); };
-  const handleNextQuestion = () => { if (currentQuestionIndex < total) setCurrentQuestionIndex(currentQuestionIndex + 1); };
+    handleNextQuestion,
+    handlePrevQuestion,
+    handleSubmitClick,
+    handleRetry,
+    isSubmitted,
+    isGrading,
+    correctCount,
+    scoreTotal,
+    gradedCount,
+    progressPercent
+  } = usePart1Action();
 
   const handleBackToLanding = () => {
     confirmExitExam({
-      content: 'Hệ thống vẫn sẽ lưu kết quả tạm thời của bạn.',
+      content: 'Các câu đã chấm vẫn được lưu trong lịch sử làm bài.',
       onOk: () => navigate({ to: '/grammar' }),
     });
-  };
-
-  const handleSubmitClick = () => {
-    const { unansweredCount, confirm } = submitExamManual();
-    confirmSubmitExam({ unansweredCount, totalQuestions: total, onOk: confirm });
-  };
-
-  const handleRestartExam = () => {
-    resetExam();
-    setShowResultModal(false);
-    setScoreResult(null);
-    toast.success('Đã làm mới. Chúc bạn làm bài tốt!');
   };
 
   return (
@@ -112,6 +63,11 @@ export const Part1Page: React.FC = () => {
                 Quay lại
               </S.HeaderBackButton>
               <S.HeaderTitleText>Part 1: Grammar Practice</S.HeaderTitleText>
+              {isSubmitted && (
+                <Tag color={correctCount > 0 ? 'success' : 'error'} style={{ fontWeight: 600 }}>
+                  Kết quả: {correctCount}/{scoreTotal}
+                </Tag>
+              )}
             </Space>
 
             <S.HeaderSpace size="large">
@@ -121,12 +77,8 @@ export const Part1Page: React.FC = () => {
                 size={40}
                 strokeColor="#10b981"
                 trailColor="rgba(255,255,255,0.2)"
-                format={() => <S.ProgressText>{totalAnswered}/{total || 0}</S.ProgressText>}
+                format={() => <S.ProgressText>{gradedCount}/{total || 0}</S.ProgressText>}
               />
-              <S.TimerWrapper>
-                <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
-                {formatTime(timeLeft)}
-              </S.TimerWrapper>
             </S.HeaderSpace>
           </S.Header>
 
@@ -143,7 +95,7 @@ export const Part1Page: React.FC = () => {
                   <S.TitleArea>
                     <h2>Part 1: Grammar</h2>
                     <div className="subtitle">
-                      Trả lời {total} câu trắc nghiệm. Đọc kỹ câu và chọn phương án đúng nhất.
+                      Làm xong câu nào nộp câu đó, hệ thống chấm và trả kết quả ngay.
                     </div>
                   </S.TitleArea>
 
@@ -152,15 +104,18 @@ export const Part1Page: React.FC = () => {
                     answers={answers}
                     currentQuestionIndex={currentQuestionIndex}
                     onSelectAnswer={selectAnswer}
+                    isSubmitted={isSubmitted}
+                    isCorrect={correctCount > 0}
                   />
                 </S.ContentCard>
 
                 <QuestionNav
                   answers={answers}
                   currentQuestionIndex={currentQuestionIndex}
-                  totalAnswered={totalAnswered}
+                  totalAnswered={gradedCount}
                   onNavigateQuestion={setCurrentQuestionIndex}
                   questionNumbers={questions.map((q) => q.questionNumber)}
+                  gradedNumbers={Object.keys(results).map(Number)}
                   sectionLabel="Ngữ pháp"
                 />
               </>
@@ -183,9 +138,15 @@ export const Part1Page: React.FC = () => {
             </S.FooterProgressText>
 
             <Space size="middle">
-              <S.SubmitButton type="primary" icon={<CheckCircleOutlined />} size="large" onClick={handleSubmitClick} disabled={total === 0}>
-                Nộp bài
-              </S.SubmitButton>
+              {isSubmitted ? (
+                <S.SubmitButton type="primary" icon={<RollbackOutlined />} size="large" onClick={handleRetry} style={{ background: '#f59e0b', borderColor: '#f59e0b' }}>
+                  Làm lại
+                </S.SubmitButton>
+              ) : (
+                <S.SubmitButton type="primary" icon={<CheckCircleOutlined />} size="large" loading={isGrading} onClick={handleSubmitClick} disabled={total === 0}>
+                  Nộp câu này
+                </S.SubmitButton>
+              )}
               <S.NextButton type="primary" size="large" onClick={handleNextQuestion} disabled={currentQuestionIndex >= total}>
                 Tiếp theo <ArrowRightOutlined className="text-[12px]" />
               </S.NextButton>
@@ -193,35 +154,6 @@ export const Part1Page: React.FC = () => {
           </S.Footer>
         </S.PageContainer>
       </HomeS.RightColumn>
-
-      <Modal title={null} open={showResultModal} footer={null} closable={false} width={500} centered styles={{ body: { padding: '2.5rem 2rem', textAlign: 'center' } }}>
-        {scoreResult !== null && (
-          <div>
-            <S.ResultIconWrapper><CheckCircleOutlined /></S.ResultIconWrapper>
-            <S.ResultTitle>Hoàn thành bài luyện tập!</S.ResultTitle>
-            <S.ResultDescription>Kết quả điểm luyện tập của bạn:</S.ResultDescription>
-
-            <S.ResultStatsGrid $isPartMode={true}>
-              <S.StatBlock>
-                <Statistic title="Ngữ pháp" value={scoreResult} suffix={`/ ${total}`} valueStyle={{ color: '#1677ff', fontWeight: 800 }} />
-              </S.StatBlock>
-            </S.ResultStatsGrid>
-
-            <S.SummaryBox>
-              <S.SummaryBoxTitle>Tổng số điểm</S.SummaryBoxTitle>
-              <S.SummaryBoxScore>{scoreResult} <span>/ {total}</span></S.SummaryBoxScore>
-              <S.SummaryBoxDesc>Điểm số giúp bạn đánh giá năng lực phần Ngữ pháp.</S.SummaryBoxDesc>
-            </S.SummaryBox>
-
-            <S.ModalActionButtons size="middle">
-              <Button icon={<UndoOutlined />} size="large" onClick={handleRestartExam}>Làm lại</Button>
-              <Button type="primary" size="large" onClick={() => { setShowResultModal(false); navigate({ to: '/grammar' }); }}>
-                Quay về trang chính
-              </Button>
-            </S.ModalActionButtons>
-          </div>
-        )}
-      </Modal>
     </HomeS.MainLayout>
   );
 };

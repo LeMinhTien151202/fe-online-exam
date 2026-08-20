@@ -1,4 +1,4 @@
-import { BulbOutlined,CheckSquareOutlined,ClockCircleOutlined,LeftOutlined,RightOutlined } from '@ant-design/icons';
+import { BulbOutlined,CheckSquareOutlined,LeftOutlined,RightOutlined,RollbackOutlined } from '@ant-design/icons';
 import { Button, Space, Tag } from 'antd';
 import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import React from 'react';
@@ -6,6 +6,7 @@ import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { SampleAnswerModal } from '../../writing-part1/components/SampleAnswerModal';
 import { QuestionBoard } from '@/shared/components/QuestionBoard';
+import { QuestionGradeCard } from '@/shared/components/AiGrade';
 import * as S from '../../writing-part1/styles/styled';
 import { usePart3Action } from '../hook/usePart3Action';
 
@@ -18,7 +19,10 @@ export const Part3Page: React.FC = () => {
     wordMin,
     wordMax,
     answers,
-    timer,
+    handleRetry,
+    isSubmitted,
+    isGrading,
+    grade,
     handleAnswerChange,
     isWordCountValid,
     getWordCount,
@@ -55,12 +59,12 @@ export const Part3Page: React.FC = () => {
               {total > 0 && (
                 <Tag color="blue" style={{ fontWeight: 600 }}>Câu {currentNumber}/{total}</Tag>
               )}
+              {grade && (
+                <Tag color="green" style={{ fontWeight: 600 }}>
+                  AI chấm: {grade.aiScore}/100{grade.band ? ` • Band ${grade.band}` : ''}
+                </Tag>
+              )}
             </Space>
-
-            <S.TimerWrapper>
-              <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
-              {timer.formatTime()}
-            </S.TimerWrapper>
           </S.Header>
 
           <S.MainContent $hasBoard={total > 1}>
@@ -116,6 +120,7 @@ export const Part3Page: React.FC = () => {
                             rows={4}
                             $isValid={isValid}
                             $hasText={!!textVal}
+                            disabled={isSubmitted}
                           />
 
                           <div className="flex justify-between items-center min-h-[1.5rem]">
@@ -135,6 +140,10 @@ export const Part3Page: React.FC = () => {
                     })}
                   </div>
                 )}
+                {/* Kết quả AI của đúng đề đang làm — hiện ngay sau khi nộp */}
+                <div style={{ marginTop: '1rem' }}>
+                  <QuestionGradeCard loading={isGrading} grade={grade} />
+                </div>
               </S.ContentCard>
             </S.CenteredContainer>
 
@@ -145,7 +154,7 @@ export const Part3Page: React.FC = () => {
                 onJump={goTo}
                 sectionLabel="Danh sách đề"
                 showPartial
-                answeredLabel="Đã nộp"
+                answeredLabel="Đã chấm"
                 partialLabel="Đang viết"
               />
             )}
@@ -167,15 +176,28 @@ export const Part3Page: React.FC = () => {
             </Space>
 
             <Space size="middle">
-              <S.SubmitButton
-                type="primary"
-                icon={<CheckSquareOutlined />}
-                size="large"
-                onClick={handleSubmit}
-                disabled={!hasData}
-              >
-                Nộp câu trả lời
-              </S.SubmitButton>
+              {isSubmitted ? (
+                <S.SubmitButton
+                  type="primary"
+                  icon={<RollbackOutlined />}
+                  size="large"
+                  onClick={handleRetry}
+                  style={{ background: '#f59e0b', borderColor: '#f59e0b' }}
+                >
+                  Làm lại
+                </S.SubmitButton>
+              ) : (
+                <S.SubmitButton
+                  type="primary"
+                  icon={<CheckSquareOutlined />}
+                  size="large"
+                  loading={isGrading}
+                  onClick={handleSubmit}
+                  disabled={!hasData}
+                >
+                  Nộp &amp; chấm câu này
+                </S.SubmitButton>
+              )}
               {hasNext && (
                 <Button type="primary" size="large" icon={<RightOutlined />} onClick={handleNext}>
                   Câu tiếp theo

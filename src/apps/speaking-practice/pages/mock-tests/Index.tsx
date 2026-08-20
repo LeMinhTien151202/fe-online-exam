@@ -405,7 +405,7 @@ export const SpeakingMockTestPage: React.FC = () => {
             recordingTime={30}
             statusColor="#0284c7"
             title={`speak-test-p1-q${q.id}`}
-            onCompleted={(url) => setAnswers(prev => ({ ...prev, [q.id]: url || 'recorded_mock' }))}
+            onCompleted={(url) => setAnswers(prev => ({ ...prev, [q.id]: url ?? '' }))}
           />
 
           {isSubmitted && (
@@ -467,7 +467,7 @@ export const SpeakingMockTestPage: React.FC = () => {
             recordingTime={45}
             statusColor="#059669"
             title={`speak-test-p2-q${q.id}`}
-            onCompleted={(url) => setAnswers(prev => ({ ...prev, [q.id]: url || 'recorded_mock' }))}
+            onCompleted={(url) => setAnswers(prev => ({ ...prev, [q.id]: url ?? '' }))}
           />
 
           {isSubmitted && (
@@ -529,7 +529,7 @@ export const SpeakingMockTestPage: React.FC = () => {
             recordingTime={45}
             statusColor="#d97706"
             title={`speak-test-p3-q${q.id}`}
-            onCompleted={(url) => setAnswers(prev => ({ ...prev, [q.id]: url || 'recorded_mock' }))}
+            onCompleted={(url) => setAnswers(prev => ({ ...prev, [q.id]: url ?? '' }))}
           />
 
           {isSubmitted && (
@@ -593,9 +593,9 @@ export const SpeakingMockTestPage: React.FC = () => {
             onCompleted={(url) => {
               setAnswers(prev => ({ 
                 ...prev, 
-                [10]: url || 'recorded_mock',
-                [11]: url || 'recorded_mock',
-                [12]: url || 'recorded_mock'
+                [10]: url ?? '',
+                [11]: url ?? '',
+                [12]: url ?? ''
               }));
             }}
           />

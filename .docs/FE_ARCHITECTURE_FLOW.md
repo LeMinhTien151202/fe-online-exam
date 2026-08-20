@@ -295,7 +295,7 @@ Làm bài
 
 Nộp bài
    └─ studentExamApi.submit(examId, payload)     POST /exams/{examId}/submit
-        • timeout RIÊNG 120_000ms — chấm AI đồng bộ, Speaking nhiều file có thể rất lâu
+        • timeout RIÊNG 300_000ms (SUBMIT_TIMEOUT_MS) — phải > ngân sách chấm AI của BE (~181s)
         • BE tự phân luồng theo type đề (PART_PRACTICE / SKILL_FULL_SET / MOCK_TEST)
         • Response trả review NÓNG: điểm trắc nghiệm + kết quả AI ngay trong 1 lần gọi
    └─ invalidate ATTEMPTS_KEY / PROGRESS_KEY / EXAM_PROGRESS_KEY / STREAK_KEY
@@ -339,7 +339,7 @@ từ response `/exams/{id}/take`. Backend không tạo endpoint test này ở st
 |---|---|
 | `data` là `undefined` khi cần `metaData` | Quên `_rawEnvelope: true` |
 | Upload trả 400 | Tự set `'Content-Type': 'multipart/form-data'` → mất boundary. Phải để `null` |
-| Nộp bài Speaking bị timeout | Dùng timeout mặc định 10s thay vì 120s |
+| Nộp bài Speaking bị timeout | Dùng timeout mặc định 10s thay vì SUBMIT_TIMEOUT_MS (300s) |
 | Bị đá ra `/login` mỗi lần F5 | Quyết định điều hướng khi chưa xong `bootstrapping` |
 | Sửa xong nhưng danh sách không đổi | Mutation thiếu `invalidateQueries` |
 | Notification lỗi không có theme / cảnh báo antd | Thiếu `NotificationBridge` |

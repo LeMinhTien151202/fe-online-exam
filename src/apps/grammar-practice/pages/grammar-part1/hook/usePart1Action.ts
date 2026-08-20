@@ -1,135 +1,106 @@
+import { useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
-import {
-  useState,
-  useEffect } from 'react';
+import { flattenGrammarExam } from '../../../services/grammarExamMapper';
+import { mapGrammarQuestions } from '../../../services/mappers';
+import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
-export const usePart1Action = (
-  onSubmit: (finalAnswers: Record<number, string>) => void,
-  initialTime: number = 12 * 60 + 30,
-  storagePrefix: string = 'aptis_grammar_part_1',
-  totalQuestions: number = 25
-) => {
-  const EXAM_ANSWERS_KEY = `${storagePrefix}_answers`;
-  const EXAM_TIME_KEY = `${storagePrefix}_time`;
+export const usePart1Action = () => {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(1);
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  // Chấm từng câu: kết quả BE trả về của câu nào lưu theo questionNumber câu đó.
+  const [results, setResults] = useState<Record<number, { earned: number; total: number }>>({});
 
-  // 1. Initialize answers state from localStorage
-  const [answers, setAnswers] = useState<Record<number, string>>(() => {
-    const saved = localStorage.getItem(EXAM_ANSWERS_KEY);
-    return saved ? JSON.parse(saved) : {};
-  });
+  // Luyện theo phần = đề PART_PRACTICE (skill 1, part 1 — Grammar MC).
+  const { examId, examDetail, isLoading } = usePartPracticeExam(1, 1);
+  const questions = useMemo(() => {
+    if (!examDetail) return [];
+    const part = flattenGrammarExam(examDetail).find((p) => p.partNumber === 1);
+    return mapGrammarQuestions(part?.questions ?? []);
+  }, [examDetail]);
+  const total = questions.length;
 
-  // 2. Initialize active question (1 -> 25)
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(1);
+  const submitMutation = useSubmitExamMutation();
 
-  // 3. Initialize time left
-  const [timeLeft, setTimeLeft] = useState<number>(() => {
-    const saved = localStorage.getItem(EXAM_TIME_KEY);
-    if (saved) {
-      const parsed = parseInt(saved, 10);
-      return parsed > 0 ? parsed : initialTime;
-    }
-    return initialTime;
-  });
-
-  const [isFinished, setIsFinished] = useState(false);
-
-  const clearStorage = () => {
-    localStorage.removeItem(EXAM_ANSWERS_KEY);
-    localStorage.removeItem(EXAM_TIME_KEY);
-  };
-
-  const handleAutoSubmit = () => {
-    setIsFinished(true);
-    toast.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài của bạn.');
-    clearStorage();
-    onSubmit(answers);
-  };
-
-  // Sync answers to localStorage
-  useEffect(() => {
-    localStorage.setItem(EXAM_ANSWERS_KEY, JSON.stringify(answers));
-  }, [answers, EXAM_ANSWERS_KEY]);
-
-  // Countdown timer logic
-  useEffect(() => {
-    if (timeLeft <= 0 || isFinished) {
-      if (timeLeft <= 0 && !isFinished) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        handleAutoSubmit();
-      }
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        const nextTime = prev - 1;
-        localStorage.setItem(EXAM_TIME_KEY, nextTime.toString());
-        return nextTime;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft, isFinished]);
+  const safeIndex = total > 0 ? Math.min(currentQuestionIndex, total) : 1;
+  const currentQuestion = questions[safeIndex - 1] ?? null;
+  const scoreResult = results[safeIndex] ?? null;
+  const isSubmitted = scoreResult != null;
 
   const selectAnswer = (questionNumber: number, value: string) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionNumber]: value
-    }));
+    if (results[questionNumber]) return;
+    setAnswers((prev) => ({ ...prev, [questionNumber]: value }));
   };
 
-  const resetExam = () => {
-    clearStorage();
-    setAnswers({});
-    setTimeLeft(initialTime);
-    setCurrentQuestionIndex(1);
-    setIsFinished(false);
-  };
+  const handleNextQuestion = () => { if (safeIndex < total) setCurrentQuestionIndex(safeIndex + 1); };
+  const handlePrevQuestion = () => { if (safeIndex > 1) setCurrentQuestionIndex(safeIndex - 1); };
 
-  const submitExamManual = () => {
-    const answeredCount = Object.keys(answers).length;
-    const confirmSubmit = () => {
-      setIsFinished(true);
-      clearStorage();
-      onSubmit(answers);
-    };
-
-    if (answeredCount < totalQuestions) {
-      const unanswered = totalQuestions - answeredCount;
-      return {
-        hasUnanswered: true,
-        unansweredCount: unanswered,
-        confirm: confirmSubmit
-      };
+  const handleSubmitClick = () => {
+    if (isSubmitted) return;
+    if (!answers[safeIndex]) {
+      toast.warning('Bạn chưa chọn đáp án cho câu này.');
+      return;
     }
-
-    return {
-      hasUnanswered: false,
-      unansweredCount: 0,
-      confirm: confirmSubmit
-    };
+    confirmSubmitExam({ totalQuestions: 1, onOk: doSubmit });
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  // Nộp RIÊNG câu đang làm để BE chấm và trả điểm ngay (giống luyện theo phần của Reading).
+  // Grammar P1 = MC, response là index 0-based của đáp án đã chọn.
+  const doSubmit = async () => {
+    if (!examId || !currentQuestion || currentQuestion.questionId == null) return;
+    const response = currentQuestion.options.indexOf(answers[safeIndex]);
+    if (response < 0) return;
+
+    try {
+      const result = await submitMutation.mutateAsync({
+        examId,
+        payload: { answers: [{ questionId: currentQuestion.questionId, response }] },
+      });
+      const score = summarizeAutoGrade(result, { skillId: 1, partNumber: 1 });
+      setResults((prev) => ({ ...prev, [safeIndex]: score }));
+      toast.success(`Đã chấm xong câu ${safeIndex}: ${score.earned}/${score.total} câu đúng.`);
+    } catch {
+      // Interceptor axios đã hiện thông báo lỗi; không tự chấm ở FE để tránh sai điểm.
+    }
   };
 
-  const progressPercent = Math.round((Object.keys(answers).length / totalQuestions) * 100);
+  // Làm lại đúng câu này: bỏ kết quả + đáp án đã chọn để mở khoá lựa chọn.
+  const handleRetry = () => {
+    setResults((prev) => {
+      const next = { ...prev };
+      delete next[safeIndex];
+      return next;
+    });
+    setAnswers((prev) => {
+      const next = { ...prev };
+      delete next[safeIndex];
+      return next;
+    });
+  };
+
+  const gradedCount = Object.keys(results).length;
+  const progressPercent = total > 0 ? Math.round((gradedCount / total) * 100) : 0;
 
   return {
+    isLoading,
+    questions,
+    total,
     answers,
-    currentQuestionIndex,
-    timeLeft,
-    progressPercent,
-    isFinished,
+    results,
+    currentQuestionIndex: safeIndex,
     setCurrentQuestionIndex,
+    currentQuestion,
     selectAnswer,
-    submitExamManual,
-    resetExam,
-    formatTime,
-    totalAnswered: Object.keys(answers).length
+    handleNextQuestion,
+    handlePrevQuestion,
+    handleSubmitClick,
+    handleRetry,
+    isSubmitted,
+    isGrading: submitMutation.isPending,
+    correctCount: scoreResult?.earned ?? 0,
+    scoreTotal: scoreResult?.total ?? 0,
+    gradedCount,
+    progressPercent,
+    totalAnswered: Object.keys(answers).length,
   };
 };

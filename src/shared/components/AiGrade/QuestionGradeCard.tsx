@@ -96,16 +96,12 @@ export const QuestionGradeCard: React.FC<QuestionGradeCardProps> = ({
               <span style={{ fontWeight: 700, color: '#1a365d' }}>AI chấm bài</span>
               {grade.band && <Tag color="green">Band {grade.band}</Tag>}
             </Space>
-            {grade.aiScore != null ? (
-              <b style={{ color: colorByFraction(grade.aiScore / 100), fontSize: '1.15rem' }}>
-                {Math.round((grade.aiScore / 100) * CRITERION_MAX)}
-                <span style={{ color: '#94a3b8', fontSize: '0.85rem', fontWeight: 500 }}>
-                  /{CRITERION_MAX}
-                </span>
-              </b>
-            ) : (
-              <Tag color="warning">Chờ chấm tay</Tag>
-            )}
+            <b style={{ color: colorByFraction(grade.aiScore / 100), fontSize: '1.15rem' }}>
+              {Math.round((grade.aiScore / 100) * CRITERION_MAX)}
+              <span style={{ color: '#94a3b8', fontSize: '0.85rem', fontWeight: 500 }}>
+                /{CRITERION_MAX}
+              </span>
+            </b>
           </div>
 
           {/* Nhận xét chung */}

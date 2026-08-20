@@ -324,30 +324,12 @@ export const useMockTest = (testId: string) => {
     || examData.part4.some((group) => group.subQuestions.some((question) => question.correctIndex >= 0))
   );
 
-  const saveProgressToLocalStorage = useCallback((totalScore: number, totalMax: number) => {
-    const saved = localStorage.getItem('aptis_listening_mock_progress');
-    let progressObj: Record<string, number> = {};
-    if (saved) {
-      try {
-        progressObj = JSON.parse(saved);
-      } catch {
-        progressObj = {};
-      }
-    }
-    const percent = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
-    const currentBest = progressObj[testId] ?? 0;
-    progressObj[testId] = Math.max(currentBest, percent);
-    localStorage.setItem('aptis_listening_mock_progress', JSON.stringify(progressObj));
-  }, [testId]);
-
   const handleAutoSubmit = useCallback(() => {
     setIsSubmitted(true);
     setShowReport(true);
     toast.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
-    const { totalScore, totalMax } = calculateScores();
-    saveProgressToLocalStorage(totalScore, totalMax);
     submitToServer();
-  }, [calculateScores, saveProgressToLocalStorage, submitToServer]);
+  }, [submitToServer]);
 
   useEffect(() => {
     if (timeLeft <= 0 || isSubmitted) return;
@@ -390,8 +372,6 @@ export const useMockTest = (testId: string) => {
     setIsSubmitted(true);
     setShowReport(true);
     toast.success('Bạn đã nộp bài nghe thành công!');
-    const { totalScore, totalMax } = calculateScores();
-    saveProgressToLocalStorage(totalScore, totalMax);
     submitToServer();
   };
 

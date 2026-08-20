@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { useListeningSetsQuery } from '../../../services/listeningExamQuery';
 import { listeningPartsData } from '../services/data';
-import { usePartPracticeProgress } from '../../../../../shared/services/student-exam';
+import { useExamBestScores, usePartPracticeProgress } from '../../../../../shared/services/student-exam';
 
 // Listening: l1..l4 = API part 1..4.
 const LISTENING_PART_MAP = [
@@ -21,17 +21,7 @@ export const useListeningLanding = () => {
   // Tiến độ luyện theo phần lấy từ server (answered/total).
   const { progress: listeningProgress } = usePartPracticeProgress(2, LISTENING_PART_MAP);
 
-  const [mockProgress] = useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem('aptis_listening_mock_progress');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        // ignore
-      }
-    }
-    return { m1: 0, m2: 0, m3: 0 };
-  });
+  const { scoreByExamId: mockProgress } = useExamBestScores();
 
   const { data: examRes, isLoading: isExamsLoading } = useListeningSetsQuery();
   const examSets = examRes?.data ?? [];

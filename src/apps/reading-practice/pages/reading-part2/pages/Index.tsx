@@ -1,7 +1,6 @@
 import {
   BulbOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
   LeftOutlined,
   RightOutlined,
   RollbackOutlined
@@ -28,12 +27,10 @@ export const Part2Page: React.FC = () => {
     hasPrev,
     handleNext,
     handlePrev,
-    timeLeft,
     isSubmitted,
     pool,
     slots,
     dragOverSlot,
-    formatTime,
     handleDragStart,
     handleDragOver,
     handleDragLeave,
@@ -84,10 +81,6 @@ export const Part2Page: React.FC = () => {
                 trailColor="rgba(255,255,255,0.2)"
                 format={() => <S.ProgressText>{placedCount}/{slotCount || 0}</S.ProgressText>}
               />
-              <S.TimerWrapper>
-                <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
-                {formatTime(timeLeft)}
-              </S.TimerWrapper>
             </Space>
           </S.Header>
 

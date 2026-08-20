@@ -106,20 +106,6 @@ export const useMockTest = () => {
   );
   const isReadyForAiGrading = totalQuestions > 0 && answeredCount === totalQuestions;
 
-  const saveProgressToLocalStorage = useCallback(() => {
-    const saved = localStorage.getItem('aptis_speaking_mock_progress');
-    let progressObj: Record<string, number> = {};
-    if (saved) {
-      try {
-        progressObj = JSON.parse(saved);
-      } catch {
-        progressObj = {};
-      }
-    }
-    progressObj[testId] = 100;
-    localStorage.setItem('aptis_speaking_mock_progress', JSON.stringify(progressObj));
-  }, [testId]);
-
   // Dịch URL ghi âm sang shape submit của API. P1: mỗi câu = 1 bản ghi (1 URL);
   // P2/P3/P4: mỗi bộ = 1 bản ghi (mảng URL theo thứ tự câu con). RECORD: AI chấm & trả ngay.
   const collectAnswers = useCallback((): ISubmitAnswer[] => {
@@ -162,12 +148,11 @@ export const useMockTest = () => {
     setShowReport(true);
     if (isReadyForAiGrading) {
       toast.warning('Đã hết thời gian làm bài! Hệ thống tự động gửi bài để AI chấm.');
-      saveProgressToLocalStorage();
       submitToServer();
       return;
     }
     toast.warning('Đã hết thời gian. Bài chưa hoàn thành đầy đủ nên chưa thể chấm bằng AI.');
-  }, [isReadyForAiGrading, saveProgressToLocalStorage, submitToServer]);
+  }, [isReadyForAiGrading, submitToServer]);
 
   useEffect(() => {
     if (timeLeft <= 0 || isSubmitted) return;
@@ -265,7 +250,6 @@ export const useMockTest = () => {
     setIsSubmitted(true);
     setShowReport(true);
     toast.success('Đã gửi toàn bộ bài nói để AI chấm!');
-    saveProgressToLocalStorage();
     submitToServer();
   };
 

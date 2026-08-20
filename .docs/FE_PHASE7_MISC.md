@@ -5,7 +5,7 @@
 
 ---
 
-# A. Study Materials (tài liệu học PDF/VIDEO)
+# A. Study Materials
 
 ## A1. Danh sách — `GET /study-materials`
 Query: `?skillId=&fileType=&search=&page=1&limit=10`. Mọi role xem được.
@@ -38,7 +38,9 @@ Query: `?skillId=&fileType=&search=&page=1&limit=10`. Mọi role xem được.
 **Response `data`:** 1 object như phần tử trong mảng A1 (kèm `skill`).
 
 ## A3. Tạo — `POST /study-materials` (ADMIN/TEACHER)
-`fileUrl` là URL đã có (dán link). `fileType` ∈ `PDF | VIDEO`. `durationSeconds` chỉ cho VIDEO.
+`fileUrl` là URL trả về từ API upload hoặc URL ngoài với loại `LINK`. `fileType` ∈ `PDF | AUDIO | VIDEO | DOCX | PPTX | XLSX | ZIP | LINK`. `durationSeconds` chỉ bắt buộc cho VIDEO.
+
+File được upload trước qua `POST /files/upload?folder_type=videos|documents`. FE xóa best-effort file tạm khi người dùng hủy modal hoặc chọn file thay thế.
 
 **Request:**
 ```json
@@ -248,12 +250,12 @@ Upsert — tự tạo nếu key chưa có. `settingValue` luôn là **chuỗi**.
 ---
 
 ## Enum
-- `fileType`: `PDF` | `VIDEO`
+- `fileType`: `PDF` | `AUDIO` | `VIDEO` | `DOCX` | `PPTX` | `XLSX` | `ZIP` | `LINK`
 - `notificationType`: `SYSTEM` | `EXAM_REMINDER` | `GRADE_RESULT`
 
 ## Lỗi mẫu
 ```json
-{ "statusCode": 400, "message": "fileType phải là PDF | VIDEO", "error": "Bad Request" }
+{ "statusCode": 400, "message": "Loại tài liệu không được hỗ trợ", "error": "Bad Request" }
 ```
 
 ---

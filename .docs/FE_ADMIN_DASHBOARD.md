@@ -31,8 +31,7 @@
     "totalQuestions": { "value": 1250, "trendType": "neutral" },
     "dailyActivity":  { "value": 34, "trendPercent": 6.2, "trendType": "up" },
     "totalExams":     { "value": 45, "trendType": "neutral" },
-    "completedTests": { "value": 328, "trendPercent": 8.0, "trendType": "up" },
-    "pendingGrading": { "value": 0 }
+    "completedTests": { "value": 328, "trendPercent": 8.0, "trendType": "up" }
   },
   "questionStats": {
     "total": 1250,
@@ -70,7 +69,6 @@
 | `dailyActivity` | `student_progress` | số **học viên khác nhau** có cập nhật tiến độ hôm nay; trend vs hôm qua |
 | `totalExams` + `examCounts` | `exam_sets` (deletedAt null) | count + groupBy `type`; đủ 3 loại; `trendType: neutral` |
 | `completedTests` | `exam_attempts` | tổng lượt nộp đã lưu (MOCK_TEST + SKILL_FULL_SET); trend hôm nay vs hôm qua |
-| `pendingGrading` | — | **luôn = 0**: AI (Gemini) chấm đồng bộ ngay khi nộp, BE không lưu hàng đợi chờ chấm |
 | `skillDistribution` | `student_progress` | % theo `sum(answered)` mỗi skill, làm tròn ép tổng = 100 |
 
 - `trendType`: `up | down | neutral`. Không có kỳ trước (previous=0) và hiện tại>0 → `up 100%`; cả hai = 0 → `neutral` (bỏ `trendPercent`).
@@ -184,7 +182,6 @@ export interface DashboardSummary {
     dailyActivity: KpiValue;
     totalExams: KpiValue;
     completedTests: KpiValue;
-    pendingGrading: KpiValue;      // hiện luôn { value: 0 }
   };
   questionStats: { total: number; skills: { skillId: number; name: string; count: number }[] };
   examCounts: {

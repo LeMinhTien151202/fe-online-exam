@@ -1,5 +1,4 @@
 import {
-ClockCircleOutlined,
 DownOutlined,
 LeftOutlined,
 RightOutlined,
@@ -12,8 +11,8 @@ import React from 'react';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { SpeakingController } from '../../speaking-part1/components/SpeakingController';
-import { QuestionGradeCard } from '../../../components/QuestionGradeCard';
-import { AiGradeButton } from '../../../components/AiGradeButton';
+import { QuestionGradeCard } from '@/shared/components/AiGrade';
+import { AiGradeButton } from '@/shared/components/AiGrade';
 import { QuestionBoard } from '@/shared/components/QuestionBoard';
 import { usePart4 } from '../hook/usePart4';
 import * as S from '../styles/styled';
@@ -25,12 +24,10 @@ export const Part4Page: React.FC = () => {
     hasNext,
     setCount,
     currentSetNumber,
-    timeLeft,
     showSampleAnswer,
     setShowSampleAnswer,
     activeSampleIdx,
     setActiveSampleIdx,
-    formatTime,
     handleNext,
     handleBack,
     handleRecordComplete,
@@ -73,10 +70,6 @@ export const Part4Page: React.FC = () => {
                 trailColor="rgba(255,255,255,0.2)"
                 format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{answeredCount}/1</span>}
               />
-              <S.TimerWrapper>
-                <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
-                {formatTime(timeLeft)}
-              </S.TimerWrapper>
             </Space>
           </S.Header>
 

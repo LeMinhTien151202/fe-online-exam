@@ -9,6 +9,7 @@ import {
   FileZipOutlined,
   FileTextOutlined,
   FileOutlined,
+  LinkOutlined,
   PlayCircleOutlined,
   SoundOutlined,
   DownloadOutlined,
@@ -55,6 +56,7 @@ export const MaterialsPage: React.FC = () => {
     audio: <SoundOutlined />,
     archive: <FileZipOutlined />,
     text: <FileTextOutlined />,
+    link: <LinkOutlined />,
     file: <FileOutlined />,
   };
 
@@ -102,7 +104,7 @@ export const MaterialsPage: React.FC = () => {
                 Tài liệu học tập
               </Title>
               <Text type="secondary" style={{ fontSize: '0.9375rem' }}>
-                Tổng hợp tài liệu PDF, DOCX ôn luyện Aptis chuẩn từ giáo viên chuyên môn.
+                Tài liệu PDF, Word, PowerPoint, Excel, video và liên kết ôn luyện từ giáo viên chuyên môn.
               </Text>
             </M.PageHeader>
 

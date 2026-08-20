@@ -65,7 +65,7 @@ không cần tra ngược `questionId` từ exam detail.
 > - `skills[]` chứa **mọi kỹ năng có trong đề, gồm cả Grammar (skillId 1)**.
 > - Grammar luôn `cefr: null` nhưng **vẫn có `scaled` 0–50** để hiển thị.
 > - `overallCefr` = trung bình làm tròn band của **4 kỹ năng 2,3,4,5** (bỏ Grammar).
-> - Nếu thiếu một kỹ năng hoặc bất kỳ kết quả AI nào cần chấm tay, `overallCefr = null`; tuyệt đối không tính từ tập kỹ năng còn lại.
+> - Nếu thiếu một kỹ năng, `overallCefr = null`; lỗi AI làm submit thất bại nên không sinh kết quả CEFR dở dang.
 > - `scaled = round(phầnTrămĐúng / 100 * 50)` (xấp xỉ tuyến tính). UI phải gắn nhãn "(ước lượng)".
 
 ---
@@ -97,8 +97,8 @@ Dự án dùng **xấp xỉ tuyến tính**: `scaled = round(percentĐúng / 100
   Nếu band không hợp lệ, BE fallback bằng `aiScore → scaled → bảng band của kỹ năng`.
 - **Trọng số AI theo Part:** tính trung bình các câu trong từng Part trước, sau đó trung bình các Part. Vì Speaking Part 1
   có nhiều dòng câu hỏi còn Part 2–4 thường mỗi Part một dòng, không được trung bình thẳng toàn bộ dòng câu hỏi.
-- **Bỏ trống:** câu Writing/Speaking bỏ trống trả `aiScore: 0`, `band: A0`, `needsManualReview: false` và không gọi Gemini.
-- **Lỗi AI/media:** trả `aiScore: null`, `band: null`, `needsManualReview: true`; kỹ năng và overall chưa có band hoàn chỉnh.
+- **Bỏ trống:** câu Writing/Speaking bỏ trống trả `aiScore: 0`, `band: A0` và không gọi Gemini.
+- **Lỗi AI/media:** submit thất bại, không ghi attempt/điểm; FE giữ bài hiện tại và cho phép nộp lại.
 
 ---
 
@@ -179,7 +179,7 @@ Hạn chế: landing/lịch sử vẫn thiếu band cho tới khi BE làm bướ
 - Speaking: gửi nội dung câu hỏi, ảnh đề trong `extra_config.image_urls` (Part 2–4) và audio câu trả lời theo đúng thứ tự.
 - Prompt yêu cầu JSON `{ score, band, feedback }`, band đúng một giá trị `A0…C1`, feedback ngắn gọn bằng tiếng Việt.
 - Prompt yêu cầu bỏ qua mọi câu lệnh do thí sinh viết/nói trong bài làm để hạn chế prompt injection.
-- Media tải lỗi hoặc Gemini lỗi/timeout → `needsManualReview: true`, không tự quy lỗi hệ thống thành 0 điểm.
+- Media tải lỗi hoặc Gemini lỗi/timeout làm submit thất bại; không tự quy lỗi hệ thống thành 0 điểm.
 
 ## 6. Database và migration
 

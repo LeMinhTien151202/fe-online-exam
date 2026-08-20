@@ -90,7 +90,7 @@ export const WritingMockTestPage = () => {
   } = useWritingMockTest(testId);
 
   // CEFR band kỹ năng Viết (skillId 4) theo ĐÚNG bảng quy đổi 0–50 (xem cefrScale.ts),
-  // suy từ điểm AI của BE. band = null khi AI chưa chấm xong (còn câu chờ chấm tay).
+  // suy từ điểm AI của BE. Request nộp bài thất bại nếu AI không chấm được.
   const overall = (() => {
     if (!submitResult) return null;
     const sk = singleSkillScore(submitResult, WRITING_SKILL_ID);
@@ -512,7 +512,7 @@ export const WritingMockTestPage = () => {
                 </S.ScoreRingWrapper>
                 <Text type="secondary" style={{ display: 'block', marginBottom: '1rem', fontSize: '0.85rem' }}>
                   {overall?.band == null
-                    ? '(AI chưa chấm xong — chưa xếp band, còn câu chờ chấm tay)'
+                    ? '(Chưa đủ dữ liệu để xếp band)'
                     : `Điểm ước lượng ${overall.scaled}/50 (quy đổi tuyến tính, không phải scaled chính thức)`}
                 </Text>
                 <S.ReportGrid>
@@ -538,11 +538,7 @@ export const WritingMockTestPage = () => {
                               <Tag color="purple">{item.questionType}</Tag>
                               {item.band && <Tag color="green">Band {item.band}</Tag>}
                             </Space>
-                            {item.aiScore != null ? (
-                              <b style={{ color: '#10b981' }}>{item.aiScore}/100</b>
-                            ) : (
-                              <Tag color="warning">Chờ chấm tay</Tag>
-                            )}
+                            <b style={{ color: '#10b981' }}>{item.aiScore}/100</b>
                           </div>
                           <Text style={{ color: '#475569', fontSize: '0.9rem' }}>
                             {item.feedback || 'Chưa có nhận xét.'}

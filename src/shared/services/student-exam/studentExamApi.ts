@@ -10,6 +10,12 @@ import {
   IStudentExamSummary,
   IStudentExamTake,
 } from './types';
+import { clearSubmissionKey, getOrCreateSubmissionKey, submissionFingerprint } from './submissionIdempotency';
+
+// Ngân sách chờ chấm AI phải LỚN HƠN worst case của BE
+// (GEMINI_REQUEST_TIMEOUT 90s x GEMINI_MAX_ATTEMPTS 2 + backoff ~= 181s),
+// nếu không FE luôn bỏ cuộc trước khi BE kịp trả lỗi và để lại phiếu PROCESSING treo.
+const SUBMIT_TIMEOUT_MS = 300_000;
 
 // Học viên làm bài & nộp — khớp API_PLAN mục 2.8 / 2.9 và EXAM_SUBMIT_SAMPLES.md
 export const studentExamApi = {
@@ -26,11 +32,21 @@ export const studentExamApi = {
 
   // Nộp bài: BE tự phân luồng theo type của đề (PART_PRACTICE / SKILL_FULL_SET / MOCK_TEST).
   // Trả review nóng: điểm trắc nghiệm + kết quả AI (ESSAY/RECORD) ngay trong response.
-  submit: (examId: number, payload: ISubmitExamPayload) =>
-    axiosInstance.post<IExamSubmitResult, IExamSubmitResult>(`/exams/${examId}/submit`, payload, {
-      // AI grading is synchronous and can take longer when a Speaking answer contains several audio files.
-      timeout: 120_000,
-    }),
+  submit: async (examId: number, payload: ISubmitExamPayload) => {
+    // Giữ nguyên key khi timeout/retry cùng nội dung; sửa bài làm -> tự cấp key mới.
+    const idempotencyKey = getOrCreateSubmissionKey(examId, submissionFingerprint(payload));
+    const result = await axiosInstance.post<IExamSubmitResult, IExamSubmitResult>(
+      `/exams/${examId}/submit`,
+      payload,
+      {
+        headers: { 'Idempotency-Key': idempotencyKey },
+        // AI grading is synchronous and can take longer when a Speaking answer contains several audio files.
+        timeout: SUBMIT_TIMEOUT_MS,
+      },
+    );
+    clearSubmissionKey(examId, idempotencyKey);
+    return result;
+  },
 
   // Lịch sử làm bài phân trang + summary MOCK_TEST. Vẫn đọc được response mảng của BE cũ.
   myAttempts: async (filter: IAttemptFilter = {}): Promise<IAttemptsResponse> => {

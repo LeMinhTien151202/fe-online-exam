@@ -247,7 +247,7 @@ export interface IPaginated<T> {
 }
 
 // ---------- Upload file ----------
-export type FileFolderType = 'images' | 'audio';
+export type FileFolderType = 'images' | 'audio' | 'videos' | 'documents';
 export interface IUploadedFile {
   url: string;
   key: string;

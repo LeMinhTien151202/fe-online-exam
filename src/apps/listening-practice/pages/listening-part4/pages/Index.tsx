@@ -5,7 +5,7 @@ import {
   LeftOutlined,
   RightOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined
+  RollbackOutlined
 } from '@ant-design/icons';
 import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
@@ -24,15 +24,18 @@ export const Part4Page: React.FC = () => {
     hasPrev,
     handleNext,
     handlePrev,
-    timeLeft,
     answers,
     handleSelectAnswer,
     handleSubmit,
+    handleRetry,
+    isSubmitted,
+    isGrading,
+    correctCount,
+    scoreTotal,
     answeredCount,
     totalSub,
     progressPercent,
     currentGroup,
-    formatTime,
     boardItems,
     activeGroupIndex,
     goTo
@@ -54,6 +57,11 @@ export const Part4Page: React.FC = () => {
               {groupCount > 1 && (
                 <Tag color="blue" style={{ fontWeight: 600 }}>Bài {currentGroupNumber}/{groupCount}</Tag>
               )}
+              {isSubmitted && (
+                <Tag color={correctCount >= Math.ceil(scoreTotal * 0.8) ? 'success' : 'warning'} style={{ fontWeight: 600 }}>
+                  Kết quả: {correctCount}/{scoreTotal}
+                </Tag>
+              )}
             </Space>
 
             <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
@@ -65,10 +73,6 @@ export const Part4Page: React.FC = () => {
                 trailColor="rgba(255,255,255,0.2)"
                 format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{answeredCount}/{totalSub || 0}</span>}
               />
-              <S.TimerWrapper>
-                <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
-                {formatTime(timeLeft)}
-              </S.TimerWrapper>
             </Space>
           </S.Header>
 
@@ -107,6 +111,7 @@ export const Part4Page: React.FC = () => {
                         key={idx}
                         $selected={isSelected}
                         onClick={() => handleSelectAnswer(subQ.id, option)}
+                        style={{ cursor: isSubmitted ? 'default' : 'pointer', opacity: isSubmitted && !isSelected ? 0.6 : 1 }}
                       >
                         <div className="option-letter">{letter}</div>
                         <div className="option-text">{option}</div>
@@ -124,7 +129,8 @@ export const Part4Page: React.FC = () => {
                 onJump={goTo}
                 sectionLabel="Danh sách bài"
                 showPartial
-                answeredLabel="Đã trả lời đủ"
+                answeredLabel="Đã chấm"
+                partialLabel="Đang làm"
               />
             )}
           </S.MainContent>
@@ -141,22 +147,42 @@ export const Part4Page: React.FC = () => {
             </Button>
 
             <Space size="middle">
-              <Button
-                type="primary"
-                icon={<CheckCircleOutlined />}
-                size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#1a365d',
-                  borderColor: '#1a365d',
-                  padding: '0 2rem',
-                  boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.25)'
-                }}
-                onClick={handleSubmit}
-              >
-                Nộp bài
-              </Button>
+              {isSubmitted ? (
+                <Button
+                  type="primary"
+                  icon={<RollbackOutlined />}
+                  size="large"
+                  style={{
+                    borderRadius: '2rem',
+                    fontWeight: 600,
+                    background: '#f59e0b',
+                    borderColor: '#f59e0b',
+                    padding: '0 2rem'
+                  }}
+                  onClick={handleRetry}
+                >
+                  Làm lại
+                </Button>
+              ) : (
+                <Button
+                  type="primary"
+                  icon={<CheckCircleOutlined />}
+                  size="large"
+                  loading={isGrading}
+                  disabled={!hasData}
+                  style={{
+                    borderRadius: '2rem',
+                    fontWeight: 600,
+                    background: '#1a365d',
+                    borderColor: '#1a365d',
+                    padding: '0 2rem',
+                    boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.25)'
+                  }}
+                  onClick={handleSubmit}
+                >
+                  Nộp bài này
+                </Button>
+              )}
               {hasNext && (
                 <Button
                   type="primary"

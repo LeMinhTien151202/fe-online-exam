@@ -15,7 +15,6 @@ export interface DashboardSummary {
     dailyActivity: KpiValue;
     totalExams: KpiValue;
     completedTests: KpiValue;
-    pendingGrading: KpiValue;
   };
   questionStats: {
     total: number;

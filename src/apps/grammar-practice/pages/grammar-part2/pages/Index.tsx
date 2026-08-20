@@ -2,127 +2,57 @@ import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
   LeftOutlined,
-  UndoOutlined
+  RollbackOutlined
 } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { toast } from '../../../../../configs/toast';
-import { Button,
-  Modal,
-  Progress,
+import { Progress,
   Space,
-  Statistic,
+  Tag,
 } from 'antd';
 import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
-import React,{ useMemo, useState } from 'react';
+import React from 'react';
 
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { QuestionNav } from '../components/QuestionNav';
 import { VocabularySection } from '../components/VocabularySection';
 import { usePart2Action } from '../hook/usePart2Action';
-import { flattenGrammarExam, collectGrammarAnswers } from '../../../services/grammarExamMapper';
-import { mapVocabularySets } from '../../../services/mappers';
-import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
-import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
+import { confirmExitExam } from '../../../../../shared/utils/examDialogs';
 import * as S from '../styles/styled';
 
 export const Part2Page: React.FC = () => {
   const navigate = useNavigate();
 
-  // Luyện theo phần = đề PART_PRACTICE (skill 1, part 2 — Vocabulary/WORD_BANK).
-  const { examId, examDetail, isLoading } = usePartPracticeExam(1, 2);
-  const sets = useMemo(() => {
-    if (!examDetail) return [];
-    const part = flattenGrammarExam(examDetail).find((p) => p.partNumber === 2);
-    return mapVocabularySets(part?.questions ?? []);
-  }, [examDetail]);
-  const allNumbers = useMemo(() => sets.flatMap((s) => s.subQuestions.map((q) => q.questionNumber)), [sets]);
-  const total = allNumbers.length; // tổng số ý (để chấm điểm/tiến độ)
-  const totalUnits = sets.length; // mỗi task (bản ghi) = 1 câu trên bảng
-
-  const submitMutation = useSubmitExamMutation();
-
-  const [showResultModal, setShowResultModal] = useState(false);
-  const [scoreResult, setScoreResult] = useState<number | null>(null);
-
-  const handleExamSubmit = async (finalAnswers: Record<number, string>) => {
-    const saved = localStorage.getItem('aptis_grammar_progress');
-    let progressObj: Record<string, number> = {};
-    if (saved) { try { progressObj = JSON.parse(saved); } catch { /* bỏ qua lỗi */ } }
-    progressObj['g2'] = 100;
-    localStorage.setItem('aptis_grammar_progress', JSON.stringify(progressObj));
-
-    // Response take không chứa đáp án; điểm luôn lấy từ BE sau khi nộp.
-    if (examId) {
-      const submitAnswers = collectGrammarAnswers({ grammarQuestions: [], vocabularySets: sets }, finalAnswers);
-      try {
-        const result = await submitMutation.mutateAsync({ examId, payload: { answers: submitAnswers } });
-        const summary = summarizeAutoGrade(result, { skillId: 1, partNumber: 2 });
-        setScoreResult(summary.earned);
-        setShowResultModal(true);
-      } catch {
-        // Axios interceptor đã hiển thị lỗi; không hiển thị điểm tự chấm sai ở FE.
-      }
-    }
-  };
-
   const {
+    isLoading,
+    sets,
+    total,
+    totalUnits,
     answers,
     currentQuestionIndex,
-    timeLeft,
-    progressPercent,
     setCurrentQuestionIndex,
+    activeUnit,
+    navItems,
     selectAnswer,
-    submitExamManual,
-    resetExam,
-    formatTime,
-    totalAnswered
-  } = usePart2Action(handleExamSubmit, 12 * 60 + 30, 'aptis_grammar_part_2', total || 1);
-
-  // ---- Đơn vị hiển thị: mỗi task (bản ghi WORD_BANK) = 1 câu trên bảng/footer ----
-  const unitForQuestion = (qNum: number): number => {
-    const idx = sets.findIndex((s) => s.subQuestions.some((sub) => sub.questionNumber === qNum));
-    return idx >= 0 ? idx + 1 : 1;
-  };
-  const activeUnit = unitForQuestion(currentQuestionIndex);
-
-  const handleNavigateUnit = (unit: number) => {
-    const first = sets[unit - 1]?.subQuestions[0]?.questionNumber;
-    if (first != null) setCurrentQuestionIndex(first);
-  };
-
-  const navItems = useMemo(() => sets.map((set, i) => {
-    const answeredCount = set.subQuestions.filter((sub) => !!answers[sub.questionNumber]).length;
-    return {
-      display: i + 1,
-      answered: set.subQuestions.length > 0 && answeredCount === set.subQuestions.length,
-      active: activeUnit === i + 1,
-      tooltip: `Câu ${i + 1} — ${set.title}: đã trả lời ${answeredCount}/${set.subQuestions.length} ý`,
-    };
-  }), [sets, answers, activeUnit]);
-
-  const handlePrevQuestion = () => { if (activeUnit > 1) handleNavigateUnit(activeUnit - 1); };
-  const handleNextQuestion = () => { if (activeUnit < totalUnits) handleNavigateUnit(activeUnit + 1); };
+    handleNavigateUnit,
+    handlePrevQuestion,
+    handleNextQuestion,
+    handleSubmitClick,
+    handleRetry,
+    isSubmitted,
+    isGrading,
+    correctCount,
+    scoreTotal,
+    gradedUnits,
+    progressPercent
+  } = usePart2Action();
 
   const handleBackToLanding = () => {
     confirmExitExam({
-      content: 'Hệ thống vẫn sẽ lưu kết quả tạm thời của bạn.',
+      content: 'Các câu đã chấm vẫn được lưu trong lịch sử làm bài.',
       onOk: () => navigate({ to: '/grammar' }),
     });
-  };
-
-  const handleSubmitClick = () => {
-    const { unansweredCount, confirm } = submitExamManual();
-    confirmSubmitExam({ unansweredCount, totalQuestions: total, onOk: confirm });
-  };
-
-  const handleRestartExam = () => {
-    resetExam();
-    setShowResultModal(false);
-    setScoreResult(null);
-    toast.success('Đã làm mới. Chúc bạn làm bài tốt!');
   };
 
   return (
@@ -136,6 +66,11 @@ export const Part2Page: React.FC = () => {
                 Quay lại
               </S.HeaderBackButton>
               <S.HeaderTitleText>Part 2: Vocabulary Practice</S.HeaderTitleText>
+              {isSubmitted && (
+                <Tag color={correctCount >= Math.ceil(scoreTotal * 0.8) ? 'success' : 'warning'} style={{ fontWeight: 600 }}>
+                  Kết quả: {correctCount}/{scoreTotal}
+                </Tag>
+              )}
             </Space>
 
             <S.HeaderSpace size="large">
@@ -145,12 +80,8 @@ export const Part2Page: React.FC = () => {
                 size={40}
                 strokeColor="#10b981"
                 trailColor="rgba(255,255,255,0.2)"
-                format={() => <S.ProgressText>{totalAnswered}/{total || 0}</S.ProgressText>}
+                format={() => <S.ProgressText>{gradedUnits}/{totalUnits || 0}</S.ProgressText>}
               />
-              <S.TimerWrapper>
-                <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
-                {formatTime(timeLeft)}
-              </S.TimerWrapper>
             </S.HeaderSpace>
           </S.Header>
 
@@ -167,7 +98,7 @@ export const Part2Page: React.FC = () => {
                   <S.TitleArea>
                     <h2>Part 2: Vocabulary</h2>
                     <div className="subtitle">
-                      Hoàn thành {total} câu qua {sets.length} nhóm nhiệm vụ (định nghĩa, đồng/trái nghĩa, cụm từ...).
+                      Làm xong task nào nộp task đó, hệ thống chấm và trả kết quả ngay ({totalUnits} task • {total} ý).
                     </div>
                   </S.TitleArea>
 
@@ -177,14 +108,15 @@ export const Part2Page: React.FC = () => {
                     currentQuestionIndex={currentQuestionIndex}
                     onSelectAnswer={selectAnswer}
                     onQuestionFocus={setCurrentQuestionIndex}
+                    isSubmitted={isSubmitted}
                   />
                 </S.ContentCard>
 
                 <QuestionNav
                   items={navItems}
                   sectionLabel="Từ vựng — mỗi số là 1 task (5 ý)"
-                  totalAnswered={totalAnswered}
-                  totalQuestions={total}
+                  totalAnswered={gradedUnits}
+                  totalQuestions={totalUnits}
                   onNavigate={handleNavigateUnit}
                 />
               </>
@@ -207,9 +139,15 @@ export const Part2Page: React.FC = () => {
             </S.FooterProgressText>
 
             <Space size="middle">
-              <S.SubmitButton type="primary" icon={<CheckCircleOutlined />} size="large" onClick={handleSubmitClick} disabled={total === 0}>
-                Nộp bài
-              </S.SubmitButton>
+              {isSubmitted ? (
+                <S.SubmitButton type="primary" icon={<RollbackOutlined />} size="large" onClick={handleRetry} style={{ background: '#f59e0b', borderColor: '#f59e0b' }}>
+                  Làm lại
+                </S.SubmitButton>
+              ) : (
+                <S.SubmitButton type="primary" icon={<CheckCircleOutlined />} size="large" loading={isGrading} onClick={handleSubmitClick} disabled={total === 0}>
+                  Nộp câu này
+                </S.SubmitButton>
+              )}
               <S.NextButton type="primary" size="large" onClick={handleNextQuestion} disabled={activeUnit >= totalUnits}>
                 Tiếp theo <ArrowRightOutlined className="text-[12px]" />
               </S.NextButton>
@@ -217,35 +155,6 @@ export const Part2Page: React.FC = () => {
           </S.Footer>
         </S.PageContainer>
       </HomeS.RightColumn>
-
-      <Modal title={null} open={showResultModal} footer={null} closable={false} width={500} centered styles={{ body: { padding: '2.5rem 2rem', textAlign: 'center' } }}>
-        {scoreResult !== null && (
-          <div>
-            <S.ResultIconWrapper><CheckCircleOutlined /></S.ResultIconWrapper>
-            <S.ResultTitle>Hoàn thành bài luyện tập!</S.ResultTitle>
-            <S.ResultDescription>Kết quả điểm luyện tập của bạn:</S.ResultDescription>
-
-            <S.ResultStatsGrid $isPartMode={true}>
-              <S.StatBlock>
-                <Statistic title="Từ vựng" value={scoreResult} suffix={`/ ${total}`} valueStyle={{ color: '#52c41a', fontWeight: 800 }} />
-              </S.StatBlock>
-            </S.ResultStatsGrid>
-
-            <S.SummaryBox>
-              <S.SummaryBoxTitle>Tổng số điểm</S.SummaryBoxTitle>
-              <S.SummaryBoxScore>{scoreResult} <span>/ {total}</span></S.SummaryBoxScore>
-              <S.SummaryBoxDesc>Điểm số giúp bạn đánh giá năng lực phần Từ vựng.</S.SummaryBoxDesc>
-            </S.SummaryBox>
-
-            <S.ModalActionButtons size="middle">
-              <Button icon={<UndoOutlined />} size="large" onClick={handleRestartExam}>Làm lại</Button>
-              <Button type="primary" size="large" onClick={() => { setShowResultModal(false); navigate({ to: '/grammar' }); }}>
-                Quay về trang chính
-              </Button>
-            </S.ModalActionButtons>
-          </div>
-        )}
-      </Modal>
     </HomeS.MainLayout>
   );
 };

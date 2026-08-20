@@ -78,7 +78,7 @@ export const useMockExamLanding = () => {
             date: ts ? new Date(ts).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : '',
             name: att.exam?.title ?? (id != null ? titleById.get(id) : undefined) ?? `Đề #${id ?? '?'}`,
             score: attemptTotal(att), // 0–200 từ snapshot skillCefr
-            cefr: att.overallCefr ?? null, // CEFR thật từ BE (null nếu còn chờ chấm tay)
+            cefr: att.overallCefr ?? null, // CEFR thật từ BE; null nếu đề thiếu dữ liệu kỹ năng
           };
         }),
     [attempts, titleById],

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { mapPart2, Part2Data, Part2Sentence } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
@@ -26,7 +26,6 @@ export const usePart2Action = () => {
   const emptySlots = () =>
     Object.fromEntries(Array.from({ length: slotCount }, (_, i) => [i + 1, null])) as Record<number, Part2Sentence | null>;
 
-  const [timeLeft, setTimeLeft] = useState(1077);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [pool, setPool] = useState<Part2Sentence[]>([]);
   const [slots, setSlots] = useState<Record<number, Part2Sentence | null>>({});
@@ -46,34 +45,19 @@ export const usePart2Action = () => {
   const handleNext = () => {
     if (safeIndex >= total - 1) return;
     setIndex(safeIndex + 1);
-    setTimeLeft(1077);
   };
   const handlePrev = () => {
     if (safeIndex <= 0) return;
     setIndex(safeIndex - 1);
-    setTimeLeft(1077);
   };
   const goTo = (idx: number) => {
     if (idx === safeIndex) return;
     setIndex(idx);
-    setTimeLeft(1077);
   };
 
   const [draggedItem, setDraggedItem] = useState<Part2Sentence | null>(null);
   const [draggedFromSlot, setDraggedFromSlot] = useState<number | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (timeLeft <= 0 || isSubmitted) return;
-    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft, isSubmitted]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const handleDragStart = (item: Part2Sentence, fromSlot: number | null = null) => {
     if (isSubmitted) return;
@@ -153,13 +137,6 @@ export const usePart2Action = () => {
           const score = summarizeAutoGrade(result, { skillId: 3, partNumber: 2 });
           setScoreResult(score);
           setDoneSets((prev) => new Set(prev).add(safeIndex));
-          const scorePercent = score.total > 0 ? Math.round((score.earned / score.total) * 100) : 0;
-          const savedProgress = localStorage.getItem('aptis_reading_progress');
-          let nextProgress = { r2: scorePercent };
-          if (savedProgress) {
-            try { nextProgress = { ...JSON.parse(savedProgress), r2: scorePercent }; } catch { /* ignore */ }
-          }
-          localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
           toast.success(`Chúc mừng! Bạn đã hoàn thành Part 2. Kết quả: ${score.earned}/${score.total} câu đúng.`);
         } catch {
           setIsSubmitted(false);
@@ -173,7 +150,6 @@ export const usePart2Action = () => {
     setPool(data?.initialSentences ?? []);
     setIsSubmitted(false);
     setScoreResult(null);
-    setTimeLeft(1077);
   };
 
   const placedCount = Object.values(slots).filter(Boolean).length;
@@ -202,12 +178,10 @@ export const usePart2Action = () => {
     goTo,
     boardItems,
     activeSetIndex: safeIndex,
-    timeLeft,
     isSubmitted,
     pool,
     slots,
     dragOverSlot,
-    formatTime,
     handleDragStart,
     handleDragOver,
     handleDragLeave,

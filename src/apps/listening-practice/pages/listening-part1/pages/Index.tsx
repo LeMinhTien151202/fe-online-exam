@@ -1,11 +1,11 @@
 import React from 'react';
-import { Space, Progress, Button, Select } from 'antd';
+import { Space, Progress, Button, Select, Tag } from 'antd';
 import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import {
   LeftOutlined,
   RightOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined
+  RollbackOutlined
 } from '@ant-design/icons';
 import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
@@ -20,20 +20,43 @@ export const Part1Page: React.FC = () => {
     hasData,
     hasNext,
     total,
-    timeLeft,
     currentQuestionIndex,
     setCurrentQuestionIndex,
     answers,
+    results,
+    isSubmitted,
+    isGrading,
+    correctCount,
+    scoreTotal,
     handleSelectAnswer,
     handleNext,
     handleBack,
     handleSubmit,
-    answeredCount,
+    handleRetry,
+    gradedCount,
     progressPercent,
     currentQuestion,
-    mockQuestions,
-    formatTime
+    mockQuestions
   } = usePart1Action();
+
+  // Sau khi chấm: tô xanh đáp án đúng, tô đỏ đáp án đã chọn nhưng sai.
+  const optionColors = (option: string, idx: number) => {
+    const isSelected = answers[currentQuestionIndex] === option;
+    if (!isSubmitted) {
+      return {
+        border: isSelected ? '#3b5b8c' : '#e2e8f0',
+        background: isSelected ? '#eff6ff' : '#ffffff',
+        letter: isSelected ? '#3b5b8c' : '#0f172a',
+        text: isSelected ? '#1a365d' : '#334155',
+      };
+    }
+    const isCorrect = currentQuestion.correctIndex >= 0 && currentQuestion.correctIndex === idx;
+    const isWrongPick = isSelected && correctCount === 0;
+    if (isCorrect) return { border: '#10b981', background: '#ecfdf5', letter: '#047857', text: '#065f46' };
+    if (isWrongPick) return { border: '#ef4444', background: '#fef2f2', letter: '#b91c1c', text: '#991b1b' };
+    if (isSelected) return { border: '#10b981', background: '#ecfdf5', letter: '#047857', text: '#065f46' };
+    return { border: '#e2e8f0', background: '#ffffff', letter: '#94a3b8', text: '#94a3b8' };
+  };
 
   return (
     <HomeS.MainLayout>
@@ -48,6 +71,11 @@ export const Part1Page: React.FC = () => {
               <span style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white' }}>
                 Part 1: Information Recognition
               </span>
+              {isSubmitted && (
+                <Tag color={correctCount > 0 ? 'success' : 'error'} style={{ fontWeight: 600 }}>
+                  Kết quả: {correctCount}/{scoreTotal}
+                </Tag>
+              )}
             </Space>
 
             <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
@@ -57,12 +85,8 @@ export const Part1Page: React.FC = () => {
                 size={40}
                 strokeColor="#10b981"
                 trailColor="rgba(255,255,255,0.2)"
-                format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{answeredCount}/{total || 0}</span>}
+                format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{gradedCount}/{total || 0}</span>}
               />
-              <S.TimerWrapper>
-                <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
-                {formatTime(timeLeft)}
-              </S.TimerWrapper>
             </Space>
           </S.Header>
 
@@ -98,7 +122,9 @@ export const Part1Page: React.FC = () => {
                         labelNode: (
                           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
                             <span>Câu {q.id}</span>
-                            {answers[q.id] ? <span style={{ color: '#10b981', fontWeight: 'bold' }}>✓</span> : <span style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>Chưa làm</span>}
+                            {results[q.id] ? <span style={{ color: '#10b981', fontWeight: 'bold' }}>✓ Đã chấm</span>
+                              : answers[q.id] ? <span style={{ color: '#f59e0b', fontSize: '0.8rem' }}>Đang làm</span>
+                              : <span style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>Chưa làm</span>}
                           </div>
                         )
                       }))}
@@ -117,18 +143,19 @@ export const Part1Page: React.FC = () => {
               <div style={{ marginTop: '1.5rem' }}>
                 {currentQuestion.options.map((option, idx) => {
                   const letter = String.fromCharCode(65 + idx);
-                  const isSelected = answers[currentQuestionIndex] === option;
+                  const colors = optionColors(option, idx);
                   return (
                     <S.OptionCard
                       key={idx}
                       onClick={() => handleSelectAnswer(option)}
                       style={{
-                        borderColor: isSelected ? '#3b5b8c' : '#e2e8f0',
-                        background: isSelected ? '#eff6ff' : '#ffffff'
+                        borderColor: colors.border,
+                        background: colors.background,
+                        cursor: isSubmitted ? 'default' : 'pointer'
                       }}
                     >
-                      <div className="option-letter" style={{ color: isSelected ? '#3b5b8c' : '#0f172a' }}>{letter}</div>
-                      <div className="option-text" style={{ color: isSelected ? '#1a365d' : '#334155', fontWeight: isSelected ? '700' : '500' }}>{option}</div>
+                      <div className="option-letter" style={{ color: colors.letter }}>{letter}</div>
+                      <div className="option-text" style={{ color: colors.text, fontWeight: answers[currentQuestionIndex] === option ? '700' : '500' }}>{option}</div>
                     </S.OptionCard>
                   );
                 })}
@@ -140,10 +167,13 @@ export const Part1Page: React.FC = () => {
                 items={mockQuestions.map((q) => ({
                   key: q.id,
                   label: q.id,
-                  status: (answers[q.id] ? 'answered' : 'unanswered') as BoardStatus,
+                  status: (results[q.id] ? 'answered' : answers[q.id] ? 'partial' : 'unanswered') as BoardStatus,
                 }))}
                 activeKey={currentQuestionIndex}
                 onJump={setCurrentQuestionIndex}
+                showPartial
+                answeredLabel="Đã chấm"
+                partialLabel="Đang làm"
               />
             )}
           </S.MainContent>
@@ -160,22 +190,42 @@ export const Part1Page: React.FC = () => {
             </Button>
 
             <Space size="middle">
-              <Button
-                type="primary"
-                icon={<CheckCircleOutlined />}
-                size="large"
-                style={{
-                  borderRadius: '2rem',
-                  fontWeight: 600,
-                  background: '#1a365d',
-                  borderColor: '#1a365d',
-                  padding: '0 2rem',
-                  boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.25)'
-                }}
-                onClick={handleSubmit}
-              >
-                Nộp bài
-              </Button>
+              {isSubmitted ? (
+                <Button
+                  type="primary"
+                  icon={<RollbackOutlined />}
+                  size="large"
+                  style={{
+                    borderRadius: '2rem',
+                    fontWeight: 600,
+                    background: '#f59e0b',
+                    borderColor: '#f59e0b',
+                    padding: '0 2rem'
+                  }}
+                  onClick={handleRetry}
+                >
+                  Làm lại
+                </Button>
+              ) : (
+                <Button
+                  type="primary"
+                  icon={<CheckCircleOutlined />}
+                  size="large"
+                  loading={isGrading}
+                  disabled={!hasData}
+                  style={{
+                    borderRadius: '2rem',
+                    fontWeight: 600,
+                    background: '#1a365d',
+                    borderColor: '#1a365d',
+                    padding: '0 2rem',
+                    boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.25)'
+                  }}
+                  onClick={handleSubmit}
+                >
+                  Nộp câu này
+                </Button>
+              )}
               {hasNext && (
                 <Button
                   type="primary"

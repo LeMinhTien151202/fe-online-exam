@@ -1,4 +1,4 @@
-import { AudioOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined, WarningFilled } from '@ant-design/icons';
+import { AudioOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Tag, Tooltip } from 'antd';
 import React, { useMemo } from 'react';
 import { IAiGradeDetail, IExamSubmitResult } from '../../../../../shared/services/student-exam';
@@ -34,7 +34,6 @@ const SPEAKING_PART_TITLE: Record<number, string> = {
 // Màn kết quả sau khi nộp MOCK_TEST: CEFR tổng + điểm/band từng kỹ năng + chi tiết AI chấm.
 const ExamResultScreen: React.FC<ExamResultScreenProps> = ({ result, onBack }) => {
     const { skills, overallCefr } = useMemo(() => resolveSkillScores(result), [result]);
-    const pendingCount = result.needsManualReviewCount;
     // Điểm tổng Aptis 0–200 = tổng scaled 4 kỹ năng ngôn ngữ (Grammar là Core, không cộng).
     const totalScore = useMemo(() => mockTotalScaled(skills), [skills]);
 
@@ -63,13 +62,9 @@ const ExamResultScreen: React.FC<ExamResultScreenProps> = ({ result, onBack }) =
                             {item.band && <Tag color="green" style={{ margin: 0 }}>Band {item.band}</Tag>}
                         </span>
                     </R.AiPartLabel>
-                    {item.aiScore != null ? (
-                        <R.AiScoreVal $color={scoreHex(item.aiScore)}>
-                            {toScaled50(item.aiScore)}<small>/50</small>
-                        </R.AiScoreVal>
-                    ) : (
-                        <Tag color="warning" style={{ margin: 0 }}>Chờ chấm tay</Tag>
-                    )}
+                    <R.AiScoreVal $color={scoreHex(item.aiScore)}>
+                        {toScaled50(item.aiScore)}<small>/50</small>
+                    </R.AiScoreVal>
                 </R.AiCardHead>
                 <R.AiFeedback>{item.feedback || 'Chưa có nhận xét.'}</R.AiFeedback>
             </R.AiCard>
@@ -96,7 +91,7 @@ const ExamResultScreen: React.FC<ExamResultScreenProps> = ({ result, onBack }) =
                     ) : (
                         <R.CefrPending>
                             <ClockCircleOutlined />
-                            Chưa xếp loại{pendingCount > 0 ? ' — còn câu chờ chấm tay' : ''}
+                            Chưa đủ dữ liệu để xếp loại
                         </R.CefrPending>
                     )}
 
@@ -115,14 +110,6 @@ const ExamResultScreen: React.FC<ExamResultScreenProps> = ({ result, onBack }) =
                         </R.ScorePill>
                     </R.ScoreStrip>
 
-                    {pendingCount > 0 && (
-                        <div>
-                            <R.ManualReviewNote>
-                                <WarningFilled />
-                                {pendingCount} câu chờ chấm tay (AI chưa chấm được)
-                            </R.ManualReviewNote>
-                        </div>
-                    )}
                 </R.HeroCard>
 
                 {/* Điểm & CEFR theo từng kỹ năng */}
@@ -149,7 +136,7 @@ const ExamResultScreen: React.FC<ExamResultScreenProps> = ({ result, onBack }) =
                                             ) : sk.cefr ? (
                                                 <Tag color={cefrTagColor(sk.cefr)} style={{ fontWeight: 700 }}>{sk.cefr}</Tag>
                                             ) : (
-                                                <Tag color="warning">Chờ chấm tay</Tag>
+                                                <Tag color="default">Chưa đủ dữ liệu</Tag>
                                             )}
                                         </R.SkillName>
                                         <R.SkillScore>{sk.scaled}<small>/50</small></R.SkillScore>

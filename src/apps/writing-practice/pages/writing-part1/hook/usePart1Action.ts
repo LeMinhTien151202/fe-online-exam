@@ -4,17 +4,15 @@ import {
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from '../../../../../configs/toast';
 import { countWords } from '../../../utils/wordCounter';
-import { useWritingTimer } from './useWritingTimer';
 import { mapWPart1 } from '../../../services/mappers';
 import { flattenWritingExam } from '../../../services/writingExamMapper';
-import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { usePartPracticeExam } from '../../../../../shared/services/student-exam';
+import { usePerQuestionGrading } from '../../../../../shared/hooks/usePerQuestionGrading';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart1Action = () => {
   const navigate = useNavigate();
-  const timer = useWritingTimer(3 * 60);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
 
   // Luyện theo phần = đề PART_PRACTICE (skill 4, part 1 — ESSAY).
   const { examId, examDetail, isLoading } = usePartPracticeExam(4, 1);
@@ -24,7 +22,8 @@ export const usePart1Action = () => {
   }, [examDetail]);
   const total = list.length;
 
-  const submitMutation = useSubmitExamMutation();
+  // Chấm ngay từng đề: nộp riêng đề đang làm, AI trả điểm/nhận xét liền.
+  const { grades, gradingKey, gradeOne, resetGrade } = usePerQuestionGrading();
   const [index, setIndex] = useState(0);
   const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
   const data = useMemo(() => {
@@ -42,12 +41,18 @@ export const usePart1Action = () => {
     return wc >= wordMin && wc <= wordMax;
   };
 
+  const gradeKey = String(safeIndex);
+  const currentGrade = grades[gradeKey] ?? null;
+  const isSubmitted = currentGrade != null;
+  const isGrading = gradingKey === gradeKey;
+
   const handleAnswerChange = (id: number, value: string) => {
+    if (isSubmitted) return;
     setAnswers((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleSubmit = () => {
-    if (!questions.length) return;
+    if (!questions.length || isSubmitted) return;
     const hasEmpty = questions.some((q) => !(answers[q.id] || '').trim());
     const hasInvalid = questions.some((q) => getWordCount(answers[q.id] || '') > wordMax);
     if (hasEmpty) {
@@ -61,18 +66,19 @@ export const usePart1Action = () => {
     confirmSubmitExam({ totalQuestions: questions.length, onOk: doSubmit });
   };
 
+  // Nộp RIÊNG đề đang làm để AI chấm và trả kết quả ngay (giống luyện theo phần của Reading/Speaking).
+  // ESSAY = mảng bài viết theo thứ tự câu con.
   const doSubmit = () => {
-    toast.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
-    setDoneSets((prev) => new Set(prev).add(safeIndex));
-
-    // Nộp lên BE để tăng student_progress (skill 4, part 1). ESSAY = mảng bài viết theo thứ tự câu con.
     const dbQuestion = list[safeIndex];
-    if (examId && dbQuestion) {
-      const response = questions.map((q) => answers[q.id] ?? '');
-      if (response.some((v) => v.trim() !== '')) {
-        submitMutation.mutate({ examId, payload: { answers: [{ questionId: dbQuestion.id, response }] } });
-      }
-    }
+    const response = questions.map((q) => answers[q.id] ?? '');
+    if (!response.some((v) => v.trim() !== '')) return;
+    gradeOne({ key: gradeKey, examId, questionId: dbQuestion?.id, response });
+  };
+
+  // Làm lại đúng đề này: xoá bài viết để mở khoá ô nhập (kết quả cũ vẫn giữ tới khi chấm lại).
+  const handleRetry = () => {
+    setAnswers({});
+    resetGrade(gradeKey);
   };
 
   const handleBack = () => navigate({ to: '/writing' });
@@ -95,7 +101,7 @@ export const usePart1Action = () => {
 
   const hasCurrentInput = questions.some((q) => (answers[q.id] || '').trim());
   const boardItems = Array.from({ length: total }, (_, i) => {
-    const status: 'unanswered' | 'partial' | 'answered' = doneSets.has(i)
+    const status: 'unanswered' | 'partial' | 'answered' = grades[String(i)]
       ? 'answered'
       : i === safeIndex && hasCurrentInput
         ? 'partial'
@@ -110,11 +116,14 @@ export const usePart1Action = () => {
     wordMin,
     wordMax,
     answers,
-    timer,
     handleAnswerChange,
     isWordCountValid,
     getWordCount,
     handleSubmit,
+    handleRetry,
+    isSubmitted,
+    isGrading,
+    grade: currentGrade,
     handleBack,
     questions,
     total,

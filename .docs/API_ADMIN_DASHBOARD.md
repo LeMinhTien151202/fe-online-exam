@@ -38,7 +38,6 @@ Trả các chỉ số tổng hợp + phân bổ cho phần đầu dashboard. Nê
     "dailyActivity":   { "value": 1245,  "trendPercent": 5.4,  "trendType": "up" },
     "totalExams":      { "value": 45,    "trendType": "neutral" },
     "completedTests":  { "value": 328,   "trendPercent": 8.2,  "trendType": "up" },
-    "pendingGrading":  { "value": 42 },     // bài Writing/Speaking chờ chấm
     "pendingMaterials":{ "value": 8 }       // tài liệu chờ duyệt (nếu có nghiệp vụ)
   },
   "questionStats": {
@@ -77,7 +76,6 @@ Trả các chỉ số tổng hợp + phân bổ cho phần đầu dashboard. Nê
 | `dailyActivity` | `exam_attempts`/`exam_results` hoặc bảng log hoạt động | Số lượt hoạt động trong ngày hiện tại. |
 | `totalExams` + `examCounts` | `exam_sets` | `count` + `group by type` (lọc `deletedAt IS NULL`). Cần thống nhất enum `type` (`PART`/`SET`/`MOCK`). |
 | `completedTests` | `exam_results` | Số bài có trạng thái hoàn thành. |
-| `pendingGrading` | `exam_results` | Bài Writing/Speaking `status = PENDING_GRADING`. |
 | `skillDistribution` | `exam_results`/attempts | Tỉ lệ % lượt luyện theo skill; BE nên trả sẵn % (đã làm tròn, tổng ≈100). |
 
 - `trendType`: `"up" | "down" | "neutral"`. Khi không có so sánh → `"neutral"` và bỏ `trendPercent`.
@@ -154,13 +152,13 @@ Bài làm/nộp mới nhất.
     "skillName": "Reading",
     "score": 45,               // null nếu chưa chấm
     "maxScore": 50,            // null nếu không áp dụng
-    "status": "GRADED",        // GRADED | PENDING_GRADING
+    "status": "GRADED",
     "durationSeconds": 1512    // thời gian làm bài; FE format thành 25:12
   }
 ]
 ```
 - **Nguồn:** `exam_results` join `users`, `skills`, `order by submittedAt desc limit N`.
-- Bài tự luận chưa chấm: `status = "PENDING_GRADING"`, `score = null` → FE hiển thị "Chờ chấm".
+- Bài chỉ xuất hiện sau khi chấm hoàn chỉnh; lỗi AI làm submit thất bại nên không có bản ghi kết quả dở dang.
 - FE hiển thị điểm dạng `score/maxScore` và thời gian dạng `mm:ss` từ `durationSeconds`.
 
 ---
@@ -209,7 +207,6 @@ export interface DashboardSummary {
     dailyActivity: KpiValue;
     totalExams: KpiValue;
     completedTests: KpiValue;
-    pendingGrading: KpiValue;
     pendingMaterials?: KpiValue;
   };
   questionStats: { total: number; skills: { skillId: number; name: string; count: number }[] };
@@ -234,7 +231,7 @@ export interface RecentStudent {
 export interface RecentTest {
   resultId: number; studentName: string; skillId: number; skillName: string;
   score: number | null; maxScore: number | null;
-  status: 'GRADED' | 'PENDING_GRADING'; durationSeconds: number;
+  status: 'GRADED'; durationSeconds: number;
 }
 
 export type ActivityType =

@@ -1,13 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { mapSpeakingSets } from '../../../services/mappers';
 import { flattenSpeakingExam } from '../../../services/speakingExamMapper';
 import { usePartPracticeExam } from '../../../../../shared/services/student-exam';
-import { usePerQuestionGrading } from '../../../hooks/usePerQuestionGrading';
+import { usePerQuestionGrading } from '@/shared/hooks/usePerQuestionGrading';
 
 export const usePart2 = () => {
   const navigate = useNavigate();
-  const [timeLeft, setTimeLeft] = useState(12 * 60);
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [currentSubIndex, setCurrentSubIndex] = useState(1);
   const [answers, setAnswers] = useState<Record<string, string | null>>({});
@@ -24,17 +23,6 @@ export const usePart2 = () => {
   const setCount = sets.length;
 
   const { grades, gradingKey, gradeOne } = usePerQuestionGrading();
-
-  useEffect(() => {
-    const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
 
   const safeSet = setCount > 0 ? Math.min(currentSetIndex, setCount - 1) : 0;
   const raw = sets[safeSet];
@@ -117,7 +105,6 @@ export const usePart2 = () => {
     navigate,
     isLoading,
     hasData: setCount > 0,
-    timeLeft,
     currentSubIndex,
     setCurrentSubIndex,
     answers,
@@ -126,7 +113,6 @@ export const usePart2 = () => {
     setShowSampleAnswer,
     activeSampleIdx,
     setActiveSampleIdx,
-    formatTime,
     handleSubTabChange,
     handleNext,
     handleBack,

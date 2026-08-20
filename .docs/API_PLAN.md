@@ -135,7 +135,7 @@
 ### 2.11. `study-materials/` — Tài liệu học *(bảng `study_materials`)*
 | Method | Path | Quyền | Mô tả |
 | :-- | :-- | :-- | :-- |
-| POST | `/study-materials` | TEACHER/ADMIN | Tạo (PDF/VIDEO, `file_url`, `skill_id`, `duration_seconds`). |
+| POST | `/study-materials` | TEACHER/ADMIN | Tạo tài liệu (PDF/AUDIO/VIDEO/DOCX/PPTX/XLSX/ZIP/LINK). |
 | GET | `/study-materials` | mọi role | List + filter `skill_id`, `file_type` + pagination. |
 | GET | `/study-materials/:id` | mọi role | Chi tiết. |
 | PATCH | `/study-materials/:id` | TEACHER/ADMIN | Sửa. |
@@ -255,7 +255,7 @@ GEMINI_MAX_RETRIES=2
 - Retry có backoff khi lỗi mạng / 429 rate-limit; quá `MAX_RETRIES` → ném lỗi để caller xử lý.
 
 **`AiGradingService`** (1 service dùng chung cho cả Writing và Speaking — `src/ai-grading/ai-grading.service.ts`):
-- `gradeMany(items)` → chấm song song bằng `Promise.all`; mỗi câu tự bọc try/catch nên 1 câu lỗi **không** làm hỏng cả bài (trả về `needsManualReview: true`).
+- `gradeMany(items)` chấm song song; một câu lỗi làm toàn bộ submit thất bại để không persist kết quả thiếu.
 - `gradeEssay` (ESSAY / Writing):
   - Input: đề bài + `extra_config` (prompts/tasks, word_limit, register_type…) + bài viết học viên.
   - Writing giờ 1 part = 1 dòng gồm nhiều câu con (`prompts[]` / `tasks[]`) → dựng lại các câu con và chấm **tổng thể cả part → 1 điểm**.
@@ -268,7 +268,7 @@ GEMINI_MAX_RETRIES=2
 
 **Điều phối khi submit (mục 3.2 / 3.3)**:
 - `ExamsService.submit()` gom mọi câu ESSAY + RECORD → gọi `aiGrading.gradeMany(...)` (song song) cho **cả 3 loại đề**.
-- Câu chấm được → có `aiScore`; câu lỗi/thiếu `GEMINI_API_KEY` → `aiScore = null` + `needsManualReview: true` (đếm vào `needsManualReviewCount`).
+- Response thành công luôn có `aiScore` cho các câu đã trả lời; lỗi/thiếu `GEMINI_API_KEY` trả HTTP lỗi và không ghi attempt.
 - Tổng hợp vào review nóng (`ai[]`) trả FE ở **cả 3 loại đề**. `score` tổng = trung bình % theo **TẤT CẢ câu của đề** (trắc nghiệm `earned/total*100` + `aiScore`); câu **bỏ trống** (không gửi lên) tính **0%** nên mẫu số = cả đề, điểm không bị thổi phồng khi FE skip câu chưa làm. **MOCK_TEST + SKILL_FULL_SET** đều ghi `exam_attempts.total_score` = `score` này (cột `Int`, không nullable); nhưng **AVG chỉ tính trên MOCK_TEST** (SKILL_FULL_SET chỉ dùng để đánh dấu đã-làm, không đưa vào trung bình). **PART_PRACTICE**: không ghi attempt. Cả 3 đều trả điểm AI cho học viên xem ngay.
 - **KHÔNG lưu** feedback AI vào DB (đúng triết lý tối giản — xem [[design-conflicts]]).
 
@@ -276,7 +276,7 @@ GEMINI_MAX_RETRIES=2
 | Method | Path | Mô tả |
 | :-- | :-- | :-- |
 | GET | `/ai-grading/status` | Trả `{ enabled }` — Gemini đã bật chưa (có `GEMINI_API_KEY`). |
-| POST | `/ai-grading/test` | Chấm thử 1 câu `{ questionType: ESSAY\|RECORD, content?, extraConfig?, response }` → gọi thẳng Gemini, trả `{ score, band, feedback, needsManualReview }`. **Không lưu DB.** |
+| POST | `/ai-grading/test` | Chấm thử 1 câu `{ questionType: ESSAY\|RECORD, content?, extraConfig?, response }` → gọi thẳng Gemini, trả `{ score, band, feedback, criteria }`. **Không lưu DB.** |
 
 **Lưu ý vận hành**:
 - Free tier Gemini có quota/rate-limit → cân nhắc hàng đợi hoặc giới hạn số bài chấm đồng thời.

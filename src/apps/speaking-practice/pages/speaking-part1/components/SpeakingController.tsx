@@ -48,6 +48,7 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
   const [recCountdown, setRecCountdown] = useState(recordingTime);
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
   const [uploadState, setUploadState] = useState<UploadState>('idle');
+  const [microphoneError, setMicrophoneError] = useState<string | null>(null);
   const recordedBlobRef = useRef<Blob | null>(null);
 
   // Custom Audio playback state
@@ -138,6 +139,7 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
     setRecCountdown(recordingTime);
     setRecordedUrl(null);
     setUploadState('idle');
+    setMicrophoneError(null);
     recordedBlobRef.current = null;
     setAudioStream(null);
     mediaRecorderRef.current = null;
@@ -161,6 +163,7 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
     setStep('RECORDING');
     setRecCountdown(recordingTime);
     chunksRef.current = [];
+    setMicrophoneError(null);
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -193,11 +196,12 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
 
       mediaRecorder.start();
     } catch (err) {
-      console.warn('Microphone access denied or unavailable, using simulated recording mode.', err);
-      toast.info('Sử dụng ghi âm giả lập do không kết nối được micrô.');
-      // Simulated recording fallback
-      setStep('RECORDING');
-      // Wait for countdown to finish naturally or user click Stop
+      console.warn('Microphone access denied or unavailable.', err);
+      if (recTimerRef.current) clearTimeout(recTimerRef.current);
+      setStep('IDLE');
+      setAudioStream(null);
+      setMicrophoneError('Không truy cập được micrô. Hãy cấp quyền micrô trong trình duyệt, kiểm tra thiết bị rồi thử lại.');
+      toast.error('Không thể ghi âm vì chưa có quyền hoặc không tìm thấy micrô.');
     }
   };
 
@@ -227,19 +231,15 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
     } else {
-      // Không thu được micrô (chế độ giả lập) → không có audio để chấm.
-      setStep('COMPLETED');
-      setRecordedUrl(null);
-      recordedBlobRef.current = null;
-      setUploadState('idle');
-      if (onCompleted) onCompleted(null);
+      setStep('IDLE');
+      setMicrophoneError('Không có bản ghi hợp lệ. Hãy cấp quyền micrô và ghi âm lại.');
     }
   };
 
   // Playback handlers
   const togglePlayback = () => {
     if (!recordedUrl) {
-      toast.warning('Không có âm thanh thu âm thực tế để phát lại (chế độ giả lập).');
+      toast.warning('Chưa có bản ghi âm để phát lại.');
       return;
     }
     
@@ -291,6 +291,7 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
               ? `Ấn nút dưới đây để bắt đầu ${prepTime} giây chuẩn bị.`
               : 'Phần thi này không có thời gian chuẩn bị. Ấn nút dưới đây để ghi âm ngay.'}
           </PromptHint>
+          {microphoneError && <MicError role="alert">{microphoneError}</MicError>}
           <Button 
             type="primary" 
             size="large"
@@ -383,9 +384,7 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
             ✓ Đã hoàn thành ghi âm
           </StatusText>
           <PromptHint>
-            {recordedUrl
-              ? 'Nhấn nút Play để nghe lại câu trả lời của bạn, hoặc chọn Ghi âm lại.'
-              : 'Ghi âm giả lập thành công (Chế độ demo không thu micrô).'}
+            Nhấn nút Play để nghe lại câu trả lời của bạn, hoặc chọn Ghi âm lại.
           </PromptHint>
 
           {recordedUrl && autoUpload && (
@@ -493,6 +492,18 @@ const PromptHint = styled.p`
   margin: 0 0 1.5rem 0;
   max-width: 300px;
   line-height: 1.5;
+`;
+
+const MicError = styled.div`
+  max-width: 360px;
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #fecaca;
+  border-radius: 0.75rem;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.84rem;
+  line-height: 1.45;
 `;
 
 const TimerWrapper = styled.div`

@@ -4,17 +4,15 @@ import {
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from '../../../../../configs/toast';
 import { countWords } from '../../../utils/wordCounter';
-import { useWritingTimer } from '../../writing-part1/hook/useWritingTimer';
 import { mapWPart2 } from '../../../services/mappers';
 import { flattenWritingExam } from '../../../services/writingExamMapper';
-import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { usePartPracticeExam } from '../../../../../shared/services/student-exam';
+import { usePerQuestionGrading } from '../../../../../shared/hooks/usePerQuestionGrading';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart2Action = () => {
   const navigate = useNavigate();
-  const timer = useWritingTimer(3 * 60);
   const [answer, setAnswer] = useState('');
-  const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
 
   // Luyện theo phần = đề PART_PRACTICE (skill 4, part 2 — ESSAY).
   const { examId, examDetail, isLoading } = usePartPracticeExam(4, 2);
@@ -24,7 +22,8 @@ export const usePart2Action = () => {
   }, [examDetail]);
   const total = list.length;
 
-  const submitMutation = useSubmitExamMutation();
+  // Chấm ngay từng đề: nộp riêng đề đang làm, AI trả điểm/nhận xét liền.
+  const { grades, gradingKey, gradeOne, resetGrade } = usePerQuestionGrading();
   const [index, setIndex] = useState(0);
   const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
   const data = useMemo(() => {
@@ -41,9 +40,18 @@ export const usePart2Action = () => {
     return wc >= wordMin && wc <= wordMax;
   };
 
-  const handleAnswerChange = (value: string) => setAnswer(value);
+  const gradeKey = String(safeIndex);
+  const currentGrade = grades[gradeKey] ?? null;
+  const isSubmitted = currentGrade != null;
+  const isGrading = gradingKey === gradeKey;
+
+  const handleAnswerChange = (value: string) => {
+    if (isSubmitted) return;
+    setAnswer(value);
+  };
 
   const handleSubmit = () => {
+    if (isSubmitted) return;
     const wc = countWords(answer);
     if (!answer.trim()) {
       toast.warning('Vui lòng nhập câu trả lời của bạn!');
@@ -56,15 +64,16 @@ export const usePart2Action = () => {
     confirmSubmitExam({ totalQuestions: 1, onOk: doSubmit });
   };
 
+  // Nộp RIÊNG đề đang làm để AI chấm và trả kết quả ngay. ESSAY = mảng 1 bài viết.
   const doSubmit = () => {
-    toast.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
-    setDoneSets((prev) => new Set(prev).add(safeIndex));
-
-    // Nộp lên BE để tăng student_progress (skill 4, part 2). ESSAY = mảng 1 bài viết.
     const dbQuestion = list[safeIndex];
-    if (examId && dbQuestion) {
-      submitMutation.mutate({ examId, payload: { answers: [{ questionId: dbQuestion.id, response: [answer] }] } });
-    }
+    gradeOne({ key: gradeKey, examId, questionId: dbQuestion?.id, response: [answer] });
+  };
+
+  // Làm lại đúng đề này: xoá bài viết + kết quả cũ để mở khoá ô nhập.
+  const handleRetry = () => {
+    setAnswer('');
+    resetGrade(gradeKey);
   };
 
   const handleBack = () => navigate({ to: '/writing' });
@@ -86,7 +95,7 @@ export const usePart2Action = () => {
   };
 
   const boardItems = Array.from({ length: total }, (_, i) => {
-    const status: 'unanswered' | 'partial' | 'answered' = doneSets.has(i)
+    const status: 'unanswered' | 'partial' | 'answered' = grades[String(i)]
       ? 'answered'
       : i === safeIndex && answer.trim()
         ? 'partial'
@@ -102,11 +111,14 @@ export const usePart2Action = () => {
     wordMin,
     wordMax,
     answer,
-    timer,
     handleAnswerChange,
     isWordCountValid,
     getWordCount,
     handleSubmit,
+    handleRetry,
+    isSubmitted,
+    isGrading,
+    grade: currentGrade,
     handleBack,
     total,
     currentNumber: total > 0 ? safeIndex + 1 : 0,

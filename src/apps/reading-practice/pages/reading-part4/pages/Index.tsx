@@ -1,4 +1,4 @@
-import { CheckCircleOutlined,ClockCircleOutlined,LeftOutlined,RightOutlined,RollbackOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined,LeftOutlined,RightOutlined,RollbackOutlined } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
 import { Badge,Button,Progress,Select,Space,Tag } from 'antd';
 import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
@@ -24,7 +24,6 @@ export const Part4Page: React.FC = () => {
     handleNext,
     handlePrev,
     answers,
-    timeLeft,
     isSubmitted,
     handleSelectChange,
     handleSubmit,
@@ -32,7 +31,6 @@ export const Part4Page: React.FC = () => {
     answeredCount,
     progressPercent,
     correctCount,
-    formatTime,
     goTo,
     boardItems,
     activeSetIndex
@@ -71,10 +69,6 @@ export const Part4Page: React.FC = () => {
                 trailColor="rgba(255,255,255,0.2)"
                 format={() => <S.ProgressText>{answeredCount}/{paragraphCount || 0}</S.ProgressText>}
               />
-              <S.TimerWrapper>
-                <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
-                {formatTime(timeLeft)}
-              </S.TimerWrapper>
             </Space>
           </S.Header>
 

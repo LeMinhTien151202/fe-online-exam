@@ -1,16 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { useNavigate } from '@tanstack/react-router';
 import { flattenListeningExam } from '../../../services/listeningExamMapper';
 import { mapLPart2 } from '../../../services/mappers';
-import { ISubmitAnswer, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart2Action = () => {
   const navigate = useNavigate();
-  const [timeLeft, setTimeLeft] = useState(19 * 60 + 58);
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  // Chấm từng bộ: kết quả BE trả về của bộ nào lưu theo index bộ đó.
+  const [results, setResults] = useState<Record<number, { earned: number; total: number }>>({});
 
   // Luyện theo phần = đề PART_PRACTICE (skill 2, part 2 — SPEAKER_MATCH).
   const { examId, examDetail, isLoading } = usePartPracticeExam(2, 2);
@@ -23,22 +24,14 @@ export const usePart2Action = () => {
 
   const submitMutation = useSubmitExamMutation();
 
-  useEffect(() => {
-    const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
-
   const safeSet = setCount > 0 ? Math.min(currentSetIndex, setCount - 1) : 0;
-  const currentSet = sets[safeSet] ?? { id: 0, mediaUrl: null, instruction: '', options: [], speakerCount: 4, correctBySpeaker: {} };
+  const currentSet = sets[safeSet] ?? { id: 0, questionId: undefined, mediaUrl: null, instruction: '', options: [], speakerCount: 4, correctBySpeaker: {} };
+  const scoreResult = results[safeSet] ?? null;
+  const isSubmitted = scoreResult != null;
 
   const keyOf = (speaker: number) => `${safeSet}-${speaker}`;
   const handleSelectChange = (speaker: number, value: string) => {
+    if (isSubmitted) return;
     setAnswers((prev) => ({ ...prev, [keyOf(speaker)]: value }));
   };
   const getAnswer = (speaker: number) => answers[keyOf(speaker)];
@@ -47,41 +40,63 @@ export const usePart2Action = () => {
   const handleNext = () => { if (safeSet < setCount - 1) goSet(safeSet + 1); };
   const handlePrev = () => { if (safeSet > 0) goSet(safeSet - 1); else navigate({ to: '/listening' }); };
 
-  // Bảng câu hỏi: mỗi bộ = 1 nút; trạng thái theo số speaker đã chọn của bộ.
+  // Bảng câu hỏi: mỗi bộ = 1 nút. Bộ đã chấm -> "đã chấm"; bộ đang chọn dở -> "đang làm".
   const boardItems = sets.map((set, i) => {
     let filled = 0;
     for (let sp = 1; sp <= set.speakerCount; sp += 1) if (answers[`${i}-${sp}`]) filled += 1;
     const status: 'unanswered' | 'partial' | 'answered' =
-      filled === 0 ? 'unanswered' : filled >= set.speakerCount ? 'answered' : 'partial';
+      results[i] ? 'answered' : filled === 0 ? 'unanswered' : 'partial';
     return { key: i, label: i + 1, status };
   });
 
   const handleSubmit = () => {
-    confirmSubmitExam({ onOk: doSubmit });
+    if (isSubmitted) return;
+    let filled = 0;
+    for (let sp = 1; sp <= currentSet.speakerCount; sp += 1) if (getAnswer(sp)) filled += 1;
+    if (filled < currentSet.speakerCount) {
+      toast.warning(`Bạn mới trả lời ${filled}/${currentSet.speakerCount} người nói. Hãy hoàn thành tất cả nhé!`);
+      return;
+    }
+    confirmSubmitExam({ totalQuestions: currentSet.speakerCount, onOk: doSubmit });
   };
 
-  const doSubmit = () => {
-    const saved = localStorage.getItem('aptis_listening_progress');
-    let progressObj: Record<string, number> = {};
-    if (saved) { try { progressObj = JSON.parse(saved); } catch { /* bỏ qua lỗi */ } }
-    progressObj['l2'] = 100;
-    localStorage.setItem('aptis_listening_progress', JSON.stringify(progressObj));
-    toast.success('Đã ghi nhận câu trả lời! Bạn có thể luyện bài tiếp theo.');
-
-    // Nộp lên BE để tăng student_progress (skill 2, part 2). P2 = { speaker_index: answer } mỗi bộ.
-    if (examId) {
-      const submitAnswers: ISubmitAnswer[] = [];
-      sets.forEach((set, setIndex) => {
-        if (set.questionId == null) return;
-        const response: Record<string, string> = {};
-        for (let speaker = 1; speaker <= set.speakerCount; speaker += 1) {
-          const chosen = answers[`${setIndex}-${speaker}`];
-          if (chosen != null) response[String(speaker)] = chosen;
-        }
-        if (Object.keys(response).length > 0) submitAnswers.push({ questionId: set.questionId, response });
-      });
-      submitMutation.mutate({ examId, payload: { answers: submitAnswers } });
+  // Nộp RIÊNG bộ đang làm để BE chấm và trả điểm ngay.
+  // P2 = { speaker_index: answer } của đúng bộ đó.
+  const doSubmit = async () => {
+    const questionId = currentSet.questionId;
+    if (!examId || questionId == null) return;
+    const response: Record<string, string> = {};
+    for (let speaker = 1; speaker <= currentSet.speakerCount; speaker += 1) {
+      const chosen = getAnswer(speaker);
+      if (chosen != null) response[String(speaker)] = chosen;
     }
+    if (Object.keys(response).length === 0) return;
+
+    try {
+      const result = await submitMutation.mutateAsync({
+        examId,
+        payload: { answers: [{ questionId, response }] },
+      });
+      const score = summarizeAutoGrade(result, { skillId: 2, partNumber: 2 });
+      setResults((prev) => ({ ...prev, [safeSet]: score }));
+      toast.success(`Đã chấm xong bài ${safeSet + 1}: ${score.earned}/${score.total} câu đúng.`);
+    } catch {
+      // Interceptor axios đã hiện thông báo lỗi; không tự chấm ở FE để tránh sai điểm.
+    }
+  };
+
+  // Làm lại đúng bộ này: bỏ kết quả + các lựa chọn của bộ để mở khoá.
+  const handleRetry = () => {
+    setResults((prev) => {
+      const next = { ...prev };
+      delete next[safeSet];
+      return next;
+    });
+    setAnswers((prev) => {
+      const next = { ...prev };
+      for (let speaker = 1; speaker <= currentSet.speakerCount; speaker += 1) delete next[`${safeSet}-${speaker}`];
+      return next;
+    });
   };
 
   let answeredCount = 0;
@@ -97,14 +112,18 @@ export const usePart2Action = () => {
     hasPrev: safeSet > 0,
     handleNext,
     handlePrev,
-    timeLeft,
     currentSet,
     getAnswer,
     handleSelectChange,
     handleSubmit,
+    handleRetry,
+    isSubmitted,
+    isGrading: submitMutation.isPending,
+    correctCount: scoreResult?.earned ?? 0,
+    scoreTotal: scoreResult?.total ?? 0,
+    gradedCount: Object.keys(results).length,
     answeredCount,
     progressPercent,
-    formatTime,
     boardItems,
     activeSetIndex: safeSet,
     goTo: goSet,

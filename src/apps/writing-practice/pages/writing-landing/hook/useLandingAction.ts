@@ -2,7 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import React from 'react';
 import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { useWritingSetsQuery } from '../../../services/writingExamQuery';
-import { usePartPracticeProgress } from '../../../../../shared/services/student-exam';
+import { useExamBestScores, usePartPracticeProgress } from '../../../../../shared/services/student-exam';
 
 // Writing: w1..w4 = API part 1..4.
 const WRITING_PART_MAP = [
@@ -20,17 +20,7 @@ export const useLandingAction = () => {
   // Tiến độ luyện theo phần lấy từ server (answered/total).
   const { progress: writingProgress } = usePartPracticeProgress(4, WRITING_PART_MAP);
 
-  const [mockProgress] = React.useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem('aptis_writing_mock_progress');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        // ignore
-      }
-    }
-    return {};
-  });
+  const { scoreByExamId: mockProgress } = useExamBestScores();
 
   const { data: examRes, isLoading: isExamsLoading } = useWritingSetsQuery();
   const examSets = React.useMemo(() => examRes?.data ?? [], [examRes]);

@@ -105,7 +105,7 @@ export const Part4Page: React.FC = () => {
   const handleRecordComplete = (audioUrl: string | null) => {
     setAnswers(prev => ({
       ...prev,
-      [1]: audioUrl || 'recorded_mock'
+      [1]: audioUrl ?? ''
     }));
   };
 

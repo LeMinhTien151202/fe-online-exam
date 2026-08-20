@@ -46,7 +46,7 @@ Ba loại đề lưu **khác nhau** — FE dựa vào đây để hiển thị t
 | **RECORD** (Speaking P1) | 1 URL audio đã upload | `"https://.../audio/...mp3"` |
 | **RECORD gói** (Speaking P2/P3/P4) | **mảng URL** audio theo thứ tự `questions` | `["https://.../q1.mp3", "https://.../q2.mp3"]` |
 
-> ESSAY / RECORD **không auto-chấm được** → **AI (Gemini) chấm đồng bộ** khi nộp cho **mọi loại đề** có câu Viết/Nói (PART_PRACTICE, SKILL_FULL_SET, MOCK_TEST); kết quả trả trong `ai[]`. Gemini lỗi / chưa cấu hình `GEMINI_API_KEY` → câu đó vào `needsManualReviewCount` (`aiScore = null`).
+> ESSAY / RECORD được **AI (Gemini) chấm đồng bộ** khi nộp cho **mọi loại đề** có câu Viết/Nói. Gemini lỗi hoặc chưa cấu hình `GEMINI_API_KEY` làm submit thất bại và không ghi attempt/điểm.
 
 ---
 
@@ -158,7 +158,7 @@ Body giống B1/B2 (gộp mọi câu của các part trong 1 kỹ năng).
   ]
 }
 ```
-→ **MOCK_TEST**: câu 209 (ESSAY) + 210 (RECORD) được **AI (Gemini) chấm đồng bộ** → điểm AI. Ghi **1 dòng `exam_attempts` mỗi lần nộp** (`totalScore` = **điểm trắc nghiệm + điểm AI**; thi lại → thêm dòng mới) → dùng cho **đã thi/chưa thi** và **điểm trung bình** (`AVG`). Gemini lỗi → câu đó vào `needsManualReviewCount`.
+→ **MOCK_TEST**: câu 209 (ESSAY) + 210 (RECORD) được **AI (Gemini) chấm đồng bộ**. Chỉ ghi `exam_attempts` sau khi chấm hoàn chỉnh.
 
 ---
 
@@ -172,20 +172,19 @@ Body giống B1/B2 (gộp mọi câu của các part trong 1 kỹ năng).
   "autoScore": 85,
   "earnedAutoPoints": 17,
   "totalAutoPoints": 20,
-  "needsManualReviewCount": 0,
   "details": [
     { "questionId": 201, "questionType": "MC", "earned": 1, "total": 1, "autoGraded": true, "needsAiGrading": false }
   ],
   "ai": [
-    { "questionId": 209, "questionType": "ESSAY", "aiScore": 78, "band": "B2", "feedback": "Good ideas, minor grammar errors.", "needsManualReview": false },
-    { "questionId": 210, "questionType": "RECORD", "aiScore": 72, "band": "B1", "feedback": "Clear content, some hesitation.", "needsManualReview": false }
+    { "questionId": 209, "questionType": "ESSAY", "aiScore": 78, "band": "B2", "feedback": "Good ideas, minor grammar errors." },
+    { "questionId": 210, "questionType": "RECORD", "aiScore": 72, "band": "B1", "feedback": "Clear content, some hesitation." }
   ]
 }
 ```
 - `score` = **điểm tổng** = trung bình % theo **TẤT CẢ câu của đề** (trắc nghiệm `earned/total*100` + AI `aiScore`). `autoScore` = riêng phần trắc nghiệm.
 - **Điểm tính trên toàn đề, không phải chỉ câu gửi lên**: câu học viên **bỏ trống** (không có trong `answers`) vẫn tính **0%** → điểm không bị thổi phồng khi FE bỏ qua câu chưa làm. FE có thể gửi thiếu câu, không bắt buộc gửi `-1`/`''` cho câu trống. Câu tự luận (ESSAY/RECORD) bỏ trống tính 0%, không tốn lượt gọi Gemini.
 - `details` = chi tiết trắc nghiệm; `ai` = chi tiết chấm tự luận (ESSAY/RECORD) từ Gemini.
-- `needsManualReviewCount` > 0 nếu chưa cấu hình GEMINI_API_KEY hoặc Gemini lỗi → câu đó `aiScore = null`, cần chấm tay.
+- Lỗi AI/media trả HTTP lỗi và không tạo response kết quả dở dang.
 - **PART_PRACTICE** (luyện theo phần): `attemptId = null`, ghi `student_progress` theo `examId` (% hoàn thành đề). Nếu luyện phần Viết/Nói → câu ESSAY/RECORD vẫn được **AI (Gemini) chấm** (trả `ai[]`).
 - **SKILL_FULL_SET** (luyện theo bộ đề): `attemptId` có giá trị (đánh dấu **đã làm** đề) + ghi `student_progress` theo `examId`. **Không** tính vào điểm trung bình.
 - **MOCK_TEST** (thi thử): `attemptId` có giá trị, lưu `exam_attempts.total_score = score` **mỗi lần nộp** (nhiều dòng/đề) → dùng cho **đã thi/chưa thi** và **điểm trung bình** (`AVG(total_score)`).

@@ -4,7 +4,6 @@ import { ExamLoading, ExamEmpty } from '@/shared/components/ExamState';
 import { 
   LeftOutlined, 
   RightOutlined,
-  ClockCircleOutlined,
   DownOutlined,
   UpOutlined,
   UnlockOutlined
@@ -13,8 +12,8 @@ import * as S from '../styles/styled';
 import * as HomeS from '../../../../home/pages/styled';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import { SpeakingController } from '../components/SpeakingController';
-import { QuestionGradeCard } from '../../../components/QuestionGradeCard';
-import { AiGradeButton } from '../../../components/AiGradeButton';
+import { QuestionGradeCard } from '@/shared/components/AiGrade';
+import { AiGradeButton } from '@/shared/components/AiGrade';
 import { QuestionBoard, type BoardStatus } from '@/shared/components/QuestionBoard';
 import { usePart1 } from '../hook/usePart1';
 
@@ -23,7 +22,6 @@ export const Part1Page: React.FC = () => {
     isLoading,
     hasData,
     hasNext,
-    timeLeft,
     currentQuestionIndex,
     setCurrentQuestionIndex,
     answers,
@@ -31,7 +29,6 @@ export const Part1Page: React.FC = () => {
     setShowSampleAnswer,
     activeSampleIdx,
     setActiveSampleIdx,
-    formatTime,
     handleNext,
     handleBack,
     handleRecordComplete,
@@ -69,10 +66,6 @@ export const Part1Page: React.FC = () => {
                 trailColor="rgba(255,255,255,0.2)"
                 format={() => <span style={{ color: 'white', fontSize: '11px', fontWeight: 'bold' }}>{answeredCount}/{mockQuestions.length}</span>}
               />
-              <S.TimerWrapper>
-                <ClockCircleOutlined style={{ color: '#fbbf24', marginRight: '4px' }} />
-                {formatTime(timeLeft)}
-              </S.TimerWrapper>
             </Space>
           </S.Header>
 

@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { readingParts } from '../services/data';
 import { useReadingSetsQuery } from '../../../services/readingExamQuery';
-import { usePartPracticeProgress } from '../../../../../shared/services/student-exam';
+import { useExamBestScores, usePartPracticeProgress } from '../../../../../shared/services/student-exam';
 
 // Phần Reading: r1→API part 1, r2→2, r3→4, r4→5 (bỏ API part 3 trùng dạng part 2).
 const READING_PART_MAP = [
@@ -21,11 +21,7 @@ export const useReadingLanding = () => {
   // Tiến độ luyện theo phần lấy từ server (answered/total) — thêm câu hỏi thì tiến độ giảm.
   const { progress: readingProgress } = usePartPracticeProgress(3, READING_PART_MAP);
 
-  const [mockProgress] = useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem('aptis_reading_mock_progress');
-    if (saved) { try { return JSON.parse(saved); } catch { /* ignore */ } }
-    return {} as Record<string, number>;
-  });
+  const { scoreByExamId: mockProgress } = useExamBestScores();
 
   // Fetch đề thi Reading đã publish
   const { data: examRes, isLoading: isExamsLoading } = useReadingSetsQuery();

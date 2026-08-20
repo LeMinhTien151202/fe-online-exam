@@ -1,7 +1,7 @@
 import { FileType } from './types';
 
 // Nhóm định dạng file dùng để chọn icon/màu/nhãn hiển thị
-export type FileKind = 'pdf' | 'word' | 'excel' | 'ppt' | 'video' | 'image' | 'audio' | 'archive' | 'text' | 'file';
+export type FileKind = 'pdf' | 'word' | 'excel' | 'ppt' | 'video' | 'image' | 'audio' | 'archive' | 'text' | 'link' | 'file';
 
 export interface FileMeta {
   kind: FileKind;
@@ -34,7 +34,19 @@ export const KIND_META: Record<FileKind, { label: string; color: string; bg: str
   audio: { label: 'Audio', color: '#db2777', bg: '#fdf2f8' },
   archive: { label: 'Nén', color: '#a16207', bg: '#fefce8' },
   text: { label: 'Văn bản', color: '#475569', bg: '#f8fafc' },
+  link: { label: 'Liên kết', color: '#0284c7', bg: '#f0f9ff' },
   file: { label: 'Tệp', color: '#475569', bg: '#f1f5f9' },
+};
+
+const TYPE_TO_KIND: Record<FileType, FileKind> = {
+  PDF: 'pdf',
+  AUDIO: 'audio',
+  VIDEO: 'video',
+  DOCX: 'word',
+  PPTX: 'ppt',
+  XLSX: 'excel',
+  ZIP: 'archive',
+  LINK: 'link',
 };
 
 // Lấy đuôi file từ URL (bỏ query/hash)
@@ -49,6 +61,6 @@ const extFromUrl = (url: string): string => {
 export const getFileMeta = (fileUrl: string, fileType: FileType): FileMeta => {
   const ext = extFromUrl(fileUrl);
   let kind = EXT_TO_KIND[ext];
-  if (!kind) kind = fileType === 'VIDEO' ? 'video' : fileType === 'PDF' ? 'pdf' : 'file';
+  if (!kind) kind = TYPE_TO_KIND[fileType] ?? 'file';
   return { kind, ...KIND_META[kind] };
 };

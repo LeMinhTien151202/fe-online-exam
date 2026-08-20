@@ -212,7 +212,7 @@ export const Part1Page: React.FC = () => {
   const handleRecordComplete = (audioUrl: string | null) => {
     setAnswers(prev => ({
       ...prev,
-      [currentQuestionIndex]: audioUrl || 'recorded_mock'
+      [currentQuestionIndex]: audioUrl ?? ''
     }));
   };
 

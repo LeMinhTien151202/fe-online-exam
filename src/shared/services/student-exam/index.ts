@@ -4,3 +4,4 @@ export * from './studentExamQuery';
 export * from './autoGradeSummary';
 export * from './usePartPracticeExam';
 export * from './usePartPracticeProgress';
+export * from './useExamBestScores';

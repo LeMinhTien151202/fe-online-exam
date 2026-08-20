@@ -51,20 +51,6 @@ export const useWritingMockTest = (testId: string) => {
     [answers, prompts]
   );
 
-  const saveProgressToLocalStorage = useCallback(() => {
-    const saved = localStorage.getItem('aptis_writing_mock_progress');
-    let progressObj: Record<string, number> = {};
-    if (saved) {
-      try {
-        progressObj = JSON.parse(saved);
-      } catch {
-        progressObj = {};
-      }
-    }
-    progressObj[testId] = 100;
-    localStorage.setItem('aptis_writing_mock_progress', JSON.stringify(progressObj));
-  }, [testId]);
-
   // Gom prompt theo questionId (1 câu DB có thể sinh nhiều prompt) -> response là mảng
   // bài viết theo đúng thứ tự subIndex. ESSAY: AI chấm và trả kết quả ngay.
   const collectAnswers = useCallback((): ISubmitAnswer[] => {
@@ -98,9 +84,8 @@ export const useWritingMockTest = (testId: string) => {
     setIsSubmitted(true);
     setShowReport(true);
     toast.warning('Đã hết thời gian làm bài! Hệ thống tự động nộp bài.');
-    saveProgressToLocalStorage();
     submitToServer();
-  }, [saveProgressToLocalStorage, submitToServer]);
+  }, [submitToServer]);
 
   useEffect(() => {
     if (timeLeft <= 0 || isSubmitted) return;
@@ -120,7 +105,6 @@ export const useWritingMockTest = (testId: string) => {
     setIsSubmitted(true);
     setShowReport(true);
     toast.success('Bạn đã nộp bài thi viết thành công!');
-    saveProgressToLocalStorage();
     submitToServer();
   };
 

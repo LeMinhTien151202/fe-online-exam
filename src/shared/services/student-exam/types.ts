@@ -125,11 +125,10 @@ export interface IAiGradeDetail {
   questionType: string; // 'ESSAY' | 'RECORD'
   skillId?: number;
   partNumber?: number;
-  aiScore: number | null; // null khi Gemini lỗi / chưa cấu hình -> cần chấm tay
-  band: string | null; // 'A0'..'C1' (có thể 'C' -> chuẩn hoá về 'C1')
+  aiScore: number; // 0-100; lỗi Gemini làm request thất bại, không tạo kết quả tạm
+  band: string; // 'A0'..'C1' (có thể 'C' -> chuẩn hoá về 'C1')
   feedback: string;
   criteria?: IAiCriterion[]; // điểm chi tiết từng tiêu chí (có thể rỗng)
-  needsManualReview: boolean;
 }
 
 // Review nóng trả về sau khi nộp (mục C trong EXAM_SUBMIT_SAMPLES.md)
@@ -141,12 +140,11 @@ export interface IExamSubmitResult {
   autoScore: number; // riêng phần trắc nghiệm
   earnedAutoPoints: number;
   totalAutoPoints: number;
-  needsManualReviewCount: number;
   details: IAutoGradeDetail[];
   ai: IAiGradeDetail[];
   // MOCK_TEST: điểm + CEFR theo kỹ năng (gồm Grammar) và CEFR tổng.
   skills?: ISkillScore[];
-  overallCefr?: Cefr | null; // null khi thiếu kỹ năng / còn câu chờ chấm tay
+  overallCefr?: Cefr | null; // null khi đề thiếu kỹ năng bắt buộc
 }
 
 // GET /attempts/me — 1 dòng lịch sử làm bài.
@@ -156,7 +154,7 @@ export interface IAttemptItem {
   examId?: number;
   examSetId?: number;
   type?: ExamType;
-  totalScore: number | null; // NULL với SKILL_FULL_SET (chỉ đánh dấu đã làm)
+  totalScore: number | null; // điểm 0-100; null chỉ để tương thích dữ liệu lịch sử cũ
   status?: string; // 'SUBMITTED'
   overallCefr?: Cefr | null; // MOCK_TEST: CEFR tổng lúc nộp
   skillCefr?: ISkillScore[] | null; // snapshot điểm/CEFR từng kỹ năng lúc nộp

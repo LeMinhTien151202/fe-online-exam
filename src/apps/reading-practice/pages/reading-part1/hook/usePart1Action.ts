@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { mapPart1 } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
@@ -26,26 +26,11 @@ export const usePart1Action = () => {
   const gapCount = data?.questions.length ?? 0;
   const correctAnswers = data?.correctAnswers ?? {};
 
-  const [timeLeft, setTimeLeft] = useState(598); // 09:58
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [scoreResult, setScoreResult] = useState<{ earned: number; total: number } | null>(null);
   // Reading reset đáp án khi đổi bộ, nên lưu riêng các bộ đã nộp để tô bảng câu hỏi.
   const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
-
-  useEffect(() => {
-    if (timeLeft <= 0 || isSubmitted) return;
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft, isSubmitted]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const handleSelectChange = (questionId: number, value: string) => {
     if (isSubmitted) return;
@@ -76,13 +61,6 @@ export const usePart1Action = () => {
           const score = summarizeAutoGrade(result, { skillId: 3, partNumber: 1 });
           setScoreResult(score);
           setDoneSets((prev) => new Set(prev).add(safeIndex));
-          const scorePercent = score.total > 0 ? Math.round((score.earned / score.total) * 100) : 0;
-          const savedProgress = localStorage.getItem('aptis_reading_progress');
-          let nextProgress = { r1: scorePercent };
-          if (savedProgress) {
-            try { nextProgress = { ...JSON.parse(savedProgress), r1: scorePercent }; } catch { /* ignore */ }
-          }
-          localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
           toast.success(`Chúc mừng! Bạn đã hoàn thành câu ${safeIndex + 1}. Kết quả: ${score.earned}/${score.total} câu đúng.`);
         } catch {
           setIsSubmitted(false);
@@ -95,7 +73,6 @@ export const usePart1Action = () => {
     setAnswers({});
     setIsSubmitted(false);
     setScoreResult(null);
-    setTimeLeft(598);
   };
 
   const handleRetry = () => resetForNewQuestion();
@@ -148,7 +125,6 @@ export const usePart1Action = () => {
     goTo,
     boardItems,
     activeSetIndex: safeIndex,
-    timeLeft,
     answers,
     isSubmitted,
     handleSelectChange,
@@ -157,6 +133,5 @@ export const usePart1Action = () => {
     answeredCount,
     progressPercent,
     correctCount,
-    formatTime,
   };
 };

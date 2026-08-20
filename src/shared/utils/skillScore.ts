@@ -7,17 +7,15 @@ export const AI_SKILLS = [4, 5]; // Viết, Nói
 
 // Trung bình aiScore theo Part trước, rồi trung bình các Part (tránh lệch do Part nhiều dòng câu hỏi).
 const averageAiByPart = (
-  rows: { partNumber?: number; aiScore: number | null; band: string | null; needsManualReview: boolean }[],
+  rows: { partNumber?: number; aiScore: number; band: string }[],
 ): { aiScore: number | null } => {
   if (rows.length === 0) return { aiScore: null };
-  // Còn câu chờ chấm tay -> kỹ năng chưa có band hoàn chỉnh.
-  if (rows.some((r) => r.needsManualReview || r.aiScore == null)) return { aiScore: null };
 
   const byPart = new Map<number, number[]>();
   rows.forEach((r) => {
     const p = r.partNumber ?? 0;
     if (!byPart.has(p)) byPart.set(p, []);
-    byPart.get(p)!.push(r.aiScore as number);
+    byPart.get(p)!.push(r.aiScore);
   });
 
   const partAvgs = [...byPart.values()].map((arr) => arr.reduce((a, b) => a + b, 0) / arr.length);

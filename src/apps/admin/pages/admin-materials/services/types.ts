@@ -1,4 +1,4 @@
-export type FileType = 'PDF' | 'VIDEO';
+export type FileType = 'PDF' | 'AUDIO' | 'VIDEO' | 'DOCX' | 'PPTX' | 'XLSX' | 'ZIP' | 'LINK';
 
 export const FE_SKILL_TO_ID: Record<string, number> = {
   Grammar: 1,
@@ -32,7 +32,7 @@ export interface ICreateMaterialPayload {
   title: string;
   fileUrl: string;
   fileType: FileType;
-  durationSeconds?: number;
+  durationSeconds?: number | null;
   skillId?: number;
 }
 
@@ -40,7 +40,7 @@ export interface IUpdateMaterialPayload {
   title?: string;
   fileUrl?: string;
   fileType?: FileType;
-  durationSeconds?: number;
+  durationSeconds?: number | null;
   skillId?: number;
 }
 

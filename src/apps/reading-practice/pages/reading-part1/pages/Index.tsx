@@ -1,7 +1,6 @@
 import {
   BulbOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
   LeftOutlined,
   RightOutlined,
   RollbackOutlined
@@ -30,7 +29,6 @@ export const Part1Page: React.FC = () => {
     hasPrev,
     handleNext,
     handlePrev,
-    timeLeft,
     answers,
     isSubmitted,
     handleSelectChange,
@@ -39,7 +37,6 @@ export const Part1Page: React.FC = () => {
     answeredCount,
     progressPercent,
     correctCount,
-    formatTime,
     goTo,
     boardItems,
     activeSetIndex
@@ -173,10 +170,6 @@ export const Part1Page: React.FC = () => {
                 trailColor="rgba(255,255,255,0.2)"
                 format={() => <S.ProgressText>{answeredCount}/{gapCount || 0}</S.ProgressText>}
               />
-              <S.TimerWrapper>
-                <ClockCircleOutlined className="text-[#fbbf24] mr-1" />
-                {formatTime(timeLeft)}
-              </S.TimerWrapper>
             </Space>
           </S.Header>
 

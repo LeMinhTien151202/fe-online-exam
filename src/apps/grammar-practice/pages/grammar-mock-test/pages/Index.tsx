@@ -76,9 +76,6 @@ export const GrammarMockTestPage: React.FC = () => {
   } | null>(null);
 
   const handleExamSubmit = async (finalAnswers: Record<number, string>) => {
-    let totalScore = 0;
-    let totalPoints = totalQuestions;
-
     // Response take không chứa đáp án; điểm luôn lấy từ BE sau khi nộp.
     if (examData && examId) {
       const submitAnswers = collectGrammarAnswers(examData, finalAnswers);
@@ -87,27 +84,12 @@ export const GrammarMockTestPage: React.FC = () => {
         setReviewAttemptId(result.attemptId);
         const grammar = summarizeAutoGrade(result, { skillId: 1, partNumber: 1 });
         const vocabulary = summarizeAutoGrade(result, { skillId: 1, partNumber: 2 });
-        totalScore = grammar.earned + vocabulary.earned;
-        totalPoints = grammar.total + vocabulary.total;
+        const totalScore = grammar.earned + vocabulary.earned;
         setScoreResult({ grammarScore: grammar.earned, vocabScore: vocabulary.earned, total: totalScore });
       } catch {
         return;
       }
     }
-
-    const saved = localStorage.getItem('aptis_grammar_mock_progress');
-    let progressObj: Record<string, number> = {};
-    if (saved) {
-      try {
-        progressObj = JSON.parse(saved);
-      } catch {
-        progressObj = {};
-      }
-    }
-    const percent = totalPoints > 0 ? Math.round((totalScore / totalPoints) * 100) : 0;
-    const currentBest = progressObj[activeTestId] ?? 0;
-    progressObj[activeTestId] = Math.max(currentBest, percent);
-    localStorage.setItem('aptis_grammar_mock_progress', JSON.stringify(progressObj));
 
     setShowResultModal(true);
   };

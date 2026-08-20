@@ -73,11 +73,10 @@ Ví dụ rõ nhất — chấm AI:
 |---|---|
 | Port (interface) | `grading/application/AiGradingPort.java` |
 | Adapter thật | `grading/infrastructure/GeminiAiGradingAdapter.java` |
-| Adapter dự phòng | `grading/infrastructure/ManualReviewAiGradingAdapter.java` |
 | Port ASR | `grading/application/SpeechToTextPort.java` |
 | Adapter ASR | `FallbackSpeechToText` → `WhisperSidecarProvider` / `GroqTranscriptionProvider` |
 
-Nhờ vậy `ExamSubmissionService` chỉ phụ thuộc `AiGradingPort` — tắt Gemini (`GEMINI_ENABLED=false`) thì Spring nạp adapter "chuyển chấm tay", code nghiệp vụ **không đổi một dòng**.
+`ExamSubmissionService` chỉ phụ thuộc `AiGradingPort`. Nếu Gemini bị tắt hoặc chưa cấu hình trong khi bài có câu chủ quan đã trả lời, submit trả lỗi và không persist attempt dở dang.
 
 Tương tự với file: `storage/domain/StoragePort.java` ← `LocalStorageAdapter` hoặc `S3StorageAdapter`.
 
@@ -237,7 +236,7 @@ Backend đếm: `memory` (1 instance) hoặc `redis` (`RedisFixedWindowRateLimit
 
 ```
 POST /exams/12/submit
-Header: Idempotency-Key: <chuỗi 8-100 ký tự>   (tuỳ chọn nhưng nên có)
+Header: Idempotency-Key: <UUID 8-100 ký tự>   (bắt buộc)
 Body:   { "answers": [ { "questionId": 210, "response": <JSON bất kỳ> }, ... ] }
    │
    ▼
@@ -276,8 +275,8 @@ Body:   { "answers": [ { "questionId": 210, "response": <JSON bất kỳ> }, ...
 
 **Ba điểm cần nhớ:**
 
-1. **Chấm AI là đồng bộ.** Một bài Speaking nhiều file audio có thể mất hàng chục giây → FE phải đặt timeout riêng (đang là `120_000ms` trong `studentExamApi.submit`), không dùng timeout mặc định 10s.
-2. **Idempotency là bắt buộc về mặt thiết kế.** Không có key → mỗi lần bấm nộp là một attempt mới và một lần tốn tiền Gemini. Biên nhận "treo" quá `EXAM_SUBMIT_IDEMPOTENCY_STALE_AFTER` (10 phút) sẽ được coi là hỏng và cho nộp lại; lỗi giữa chừng thì `release()` mở khoá ngay.
+1. **Chấm AI là đồng bộ.** Một bài Speaking nhiều file audio có thể mất hàng chục giây → FE phải đặt timeout riêng (đang là `300_000ms` trong `studentExamApi.submit`), không dùng timeout mặc định 10s. Ràng buộc bắt buộc: ngân sách chấm AI của BE (`GEMINI_REQUEST_TIMEOUT × GEMINI_MAX_ATTEMPTS` ≈ 181s) < `app.exam-submit.idempotency-stale-after` (5m) ≤ timeout của FE.
+2. **Idempotency là bắt buộc.** `studentExamApi.submit` tạo UUID, giữ trong `sessionStorage` cho retry và chỉ xóa sau response thành công. Biên nhận treo quá 10 phút được reclaim bằng `owner_token` mới; worker cũ không thể complete/release. Receipt hoàn tất quá 30 ngày và receipt bỏ quên quá 1 ngày được scheduler dọn định kỳ.
 3. **Toàn bộ điểm số quy về thang %** rồi mới đổi sang thang hiển thị. Thang mỗi kỹ năng là **50** (theo quyết định nghiệp vụ), quy đổi CEFR nằm ở `grading/domain/CefrScale.java` + `OverallCefrPolicy.java`.
 
 ---

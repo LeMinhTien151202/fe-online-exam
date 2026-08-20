@@ -9,6 +9,8 @@ interface VocabularySectionProps {
   currentQuestionIndex: number;
   onSelectAnswer: (qNum: number, value: string) => void;
   onQuestionFocus?: (qNum: number) => void;
+  // Task đã được BE chấm -> khoá dropdown cho tới khi bấm "Làm lại".
+  isSubmitted?: boolean;
 }
 
 export const VocabularySection: React.FC<VocabularySectionProps> = ({
@@ -16,6 +18,7 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
   answers,
   currentQuestionIndex,
   onSelectAnswer,
+  isSubmitted = false,
 }) => {
   // Find which set contains the currentQuestionIndex
   const activeSet = sets.find(set => 
@@ -50,6 +53,7 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
             value={answerValue || undefined}
             onChange={(val) => onSelectAnswer(questionNumber, val)}
             dropdownMatchSelectWidth={false}
+            disabled={isSubmitted}
           >
             {options.map((opt) => {
               const isUsed = setUsedWords.has(opt) && answerValue !== opt;
@@ -112,6 +116,7 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
                         onChange={(val) => onSelectAnswer(subQ.questionNumber, val)}
                         dropdownMatchSelectWidth={false}
                         className="w-full"
+                        disabled={isSubmitted}
                       >
                         {activeSet.optionsList.map((opt) => {
                           const isUsed = usedWords.has(opt) && answer !== opt;

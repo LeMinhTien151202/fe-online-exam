@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { materialApi } from './materialApi';
-import { ICreateMaterialPayload, IMaterialFilter } from './types';
+import { ICreateMaterialPayload, IMaterialFilter, IUpdateMaterialPayload } from './types';
 
 export const MATERIALS_KEY = ['admin', 'study-materials'];
 
@@ -23,6 +23,15 @@ export const useDeleteMaterialMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => materialApi.remove(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: MATERIALS_KEY }),
+  });
+};
+
+export const useUpdateMaterialMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: IUpdateMaterialPayload }) =>
+      materialApi.update(id, payload),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: MATERIALS_KEY }),
   });
 };

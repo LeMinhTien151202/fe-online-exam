@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { mapPart4, Part4Data } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
@@ -25,7 +25,6 @@ export const usePart4Action = () => {
   const paragraphCount = data?.paragraphs.length ?? 0;
   const correctAnswers = data?.correctAnswers ?? {};
 
-  const [timeLeft, setTimeLeft] = useState(900);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
@@ -35,7 +34,6 @@ export const usePart4Action = () => {
     setAnswers({});
     setIsSubmitted(false);
     setScoreResult(null);
-    setTimeLeft(900);
   };
   const handleNext = () => {
     if (safeIndex >= total - 1) return;
@@ -51,18 +49,6 @@ export const usePart4Action = () => {
     if (idx === safeIndex) return;
     setIndex(idx);
     resetForNewQuestion();
-  };
-
-  useEffect(() => {
-    if (timeLeft <= 0 || isSubmitted) return;
-    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft, isSubmitted]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleSelectChange = (paragraphNum: number, value: string) => {
@@ -99,13 +85,6 @@ export const usePart4Action = () => {
           const score = summarizeAutoGrade(result, { skillId: 3, partNumber: 5 });
           setScoreResult(score);
           setDoneSets((prev) => new Set(prev).add(safeIndex));
-          const scorePercent = score.total > 0 ? Math.round((score.earned / score.total) * 100) : 0;
-          const savedProgress = localStorage.getItem('aptis_reading_progress');
-          let nextProgress = { r4: scorePercent };
-          if (savedProgress) {
-            try { nextProgress = { ...JSON.parse(savedProgress), r4: scorePercent }; } catch { /* ignore */ }
-          }
-          localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
           toast.success(`Chúc mừng! Bạn đã hoàn thành Part 4. Kết quả: ${score.earned}/${score.total} câu đúng.`);
         } catch {
           setIsSubmitted(false);
@@ -144,7 +123,6 @@ export const usePart4Action = () => {
     goTo,
     boardItems,
     activeSetIndex: safeIndex,
-    timeLeft,
     answers,
     isSubmitted,
     handleSelectChange,
@@ -153,6 +131,5 @@ export const usePart4Action = () => {
     answeredCount,
     progressPercent,
     correctCount,
-    formatTime
   };
 };

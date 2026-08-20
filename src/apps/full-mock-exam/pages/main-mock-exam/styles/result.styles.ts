@@ -170,22 +170,6 @@ export const ScorePill = styled.div`
   }
 `;
 
-export const ManualReviewNote = styled.div`
-  position: relative;
-  z-index: 1;
-  margin-top: 1.25rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.9rem;
-  border-radius: 999px;
-  background: rgba(251, 191, 36, 0.16);
-  border: 1px solid rgba(251, 191, 36, 0.4);
-  color: #fde68a;
-  font-size: 0.8rem;
-  font-weight: 600;
-`;
-
 // PANEL trắng chung (điểm kỹ năng / AI)
 export const Panel = styled.section`
   background: #fff;

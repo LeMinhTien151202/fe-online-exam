@@ -6,6 +6,8 @@ import * as S from '../styles/styled';
 export interface NavItem {
   display: number;
   answered: boolean;
+  // Task đã được BE chấm (chấm ngay từng task).
+  graded?: boolean;
   active: boolean;
   tooltip?: string;
 }
@@ -36,12 +38,12 @@ export const QuestionNav: React.FC<QuestionNavProps> = ({
         return (
           <Tooltip
             key={item.display}
-            title={item.tooltip ?? `Câu ${item.display}: ${item.answered ? 'Đã trả lời' : 'Chưa trả lời'}`}
+            title={item.tooltip ?? `Câu ${item.display}: ${item.graded ? 'Đã chấm' : item.answered ? 'Đang làm' : 'Chưa làm'}`}
             placement={placement}
             mouseEnterDelay={0.15}
           >
             <S.NavGridButton
-              $status={item.answered ? 'answered' : 'unanswered'}
+              $status={item.graded ? 'graded' : item.answered ? 'answered' : 'unanswered'}
               $active={item.active}
               onClick={() => onNavigate(item.display)}
             >
@@ -65,11 +67,15 @@ export const QuestionNav: React.FC<QuestionNavProps> = ({
       <S.Legend>
         <S.LegendItem>
           <S.LegendColorDot $type="unanswered" />
-          <span>Chưa trả lời</span>
+          <span>Chưa làm</span>
         </S.LegendItem>
         <S.LegendItem>
           <S.LegendColorDot $type="answered" />
-          <span>Đã trả lời</span>
+          <span>Đang làm</span>
+        </S.LegendItem>
+        <S.LegendItem>
+          <S.LegendColorDot $type="graded" />
+          <span>Đã chấm</span>
         </S.LegendItem>
         <S.LegendItem>
           <S.LegendColorDot $type="active" />
@@ -78,7 +84,7 @@ export const QuestionNav: React.FC<QuestionNavProps> = ({
       </S.Legend>
 
       <S.NavProgressRow>
-        <span>Tiến độ:</span>
+        <span>Đã chấm:</span>
         <span>{totalAnswered}/{totalQuestions} câu</span>
       </S.NavProgressRow>
     </S.NavPanel>

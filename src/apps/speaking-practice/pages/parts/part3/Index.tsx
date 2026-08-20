@@ -127,7 +127,7 @@ export const Part3Page: React.FC = () => {
     const key = `1-${currentSubIndex}`;
     setAnswers(prev => ({
       ...prev,
-      [key]: audioUrl || 'recorded_mock'
+      [key]: audioUrl ?? ''
     }));
   };
 

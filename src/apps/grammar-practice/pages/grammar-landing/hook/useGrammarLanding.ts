@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { useGrammarSetsQuery } from '../../../services/grammarExamQuery';
 import { grammarParts } from '../services/data';
-import { usePartPracticeProgress } from '../../../../../shared/services/student-exam';
+import { useExamBestScores, usePartPracticeProgress } from '../../../../../shared/services/student-exam';
 
 // Grammar: g1→API part 1, g2→API part 2.
 const GRAMMAR_PART_MAP = [
@@ -19,17 +19,7 @@ export const useGrammarLanding = () => {
   // Tiến độ luyện theo phần lấy từ server (answered/total).
   const { progress: partsProgress } = usePartPracticeProgress(1, GRAMMAR_PART_MAP);
 
-  const [mockProgress] = useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem('aptis_grammar_mock_progress');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        // ignore
-      }
-    }
-    return {};
-  });
+  const { scoreByExamId: mockProgress } = useExamBestScores();
 
   const { data: examRes, isLoading: isExamsLoading } = useGrammarSetsQuery();
   const examSets = examRes?.data ?? [];

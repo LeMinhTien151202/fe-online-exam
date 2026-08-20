@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { mapPart3, Part3Data } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
@@ -25,7 +25,6 @@ export const usePart3Action = () => {
   const questionCount = data?.questions.length ?? 0;
   const correctAnswers = data?.correctAnswers ?? {};
 
-  const [timeLeft, setTimeLeft] = useState(900);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
@@ -35,7 +34,6 @@ export const usePart3Action = () => {
     setAnswers({});
     setIsSubmitted(false);
     setScoreResult(null);
-    setTimeLeft(900);
   };
   const handleNext = () => {
     if (safeIndex >= total - 1) return;
@@ -51,18 +49,6 @@ export const usePart3Action = () => {
     if (idx === safeIndex) return;
     setIndex(idx);
     resetForNewQuestion();
-  };
-
-  useEffect(() => {
-    if (timeLeft <= 0 || isSubmitted) return;
-    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft, isSubmitted]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleRadioChange = (questionId: number, val: string) => {
@@ -94,13 +80,6 @@ export const usePart3Action = () => {
           const score = summarizeAutoGrade(result, { skillId: 3, partNumber: 4 });
           setScoreResult(score);
           setDoneSets((prev) => new Set(prev).add(safeIndex));
-          const scorePercent = score.total > 0 ? Math.round((score.earned / score.total) * 100) : 0;
-          const savedProgress = localStorage.getItem('aptis_reading_progress');
-          let nextProgress = { r3: scorePercent };
-          if (savedProgress) {
-            try { nextProgress = { ...JSON.parse(savedProgress), r3: scorePercent }; } catch { /* ignore */ }
-          }
-          localStorage.setItem('aptis_reading_progress', JSON.stringify(nextProgress));
           toast.success(`Chúc mừng! Bạn đã hoàn thành Part 3. Kết quả: ${score.earned}/${score.total} câu đúng.`);
         } catch {
           setIsSubmitted(false);
@@ -139,7 +118,6 @@ export const usePart3Action = () => {
     goTo,
     boardItems,
     activeSetIndex: safeIndex,
-    timeLeft,
     answers,
     isSubmitted,
     handleRadioChange,
@@ -148,6 +126,5 @@ export const usePart3Action = () => {
     answeredCount,
     progressPercent,
     correctCount,
-    formatTime
   };
 };

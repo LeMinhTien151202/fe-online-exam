@@ -14,7 +14,7 @@ import { Button, Card, Empty, Progress, Space, Spin, Tag, Tooltip, Typography } 
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { SpeakingController } from '../../../components/SpeakingController';
-import { AiGradeButton } from '../../../components/AiGradeButton';
+import { AiGradeButton } from '@/shared/components/AiGrade';
 import { SpeakingSet } from '../../../services/mappers';
 import { SpeakingNavItem } from '../hook/useMockTest';
 import { useMockTest } from '../hook/useMockTest';
@@ -98,7 +98,7 @@ export const SpeakingMockTestPage = () => {
   } = useMockTest();
 
   // CEFR band kỹ năng Nói (skillId 5) theo đúng bảng quy đổi 0–50, suy từ điểm AI của BE.
-  // band = null khi AI chưa chấm xong (audio chưa upload / còn câu chờ chấm tay).
+  // Request nộp bài thất bại nếu audio thiếu hoặc AI không chấm được.
   const overall = (() => {
     if (!submitResult) return null;
     const sk = singleSkillScore(submitResult, SPEAKING_SKILL_ID);
@@ -439,7 +439,7 @@ export const SpeakingMockTestPage = () => {
                 </S.ScoreRingWrapper>
                 <Text type="secondary" style={{ display: 'block', marginBottom: '1rem', fontSize: '0.85rem' }}>
                   {overall?.band == null
-                    ? '(AI chưa chấm xong — chưa xếp band, còn câu chờ chấm tay)'
+                    ? '(Chưa đủ dữ liệu để xếp band)'
                     : `Điểm ước lượng ${overall.scaled}/50 (quy đổi tuyến tính, không phải scaled chính thức)`}
                 </Text>
                 <S.ReportGrid>
@@ -465,11 +465,7 @@ export const SpeakingMockTestPage = () => {
                               <Tag color="geekblue">{item.questionType}</Tag>
                               {item.band && <Tag color="green">Band {item.band}</Tag>}
                             </Space>
-                            {item.aiScore != null ? (
-                              <b style={{ color: '#10b981' }}>{item.aiScore}/100</b>
-                            ) : (
-                              <Tag color="warning">Chờ chấm tay</Tag>
-                            )}
+                            <b style={{ color: '#10b981' }}>{item.aiScore}/100</b>
                           </div>
                           <Text style={{ color: '#475569', fontSize: '0.9rem' }}>
                             {item.feedback || 'Chưa có nhận xét.'}

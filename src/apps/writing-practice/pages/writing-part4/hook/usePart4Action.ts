@@ -4,18 +4,16 @@ import {
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from '../../../../../configs/toast';
 import { countWords } from '../../../utils/wordCounter';
-import { useWritingTimer } from '../../writing-part1/hook/useWritingTimer';
 import { mapWPart4 } from '../../../services/mappers';
 import { flattenWritingExam } from '../../../services/writingExamMapper';
-import { usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { usePartPracticeExam } from '../../../../../shared/services/student-exam';
+import { usePerQuestionGrading } from '../../../../../shared/hooks/usePerQuestionGrading';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart4Action = () => {
   const navigate = useNavigate();
-  const timer = useWritingTimer(20 * 60);
   const [informalEmail, setInformalEmail] = useState('');
   const [formalEmail, setFormalEmail] = useState('');
-  const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
 
   // Luyện theo phần = đề PART_PRACTICE (skill 4, part 4 — ESSAY 2 email).
   const { examId, examDetail, isLoading } = usePartPracticeExam(4, 4);
@@ -25,7 +23,8 @@ export const usePart4Action = () => {
   }, [examDetail]);
   const total = list.length;
 
-  const submitMutation = useSubmitExamMutation();
+  // Chấm ngay từng đề: nộp riêng đề đang làm, AI trả điểm/nhận xét liền.
+  const { grades, gradingKey, gradeOne, resetGrade } = usePerQuestionGrading();
   const [index, setIndex] = useState(0);
   const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
   const data = useMemo(() => {
@@ -48,10 +47,16 @@ export const usePart4Action = () => {
     return wc >= formalMin && wc <= formalMax;
   };
 
-  const handleInformalChange = (value: string) => setInformalEmail(value);
-  const handleFormalChange = (value: string) => setFormalEmail(value);
+  const gradeKey = String(safeIndex);
+  const currentGrade = grades[gradeKey] ?? null;
+  const isSubmitted = currentGrade != null;
+  const isGrading = gradingKey === gradeKey;
+
+  const handleInformalChange = (value: string) => { if (!isSubmitted) setInformalEmail(value); };
+  const handleFormalChange = (value: string) => { if (!isSubmitted) setFormalEmail(value); };
 
   const handleSubmit = () => {
+    if (isSubmitted) return;
     const infWc = countWords(informalEmail);
     const formWc = countWords(formalEmail);
     if (!informalEmail.trim() || !formalEmail.trim()) {
@@ -69,18 +74,23 @@ export const usePart4Action = () => {
     confirmSubmitExam({ totalQuestions: 2, onOk: doSubmit });
   };
 
+  // Nộp RIÊNG đề đang làm để AI chấm và trả kết quả ngay.
+  // ESSAY = [email thân mật, email trang trọng].
   const doSubmit = () => {
-    toast.success('Đã hoàn thành câu hỏi này! Bạn có thể luyện câu tiếp theo.');
-    setDoneSets((prev) => new Set(prev).add(safeIndex));
-
-    // Nộp lên BE để tăng student_progress (skill 4, part 4). ESSAY = [email thân mật, email trang trọng].
     const dbQuestion = list[safeIndex];
-    if (examId && dbQuestion) {
-      submitMutation.mutate({
-        examId,
-        payload: { answers: [{ questionId: dbQuestion.id, response: [informalEmail, formalEmail] }] },
-      });
-    }
+    gradeOne({
+      key: gradeKey,
+      examId,
+      questionId: dbQuestion?.id,
+      response: [informalEmail, formalEmail],
+    });
+  };
+
+  // Làm lại đúng đề này: xoá 2 email + kết quả cũ để mở khoá ô nhập.
+  const handleRetry = () => {
+    setInformalEmail('');
+    setFormalEmail('');
+    resetGrade(gradeKey);
   };
 
   const handleBack = () => navigate({ to: '/writing' });
@@ -105,7 +115,7 @@ export const usePart4Action = () => {
   };
 
   const boardItems = Array.from({ length: total }, (_, i) => {
-    const status: 'unanswered' | 'partial' | 'answered' = doneSets.has(i)
+    const status: 'unanswered' | 'partial' | 'answered' = grades[String(i)]
       ? 'answered'
       : i === safeIndex && (informalEmail.trim() || formalEmail.trim())
         ? 'partial'
@@ -136,13 +146,16 @@ export const usePart4Action = () => {
     formalMax,
     informalEmail,
     formalEmail,
-    timer,
     handleInformalChange,
     handleFormalChange,
     isInformalValid,
     isFormalValid,
     getWordCount,
     handleSubmit,
+    handleRetry,
+    isSubmitted,
+    isGrading,
+    grade: currentGrade,
     handleBack,
   };
 };

@@ -1,4 +1,4 @@
-import { toast } from '../../../configs/toast';
+import { toast } from '../../configs/toast';
 import {
   useState } from 'react';
 import {
@@ -38,12 +38,7 @@ export const usePerQuestionGrading = () => {
         return;
       }
       setGrades((prev) => ({ ...prev, [key]: ai }));
-      if (ai.aiScore != null) {
-        toast.success(`Đã chấm xong: ${ai.aiScore}/100`);
-      } else {
-        // AI không chấm được -> nêu đúng lý do backend trả về (thiếu audio, chưa cấu hình, lỗi tạm thời...).
-        toast.warning(ai.feedback?.trim() || 'Câu này cần chấm tay.');
-      }
+      toast.success(`Đã chấm xong: ${ai.aiScore}/100`);
     } catch {
       // Interceptor axios đã hiện notification lỗi.
     } finally {
@@ -51,5 +46,14 @@ export const usePerQuestionGrading = () => {
     }
   };
 
-  return { grades, gradingKey, gradeOne };
+  // Bỏ kết quả của 1 câu để người học làm lại câu đó.
+  const resetGrade = (key: string) => {
+    setGrades((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
+  return { grades, gradingKey, gradeOne, resetGrade };
 };

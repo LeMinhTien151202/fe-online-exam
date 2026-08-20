@@ -303,7 +303,7 @@ export const ButtonGrid = styled.div`
 `;
 
 export const NavGridButton = styled.button<{
-  $status: 'unanswered' | 'answered';
+  $status: 'unanswered' | 'answered' | 'graded';
   $active: boolean;
 }>`
   aspect-ratio: 1;
@@ -319,18 +319,21 @@ export const NavGridButton = styled.button<{
 
   // Background and border logic
   background: ${props => {
+    if (props.$status === 'graded') return '#ecfdf5';
     if (props.$status === 'answered') return '#eff6ff';
     return '#f1f5f9';
   }};
 
   border: 1.5px solid ${props => {
     if (props.$active) return '#1a365d';
+    if (props.$status === 'graded') return '#a7f3d0';
     if (props.$status === 'answered') return '#bfdbfe';
     return 'transparent';
   }};
 
   color: ${props => {
     if (props.$active) return '#1a365d';
+    if (props.$status === 'graded') return '#047857';
     if (props.$status === 'answered') return '#2f4a6b';
     return '#64748b';
   }};
@@ -451,18 +454,20 @@ export const VocabLabelBase = styled(VocabLabel)`
 `;
 
 
-export const LegendColorDot = styled.div<{ $type: 'unanswered' | 'answered' | 'active' }>`
+export const LegendColorDot = styled.div<{ $type: 'unanswered' | 'answered' | 'graded' | 'active' }>`
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 0.25rem;
-  
+
   background: ${props => {
     if (props.$type === 'unanswered') return '#f1f5f9';
+    if (props.$type === 'graded') return '#ecfdf5';
     if (props.$type === 'answered') return '#eff6ff';
     return 'white';
   }};
 
   border: ${props => {
+    if (props.$type === 'graded') return '1px solid #a7f3d0';
     if (props.$type === 'answered') return '1px solid #bfdbfe';
     if (props.$type === 'active') return '1.5px solid #1a365d';
     return 'none';

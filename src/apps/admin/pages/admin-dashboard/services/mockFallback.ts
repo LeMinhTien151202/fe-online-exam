@@ -41,7 +41,6 @@ export const MOCK_KPIS: DashboardSummary['kpis'] = {
   dailyActivity: { value: 34, trendPercent: 6.2, trendType: 'up' },
   totalExams: { value: 45, trendType: 'neutral' },
   completedTests: { value: 328, trendPercent: 8.0, trendType: 'up' },
-  pendingGrading: { value: 0 },
 };
 
 export const MOCK_SKILL_DISTRIBUTION = [

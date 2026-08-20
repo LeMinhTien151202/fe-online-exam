@@ -1,5 +1,5 @@
-// Loại file API hỗ trợ (khớp FE_PHASE7)
-export type FileType = 'PDF' | 'VIDEO';
+// Loại file API hỗ trợ.
+export type FileType = 'PDF' | 'AUDIO' | 'VIDEO' | 'DOCX' | 'PPTX' | 'XLSX' | 'ZIP' | 'LINK';
 
 // Kỹ năng: id (seed BE) -> nhãn tiếng Việt khớp các tab lọc của trang học viên
 export const SKILL_ID_TO_LABEL: Record<number, string> = {
