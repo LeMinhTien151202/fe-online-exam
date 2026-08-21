@@ -392,6 +392,13 @@ export const UsedOptionText = styled.span`
   font-style: italic;
 `;
 
+export const CorrectAnswerText = styled.span`
+  margin-left: 0.5rem;
+  color: #10b981;
+  font-size: 0.9rem;
+  font-weight: 600;
+`;
+
 export const VocabularySectionWrapper = styled.div`
   display: flex;
   flex-direction: column;

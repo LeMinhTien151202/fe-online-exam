@@ -124,7 +124,8 @@ export const PersonRow = styled.div`
   }
 `;
 
-export const StyledSelect = styled(Select)<{ $hasValue?: boolean }>`
+// $wrong: sau khi chấm, ô chọn sai được tô đỏ (đúng vẫn giữ xanh như $hasValue).
+export const StyledSelect = styled(Select)<{ $hasValue?: boolean; $wrong?: boolean }>`
   width: 100% !important;
 
   .ant-select-selector {
@@ -133,12 +134,12 @@ export const StyledSelect = styled(Select)<{ $hasValue?: boolean }>`
     display: flex !important;
     align-items: center !important;
     padding-left: 16px !important;
-    
-    border-color: ${props => props.$hasValue ? '#10b981' : '#e2e8f0'} !important;
-    background: ${props => props.$hasValue ? '#ecfdf5' : '#ffffff'} !important;
-    
+
+    border-color: ${props => (props.$wrong ? '#ef4444' : props.$hasValue ? '#10b981' : '#e2e8f0')} !important;
+    background: ${props => (props.$wrong ? '#fef2f2' : props.$hasValue ? '#ecfdf5' : '#ffffff')} !important;
+
     &:hover {
-      border-color: ${props => props.$hasValue ? '#059669' : '#94a3b8'} !important;
+      border-color: ${props => (props.$wrong ? '#dc2626' : props.$hasValue ? '#059669' : '#94a3b8')} !important;
     }
   }
 
@@ -148,9 +149,17 @@ export const StyledSelect = styled(Select)<{ $hasValue?: boolean }>`
   }
 
   .ant-select-selection-item {
-    color: ${props => props.$hasValue ? '#047857' : '#334155'} !important;
+    color: ${props => (props.$wrong ? '#b91c1c' : props.$hasValue ? '#047857' : '#334155')} !important;
     font-weight: 600 !important;
   }
+`;
+
+export const CorrectAnswerText = styled.span`
+  display: inline-block;
+  margin-top: 0.35rem;
+  color: #10b981;
+  font-size: 0.9rem;
+  font-weight: 600;
 `;
 
 export const TranscriptButtonWrapper = styled.div`

@@ -30,6 +30,10 @@ export const studentExamApi = {
   take: (id: number) =>
     axiosInstance.get<IStudentExamTake, IStudentExamTake>(`/exams/${id}/take`),
 
+  // Chỉ dùng ở local/dev cho nút điền đáp án mẫu. Route này không tồn tại ở staging/production.
+  answerKey: (id: number) =>
+    axiosInstance.get<IStudentExamTake, IStudentExamTake>(`/test-support/exams/${id}/answer-key`),
+
   // Nộp bài: BE tự phân luồng theo type của đề (PART_PRACTICE / SKILL_FULL_SET / MOCK_TEST).
   // Trả review nóng: điểm trắc nghiệm + kết quả AI (ESSAY/RECORD) ngay trong response.
   submit: async (examId: number, payload: ISubmitExamPayload) => {
@@ -79,7 +83,7 @@ export const studentExamApi = {
   myExamProgress: () =>
     axiosInstance.get<IExamProgressRow[], IExamProgressRow[]>('/progress/exams/me'),
 
-  // Tiến độ tích lũy theo (skill, part) — dashboard "đã luyện bao nhiêu" (gộp mọi đề).
+  // Tiến độ tích lũy theo (skill, part) — dashboard "đã luyện bao nhiêu", chỉ PART_PRACTICE.
   myProgress: () =>
     axiosInstance.get<IStudentProgressRow[], IStudentProgressRow[]>('/progress/me'),
 

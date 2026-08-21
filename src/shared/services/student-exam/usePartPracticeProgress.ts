@@ -1,11 +1,6 @@
 import { useMemo } from 'react';
+import { PartMapEntry, pickPartPracticeExam } from './partPracticeParts';
 import { normalizeExamProgress, usePartPracticeListQuery, useMyExamProgressQuery } from './studentExamQuery';
-
-// Ánh xạ phần hiển thị (feId) -> partNumber thật trên API của kỹ năng.
-export interface PartMapEntry {
-  feId: string;
-  apiPart: number;
-}
 
 /**
  * Tiến độ luyện theo phần lấy từ server theo mô hình mới (FE_PROGRESS.md mục 1 & 3):
@@ -21,18 +16,12 @@ export const usePartPracticeProgress = (skillId: number, partMap: PartMapEntry[]
 
   const percentByExamId = useMemo(() => normalizeExamProgress(progressRaw), [progressRaw]);
 
-  // examId của đề PART_PRACTICE cho mỗi apiPart — CÙNG quy tắc chọn với usePartPracticeExam
-  // (ưu tiên đề active, rồi tới đề mới nhất) để card khớp đúng đề mà trang luyện đang nộp.
+  // examId của đề PART_PRACTICE cho mỗi apiPart — dùng CHUNG pickPartPracticeExam với trang luyện
+  // và ô tổng quan để card khớp đúng đề mà trang luyện đang nộp.
   const examIdByPart = useMemo(() => {
-    const items = listRes?.data ?? [];
     const map = new Map<number, number>();
     partMap.forEach(({ apiPart }) => {
-      const match = items
-        .filter((item) => item.partNumber === apiPart)
-        .sort((a, b) => {
-          if (a.isActive !== b.isActive) return a.isActive ? -1 : 1;
-          return b.createdAt > a.createdAt ? 1 : -1;
-        })[0];
+      const match = pickPartPracticeExam(listRes?.data, apiPart);
       if (match) map.set(apiPart, match.id);
     });
     return map;

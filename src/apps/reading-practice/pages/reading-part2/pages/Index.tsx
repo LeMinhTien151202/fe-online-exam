@@ -28,6 +28,8 @@ export const Part2Page: React.FC = () => {
     handleNext,
     handlePrev,
     isSubmitted,
+    correctOrder,
+    hasAnswerReview,
     pool,
     slots,
     dragOverSlot,
@@ -111,8 +113,7 @@ export const Part2Page: React.FC = () => {
                 {slotIds.map((idx) => {
                   const item = slots[idx];
                   const isOver = dragOverSlot === idx;
-                  const hasAnswerReview = data.correctOrder.length > 0;
-                  const isCorrect = hasAnswerReview && item && item.id === data.correctOrder[idx - 1];
+                  const isCorrect = hasAnswerReview && item && item.id === correctOrder[idx - 1];
 
                   return (
                     <div
@@ -167,10 +168,10 @@ export const Part2Page: React.FC = () => {
             <S.Column>
               <div className="flex justify-between items-center mb-2">
                 <span className="font-bold text-[#0f172a] text-[0.95rem]">
-                  {isSubmitted ? (data.correctOrder.length > 0 ? 'Đáp án đúng' : 'Bài đã được chấm trên máy chủ') : '← Kéo hoặc click để chọn câu'}
+                  {isSubmitted ? (hasAnswerReview ? 'Đáp án đúng' : 'Bài đã được chấm trên máy chủ') : '← Kéo hoặc click để chọn câu'}
                 </span>
                 <span className="text-[0.75rem] text-[#64748b] font-semibold">
-                  {isSubmitted ? (data.correctOrder.length > 0 ? 'Bảng đáp án' : 'Đã nộp') : `${placedCount}/${slotCount} Đã xếp`}
+                  {isSubmitted ? (hasAnswerReview ? 'Bảng đáp án' : 'Đã nộp') : `${placedCount}/${slotCount} Đã xếp`}
                 </span>
               </div>
               <S.ColumnHeader className="invisible select-none">
@@ -179,7 +180,7 @@ export const Part2Page: React.FC = () => {
               <S.OptionsPool>
                 {isSubmitted ? (
                   <S.OptionsWrapper>
-                    {data.correctOrder.map((id, index) => {
+                    {correctOrder.map((id, index) => {
                       const text = data.initialSentences.find(s => s.id === id)?.text;
                       return (
                         <S.CorrectAnswerRow key={id}>

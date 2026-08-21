@@ -2,7 +2,12 @@ import { useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { mapPart3, Part3Data } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
-import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import {
+  pickCorrectResponse,
+  summarizeAutoGrade,
+  usePartPracticeExam,
+  useSubmitExamMutation,
+} from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart3Action = () => {
@@ -23,8 +28,9 @@ export const usePart3Action = () => {
   }, [list, safeIndex]);
 
   const questionCount = data?.questions.length ?? 0;
-  const correctAnswers = data?.correctAnswers ?? {};
 
+  // Đáp án đúng do BE trả kèm kết quả chấm (đề lấy về đã bị cắt sạch đáp án).
+  const [gradedAnswers, setGradedAnswers] = useState<Record<number, string>>({});
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
@@ -34,6 +40,7 @@ export const usePart3Action = () => {
     setAnswers({});
     setIsSubmitted(false);
     setScoreResult(null);
+    setGradedAnswers({});
   };
   const handleNext = () => {
     if (safeIndex >= total - 1) return;
@@ -77,10 +84,21 @@ export const usePart3Action = () => {
             examId,
             payload: { answers: [{ questionId: data.questionId, response }] },
           });
-          const score = summarizeAutoGrade(result, { skillId: 3, partNumber: 4 });
+          const score = summarizeAutoGrade(result, { questionId: data.questionId });
           setScoreResult(score);
+          // SPEAKER_MATCH: đáp án đúng là mảng person key theo đúng thứ tự ý kiến.
+          const correct = pickCorrectResponse(result, data.questionId);
+          if (Array.isArray(correct)) {
+            setGradedAnswers(
+              Object.fromEntries(
+                data.questions
+                  .map((q, i) => [q.id, String(correct[i] ?? '')] as const)
+                  .filter((entry) => !!entry[1])
+              )
+            );
+          }
           setDoneSets((prev) => new Set(prev).add(safeIndex));
-          toast.success(`Chúc mừng! Bạn đã hoàn thành Part 3. Kết quả: ${score.earned}/${score.total} câu đúng.`);
+          toast.success(`Đã chấm xong câu ${safeIndex + 1}: ${score.earned}/${score.total} câu đúng.`);
         } catch {
           setIsSubmitted(false);
         }
@@ -107,8 +125,8 @@ export const usePart3Action = () => {
     isLoading,
     data,
     questionCount,
-    correctAnswers,
-    hasAnswerReview: Object.keys(correctAnswers).length > 0,
+    correctAnswers: gradedAnswers,
+    hasAnswerReview: Object.keys(gradedAnswers).length > 0,
     total,
     currentNumber: total > 0 ? safeIndex + 1 : 0,
     hasNext: safeIndex < total - 1,

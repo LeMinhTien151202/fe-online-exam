@@ -7,12 +7,14 @@ import {
   IExamSubmitResult,
   ISubmitAnswer,
   useAttemptReviewQuery,
+  useExamPrefill,
   useSubmitExamMutation,
 } from '../../../../../shared/services/student-exam';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import { SpeakingSet } from '../../../services/mappers';
 import { useSpeakingExamDetailQuery } from '../../../services/speakingExamQuery';
 import { buildSpeakingExam } from '../../../services/speakingExamMapper';
+import { uploadSpeakingSample } from '../../../services/sampleAudioPrefill';
 
 export interface SpeakingNavItem {
   qNum: number;
@@ -76,6 +78,30 @@ export const useMockTest = () => {
   const [showReport, setShowReport] = useState(false);
   const [showSampleMap, setShowSampleMap] = useState<Record<string, boolean>>({});
   const [submitResult, setSubmitResult] = useState<IExamSubmitResult | null>(null);
+
+  const { isPrefilling, prefillAnswers } = useExamPrefill(examId || null, async (answerExam) => {
+    const answerData = buildSpeakingExam(answerExam);
+    const answerQuestionCount = answerData.part1.length
+      + [answerData.part2, answerData.part3, answerData.part4]
+        .flat()
+        .reduce((sum, set) => sum + set.questions.length, 0);
+    if (answerQuestionCount !== navItems.length || navItems.length === 0) {
+      throw new Error('Cấu trúc đáp án Speaking không khớp với bộ đề đang mở.');
+    }
+
+    const part4Uploads = new Map<number, Promise<string>>();
+    const entries = await Promise.all(navItems.map(async (item) => {
+      let upload: Promise<string>;
+      if (item.partNumber === 4) {
+        upload = part4Uploads.get(item.setIndex) ?? uploadSpeakingSample(4);
+        part4Uploads.set(item.setIndex, upload);
+      } else {
+        upload = uploadSpeakingSample(item.partNumber, item.subIndex - 1);
+      }
+      return [keyOf(item.partNumber, item.setIndex, item.subIndex), await upload] as const;
+    }));
+    setAnswers(Object.fromEntries(entries));
+  });
 
   const availableParts = useMemo(
     () => Array.from(new Set(navItems.map((item) => item.partNumber))).sort((a, b) => a - b),
@@ -329,6 +355,8 @@ export const useMockTest = () => {
     hasNextStep,
     prevStepIsSamePart,
     nextStepIsSamePart,
+    isPrefilling,
+    prefillAnswers,
     navigate,
   };
 };

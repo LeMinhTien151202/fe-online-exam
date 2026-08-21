@@ -2,7 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { mapPart2, Part2Data, Part2Sentence } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
-import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import {
+  pickCorrectResponse,
+  summarizeAutoGrade,
+  usePartPracticeExam,
+  useSubmitExamMutation,
+} from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart2Action = () => {
@@ -31,6 +36,8 @@ export const usePart2Action = () => {
   const [slots, setSlots] = useState<Record<number, Part2Sentence | null>>({});
   const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
   const [scoreResult, setScoreResult] = useState<{ earned: number; total: number } | null>(null);
+  // Thứ tự đúng do BE trả kèm kết quả chấm (đề lấy về đã bị cắt sạch đáp án).
+  const [gradedOrder, setGradedOrder] = useState<string[]>([]);
 
   // Nạp lại pool/slots khi bộ câu hỏi đổi (kèm index để phân biệt câu trùng thứ tự)
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
@@ -40,6 +47,7 @@ export const usePart2Action = () => {
     setPool(data!.initialSentences);
     setSlots(emptySlots());
     setIsSubmitted(false);
+    setGradedOrder([]);
   }
 
   const handleNext = () => {
@@ -134,10 +142,21 @@ export const usePart2Action = () => {
             examId,
             payload: { answers: [{ questionId: data.questionId, response }] },
           });
-          const score = summarizeAutoGrade(result, { skillId: 3, partNumber: 2 });
+          const score = summarizeAutoGrade(result, { questionId: data.questionId });
           setScoreResult(score);
+          // ORDERING: đáp án đúng là mảng index trong options_pool (có cả câu cố định).
+          // Bỏ câu cố định rồi đổi về id `sN` mà UI đang dùng.
+          const correct = pickCorrectResponse(result, data.questionId);
+          if (Array.isArray(correct)) {
+            setGradedOrder(
+              correct
+                .filter((value): value is number => typeof value === 'number' && value >= 0)
+                .filter((value) => value !== data.fixedPoolIndex)
+                .map((value) => `s${value}`)
+            );
+          }
           setDoneSets((prev) => new Set(prev).add(safeIndex));
-          toast.success(`Chúc mừng! Bạn đã hoàn thành Part 2. Kết quả: ${score.earned}/${score.total} câu đúng.`);
+          toast.success(`Đã chấm xong câu ${safeIndex + 1}: ${score.earned}/${score.total} câu đúng.`);
         } catch {
           setIsSubmitted(false);
         }
@@ -150,6 +169,7 @@ export const usePart2Action = () => {
     setPool(data?.initialSentences ?? []);
     setIsSubmitted(false);
     setScoreResult(null);
+    setGradedOrder([]);
   };
 
   const placedCount = Object.values(slots).filter(Boolean).length;
@@ -179,6 +199,8 @@ export const usePart2Action = () => {
     boardItems,
     activeSetIndex: safeIndex,
     isSubmitted,
+    correctOrder: gradedOrder,
+    hasAnswerReview: gradedOrder.length > 0,
     pool,
     slots,
     dragOverSlot,

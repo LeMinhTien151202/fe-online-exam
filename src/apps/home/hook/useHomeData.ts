@@ -2,8 +2,8 @@ import { useMemo, useState } from "react";
 import { IHomeStatsView, ILearningModule, IUserInfo } from "../services/types";
 import {
   useMyAttemptsQuery,
-  useMyProgressQuery,
   useMyStreakQuery,
+  useOverallPartPracticeProgress,
 } from '@/shared/services/student-exam';
 import { DEFAULT_TARGET_CEFR } from '@/shared/utils/cefrScale';
 import { useAppSelector } from '@/shared/store/hooks';
@@ -17,18 +17,14 @@ export const useHomeData = () => {
 
   // Chỉ gọi API khi đã đăng nhập — khách vãng lai không có dữ liệu cá nhân.
   const streakQuery = useMyStreakQuery(isAuthenticated);
-  const progressQuery = useMyProgressQuery(isAuthenticated);
   const attemptsQuery = useMyAttemptsQuery({ type: 'MOCK_TEST', page: 1, limit: 1 }, isAuthenticated);
 
-  // Tiến độ tổng quan = tổng câu đã làm / tổng câu (gộp mọi kỹ năng, mọi phần).
-  const overallProgress = useMemo(() => {
-    const rows = progressQuery.data ?? [];
-    const sum = rows.reduce(
-      (acc, r) => ({ answered: acc.answered + (r.answered || 0), total: acc.total + (r.total || 0) }),
-      { answered: 0, total: 0 },
-    );
-    return sum.total > 0 ? Math.round((sum.answered / sum.total) * 100) : 0;
-  }, [progressQuery.data]);
+  // Tiến độ tổng quan = TRUNG BÌNH % của toàn bộ 18 phần LUYỆN THEO PHẦN (mock test không tính).
+  // Không cộng dồn /progress/me nữa: bảng đó chỉ có dòng cho phần đã từng nộp nên mẫu số thiếu
+  // các phần chưa đụng tới, lại gộp cả những đề mà trang luyện không mở -> số hiển thị bị thổi lên
+  // và không bao giờ khớp với % trên thẻ từng phần.
+  const { percent: overallProgress, isPending: isProgressPending } =
+    useOverallPartPracticeProgress(isAuthenticated);
 
   // Điểm dự đoán = trung bình tổng điểm các bài thi thử (MOCK_TEST) trên thang Aptis 0–200
   // (tổng scaled 4 kỹ năng từ snapshot skillCefr), nhất quán với Mock Exam Center.
@@ -45,7 +41,7 @@ export const useHomeData = () => {
       };
     }
     return {
-      overallProgress: progressQuery.isPending ? '…' : `${overallProgress}%`,
+      overallProgress: isProgressPending ? '…' : `${overallProgress}%`,
       learningStreak:
         streakQuery.isPending || streakQuery.isError ? DASH : `${streakQuery.data?.currentStreak ?? 0} ngày`,
       targetLevel: DEFAULT_TARGET_LEVEL,
@@ -58,7 +54,7 @@ export const useHomeData = () => {
   }, [
     isAuthenticated,
     overallProgress,
-    progressQuery.isPending,
+    isProgressPending,
     streakQuery.isPending,
     streakQuery.isError,
     streakQuery.data?.currentStreak,

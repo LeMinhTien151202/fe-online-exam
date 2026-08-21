@@ -4,6 +4,7 @@ import {
   IExamSubmitResult,
   ISubmitAnswer,
   useAttemptReviewQuery,
+  useExamPrefill,
   useSubmitExamMutation,
 } from '../../../../../shared/services/student-exam';
 import { countWords } from '../../../utils/wordCounter';
@@ -30,6 +31,16 @@ export const useWritingMockTest = (testId: string) => {
   const [activePart, setActivePart] = useState(1);
   const [showSampleMap, setShowSampleMap] = useState<Record<number, boolean>>({});
   const [submitResult, setSubmitResult] = useState<IExamSubmitResult | null>(null);
+
+  const { isPrefilling, prefillAnswers } = useExamPrefill(examId || null, (answerExam) => {
+    const answerPrompts = buildWritingPrompts(answerExam);
+    if (answerPrompts.length === 0 || answerPrompts.some((prompt) => !prompt.sampleAnswer?.trim())) {
+      throw new Error('Bộ đề đang thiếu một hoặc nhiều câu trả lời mẫu Writing.');
+    }
+    setAnswers(Object.fromEntries(
+      answerPrompts.map((prompt) => [prompt.id, prompt.sampleAnswer!])
+    ));
+  });
 
   const availableParts = useMemo(
     () => Array.from(new Set(prompts.map((prompt) => prompt.partNumber))).sort((a, b) => a - b),
@@ -177,5 +188,7 @@ export const useWritingMockTest = (testId: string) => {
     getWordCount,
     isWordCountValid,
     formatTime,
+    isPrefilling,
+    prefillAnswers,
   };
 };

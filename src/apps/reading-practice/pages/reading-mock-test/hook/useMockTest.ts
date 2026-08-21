@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
-import { IExamSubmitResult, ISubmitAnswer, summarizeAutoGrade, useAttemptReviewQuery, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { IExamSubmitResult, ISubmitAnswer, summarizeAutoGrade, useAttemptReviewQuery, useExamPrefill, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { useReadingExamDetailQuery } from '../../../services/readingExamQuery';
 import { flattenExam, ExamPartData } from '../../../services/readingExamMapper';
 import {
@@ -105,9 +105,55 @@ export const useMockTest = (testId: string) => {
   const [showReport, setShowReport] = useState(false);
   const [submitResult, setSubmitResult] = useState<IExamSubmitResult | null>(null);
 
+  const { isPrefilling, prefillAnswers } = useExamPrefill(examId || null, (answerExam) => {
+    const answerParts = flattenExam(answerExam);
+    const questionsForPart = (partNumber: number) =>
+      answerParts.find((part) => part.partNumber === partNumber)?.questions ?? [];
+
+    const answerPart1 = questionsForPart(1).map(mapPart1).filter(Boolean) as Part1Data[];
+    const filledP1: Record<number, string> = {};
+    answerPart1.forEach((part) => Object.assign(filledP1, part.correctAnswers));
+    if (Object.keys(filledP1).length < answerPart1.reduce((sum, part) => sum + part.questions.length, 0)) {
+      throw new Error('Bộ đề đang thiếu đáp án Reading Part 1.');
+    }
+
+    const fillOrdering = (partNumber: number) => {
+      const question = questionsForPart(partNumber)[0];
+      const ordering = question ? mapPart2(question) : null;
+      if (!ordering || ordering.correctOrder.length !== ordering.initialSentences.length) {
+        throw new Error(`Bộ đề đang thiếu đáp án Reading Part ${partNumber}.`);
+      }
+      const byId = new Map(ordering.initialSentences.map((item) => [item.id, item]));
+      return Object.fromEntries(ordering.correctOrder.map((id, index) => [index + 1, byId.get(id) ?? null]));
+    };
+
+    const p4Question = questionsForPart(4)[0];
+    const answerPart4 = p4Question ? mapPart3(p4Question) : null;
+    if (!answerPart4 || Object.keys(answerPart4.correctAnswers).length < answerPart4.questions.length) {
+      throw new Error('Bộ đề đang thiếu đáp án Reading Part 4.');
+    }
+
+    const p5Question = questionsForPart(5)[0];
+    const answerPart5 = p5Question ? mapPart4(p5Question) : null;
+    if (!answerPart5 || Object.keys(answerPart5.correctAnswers).length < answerPart5.paragraphs.length) {
+      throw new Error('Bộ đề đang thiếu đáp án Reading Part 5.');
+    }
+
+    setP1Answers(filledP1);
+    setP2Slots(fillOrdering(2));
+    setP2Pool([]);
+    setP3Slots(fillOrdering(3));
+    setP3Pool([]);
+    setP4Answers(answerPart4.correctAnswers);
+    setP5Answers(answerPart5.correctAnswers);
+  });
+
   // ==================== INIT ORDERING POOLS ====================
 
   useEffect(() => {
+    // Khi review trả answer-key sau lúc nộp, mapper tạo lại object ORDERING.
+    // Không reset các slot người dùng vừa nộp, nếu không báo cáo sẽ tụt 10 ô đã trả lời.
+    if (isSubmitted) return;
     if (orderingP2 && orderingP2.initialSentences.length > 0) {
       const slots: Record<number, Part2Sentence | null> = {};
       orderingP2.initialSentences.forEach((_, i) => { slots[i + 1] = null; });
@@ -115,9 +161,10 @@ export const useMockTest = (testId: string) => {
       setP2Pool([...orderingP2.initialSentences]);
       setP2Slots(slots);
     }
-  }, [orderingP2]);
+  }, [isSubmitted, orderingP2]);
 
   useEffect(() => {
+    if (isSubmitted) return;
     if (orderingP3 && orderingP3.initialSentences.length > 0) {
       const slots: Record<number, Part2Sentence | null> = {};
       orderingP3.initialSentences.forEach((_, i) => { slots[i + 1] = null; });
@@ -125,7 +172,7 @@ export const useMockTest = (testId: string) => {
       setP3Pool([...orderingP3.initialSentences]);
       setP3Slots(slots);
     }
-  }, [orderingP3]);
+  }, [isSubmitted, orderingP3]);
 
   // ==================== COUNTS ====================
 
@@ -202,21 +249,26 @@ export const useMockTest = (testId: string) => {
         scoreP3: p3.earned,
         scoreP4: p4.earned,
         scoreP5: p5.earned,
+        maxP1: p1.total,
+        maxP2: p2.total,
+        maxP3: p3.total,
+        maxP4: p4.total,
+        maxP5: p5.total,
         totalScore: p1.earned + p2.earned + p3.earned + p4.earned + p5.earned,
+        totalMax: p1.total + p2.total + p3.total + p4.total + p5.total,
       };
     }
     let scoreP1 = 0;
     Object.entries(correctP1).forEach(([id, ans]) => {
       if (p1Answers[Number(id)] === ans) scoreP1++;
     });
-    let scoreP2 = 0;
-    Object.entries(p2Slots).forEach(([key, item]) => {
-      if (item && item.id === correctP2[Number(key) - 1]) scoreP2++;
-    });
-    let scoreP3 = 0;
-    Object.entries(p3Slots).forEach(([key, item]) => {
-      if (item && item.id === correctP3[Number(key) - 1]) scoreP3++;
-    });
+    // Backend quy định ORDERING tất-cả-hoặc-không: mỗi part là 1 điểm.
+    const scoreP2 = correctP2.length > 0 && correctP2.every(
+      (expected, index) => p2Slots[index + 1]?.id === expected
+    ) ? 1 : 0;
+    const scoreP3 = correctP3.length > 0 && correctP3.every(
+      (expected, index) => p3Slots[index + 1]?.id === expected
+    ) ? 1 : 0;
     let scoreP4 = 0;
     Object.entries(correctP4).forEach(([id, person]) => {
       if (p4Answers[Number(id)] === person) scoreP4++;
@@ -226,7 +278,26 @@ export const useMockTest = (testId: string) => {
       if (p5Answers[Number(num)] === heading) scoreP5++;
     });
     const totalScore = scoreP1 + scoreP2 + scoreP3 + scoreP4 + scoreP5;
-    return { scoreP1, scoreP2, scoreP3, scoreP4, scoreP5, totalScore };
+    const maxP1 = p1QuestionCount;
+    const maxP2 = orderingP2 ? 1 : 0;
+    const maxP3 = orderingP3 ? 1 : 0;
+    const maxP4 = p4QuestionCount;
+    const maxP5 = p5QuestionCount;
+    const totalMax = maxP1 + maxP2 + maxP3 + maxP4 + maxP5;
+    return {
+      scoreP1,
+      scoreP2,
+      scoreP3,
+      scoreP4,
+      scoreP5,
+      maxP1,
+      maxP2,
+      maxP3,
+      maxP4,
+      maxP5,
+      totalScore,
+      totalMax,
+    };
   };
 
   const answerReviewAvailable =
@@ -515,5 +586,7 @@ export const useMockTest = (testId: string) => {
     totalAnsweredCount,
 
     calculateScores,
+    isPrefilling,
+    prefillAnswers,
   };
 };

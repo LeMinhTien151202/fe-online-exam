@@ -3,15 +3,12 @@ import { useMemo, useState } from 'react';
 import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { readingParts } from '../services/data';
 import { useReadingSetsQuery } from '../../../services/readingExamQuery';
-import { useExamBestScores, usePartPracticeProgress } from '../../../../../shared/services/student-exam';
-
-// Phần Reading: r1→API part 1, r2→2, r3→4, r4→5 (bỏ API part 3 trùng dạng part 2).
-const READING_PART_MAP = [
-  { feId: 'r1', apiPart: 1 },
-  { feId: 'r2', apiPart: 2 },
-  { feId: 'r3', apiPart: 4 },
-  { feId: 'r4', apiPart: 5 },
-];
+import {
+  READING_PART_MAP,
+  SKILL_ID,
+  useExamBestScores,
+  usePartPracticeProgress,
+} from '../../../../../shared/services/student-exam';
 
 export const useReadingLanding = () => {
   const navigate = useNavigate();
@@ -19,7 +16,7 @@ export const useReadingLanding = () => {
   const { activeTab, setActiveTab } = useLandingTab();
 
   // Tiến độ luyện theo phần lấy từ server (answered/total) — thêm câu hỏi thì tiến độ giảm.
-  const { progress: readingProgress } = usePartPracticeProgress(3, READING_PART_MAP);
+  const { progress: readingProgress } = usePartPracticeProgress(SKILL_ID.READING, READING_PART_MAP);
 
   const { scoreByExamId: mockProgress } = useExamBestScores();
 

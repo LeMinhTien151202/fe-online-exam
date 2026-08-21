@@ -22,6 +22,7 @@ import ReadingSection,{ ReadingHandle } from '../components/ReadingSection';
 import SpeakingSection,{ SpeakingHandle } from '../components/SpeakingSection';
 import WritingSection,{ WritingHandle } from '../components/WritingSection';
 import ExamResultScreen from '../components/ExamResultScreen';
+import GradingWaitScreen from '../components/GradingWaitScreen';
 
 import { useMockExamDetailQuery } from '../../../services/mockExamQuery';
 import { mockExamApi } from '../../../services/mockExamApi';
@@ -200,7 +201,12 @@ const MainMockExamPage: React.FC = () => {
         // Phần thi cuối + đã ở đơn vị cuối -> nộp bài: dùng đúng hộp thoại "Xác nhận nộp bài".
         if (activeStep >= skills.length - 1) {
             const totalQuestions = skills.reduce((sum, s) => sum + s.totalQuestions, 0);
-            confirmSubmitExam({ totalQuestions, onOk: handleSubmitFinal });
+            confirmSubmitExam({
+                totalQuestions,
+                // Không trả Promise cho Modal.confirm: đóng hộp xác nhận ngay và chuyển sang
+                // màn hình chờ riêng trong lúc backend chấm Nói/Viết bằng AI.
+                onOk: () => { void handleSubmitFinal(); },
+            });
             return;
         }
 
@@ -231,6 +237,8 @@ const MainMockExamPage: React.FC = () => {
     };
 
     const handleSubmitFinal = async () => {
+        if (isSubmitting) return;
+
         // Gom đáp án từ mọi kỹ năng (mỗi section tự dịch state -> shape API)
         const answers: ISubmitAnswer[] = [];
         [grammarRef, listeningRef, readingRef, writingRef, speakingRef].forEach((r) => {
@@ -382,6 +390,10 @@ const MainMockExamPage: React.FC = () => {
                 </div>
             </S.FullPageCenter>
         );
+    }
+
+    if (isSubmitting) {
+        return <GradingWaitScreen examTitle={examData?.title} />;
     }
 
     if (isFinished && submitResult) {

@@ -121,6 +121,7 @@ export const useMockTest = (
 
   return {
     answers,
+    setAnswers,
     currentSection,
     currentQuestionIndex,
     timeLeft,

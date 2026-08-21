@@ -21,7 +21,13 @@ export const mapPart1 = (q: IQuestion): Part1Data | null => {
     questionId: q.id,
     content: q.content,
     questions: cfg.gaps.map((g) => ({ id: g.gap_id, options: g.options })),
-    correctAnswers: Object.fromEntries(cfg.gaps.map((g) => [g.gap_id, g.options[g.correct_index]])),
+    // BE xoá mọi key `correct*` khỏi đề của học viên, nên correct_index thường undefined.
+    // Phải lọc bỏ, nếu không sẽ sinh key có value undefined -> FE tưởng là có đáp án để đối chiếu.
+    correctAnswers: Object.fromEntries(
+      cfg.gaps
+        .map((g) => [g.gap_id, g.options[g.correct_index]] as const)
+        .filter((entry): entry is readonly [number, string] => typeof entry[1] === 'string')
+    ),
   };
 };
 

@@ -11,6 +11,7 @@ import { useNavigate, useParams } from '@tanstack/react-router';
 import { Button, Empty, Progress, Space, Spin, Typography } from 'antd';
 import React from 'react';
 import { ExamQuestionNavigator } from '../../../../../shared/components/ExamQuestionNavigator';
+import { ExamPrefillButton } from '@/shared/components/ExamPrefillButton';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { AudioPlayer } from '../../../components/AudioPlayer';
@@ -93,6 +94,8 @@ export const ListeningMockTestPage: React.FC = () => {
     handleNextQuestion,
     handleSelectAnswer,
     handleSubmitClick,
+    isPrefilling,
+    prefillAnswers,
   } = useMockTest(testId);
 
   const {
@@ -375,24 +378,20 @@ export const ListeningMockTestPage: React.FC = () => {
             </Space>
 
             <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
+              <ExamPrefillButton
+                loading={isPrefilling}
+                disabled={isSubmitted || totalQuestions === 0}
+                onClick={() => { void prefillAnswers(); }}
+              />
               {isSubmitted ? (
-                <Space>
-                  <Button
-                    type="primary"
-                    onClick={() => setShowReport(true)}
-                    style={{ background: '#1a365d', borderColor: '#1a365d', borderRadius: '2rem', fontWeight: 700 }}
-                  >
-                    Xem báo cáo điểm
-                  </Button>
-                  <Button
-                    type="primary"
-                    icon={<RollbackOutlined />}
-                    onClick={handleRetry}
-                    style={{ background: '#6366f1', borderColor: '#6366f1', borderRadius: '2rem', fontWeight: 700 }}
-                  >
-                    Thi lại đề này
-                  </Button>
-                </Space>
+                <Button
+                  type="primary"
+                  icon={<RollbackOutlined />}
+                  onClick={handleRetry}
+                  style={{ background: '#6366f1', borderColor: '#6366f1', borderRadius: '2rem', fontWeight: 700 }}
+                >
+                  Thi lại đề này
+                </Button>
               ) : (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>

@@ -40,6 +40,7 @@ export const Part1Page: React.FC = () => {
     isSubmitted,
     isGrading,
     correctCount,
+    correctIndex,
     scoreTotal,
     gradedCount,
     progressPercent
@@ -106,6 +107,7 @@ export const Part1Page: React.FC = () => {
                     onSelectAnswer={selectAnswer}
                     isSubmitted={isSubmitted}
                     isCorrect={correctCount > 0}
+                    correctIndex={correctIndex}
                   />
                 </S.ContentCard>
 

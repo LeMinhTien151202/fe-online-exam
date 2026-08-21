@@ -10,6 +10,8 @@ interface GrammarSectionProps {
   // Câu đã được BE chấm -> khoá lựa chọn và tô màu đúng/sai.
   isSubmitted?: boolean;
   isCorrect?: boolean;
+  // Index đáp án đúng do BE trả sau khi chấm; -1 nếu chưa có.
+  correctIndex?: number;
 }
 
 export const GrammarSection: React.FC<GrammarSectionProps> = ({
@@ -19,6 +21,7 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
   onSelectAnswer,
   isSubmitted = false,
   isCorrect = false,
+  correctIndex = -1,
 }) => {
   const activeQuestion = questions.find(q => q.questionNumber === currentQuestionIndex);
 
@@ -56,12 +59,21 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
           {activeQuestion.options.map((opt, optIdx) => {
             const optionLabel = String.fromCharCode(65 + optIdx); // A, B, C
             const isOptSelected = answer === opt;
-            // Sau khi chấm: đáp án đã chọn xanh nếu đúng, đỏ nếu sai.
-            const gradedStyle = isSubmitted && isOptSelected
-              ? isCorrect
-                ? { borderColor: '#10b981', background: '#ecfdf5', color: '#065f46' }
-                : { borderColor: '#ef4444', background: '#fef2f2', color: '#991b1b' }
-              : undefined;
+            // Sau khi chấm: tô xanh đáp án đúng do BE trả về, tô đỏ ô đã chọn nhưng sai.
+            // Không có correctIndex (BE cũ) thì chỉ tô ô đã chọn theo đúng/sai.
+            const green = { borderColor: '#10b981', background: '#ecfdf5', color: '#065f46' };
+            const red = { borderColor: '#ef4444', background: '#fef2f2', color: '#991b1b' };
+            const gradedStyle = !isSubmitted
+              ? undefined
+              : correctIndex >= 0
+                ? optIdx === correctIndex
+                  ? green
+                  : isOptSelected
+                    ? red
+                    : undefined
+                : isOptSelected
+                  ? (isCorrect ? green : red)
+                  : undefined;
 
             return (
               <S.OptionLabel

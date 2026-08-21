@@ -2,7 +2,12 @@ import { useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { mapPart4, Part4Data } from '../../../services/mappers';
 import { flattenExam } from '../../../services/readingExamMapper';
-import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import {
+  pickCorrectResponse,
+  summarizeAutoGrade,
+  usePartPracticeExam,
+  useSubmitExamMutation,
+} from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart4Action = () => {
@@ -23,8 +28,9 @@ export const usePart4Action = () => {
   }, [list, safeIndex]);
 
   const paragraphCount = data?.paragraphs.length ?? 0;
-  const correctAnswers = data?.correctAnswers ?? {};
 
+  // Đáp án đúng do BE trả kèm kết quả chấm (đề lấy về đã bị cắt sạch đáp án).
+  const [gradedAnswers, setGradedAnswers] = useState<Record<number, string>>({});
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [doneSets, setDoneSets] = useState<Set<number>>(new Set());
@@ -34,6 +40,7 @@ export const usePart4Action = () => {
     setAnswers({});
     setIsSubmitted(false);
     setScoreResult(null);
+    setGradedAnswers({});
   };
   const handleNext = () => {
     if (safeIndex >= total - 1) return;
@@ -82,10 +89,21 @@ export const usePart4Action = () => {
             examId,
             payload: { answers: [{ questionId: data.questionId, response }] },
           });
-          const score = summarizeAutoGrade(result, { skillId: 3, partNumber: 5 });
+          const score = summarizeAutoGrade(result, { questionId: data.questionId });
           setScoreResult(score);
+          // HEADING_MATCH: BE trả { paragraph_label: tiêu đề đúng } -> đổi text về value hN của FE.
+          const correct = pickCorrectResponse(result, data.questionId);
+          if (correct && typeof correct === 'object' && !Array.isArray(correct)) {
+            const valueByLabel = new Map(data.headings.map((h) => [h.label, h.value]));
+            const graded: Record<number, string> = {};
+            data.paragraphs.forEach((pg) => {
+              const value = valueByLabel.get(String(correct[String(pg.num)] ?? ''));
+              if (value) graded[pg.num] = value;
+            });
+            setGradedAnswers(graded);
+          }
           setDoneSets((prev) => new Set(prev).add(safeIndex));
-          toast.success(`Chúc mừng! Bạn đã hoàn thành Part 4. Kết quả: ${score.earned}/${score.total} câu đúng.`);
+          toast.success(`Đã chấm xong câu ${safeIndex + 1}: ${score.earned}/${score.total} câu đúng.`);
         } catch {
           setIsSubmitted(false);
         }
@@ -112,8 +130,8 @@ export const usePart4Action = () => {
     isLoading,
     data,
     paragraphCount,
-    correctAnswers,
-    hasAnswerReview: Object.keys(correctAnswers).length > 0,
+    correctAnswers: gradedAnswers,
+    hasAnswerReview: Object.keys(gradedAnswers).length > 0,
     total,
     currentNumber: total > 0 ? safeIndex + 1 : 0,
     hasNext: safeIndex < total - 1,

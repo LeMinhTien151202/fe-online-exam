@@ -3,15 +3,12 @@ import { useState } from 'react';
 import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { useListeningSetsQuery } from '../../../services/listeningExamQuery';
 import { listeningPartsData } from '../services/data';
-import { useExamBestScores, usePartPracticeProgress } from '../../../../../shared/services/student-exam';
-
-// Listening: l1..l4 = API part 1..4.
-const LISTENING_PART_MAP = [
-  { feId: 'l1', apiPart: 1 },
-  { feId: 'l2', apiPart: 2 },
-  { feId: 'l3', apiPart: 3 },
-  { feId: 'l4', apiPart: 4 },
-];
+import {
+  LISTENING_PART_MAP,
+  SKILL_ID,
+  useExamBestScores,
+  usePartPracticeProgress,
+} from '../../../../../shared/services/student-exam';
 
 export const useListeningLanding = () => {
   const navigate = useNavigate();
@@ -19,7 +16,7 @@ export const useListeningLanding = () => {
   const { activeTab, setActiveTab } = useLandingTab();
 
   // Tiến độ luyện theo phần lấy từ server (answered/total).
-  const { progress: listeningProgress } = usePartPracticeProgress(2, LISTENING_PART_MAP);
+  const { progress: listeningProgress } = usePartPracticeProgress(SKILL_ID.LISTENING, LISTENING_PART_MAP);
 
   const { scoreByExamId: mockProgress } = useExamBestScores();
 

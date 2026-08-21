@@ -3,7 +3,12 @@ import { toast } from '../../../../../configs/toast';
 import { useNavigate } from '@tanstack/react-router';
 import { flattenListeningExam } from '../../../services/listeningExamMapper';
 import { mapLPart4 } from '../../../services/mappers';
-import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import {
+  pickCorrectResponse,
+  summarizeAutoGrade,
+  usePartPracticeExam,
+  useSubmitExamMutation,
+} from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart4Action = () => {
@@ -12,6 +17,8 @@ export const usePart4Action = () => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   // Chấm từng bài: kết quả BE trả về của bài nào lưu theo index bài đó.
   const [results, setResults] = useState<Record<number, { earned: number; total: number }>>({});
+  // Đáp án đúng do BE trả kèm kết quả chấm (đề lấy về đã bị cắt sạch đáp án): { groupIndex: [index đáp án] }.
+  const [gradedIndexes, setGradedIndexes] = useState<Record<number, number[]>>({});
 
   // Luyện theo phần = đề PART_PRACTICE (skill 2, part 4 — Monologue).
   const { examId, examDetail, isLoading } = usePartPracticeExam(2, 4);
@@ -74,8 +81,15 @@ export const usePart4Action = () => {
         examId,
         payload: { answers: [{ questionId, response }] },
       });
-      const score = summarizeAutoGrade(result, { skillId: 2, partNumber: 4 });
+      const score = summarizeAutoGrade(result, { questionId });
       setResults((prev) => ({ ...prev, [safeGroup]: score }));
+      const correct = pickCorrectResponse(result, questionId);
+      if (Array.isArray(correct)) {
+        setGradedIndexes((prev) => ({
+          ...prev,
+          [safeGroup]: correct.map((value) => (typeof value === 'number' ? value : -1)),
+        }));
+      }
       toast.success(`Đã chấm xong bài ${safeGroup + 1}: ${score.earned}/${score.total} câu đúng.`);
     } catch {
       // Interceptor axios đã hiện thông báo lỗi; không tự chấm ở FE để tránh sai điểm.
@@ -92,6 +106,11 @@ export const usePart4Action = () => {
     setAnswers((prev) => {
       const next = { ...prev };
       currentGroup.subQuestions.forEach((sq) => delete next[sq.id]);
+      return next;
+    });
+    setGradedIndexes((prev) => {
+      const next = { ...prev };
+      delete next[safeGroup];
       return next;
     });
   };
@@ -121,6 +140,8 @@ export const usePart4Action = () => {
     totalSub,
     progressPercent,
     currentGroup,
+    // Đáp án đúng theo THỨ TỰ subQuestions của bài đang làm (chỉ có sau khi nộp).
+    getCorrectIndex: (index: number) => gradedIndexes[safeGroup]?.[index] ?? -1,
     boardItems,
     activeGroupIndex: safeGroup,
     goTo,

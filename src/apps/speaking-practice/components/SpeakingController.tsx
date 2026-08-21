@@ -29,6 +29,7 @@ interface SpeakingControllerProps {
   title?: string;
   uploadPrefix?: string; // thư mục lưu trên storage (vd 'speaking/practice/p1')
   autoUpload?: boolean; // true: upload lên storage lấy URL công khai (khi có nộp bài + AI chấm)
+  prefilledAudioUrl?: string | null; // URL mẫu đã upload bởi nút test ở môi trường dev
 }
 
 type UploadState = 'idle' | 'uploading' | 'done' | 'error';
@@ -42,13 +43,16 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
   statusColor = '#3b5b8c',
   title = '',
   uploadPrefix = 'speaking/practice',
-  autoUpload = false
+  autoUpload = false,
+  prefilledAudioUrl = null,
 }) => {
-  const [step, setStep] = useState<'IDLE' | 'PREPARATION' | 'RECORDING' | 'COMPLETED'>('IDLE');
+  const [step, setStep] = useState<'IDLE' | 'PREPARATION' | 'RECORDING' | 'COMPLETED'>(
+    prefilledAudioUrl ? 'COMPLETED' : 'IDLE',
+  );
   const [prepCountdown, setPrepCountdown] = useState(prepTime);
   const [recCountdown, setRecCountdown] = useState(recordingTime);
-  const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
-  const [uploadState, setUploadState] = useState<UploadState>('idle');
+  const [recordedUrl, setRecordedUrl] = useState<string | null>(prefilledAudioUrl);
+  const [uploadState, setUploadState] = useState<UploadState>(prefilledAudioUrl ? 'done' : 'idle');
   const [microphoneError, setMicrophoneError] = useState<string | null>(null);
   const recordedBlobRef = useRef<Blob | null>(null);
 
@@ -90,8 +94,9 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
   /* eslint-disable react-hooks/immutability, react-hooks/exhaustive-deps -- Countdown effects intentionally invoke the latest recorder handlers while reacting only to timer state. */
   // Reset all state when prepTime or recordingTime changes (e.g. changing question)
   useEffect(() => {
+    if (prefilledAudioUrl) return;
     resetAll();
-  }, [prepTime, recordingTime, title]);
+  }, [prepTime, recordingTime, title, prefilledAudioUrl]);
 
   // Handle Prep countdown
   useEffect(() => {

@@ -27,6 +27,7 @@ export const Part1Page: React.FC = () => {
     isSubmitted,
     isGrading,
     correctCount,
+    correctIndex,
     scoreTotal,
     handleSelectAnswer,
     handleNext,
@@ -50,7 +51,7 @@ export const Part1Page: React.FC = () => {
         text: isSelected ? '#1a365d' : '#334155',
       };
     }
-    const isCorrect = currentQuestion.correctIndex >= 0 && currentQuestion.correctIndex === idx;
+    const isCorrect = correctIndex >= 0 && correctIndex === idx;
     const isWrongPick = isSelected && correctCount === 0;
     if (isCorrect) return { border: '#10b981', background: '#ecfdf5', letter: '#047857', text: '#065f46' };
     if (isWrongPick) return { border: '#ef4444', background: '#fef2f2', letter: '#b91c1c', text: '#991b1b' };

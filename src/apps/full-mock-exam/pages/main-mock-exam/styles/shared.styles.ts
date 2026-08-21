@@ -8,6 +8,11 @@ export const pulse = keyframes`
   100% { transform: scale(1); opacity: 1; }
 `;
 
+const gradingPulse = keyframes`
+  0% { transform: scale(0.82); opacity: 0.7; }
+  70%, 100% { transform: scale(1.25); opacity: 0; }
+`;
+
 // LAYOUT
 export const ExamLayout = styled.div`
   display: flex;
@@ -108,6 +113,245 @@ export const FullPageCenter = styled.div`
   align-items: center;
   justify-content: center;
   background: white;
+`;
+
+export const GradingPage = styled.main`
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: #eef3f8;
+  font-family: "Outfit", "Inter", system-ui, sans-serif;
+
+  @media (max-width: 700px) {
+    align-items: flex-start;
+    padding: 1rem;
+  }
+`;
+
+export const GradingShell = styled.section`
+  width: min(980px, 100%);
+  display: grid;
+  grid-template-columns: minmax(270px, 0.82fr) minmax(0, 1.45fr);
+  overflow: hidden;
+  border: 1px solid #dbe4ee;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(23, 52, 86, 0.14);
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const GradingStatusPanel = styled.aside`
+  min-height: 580px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 2.25rem;
+  color: #f8fafc;
+  background: #0d2245;
+
+  @media (max-width: 760px) {
+    min-height: auto;
+    padding: 1.75rem;
+  }
+`;
+
+export const GradingStatusLabel = styled.span`
+  align-self: flex-start;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  color: #dbeafe;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+`;
+
+export const GradingIconStage = styled.div`
+  position: relative;
+  width: 148px;
+  height: 148px;
+  display: grid;
+  place-items: center;
+  align-self: center;
+`;
+
+export const GradingPulseRing = styled.span`
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(191, 219, 254, 0.6);
+  border-radius: 50%;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: ${gradingPulse} 2.2s ease-out infinite;
+  }
+`;
+
+export const GradingIconCircle = styled.div`
+  position: relative;
+  width: 104px;
+  height: 104px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  font-size: 2.7rem;
+`;
+
+export const GradingPanelTitle = styled.h2`
+  margin: 0 0 0.4rem;
+  color: #ffffff;
+  font-size: 1.3rem;
+  line-height: 1.25;
+`;
+
+export const GradingPanelText = styled.p`
+  margin: 0;
+  color: #b9c8dc;
+  font-size: 0.95rem;
+  line-height: 1.55;
+`;
+
+export const ElapsedTime = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: #dbeafe;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+`;
+
+export const GradingContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 2.6rem 3rem;
+
+  @media (max-width: 760px) {
+    padding: 1.75rem;
+  }
+`;
+
+export const GradingHeading = styled.h1`
+  margin: 0;
+  color: #132b4f;
+  font-size: clamp(1.75rem, 4vw, 2.35rem);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+`;
+
+export const GradingLead = styled.p`
+  max-width: 58ch;
+  margin: 0.85rem 0 1.5rem;
+  color: #5d6f86;
+  font-size: 1rem;
+  line-height: 1.65;
+`;
+
+export const GradingEstimate = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid #cbd9e8;
+  border-radius: 14px;
+  background: #f4f8fc;
+  color: #1a365d;
+
+  > span:first-child {
+    margin-top: 0.18rem;
+    font-size: 1.1rem;
+  }
+
+  div {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  strong {
+    font-size: 0.98rem;
+  }
+
+  div span {
+    color: #60728a;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+`;
+
+export const GradingSteps = styled.div`
+  display: grid;
+  gap: 0;
+  margin: 1.45rem 0;
+`;
+
+export const GradingStep = styled.div<{ $state: 'done' | 'active' | 'waiting' }>`
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 0.85rem;
+  min-height: 66px;
+  color: ${({ $state }) => ($state === 'waiting' ? '#8795a7' : '#1a365d')};
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 32px;
+    bottom: 0;
+    left: 16px;
+    width: 1px;
+    background: ${({ $state }) => ($state === 'done' ? '#7393b7' : '#d9e2ec')};
+  }
+
+  strong,
+  span {
+    display: block;
+  }
+
+  strong {
+    margin-top: 0.1rem;
+    font-size: 0.95rem;
+  }
+
+  span {
+    margin-top: 0.2rem;
+    color: ${({ $state }) => ($state === 'waiting' ? '#9aa6b6' : '#687b91')};
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+`;
+
+export const GradingStepIcon = styled.div`
+  position: relative;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #cbd8e6;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #3b5b8c;
+  font-size: 0.85rem;
+  font-weight: 800;
+`;
+
+export const GradingSafetyNote = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  color: #708096;
+  font-size: 0.8rem;
+  line-height: 1.4;
 `;
 
 export const SectionWrapper = styled.div`

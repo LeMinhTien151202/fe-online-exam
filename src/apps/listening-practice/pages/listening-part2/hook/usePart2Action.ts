@@ -3,7 +3,12 @@ import { toast } from '../../../../../configs/toast';
 import { useNavigate } from '@tanstack/react-router';
 import { flattenListeningExam } from '../../../services/listeningExamMapper';
 import { mapLPart2 } from '../../../services/mappers';
-import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import {
+  pickCorrectResponse,
+  summarizeAutoGrade,
+  usePartPracticeExam,
+  useSubmitExamMutation,
+} from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart2Action = () => {
@@ -12,6 +17,8 @@ export const usePart2Action = () => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   // Chấm từng bộ: kết quả BE trả về của bộ nào lưu theo index bộ đó.
   const [results, setResults] = useState<Record<number, { earned: number; total: number }>>({});
+  // Đáp án đúng do BE trả kèm kết quả chấm (đề lấy về đã bị cắt sạch đáp án): { setIndex: { speaker: đáp án } }.
+  const [gradedAnswers, setGradedAnswers] = useState<Record<number, Record<string, string>>>({});
 
   // Luyện theo phần = đề PART_PRACTICE (skill 2, part 2 — SPEAKER_MATCH).
   const { examId, examDetail, isLoading } = usePartPracticeExam(2, 2);
@@ -77,8 +84,15 @@ export const usePart2Action = () => {
         examId,
         payload: { answers: [{ questionId, response }] },
       });
-      const score = summarizeAutoGrade(result, { skillId: 2, partNumber: 2 });
+      const score = summarizeAutoGrade(result, { questionId });
       setResults((prev) => ({ ...prev, [safeSet]: score }));
+      const correct = pickCorrectResponse(result, questionId);
+      if (correct && typeof correct === 'object' && !Array.isArray(correct)) {
+        setGradedAnswers((prev) => ({
+          ...prev,
+          [safeSet]: Object.fromEntries(Object.entries(correct).map(([k, v]) => [k, String(v)])),
+        }));
+      }
       toast.success(`Đã chấm xong bài ${safeSet + 1}: ${score.earned}/${score.total} câu đúng.`);
     } catch {
       // Interceptor axios đã hiện thông báo lỗi; không tự chấm ở FE để tránh sai điểm.
@@ -95,6 +109,11 @@ export const usePart2Action = () => {
     setAnswers((prev) => {
       const next = { ...prev };
       for (let speaker = 1; speaker <= currentSet.speakerCount; speaker += 1) delete next[`${safeSet}-${speaker}`];
+      return next;
+    });
+    setGradedAnswers((prev) => {
+      const next = { ...prev };
+      delete next[safeSet];
       return next;
     });
   };
@@ -114,6 +133,7 @@ export const usePart2Action = () => {
     handlePrev,
     currentSet,
     getAnswer,
+    getCorrectAnswer: (speaker: number) => gradedAnswers[safeSet]?.[String(speaker)],
     handleSelectChange,
     handleSubmit,
     handleRetry,

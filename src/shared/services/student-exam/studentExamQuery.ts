@@ -31,7 +31,8 @@ export const normalizeExamProgress = (raw: unknown): Map<number, number> => {
   return map;
 };
 
-// Tiến độ tích lũy (skill, part) — dashboard. Map `${skillId}-${partNumber}` -> { answered, total }.
+// Tiến độ tích lũy PART_PRACTICE (skill, part) — dashboard.
+// Map `${skillId}-${partNumber}` -> { answered, total }.
 export const normalizeProgress = (raw: unknown): Map<string, { answered: number; total: number }> => {
   const map = new Map<string, { answered: number; total: number }>();
   const rows = Array.isArray(raw)
@@ -51,10 +52,11 @@ export const normalizeProgress = (raw: unknown): Map<string, { answered: number;
   return map;
 };
 
-export const useMyExamProgressQuery = () => {
+export const useMyExamProgressQuery = (enabled: boolean = true) => {
   return useQuery({
     queryKey: EXAM_PROGRESS_KEY,
     queryFn: () => studentExamApi.myExamProgress(),
+    enabled,
   });
 };
 

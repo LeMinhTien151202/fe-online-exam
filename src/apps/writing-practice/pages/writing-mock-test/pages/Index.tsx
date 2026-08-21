@@ -13,6 +13,7 @@ import {
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { Button, Card, Empty, Progress, Space, Spin, Tag, Typography } from 'antd';
 import { Sidebar } from '../../../../home/components/Sidebar';
+import { ExamPrefillButton } from '@/shared/components/ExamPrefillButton';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import * as HomeS from '../../../../home/pages/styled';
 import { WritingPromptItem } from '../../../services/writingExamMapper';
@@ -87,6 +88,8 @@ export const WritingMockTestPage = () => {
     getWordCount,
     isWordCountValid,
     formatTime,
+    isPrefilling,
+    prefillAnswers,
   } = useWritingMockTest(testId);
 
   // CEFR band kỹ năng Viết (skillId 4) theo ĐÚNG bảng quy đổi 0–50 (xem cefrScale.ts),
@@ -436,6 +439,11 @@ export const WritingMockTestPage = () => {
             </Space>
 
             <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
+              <ExamPrefillButton
+                loading={isPrefilling}
+                disabled={isSubmitted || totalQuestions === 0}
+                onClick={() => { void prefillAnswers(); }}
+              />
               {isSubmitted ? (
                 <Space>
                   <Button type="primary" onClick={() => setShowReport(true)} style={{ background: '#1a365d', borderColor: '#1a365d', borderRadius: '2rem', fontWeight: 700 }}>

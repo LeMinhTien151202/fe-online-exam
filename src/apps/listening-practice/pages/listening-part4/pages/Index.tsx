@@ -36,6 +36,7 @@ export const Part4Page: React.FC = () => {
     totalSub,
     progressPercent,
     currentGroup,
+    getCorrectIndex,
     boardItems,
     activeGroupIndex,
     goTo
@@ -100,26 +101,38 @@ export const Part4Page: React.FC = () => {
                 {currentGroup.instruction}
               </S.InstructionText>
 
-              {currentGroup.subQuestions.map((subQ) => (
-                <S.QuestionBlock key={subQ.id}>
-                  <S.QuestionTitle>{subQ.title}</S.QuestionTitle>
-                  {subQ.options.map((option, idx) => {
-                    const letter = String.fromCharCode(65 + idx);
-                    const isSelected = answers[subQ.id] === option;
-                    return (
-                      <S.OptionCard
-                        key={idx}
-                        $selected={isSelected}
-                        onClick={() => handleSelectAnswer(subQ.id, option)}
-                        style={{ cursor: isSubmitted ? 'default' : 'pointer', opacity: isSubmitted && !isSelected ? 0.6 : 1 }}
-                      >
-                        <div className="option-letter">{letter}</div>
-                        <div className="option-text">{option}</div>
-                      </S.OptionCard>
-                    );
-                  })}
-                </S.QuestionBlock>
-              ))}
+              {currentGroup.subQuestions.map((subQ, subIndex) => {
+                // Đáp án đúng chỉ có sau khi nộp (BE trả kèm kết quả chấm).
+                const correctIndex = getCorrectIndex(subIndex);
+                return (
+                  <S.QuestionBlock key={subQ.id}>
+                    <S.QuestionTitle>{subQ.title}</S.QuestionTitle>
+                    {subQ.options.map((option, idx) => {
+                      const letter = String.fromCharCode(65 + idx);
+                      const isSelected = answers[subQ.id] === option;
+                      const status = !isSubmitted || correctIndex < 0
+                        ? undefined
+                        : idx === correctIndex
+                          ? ('success' as const)
+                          : isSelected
+                            ? ('error' as const)
+                            : undefined;
+                      return (
+                        <S.OptionCard
+                          key={idx}
+                          $selected={isSelected}
+                          $status={status}
+                          onClick={() => handleSelectAnswer(subQ.id, option)}
+                          style={{ cursor: isSubmitted ? 'default' : 'pointer', opacity: isSubmitted && !isSelected && !status ? 0.6 : 1 }}
+                        >
+                          <div className="option-letter">{letter}</div>
+                          <div className="option-text">{option}</div>
+                        </S.OptionCard>
+                      );
+                    })}
+                  </S.QuestionBlock>
+                );
+              })}
             </S.ContentCard>
             )}
             {hasData && groupCount > 1 && (

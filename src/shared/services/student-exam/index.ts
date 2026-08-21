@@ -3,5 +3,8 @@ export * from './studentExamApi';
 export * from './studentExamQuery';
 export * from './autoGradeSummary';
 export * from './usePartPracticeExam';
+export * from './useExamPrefill';
+export * from './partPracticeParts';
 export * from './usePartPracticeProgress';
+export * from './useOverallPartPracticeProgress';
 export * from './useExamBestScores';

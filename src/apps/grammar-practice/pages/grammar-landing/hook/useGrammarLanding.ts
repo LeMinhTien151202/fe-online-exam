@@ -3,13 +3,12 @@ import { useState } from 'react';
 import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { useGrammarSetsQuery } from '../../../services/grammarExamQuery';
 import { grammarParts } from '../services/data';
-import { useExamBestScores, usePartPracticeProgress } from '../../../../../shared/services/student-exam';
-
-// Grammar: g1→API part 1, g2→API part 2.
-const GRAMMAR_PART_MAP = [
-  { feId: 'g1', apiPart: 1 },
-  { feId: 'g2', apiPart: 2 },
-];
+import {
+  GRAMMAR_PART_MAP,
+  SKILL_ID,
+  useExamBestScores,
+  usePartPracticeProgress,
+} from '../../../../../shared/services/student-exam';
 
 export const useGrammarLanding = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -17,7 +16,7 @@ export const useGrammarLanding = () => {
   const navigate = useNavigate();
 
   // Tiến độ luyện theo phần lấy từ server (answered/total).
-  const { progress: partsProgress } = usePartPracticeProgress(1, GRAMMAR_PART_MAP);
+  const { progress: partsProgress } = usePartPracticeProgress(SKILL_ID.GRAMMAR, GRAMMAR_PART_MAP);
 
   const { scoreByExamId: mockProgress } = useExamBestScores();
 

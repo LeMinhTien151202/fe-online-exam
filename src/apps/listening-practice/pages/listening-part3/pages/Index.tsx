@@ -27,6 +27,7 @@ export const Part3Page: React.FC = () => {
     currentSet,
     totalStatements,
     getAnswer,
+    getCorrectAnswer,
     handleSelectChange,
     handleSubmit,
     handleRetry,
@@ -99,20 +100,31 @@ export const Part3Page: React.FC = () => {
               </S.InstructionText>
 
               <div style={{ marginTop: '1.5rem' }}>
-                {currentSet.statements.map((statement) => (
-                  <S.StatementRow key={statement.id}>
-                    <div className="statement-number">{statement.id}.</div>
-                    <div className="statement-text">{statement.text}</div>
-                    <S.StyledSelect
-                      placeholder="Chọn"
-                      onChange={(val) => handleSelectChange(statement.id, val as string)}
-                      value={getAnswer(statement.id)}
-                      $hasValue={!!getAnswer(statement.id)}
-                      options={SPEAKER_OPTIONS}
-                      disabled={isSubmitted}
-                    />
-                  </S.StatementRow>
-                ))}
+                {currentSet.statements.map((statement, index) => {
+                  // Đáp án đúng chỉ có sau khi nộp (BE trả kèm kết quả chấm).
+                  const correct = getCorrectAnswer(index);
+                  const isWrong = isSubmitted && !!correct && getAnswer(statement.id) !== correct;
+                  return (
+                    <S.StatementRow key={statement.id}>
+                      <div className="statement-number">{statement.id}.</div>
+                      <div className="statement-text">{statement.text}</div>
+                      <S.StyledSelect
+                        placeholder="Chọn"
+                        onChange={(val) => handleSelectChange(statement.id, val as string)}
+                        value={getAnswer(statement.id)}
+                        $hasValue={!!getAnswer(statement.id)}
+                        $wrong={isWrong}
+                        options={SPEAKER_OPTIONS}
+                        disabled={isSubmitted}
+                      />
+                      {isWrong && (
+                        <S.CorrectAnswerText>
+                          (Đáp án đúng: <strong>{SPEAKER_OPTIONS.find((o) => o.value === correct)?.label ?? correct}</strong>)
+                        </S.CorrectAnswerText>
+                      )}
+                    </S.StatementRow>
+                  );
+                })}
               </div>
             </S.ContentCard>
             )}

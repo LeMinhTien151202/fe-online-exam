@@ -43,6 +43,7 @@ export const Part2Page: React.FC = () => {
     isSubmitted,
     isGrading,
     correctCount,
+    correctAnswers,
     scoreTotal,
     gradedUnits,
     progressPercent
@@ -109,6 +110,7 @@ export const Part2Page: React.FC = () => {
                     onSelectAnswer={selectAnswer}
                     onQuestionFocus={setCurrentQuestionIndex}
                     isSubmitted={isSubmitted}
+                    correctAnswers={correctAnswers}
                   />
                 </S.ContentCard>
 

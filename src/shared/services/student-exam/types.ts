@@ -110,6 +110,10 @@ export interface IAutoGradeDetail {
   total: number;
   autoGraded: boolean;
   needsAiGrading: boolean;
+  // Đáp án đúng theo ĐÚNG hình dạng của `response` đã gửi lên cho câu đó (xem SubmitResponseValue),
+  // để FE so sánh trực tiếp từng ô rồi tô xanh/đỏ và in đáp án. BE chỉ trả trường này sau khi nộp
+  // (GET /exams/{id}/take vẫn bị AnswerSanitizer cắt sạch đáp án). null với ESSAY/RECORD.
+  correctResponse?: SubmitResponseValue | null;
 }
 
 // Điểm + nhận xét theo TỪNG tiêu chí chấm (trôi chảy, ngữ pháp, từ vựng...).
@@ -185,7 +189,7 @@ export interface IAttemptFilter {
   limit?: number;
 }
 
-// GET /progress/me — tiến độ TÍCH LŨY theo (skill, part), gộp mọi đề (dashboard học tập).
+// GET /progress/me — tiến độ TÍCH LŨY theo (skill, part), chỉ PART_PRACTICE (dashboard học tập).
 export interface IStudentProgressRow {
   skillId: number;
   partNumber: number;

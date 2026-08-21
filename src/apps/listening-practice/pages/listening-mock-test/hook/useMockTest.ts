@@ -2,7 +2,7 @@ import {
   useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
-import { IExamSubmitResult, ISubmitAnswer, summarizeAutoGrade, useAttemptReviewQuery, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { IExamSubmitResult, ISubmitAnswer, summarizeAutoGrade, useAttemptReviewQuery, useExamPrefill, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import { useListeningExamDetailQuery } from '../../../services/listeningExamQuery';
 import { ListeningExamData, buildListeningExam } from '../../../services/listeningExamMapper';
@@ -69,6 +69,47 @@ export const useMockTest = (testId: string) => {
   const [showReport, setShowReport] = useState(false);
   const [activeQuestionNum, setActiveQuestionNum] = useState(1);
   const [submitResult, setSubmitResult] = useState<IExamSubmitResult | null>(null);
+
+  const { isPrefilling, prefillAnswers } = useExamPrefill(examId || null, (answerExam) => {
+    const answerData = buildListeningExam(answerExam);
+    const answerNavItems = buildNavItems(answerData);
+    const filled: Record<string, string> = {};
+
+    answerNavItems.forEach((item) => {
+      if (item.partNumber === 1) {
+        const question = answerData.part1[item.itemIndex];
+        const answer = question?.options[question.correctIndex];
+        if (!answer) throw new Error('Bộ đề đang thiếu đáp án Listening Part 1.');
+        filled[keyForP1(item.qNum)] = answer;
+      } else if (item.partNumber === 2) {
+        const set = answerData.part2[item.itemIndex];
+        if (!set || Object.keys(set.correctBySpeaker).length < set.speakerCount) {
+          throw new Error('Bộ đề đang thiếu đáp án Listening Part 2.');
+        }
+        for (let speaker = 1; speaker <= set.speakerCount; speaker += 1) {
+          filled[keyForP2(item.qNum, speaker)] = set.correctBySpeaker[speaker];
+        }
+      } else if (item.partNumber === 3) {
+        const set = answerData.part3[item.itemIndex];
+        if (!set || set.statements.some((statement) => !statement.correct)) {
+          throw new Error('Bộ đề đang thiếu đáp án Listening Part 3.');
+        }
+        set.statements.forEach((statement) => {
+          filled[keyForP3(item.qNum, statement.id)] = statement.correct;
+        });
+      } else {
+        const group = answerData.part4[item.itemIndex];
+        if (!group || group.subQuestions.some((question) => question.correctIndex < 0)) {
+          throw new Error('Bộ đề đang thiếu đáp án Listening Part 4.');
+        }
+        group.subQuestions.forEach((question) => {
+          filled[keyForP4(item.qNum, question.id)] = question.options[question.correctIndex];
+        });
+      }
+    });
+
+    setAnswers(filled);
+  });
 
   const activeNavItem = useMemo(
     () => navItems.find((item) => item.qNum === activeQuestionNum) ?? navItems[0] ?? null,
@@ -435,6 +476,8 @@ export const useMockTest = (testId: string) => {
     handleNextQuestion,
     handleSelectAnswer,
     handleSubmitClick,
+    isPrefilling,
+    prefillAnswers,
     navigate,
   };
 };

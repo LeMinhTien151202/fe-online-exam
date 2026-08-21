@@ -9,6 +9,7 @@ RollbackOutlined,
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { Badge, Button, Empty, Progress, Radio, Select, Space, Spin, Typography } from 'antd';
 import React from 'react';
+import { ExamPrefillButton } from '@/shared/components/ExamPrefillButton';
 import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { Part1Data, Part2Data } from '../../../services/mappers';
@@ -104,6 +105,8 @@ export const ReadingMockTestPage: React.FC = () => {
     totalAnsweredCount,
 
     calculateScores,
+    isPrefilling,
+    prefillAnswers,
   } = useMockTest(testId);
 
   // ==================== LOADING / ERROR ====================
@@ -463,6 +466,8 @@ export const ReadingMockTestPage: React.FC = () => {
     if (!isSubmitted) return -1;
     return [scores.scoreP1, scores.scoreP2, scores.scoreP3, scores.scoreP4, scores.scoreP5][n - 1] ?? 0;
   };
+  const partScoreMax = (n: number): number =>
+    [scores.maxP1, scores.maxP2, scores.maxP3, scores.maxP4, scores.maxP5][n - 1] ?? 0;
 
   const renderQuestionNav = () => (
     <S.NavPanel>
@@ -470,16 +475,26 @@ export const ReadingMockTestPage: React.FC = () => {
       {availableParts.map((num) => {
         const { answered, total } = partProgress(num);
         const score = partScore(num);
+        const scoreMax = partScoreMax(num);
         const isActive = activePart === num;
         const meta = PART_META[num];
         return (
           <div key={num} style={{ padding: '0.875rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', transition: 'all 0.2s', border: isActive ? '1px solid #bfdbfe' : '1px solid transparent', background: isActive ? '#eff6ff' : 'transparent', marginBottom: '0.5rem' }} onClick={() => setActiveQuestionNum(firstQNumForPart(num))}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
               <span style={{ fontWeight: 700, color: isActive ? '#244b80' : '#334155', fontSize: '0.95rem' }}>{meta.label}</span>
-              <span style={{ fontSize: '0.875rem', color: isSubmitted ? (score > 0 ? '#10b981' : '#ef4444') : '#64748b' }}>{isSubmitted ? `${score}/${total}` : `${answered}/${total}`}</span>
+              <span style={{ fontSize: '0.875rem', color: isSubmitted ? (score > 0 ? '#10b981' : '#ef4444') : '#64748b' }}>{isSubmitted ? `${score}/${scoreMax}` : `${answered}/${total}`}</span>
             </div>
             <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>{meta.desc}</div>
-            <Progress percent={total > 0 ? Math.round((answered / total) * 100) : 0} size="small" strokeColor={isSubmitted ? (score === total ? '#10b981' : score > 0 ? '#f59e0b' : '#ef4444') : '#3b82f6'} trailColor="#f1f5f9" showInfo={false} style={{ marginTop: '0.375rem' }} />
+            <Progress
+              percent={isSubmitted
+                ? (scoreMax > 0 ? Math.round((score / scoreMax) * 100) : 0)
+                : (total > 0 ? Math.round((answered / total) * 100) : 0)}
+              size="small"
+              strokeColor={isSubmitted ? (score === scoreMax ? '#10b981' : score > 0 ? '#f59e0b' : '#ef4444') : '#3b82f6'}
+              trailColor="#f1f5f9"
+              showInfo={false}
+              style={{ marginTop: '0.375rem' }}
+            />
           </div>
         );
       })}
@@ -501,12 +516,12 @@ export const ReadingMockTestPage: React.FC = () => {
   );
 
   const meta = PART_META[activePart];
-  const { totalScore } = scores;
+  const { totalScore, totalMax } = scores;
   const partPosition = availableParts.indexOf(activePart) + 1;
 
   // Band CEFR kỹ năng Đọc (skillId 3) theo ĐÚNG bảng quy đổi 0–50: ưu tiên kết quả BE,
   // fallback suy từ % đúng cục bộ (giá trị bằng nhau vì Đọc là trắc nghiệm).
-  const readingPercent = totalQuestions > 0 ? (totalScore / totalQuestions) * 100 : 0;
+  const readingPercent = totalMax > 0 ? (totalScore / totalMax) * 100 : 0;
   const beSkill = submitResult ? singleSkillScore(submitResult, READING_SKILL_ID) : null;
   const readingBand = beSkill?.cefr ?? percentToBand(READING_SKILL_ID, readingPercent).cefr;
   const readingScaled = beSkill?.scaled ?? percentToBand(READING_SKILL_ID, readingPercent).scaled;
@@ -522,11 +537,13 @@ export const ReadingMockTestPage: React.FC = () => {
               <S.HeaderTitle>{examTitle}</S.HeaderTitle>
             </Space>
             <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
+              <ExamPrefillButton
+                loading={isPrefilling}
+                disabled={isSubmitted || totalQuestions === 0}
+                onClick={() => { void prefillAnswers(); }}
+              />
               {isSubmitted ? (
-                <Space>
-                  <Button type="primary" onClick={() => setShowReport(true)} style={{ background: '#1a365d', borderColor: '#1a365d', borderRadius: '2rem', fontWeight: 700 }}>Xem báo cáo điểm</Button>
-                  <Button type="primary" icon={<RollbackOutlined />} onClick={handleRetry} style={{ background: '#6366f1', borderColor: '#6366f1', borderRadius: '2rem', fontWeight: 700 }}>Thi lại đề này</Button>
-                </Space>
+                <Button type="primary" icon={<RollbackOutlined />} onClick={handleRetry} style={{ background: '#6366f1', borderColor: '#6366f1', borderRadius: '2rem', fontWeight: 700 }}>Thi lại đề này</Button>
               ) : (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
@@ -547,13 +564,13 @@ export const ReadingMockTestPage: React.FC = () => {
                   <Text type="secondary" style={{ fontSize: '1rem', fontWeight: 500 }}>Bạn đã hoàn thành {examTitle}</Text>
                 </Space>
                 <S.ScoreRingWrapper>
-                  <Progress type="circle" percent={Math.round((totalScore / totalQuestions) * 100)} size={140} strokeWidth={10} strokeColor="#10b981" format={() => (<S.ScoreLabel><span className="score-val">{totalScore}</span><span className="score-max">/ {totalQuestions} câu</span></S.ScoreLabel>)} />
+                  <Progress type="circle" percent={Math.round(readingPercent)} size={140} strokeWidth={10} strokeColor="#10b981" format={() => (<S.ScoreLabel><span className="score-val">{totalScore}</span><span className="score-max">/ {totalMax} điểm</span></S.ScoreLabel>)} />
                 </S.ScoreRingWrapper>
                 <S.ReportGrid>
                   <S.ReportStatItem><span className="stat-label">CEFR Đọc (ước lượng)</span><span className="stat-value">{readingBand ? `${readingBand} · ${readingScaled}/50` : 'Chưa xếp loại'}</span></S.ReportStatItem>
-                  <S.ReportStatItem><span className="stat-label">Tỷ lệ đúng</span><span className="stat-value">{Math.round((totalScore / totalQuestions) * 100)}%</span></S.ReportStatItem>
+                  <S.ReportStatItem><span className="stat-label">Tỷ lệ đúng</span><span className="stat-value">{Math.round(readingPercent)}%</span></S.ReportStatItem>
                   <S.ReportStatItem><span className="stat-label">Đã trả lời</span><span className="stat-value">{totalAnsweredCount} / {totalQuestions} câu</span></S.ReportStatItem>
-                  <S.ReportStatItem><span className="stat-label">Số câu đúng</span><span className="stat-value">{totalScore} câu</span></S.ReportStatItem>
+                  <S.ReportStatItem><span className="stat-label">Điểm đạt được</span><span className="stat-value">{totalScore} / {totalMax}</span></S.ReportStatItem>
                 </S.ReportGrid>
                 <Button type="primary" size="large" style={{ borderRadius: '2rem', height: '48px', padding: '0 2.5rem', fontWeight: 700, background: '#1a365d', borderColor: '#1a365d' }} onClick={() => setShowReport(false)}>Xem lại đáp án chi tiết</Button>
               </S.ReportCard>

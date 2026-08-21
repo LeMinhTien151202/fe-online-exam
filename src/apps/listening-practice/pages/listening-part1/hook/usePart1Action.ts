@@ -4,7 +4,12 @@ import { useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { flattenListeningExam } from '../../../services/listeningExamMapper';
 import { mapLPart1 } from '../../../services/mappers';
-import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import {
+  pickCorrectResponse,
+  summarizeAutoGrade,
+  usePartPracticeExam,
+  useSubmitExamMutation,
+} from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart1Action = () => {
@@ -13,6 +18,8 @@ export const usePart1Action = () => {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   // Chấm từng câu: kết quả BE trả về của câu nào lưu theo số thứ tự câu đó.
   const [results, setResults] = useState<Record<number, { earned: number; total: number }>>({});
+  // Đáp án đúng do BE trả kèm kết quả chấm (đề lấy về đã bị cắt sạch đáp án).
+  const [gradedIndexes, setGradedIndexes] = useState<Record<number, number>>({});
 
   // Luyện theo phần = đề PART_PRACTICE (skill 2, part 1).
   const { examId, examDetail, isLoading } = usePartPracticeExam(2, 1);
@@ -65,8 +72,10 @@ export const usePart1Action = () => {
         examId,
         payload: { answers: [{ questionId, response }] },
       });
-      const score = summarizeAutoGrade(result, { skillId: 2, partNumber: 1 });
+      const score = summarizeAutoGrade(result, { questionId });
       setResults((prev) => ({ ...prev, [safeIndex]: score }));
+      const correct = pickCorrectResponse(result, questionId);
+      if (typeof correct === 'number') setGradedIndexes((prev) => ({ ...prev, [safeIndex]: correct }));
       toast.success(`Đã chấm xong câu ${safeIndex}: ${score.earned}/${score.total} câu đúng.`);
     } catch {
       // Interceptor axios đã hiện thông báo lỗi; không tự chấm ở FE để tránh sai điểm.
@@ -81,6 +90,11 @@ export const usePart1Action = () => {
       return next;
     });
     setAnswers((prev) => {
+      const next = { ...prev };
+      delete next[safeIndex];
+      return next;
+    });
+    setGradedIndexes((prev) => {
       const next = { ...prev };
       delete next[safeIndex];
       return next;
@@ -102,6 +116,7 @@ export const usePart1Action = () => {
     isSubmitted,
     isGrading: submitMutation.isPending,
     correctCount,
+    correctIndex: gradedIndexes[safeIndex] ?? -1,
     scoreTotal: scoreResult?.total ?? 0,
     handleSelectAnswer,
     handleNext,

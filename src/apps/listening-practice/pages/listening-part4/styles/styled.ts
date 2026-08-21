@@ -116,31 +116,37 @@ export const QuestionTitle = styled.div`
   line-height: 1.5;
 `;
 
-export const OptionCard = styled.div<{ $selected?: boolean }>`
+// $status: sau khi chấm — 'success' là đáp án đúng, 'error' là ô đã chọn nhưng sai.
+const OPTION_TONES = {
+  success: { border: '#10b981', background: '#ecfdf5', letter: '#047857', text: '#065f46' },
+  error: { border: '#ef4444', background: '#fef2f2', letter: '#b91c1c', text: '#991b1b' },
+};
+
+export const OptionCard = styled.div<{ $selected?: boolean; $status?: 'success' | 'error' }>`
   display: flex;
   align-items: center;
-  border: 1px solid ${props => props.$selected ? '#0ea5e9' : '#e2e8f0'};
+  border: 1px solid ${props => props.$status ? OPTION_TONES[props.$status].border : props.$selected ? '#0ea5e9' : '#e2e8f0'};
   border-radius: 8px;
   margin-bottom: 12px;
   padding: 12px 16px;
   cursor: pointer;
   transition: all 0.2s;
-  background: ${props => props.$selected ? '#f0f9ff' : '#ffffff'};
+  background: ${props => props.$status ? OPTION_TONES[props.$status].background : props.$selected ? '#f0f9ff' : '#ffffff'};
 
   &:hover {
-    border-color: ${props => props.$selected ? '#0ea5e9' : '#cbd5e1'};
-    background: ${props => props.$selected ? '#f0f9ff' : '#f8fafc'};
+    border-color: ${props => props.$status ? OPTION_TONES[props.$status].border : props.$selected ? '#0ea5e9' : '#cbd5e1'};
+    background: ${props => props.$status ? OPTION_TONES[props.$status].background : props.$selected ? '#f0f9ff' : '#f8fafc'};
   }
 
   .option-letter {
     font-weight: 700;
-    color: ${props => props.$selected ? '#0284c7' : '#0f172a'};
+    color: ${props => props.$status ? OPTION_TONES[props.$status].letter : props.$selected ? '#0284c7' : '#0f172a'};
     margin-right: 24px;
     font-size: 1rem;
   }
 
   .option-text {
-    color: ${props => props.$selected ? '#0369a1' : '#334155'};
+    color: ${props => props.$status ? OPTION_TONES[props.$status].text : props.$selected ? '#0369a1' : '#334155'};
     font-size: 1rem;
     flex: 1;
   }

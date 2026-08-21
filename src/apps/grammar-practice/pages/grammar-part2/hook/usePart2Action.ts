@@ -2,7 +2,12 @@ import { useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { flattenGrammarExam } from '../../../services/grammarExamMapper';
 import { mapVocabularySets } from '../../../services/mappers';
-import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import {
+  pickCorrectResponse,
+  summarizeAutoGrade,
+  usePartPracticeExam,
+  useSubmitExamMutation,
+} from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart2Action = () => {
@@ -10,6 +15,8 @@ export const usePart2Action = () => {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   // Chấm từng task: kết quả BE trả về của task nào lưu theo index task đó.
   const [results, setResults] = useState<Record<number, { earned: number; total: number }>>({});
+  // Đáp án đúng do BE trả kèm kết quả chấm (đề lấy về đã bị cắt sạch đáp án): { unit: { slot_id: từ đúng } }.
+  const [gradedAnswers, setGradedAnswers] = useState<Record<number, Record<string, string>>>({});
 
   // Luyện theo phần = đề PART_PRACTICE (skill 1, part 2 — Vocabulary/WORD_BANK).
   const { examId, examDetail, isLoading } = usePartPracticeExam(1, 2);
@@ -84,9 +91,16 @@ export const usePart2Action = () => {
         examId,
         payload: { answers: [{ questionId: currentSet.questionId, response }] },
       });
-      const score = summarizeAutoGrade(result, { skillId: 1, partNumber: 2 });
+      const score = summarizeAutoGrade(result, { questionId: currentSet.questionId });
       setResults((prev) => ({ ...prev, [activeUnit]: score }));
-      toast.success(`Đã chấm xong câu ${activeUnit}: ${score.earned}/${score.total} ý đúng.`);
+      const correct = pickCorrectResponse(result, currentSet.questionId);
+      if (correct && typeof correct === 'object' && !Array.isArray(correct)) {
+        setGradedAnswers((prev) => ({
+          ...prev,
+          [activeUnit]: Object.fromEntries(Object.entries(correct).map(([k, v]) => [k, String(v)])),
+        }));
+      }
+      toast.success(`Đã chấm xong câu ${activeUnit}: ${score.earned}/${score.total} câu đúng.`);
     } catch {
       // Interceptor axios đã hiện thông báo lỗi; không tự chấm ở FE để tránh sai điểm.
     }
@@ -103,6 +117,11 @@ export const usePart2Action = () => {
     setAnswers((prev) => {
       const next = { ...prev };
       currentSet.subQuestions.forEach((sub) => delete next[sub.questionNumber]);
+      return next;
+    });
+    setGradedAnswers((prev) => {
+      const next = { ...prev };
+      delete next[activeUnit];
       return next;
     });
   };
@@ -129,6 +148,7 @@ export const usePart2Action = () => {
     isSubmitted,
     isGrading: submitMutation.isPending,
     correctCount: scoreResult?.earned ?? 0,
+    correctAnswers: gradedAnswers[activeUnit] ?? {},
     scoreTotal: scoreResult?.total ?? 0,
     gradedUnits,
     progressPercent,

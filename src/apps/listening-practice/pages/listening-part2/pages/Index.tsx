@@ -26,6 +26,7 @@ export const Part2Page: React.FC = () => {
     handlePrev,
     currentSet,
     getAnswer,
+    getCorrectAnswer,
     handleSelectChange,
     handleSubmit,
     handleRetry,
@@ -100,6 +101,9 @@ export const Part2Page: React.FC = () => {
               <div style={{ marginTop: '2rem' }}>
                 {Array.from({ length: currentSet.speakerCount }, (_, i) => {
                   const speaker = i + 1;
+                  // Đáp án đúng chỉ có sau khi nộp (BE trả kèm kết quả chấm).
+                  const correct = getCorrectAnswer(speaker);
+                  const isWrong = isSubmitted && !!correct && getAnswer(speaker) !== correct;
                   return (
                     <S.PersonRow key={speaker}>
                       <div className="person-label">Người {speaker}</div>
@@ -109,9 +113,15 @@ export const Part2Page: React.FC = () => {
                           onChange={(val) => handleSelectChange(speaker, val as string)}
                           value={getAnswer(speaker)}
                           $hasValue={!!getAnswer(speaker)}
+                          $wrong={isWrong}
                           options={currentSet.options}
                           disabled={isSubmitted}
                         />
+                        {isWrong && (
+                          <S.CorrectAnswerText>
+                            (Đáp án đúng: <strong>{correct}</strong>)
+                          </S.CorrectAnswerText>
+                        )}
                       </div>
                     </S.PersonRow>
                   );

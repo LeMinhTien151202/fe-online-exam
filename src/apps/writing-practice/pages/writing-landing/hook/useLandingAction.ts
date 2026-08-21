@@ -2,15 +2,12 @@ import { useNavigate } from '@tanstack/react-router';
 import React from 'react';
 import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { useWritingSetsQuery } from '../../../services/writingExamQuery';
-import { useExamBestScores, usePartPracticeProgress } from '../../../../../shared/services/student-exam';
-
-// Writing: w1..w4 = API part 1..4.
-const WRITING_PART_MAP = [
-  { feId: 'w1', apiPart: 1 },
-  { feId: 'w2', apiPart: 2 },
-  { feId: 'w3', apiPart: 3 },
-  { feId: 'w4', apiPart: 4 },
-];
+import {
+  SKILL_ID,
+  useExamBestScores,
+  usePartPracticeProgress,
+  WRITING_PART_MAP,
+} from '../../../../../shared/services/student-exam';
 
 export const useLandingAction = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -18,7 +15,7 @@ export const useLandingAction = () => {
   const navigate = useNavigate();
 
   // Tiến độ luyện theo phần lấy từ server (answered/total).
-  const { progress: writingProgress } = usePartPracticeProgress(4, WRITING_PART_MAP);
+  const { progress: writingProgress } = usePartPracticeProgress(SKILL_ID.WRITING, WRITING_PART_MAP);
 
   const { scoreByExamId: mockProgress } = useExamBestScores();
 

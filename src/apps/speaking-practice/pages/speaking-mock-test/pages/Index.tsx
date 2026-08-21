@@ -15,6 +15,7 @@ import { Sidebar } from '../../../../home/components/Sidebar';
 import * as HomeS from '../../../../home/pages/styled';
 import { SpeakingController } from '../../../components/SpeakingController';
 import { AiGradeButton } from '@/shared/components/AiGrade';
+import { ExamPrefillButton } from '@/shared/components/ExamPrefillButton';
 import { SpeakingSet } from '../../../services/mappers';
 import { SpeakingNavItem } from '../hook/useMockTest';
 import { useMockTest } from '../hook/useMockTest';
@@ -94,6 +95,8 @@ export const SpeakingMockTestPage = () => {
     hasNextStep,
     prevStepIsSamePart,
     nextStepIsSamePart,
+    isPrefilling,
+    prefillAnswers,
     navigate,
   } = useMockTest();
 
@@ -298,12 +301,14 @@ export const SpeakingMockTestPage = () => {
     return (
       <>
         <SpeakingController
+          key={`${sampleKey}-${answers[sampleKey] ?? 'empty'}`}
           prepTime={prepTime}
           recordingTime={recordTime}
           statusColor={meta.color}
           title={`speaking-exam-p${activePart}-s${activeSetIndex + 1}-q${activeSubIndex}`}
           uploadPrefix={`speaking/set/p${activePart}`}
           autoUpload
+          prefilledAudioUrl={answers[sampleKey]}
           onCompleted={markRecorded}
         />
         {renderSample(sampleAnswers, meta.color, activePart === 4 ? 'Xem đáp án mẫu (Tất cả câu)' : 'Xem đáp án mẫu')}
@@ -378,6 +383,11 @@ export const SpeakingMockTestPage = () => {
             </Space>
 
             <Space size="large" style={{ display: 'flex', alignItems: 'center' }}>
+              <ExamPrefillButton
+                loading={isPrefilling}
+                disabled={isSubmitted || totalQuestions === 0}
+                onClick={() => { void prefillAnswers(); }}
+              />
               {isSubmitted ? (
                 <Space>
                   <Button type="primary" onClick={() => setShowReport(true)} style={{ background: '#1a365d', borderColor: '#1a365d', borderRadius: '2rem', fontWeight: 700 }}>

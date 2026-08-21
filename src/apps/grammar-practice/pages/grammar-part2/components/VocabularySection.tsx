@@ -11,6 +11,8 @@ interface VocabularySectionProps {
   onQuestionFocus?: (qNum: number) => void;
   // Task đã được BE chấm -> khoá dropdown cho tới khi bấm "Làm lại".
   isSubmitted?: boolean;
+  // Đáp án đúng { slot_id: từ đúng } do BE trả sau khi chấm; rỗng nếu chưa có.
+  correctAnswers?: Record<string, string>;
 }
 
 export const VocabularySection: React.FC<VocabularySectionProps> = ({
@@ -19,6 +21,7 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
   currentQuestionIndex,
   onSelectAnswer,
   isSubmitted = false,
+  correctAnswers = {},
 }) => {
   // Find which set contains the currentQuestionIndex
   const activeSet = sets.find(set => 
@@ -39,7 +42,13 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
 
   const usedWords = getSelectedWordsInSet(activeSet);
 
-  const renderContextQuestion = (label: string, questionNumber: number, answerValue?: string, options: string[] = [], setUsedWords: Set<string> = new Set()) => {
+  // Chỉ hiện đáp án đúng khi đã chấm và học viên chọn sai.
+  const wrongAnswerOf = (slotId: string, answerValue?: string) => {
+    const correct = correctAnswers[slotId];
+    return isSubmitted && !!correct && answerValue !== correct ? correct : undefined;
+  };
+
+  const renderContextQuestion = (slotId: string, label: string, questionNumber: number, answerValue?: string, options: string[] = [], setUsedWords: Set<string> = new Set()) => {
     const parts = label.split('_______');
     if (parts.length < 2) return label;
 
@@ -69,6 +78,11 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
           </Select>
         </S.ContextDropdownInlineWrapper>
         {parts[1]}
+        {wrongAnswerOf(slotId, answerValue) && (
+          <S.CorrectAnswerText>
+            (Đáp án đúng: <strong>{wrongAnswerOf(slotId, answerValue)}</strong>)
+          </S.CorrectAnswerText>
+        )}
       </>
     );
   };
@@ -99,7 +113,7 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
                     <S.VocabQuestionNumberBadge $answered={!!answer}>
                       {subIdx + 1}
                     </S.VocabQuestionNumberBadge>
-                    {renderContextQuestion(subQ.leftLabel, subQ.questionNumber, answer, activeSet.optionsList, usedWords)}
+                    {renderContextQuestion(subQ.id, subQ.leftLabel, subQ.questionNumber, answer, activeSet.optionsList, usedWords)}
                   </S.VocabContextQuestionText>
                 ) : (
                   <S.VocabRow>
@@ -130,6 +144,11 @@ export const VocabularySection: React.FC<VocabularySectionProps> = ({
                           );
                         })}
                       </Select>
+                      {wrongAnswerOf(subQ.id, answer) && (
+                        <S.CorrectAnswerText>
+                          (Đáp án đúng: <strong>{wrongAnswerOf(subQ.id, answer)}</strong>)
+                        </S.CorrectAnswerText>
+                      )}
                     </S.CustomDropdownWrapper>
                   </S.VocabRow>
                 )}

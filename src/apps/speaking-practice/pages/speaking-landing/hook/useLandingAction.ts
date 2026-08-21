@@ -2,15 +2,12 @@ import { useNavigate } from '@tanstack/react-router';
 import React from 'react';
 import { useLandingTab } from '@/shared/hooks/useLandingTab';
 import { useSpeakingSetsQuery } from '../../../services/speakingExamQuery';
-import { useExamBestScores, usePartPracticeProgress } from '../../../../../shared/services/student-exam';
-
-// Speaking: s1..s4 = API part 1..4.
-const SPEAKING_PART_MAP = [
-  { feId: 's1', apiPart: 1 },
-  { feId: 's2', apiPart: 2 },
-  { feId: 's3', apiPart: 3 },
-  { feId: 's4', apiPart: 4 },
-];
+import {
+  SKILL_ID,
+  SPEAKING_PART_MAP,
+  useExamBestScores,
+  usePartPracticeProgress,
+} from '../../../../../shared/services/student-exam';
 
 export const useLandingAction = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -18,7 +15,7 @@ export const useLandingAction = () => {
   const navigate = useNavigate();
 
   // Tiến độ luyện theo phần lấy từ server (answered/total).
-  const { progress: speakingProgress } = usePartPracticeProgress(5, SPEAKING_PART_MAP);
+  const { progress: speakingProgress } = usePartPracticeProgress(SKILL_ID.SPEAKING, SPEAKING_PART_MAP);
 
   const { scoreByExamId: mockProgress } = useExamBestScores();
 

@@ -2,7 +2,12 @@ import { useMemo, useState } from 'react';
 import { toast } from '../../../../../configs/toast';
 import { flattenGrammarExam } from '../../../services/grammarExamMapper';
 import { mapGrammarQuestions } from '../../../services/mappers';
-import { summarizeAutoGrade, usePartPracticeExam, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import {
+  pickCorrectResponse,
+  summarizeAutoGrade,
+  usePartPracticeExam,
+  useSubmitExamMutation,
+} from '../../../../../shared/services/student-exam';
 import { confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 
 export const usePart1Action = () => {
@@ -10,6 +15,8 @@ export const usePart1Action = () => {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   // Chấm từng câu: kết quả BE trả về của câu nào lưu theo questionNumber câu đó.
   const [results, setResults] = useState<Record<number, { earned: number; total: number }>>({});
+  // Đáp án đúng do BE trả kèm kết quả chấm (đề lấy về đã bị cắt sạch đáp án).
+  const [gradedIndexes, setGradedIndexes] = useState<Record<number, number>>({});
 
   // Luyện theo phần = đề PART_PRACTICE (skill 1, part 1 — Grammar MC).
   const { examId, examDetail, isLoading } = usePartPracticeExam(1, 1);
@@ -56,8 +63,10 @@ export const usePart1Action = () => {
         examId,
         payload: { answers: [{ questionId: currentQuestion.questionId, response }] },
       });
-      const score = summarizeAutoGrade(result, { skillId: 1, partNumber: 1 });
+      const score = summarizeAutoGrade(result, { questionId: currentQuestion.questionId });
       setResults((prev) => ({ ...prev, [safeIndex]: score }));
+      const correct = pickCorrectResponse(result, currentQuestion.questionId);
+      if (typeof correct === 'number') setGradedIndexes((prev) => ({ ...prev, [safeIndex]: correct }));
       toast.success(`Đã chấm xong câu ${safeIndex}: ${score.earned}/${score.total} câu đúng.`);
     } catch {
       // Interceptor axios đã hiện thông báo lỗi; không tự chấm ở FE để tránh sai điểm.
@@ -72,6 +81,11 @@ export const usePart1Action = () => {
       return next;
     });
     setAnswers((prev) => {
+      const next = { ...prev };
+      delete next[safeIndex];
+      return next;
+    });
+    setGradedIndexes((prev) => {
       const next = { ...prev };
       delete next[safeIndex];
       return next;
@@ -98,6 +112,7 @@ export const usePart1Action = () => {
     isSubmitted,
     isGrading: submitMutation.isPending,
     correctCount: scoreResult?.earned ?? 0,
+    correctIndex: gradedIndexes[safeIndex] ?? -1,
     scoreTotal: scoreResult?.total ?? 0,
     gradedCount,
     progressPercent,

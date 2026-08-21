@@ -24,6 +24,8 @@ import * as HomeS from '../../../../home/pages/styled';
 import { useGrammarExamDetailQuery } from '../../../services/grammarExamQuery';
 import { buildGrammarExam, collectGrammarAnswers } from '../../../services/grammarExamMapper';
 import { summarizeAutoGrade, useAttemptReviewQuery, useSubmitExamMutation } from '../../../../../shared/services/student-exam';
+import { useExamPrefill } from '../../../../../shared/services/student-exam';
+import { ExamPrefillButton } from '@/shared/components/ExamPrefillButton';
 import { confirmExitExam, confirmSubmitExam } from '../../../../../shared/utils/examDialogs';
 import { GrammarSection } from '../components/GrammarSection';
 import { GrammarNavSection, QuestionNav } from '../components/QuestionNav';
@@ -96,6 +98,7 @@ export const GrammarMockTestPage: React.FC = () => {
 
   const {
     answers,
+    setAnswers,
     currentSection,
     currentQuestionIndex,
     timeLeft,
@@ -113,6 +116,23 @@ export const GrammarMockTestPage: React.FC = () => {
     `aptis_grammar_mock_${activeTestId}`,
     Math.max(totalQuestions, 1)
   );
+
+  const { isPrefilling, prefillAnswers } = useExamPrefill(examId || null, (answerExam) => {
+    const answerData = buildGrammarExam(answerExam);
+    const missingGrammar = answerData.grammarQuestions.some((question) => !question.correctAnswer);
+    const missingVocabulary = answerData.vocabularySets.some((set) =>
+      set.subQuestions.some((question) => !question.correctAnswer)
+    );
+    if (missingGrammar || missingVocabulary) {
+      throw new Error('Bộ đề đang thiếu đáp án Ngữ pháp hoặc Từ vựng.');
+    }
+    setAnswers(Object.fromEntries([
+      ...answerData.grammarQuestions.map((question) => [question.questionNumber, question.correctAnswer]),
+      ...answerData.vocabularySets.flatMap((set) =>
+        set.subQuestions.map((question) => [question.questionNumber, question.correctAnswer])
+      ),
+    ]));
+  });
 
   const getSectionForQuestion = (qNum: number): 'grammar' | 'vocabulary' =>
     grammarNumbers.includes(qNum) ? 'grammar' : 'vocabulary';
@@ -227,6 +247,11 @@ export const GrammarMockTestPage: React.FC = () => {
             </Space>
 
             <S.HeaderSpace size="large">
+              <ExamPrefillButton
+                loading={isPrefilling}
+                disabled={submitMutation.isPending || !!scoreResult || totalQuestions === 0}
+                onClick={() => { void prefillAnswers(); }}
+              />
               <Progress
                 type="circle"
                 percent={totalQuestions > 0 ? progressPercent : 0}
