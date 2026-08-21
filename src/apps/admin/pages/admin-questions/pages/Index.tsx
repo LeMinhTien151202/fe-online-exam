@@ -4,12 +4,9 @@ import { PlusOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import { useQuestions } from '../hook/useQuestions';
 import { useQuestionColumns } from '../hook/useQuestionColumns';
-import { mapQuestionToRow } from '../services/questionMapper';
+import type { QuestionRow } from '../services/questionMapper';
 import * as S from '../styles/styled';
 
-type QuestionRow = ReturnType<typeof mapQuestionToRow>;
-
-import MetricOverview from '../components/MetricOverview';
 import SkillSubTabs from '../components/SkillSubTabs';
 import QuestionTable from '../components/QuestionTable';
 import QuestionForm from '../components/QuestionForm';
@@ -81,7 +78,6 @@ const QuestionsIndex: React.FC = () => {
         </Button>
       </S.Header>
 
-      <MetricOverview />
 
       <SkillSubTabs
         skill={skillTab}

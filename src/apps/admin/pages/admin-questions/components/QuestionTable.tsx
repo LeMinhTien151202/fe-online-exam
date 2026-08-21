@@ -4,8 +4,7 @@ import { SearchOutlined, UploadOutlined } from '@ant-design/icons';
 import { AdminTableWrapper, AdminPaginationWrapper } from '../../../styles/admin-shared.styles';
 import { AppPagination } from '@shared/components/Pagination/Index';
 import * as S from '../styles/styled';
-
-type QuestionRow = Record<string, unknown>;
+import type { QuestionRow } from '../services/questionMapper';
 
 interface QuestionTableProps {
     columns: TableProps<QuestionRow>['columns'];

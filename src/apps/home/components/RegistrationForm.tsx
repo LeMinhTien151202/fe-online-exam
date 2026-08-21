@@ -11,7 +11,7 @@ const schema = z.object({
 });
 
 interface RegistrationFormProps {
-  onSubmit: (values: any) => void;
+  onSubmit: (values: z.infer<typeof schema>) => void;
   loading?: boolean;
 }
 

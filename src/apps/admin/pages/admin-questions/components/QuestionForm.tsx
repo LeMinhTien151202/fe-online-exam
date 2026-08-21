@@ -5,10 +5,10 @@ import GrammarForm from './forms/GrammarForm';
 import SpeakingForm from './forms/SpeakingForm';
 import WritingForm from './forms/WritingForm';
 
-import { Form } from 'antd';
+import { Form, type FormInstance } from 'antd';
 
 interface QuestionFormProps {
-    form: any;
+    form: FormInstance;
     skill: string;
     part: string;
     onSubmit: () => void;

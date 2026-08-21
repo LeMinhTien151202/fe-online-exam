@@ -140,11 +140,11 @@ export interface NavSection {
 
 interface ExamQuestionNavigatorProps {
     sections: NavSection[];
-    answers: Record<number, any>;
+    answers: Record<number, unknown>;
     currentQuestion: number;
     onNavigate: (qNum: number) => void;
     isSubmitted?: boolean;
-    correctAnswers?: Record<number, any>;
+    correctAnswers?: Record<number, unknown>;
     renderItem?: (qNum: number) => React.ReactNode;
 }
 

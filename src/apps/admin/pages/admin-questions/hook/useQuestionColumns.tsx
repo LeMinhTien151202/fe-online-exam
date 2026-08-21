@@ -1,20 +1,19 @@
 import { DeleteOutlined,EditOutlined,EyeOutlined } from '@ant-design/icons';
-import { Button,Progress,Space,TableProps,Tag,Tooltip,Typography } from 'antd';
+import { Button,Space,TableProps,Tag,Tooltip } from 'antd';
 import * as S from '../styles/styled';
-
-const { Text } = Typography;
+import type { QuestionRow } from '../services/questionMapper';
 
 export const useQuestionColumns = (
-    handleEdit: (record: any) => void,
-    handleView: (record: any) => void,
-    handleDelete?: (record: any) => void
+    handleEdit: (record: QuestionRow) => void,
+    handleView: (record: QuestionRow) => void,
+    handleDelete?: (record: QuestionRow) => void
 ) => {
-    const columns: TableProps<any>['columns'] = [
+    const columns: TableProps<QuestionRow>['columns'] = [
         {
             title: 'TT',
             key: 'index',
             width: 60,
-            render: (_: any, __: any, index: number) => index + 1,
+            render: (_value, _record, index) => index + 1,
         },
         {
             title: 'Nội dung',
@@ -88,7 +87,7 @@ export const useQuestionColumns = (
             key: 'actions',
             align: 'center' as const,
             width: 150,
-            render: (_: any, record: any) => (
+            render: (_value, record) => (
                 <Space>
                     <Tooltip title="Xem chi tiết">
                         <Button className="action-btn" icon={<EyeOutlined />} onClick={() => handleView(record)} />

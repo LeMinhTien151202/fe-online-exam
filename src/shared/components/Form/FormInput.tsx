@@ -1,13 +1,13 @@
 import React from 'react';
-import { Form, Input, InputProps } from 'antd';
+import { Form, Input, InputProps, type FormItemProps } from 'antd';
 
 interface FormInputProps extends InputProps {
   name: string;
   label?: string;
   required?: boolean;
   message?: string;
-  dependencies?: any[];
-  rules?: any[];
+  dependencies?: FormItemProps['dependencies'];
+  rules?: FormItemProps['rules'];
 }
 
 export const FormInput: React.FC<FormInputProps> = ({ 

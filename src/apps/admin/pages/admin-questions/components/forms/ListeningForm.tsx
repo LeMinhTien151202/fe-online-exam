@@ -25,8 +25,11 @@ import { Button,
   Steps,
   Tag,
   Upload,
+  type FormInstance,
 } from 'antd';
 import React,{ useState } from 'react';
+import type { UploadRequestOption } from '@rc-component/upload/lib/interface';
+import axios from 'axios';
 import { toast } from '../../../../../../configs/toast';
 import { ADMIN_COLORS } from '../../../../constants';
 import { questionApi } from '../../services/questionApi';
@@ -34,44 +37,42 @@ import { questionApi } from '../../services/questionApi';
 const { TextArea } = Input;
 
 interface ListeningFormProps {
-    form: any;
+    form: FormInstance;
     part: string;
     onSubmit: () => void;
 }
 
 const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) => {
     const [currentStep, setCurrentStep] = useState(0);
-    const [activePart, setActivePart] = useState(part);
     const [isUploading, setIsUploading] = useState(false);
 
-    const watchedPart = Form.useWatch('part', form);
+    const watchedPart = Form.useWatch<string>('part', form);
+    const activePart = watchedPart || part;
     const audioUrl = Form.useWatch('audioUrl', form);
-    const watchedSpeakerAnswers = Form.useWatch('speakerAnswers', form);
-
-    React.useEffect(() => {
-        if (watchedPart && watchedPart !== activePart) {
-            setActivePart(watchedPart);
-        }
-    }, [watchedPart, activePart]);
+    const watchedSpeakerAnswers = Form.useWatch<number[]>('speakerAnswers', form);
 
     const isPart1 = activePart === 'part1';
     const isPart2 = activePart === 'part2';
     const isPart3 = activePart === 'part3';
     const isPart4 = activePart === 'part4';
 
-    const opinionPool = Form.useWatch('opinionPool', form);
+    const opinionPool = Form.useWatch<Array<{ text?: string }>>('opinionPool', form);
 
-    const handleUpload = async (options: any, folderType: 'images' | 'audio', formKey: string) => {
+    const handleUpload = async (options: UploadRequestOption, folderType: 'images' | 'audio', formKey: string) => {
         const { file, onSuccess, onError } = options;
         try {
             setIsUploading(true);
             const res = await questionApi.upload(file as File, folderType);
             form.setFieldValue(formKey, res.url);
-            onSuccess(res, file);
+            onSuccess?.(res);
             toast.success('Upload file thành công!');
-        } catch (err: any) {
-            onError(err);
-            toast.error(err.response?.data?.message || 'Upload file thất bại.');
+        } catch (err: unknown) {
+            const error = err instanceof Error ? err : new Error('Upload file thất bại.');
+            onError?.(error);
+            const apiMessage = axios.isAxiosError<{ message?: string }>(err)
+                ? err.response?.data?.message
+                : undefined;
+            toast.error(apiMessage || error.message);
         } finally {
             setIsUploading(false);
         }
@@ -108,7 +109,7 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
 
     const renderMCQSection = (defaultCount: number, label: string) => (
         <div className="animate-fade-in">
-            <Divider orientation={"left" as any}>
+            <Divider titlePlacement="left">
                 <Space><QuestionCircleOutlined /> {label}</Space>
             </Divider>
             {isPart4 && (
@@ -187,7 +188,7 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
 
     const renderPart2Matching = () => (
         <div className="animate-fade-in">
-            <Divider orientation={"left" as any}>
+            <Divider titlePlacement="left">
                 <Space><UserOutlined /> DANH SÁCH Ý KIẾN / NHẬN ĐỊNH (DANH SÁCH A-F)</Space>
             </Divider>
             <Form.List name="opinionPool">
@@ -223,7 +224,7 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
                 )}
             </Form.List>
 
-            <Divider orientation={"left" as any} style={{ marginTop: '32px' }}>
+            <Divider titlePlacement="left" style={{ marginTop: '32px' }}>
                 <Space><CheckCircleOutlined /> ĐÁP ÁN CHO TỪNG SPEAKER (SPEAKER 1-4)</Space>
             </Divider>
             <Card className="premium-card-light">
@@ -232,7 +233,7 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
                         <Col span={6} key={idx}>
                             <Form.Item name={['speakerAnswers', idx - 1]} label={<strong>Speaker {idx}</strong>} rules={[{ required: true }]}>
                                 <Select placeholder="Chọn ý kiến" allowClear>
-                                    {opinionPool?.map((op: any, i: number) => (
+                                    {opinionPool?.map((op, i) => (
                                         <Select.Option key={i} value={i} disabled={watchedSpeakerAnswers?.includes(i)}>
                                             {op.text ? `(${String.fromCharCode(65 + i)}) ${op.text.substring(0, 30)}...` : `Ý kiến ${String.fromCharCode(65 + i)}`}
                                         </Select.Option>
@@ -255,7 +256,7 @@ const ListeningForm: React.FC<ListeningFormProps> = ({ form, part, onSubmit }) =
             >
                 <Input placeholder="Ví dụ: Listen to the conversation. Who expresses each opinion?" />
             </Form.Item>
-            <Divider orientation={"left" as any}>
+            <Divider titlePlacement="left">
                 <Space><CheckCircleOutlined /> XÁC ĐỊNH QUAN ĐIỂM (4 NHẬN ĐỊNH)</Space>
             </Divider>
             <Form.List name="opinions">

@@ -8,7 +8,7 @@ FlagOutlined,
 SaveOutlined,
 SortAscendingOutlined
 } from '@ant-design/icons';
-import { Button,Card,Col,Divider,Form,Input,Radio,Row,Select,Space,Steps,Tag,Typography } from 'antd';
+import { Button,Card,Col,Divider,Form,Input,Radio,Row,Select,Space,Steps,Tag,Typography, type FormInstance } from 'antd';
 import React,{ useState } from 'react';
 import { ADMIN_COLORS } from '../../../../constants';
 
@@ -16,23 +16,18 @@ const { TextArea } = Input;
 const { Text: AntText } = Typography;
 
 interface ReadingFormProps {
-    form: any;
+    form: FormInstance;
     part: string;
     onSubmit: () => void;
 }
 
 const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
     const [currentStep, setCurrentStep] = useState(0);
-    const [activePart, setActivePart] = useState(part);
-
-    const watchedPart = Form.useWatch('part', form);
+    const watchedPart = Form.useWatch<string>('part', form);
+    const activePart = watchedPart || part;
     const watchedPassage = Form.useWatch('passage', form);
-    const watchedPeople = Form.useWatch('people', form);
-    const watchedHeadings = Form.useWatch('headings', form);
-
-    React.useEffect(() => {
-        if (watchedPart && watchedPart !== activePart) setActivePart(watchedPart);
-    }, [watchedPart, activePart]);
+    const watchedPeople = Form.useWatch<Array<{ name?: string }>>('people', form);
+    const watchedHeadings = Form.useWatch<Array<{ text?: string }>>('headings', form);
 
     const isPart1 = activePart === 'part1';
     const isPart2 = activePart === 'part2';
@@ -76,7 +71,7 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
     // PART 1: 1 đoạn văn/email chứa 5 chỗ trống ___(1)..(5) + 5 bộ đáp án
     const renderPart1 = () => (
         <div className="animate-fade-in">
-            <Divider orientation={"left" as any}><Space><FileTextOutlined /> NỘI DUNG ĐOẠN VĂN / EMAIL</Space></Divider>
+            <Divider titlePlacement="left"><Space><FileTextOutlined /> NỘI DUNG ĐOẠN VĂN / EMAIL</Space></Divider>
             <Card size="small" className="premium-card" style={{ marginBottom: '20px' }}>
                 <Form.Item
                     name="passage"
@@ -91,7 +86,7 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
                 </Form.Item>
             </Card>
 
-            <Divider orientation={"left" as any}><Space><EditOutlined /> ĐÁP ÁN CHO 5 CHỖ TRỐNG (mỗi chỗ 3 lựa chọn)</Space></Divider>
+            <Divider titlePlacement="left"><Space><EditOutlined /> ĐÁP ÁN CHO 5 CHỖ TRỐNG (mỗi chỗ 3 lựa chọn)</Space></Divider>
             <Form.List name="gaps">
                 {(fields) => (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -126,7 +121,7 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
     // PART 2: Sentence Reordering
     const renderPart2 = () => (
         <div className="animate-fade-in">
-            <Divider orientation={"left" as any}><Space><SortAscendingOutlined /> SẮP XẾP THỨ TỰ (2 BÀI TẬP)</Space></Divider>
+            <Divider titlePlacement="left"><Space><SortAscendingOutlined /> SẮP XẾP THỨ TỰ (2 BÀI TẬP)</Space></Divider>
             <Form.List name="sets">
                 {(setFields) => (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -159,7 +154,7 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
     // PART 3: Opinion Matching (Who said what?)
     const renderPart3 = () => (
         <div className="animate-fade-in">
-            <Divider orientation={"left" as any}><Space><FileTextOutlined /> THIẾT LẬP 4 NGƯỜI PHÁT BIỂU</Space></Divider>
+            <Divider titlePlacement="left"><Space><FileTextOutlined /> THIẾT LẬP 4 NGƯỜI PHÁT BIỂU</Space></Divider>
             <Form.List name="people">
                 {(fields) => (
                     <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
@@ -184,7 +179,7 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
                 )}
             </Form.List>
 
-            <Divider orientation={"left" as any}><Space><CheckCircleOutlined /> 7 CÂU HỎI KHỚP Ý KIẾN</Space></Divider>
+            <Divider titlePlacement="left"><Space><CheckCircleOutlined /> 7 CÂU HỎI KHỚP Ý KIẾN</Space></Divider>
             <Form.List name="questions">
                 {(fields) => (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -199,7 +194,7 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
                                     <Col span={6}>
                                         <Form.Item {...restField} name={[name, 'answerIndex']} label="Người phát biểu" rules={[{ required: true }]}>
                                             <Select placeholder="Chọn người">
-                                                {watchedPeople?.map((p: any, idx: number) => (
+                                                {watchedPeople?.map((p, idx) => (
                                                     <Select.Option key={idx} value={idx}>{p.name || `Người #${idx + 1}`}</Select.Option>
                                                 ))}
                                             </Select>
@@ -217,7 +212,7 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
     // PART 4: Heading Matching
     const renderPart4 = () => (
         <div className="animate-fade-in">
-            <Divider orientation={"left" as any}><Space><FileTextOutlined /> DANH SÁCH 8 TIÊU ĐỀ (HEADINGS)</Space></Divider>
+            <Divider titlePlacement="left"><Space><FileTextOutlined /> DANH SÁCH 8 TIÊU ĐỀ (HEADINGS)</Space></Divider>
             <Card style={{ marginBottom: '24px' }}>
                 <Form.List name="headings">
                     {(fields) => (
@@ -236,7 +231,7 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
                     )}
                 </Form.List>
             </Card>
-            <Divider orientation={"left" as any}><Space><FileTextOutlined /> NỘI DUNG 7 ĐOẠN VĂN (A-G)</Space></Divider>
+            <Divider titlePlacement="left"><Space><FileTextOutlined /> NỘI DUNG 7 ĐOẠN VĂN (A-G)</Space></Divider>
             <Form.List name="paragraphs">
                 {(fields) => (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -247,7 +242,7 @@ const ReadingForm: React.FC<ReadingFormProps> = ({ form, part, onSubmit }) => {
                                 </Form.Item>
                                 <Form.Item {...restField} name={[name, 'headingIndex']} label="Tiêu đề phù hợp" rules={[{ required: true }]} style={{ marginBottom: 0 }}>
                                     <Select placeholder="Chọn tiêu đề phù hợp">
-                                        {watchedHeadings?.map((h: any, idx: number) => (
+                                        {watchedHeadings?.map((h, idx) => (
                                             <Select.Option key={idx} value={idx}>Heading #{idx + 1}: {h.text || '...'}</Select.Option>
                                         ))}
                                     </Select>

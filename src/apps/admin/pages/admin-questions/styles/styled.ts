@@ -68,6 +68,8 @@ export const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  /* Giữ nguyên khoảng cách trước Tabs sau khi bỏ MetricOverview rỗng. */
+  margin-bottom: 2.5rem;
 `;
 
 export const FilterBar = styled.div`

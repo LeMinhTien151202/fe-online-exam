@@ -5,6 +5,8 @@ interface AudioWaveformProps {
   audioStream?: MediaStream | null;
 }
 
+type SafariAudioWindow = Window & { webkitAudioContext?: typeof AudioContext };
+
 export const AudioWaveform: React.FC<AudioWaveformProps> = ({ isRecording, audioStream }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -16,7 +18,8 @@ export const AudioWaveform: React.FC<AudioWaveformProps> = ({ isRecording, audio
   useEffect(() => {
     if (isRecording && audioStream) {
       try {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        const AudioContextClass = window.AudioContext || (window as SafariAudioWindow).webkitAudioContext;
+        if (!AudioContextClass) return;
         const audioCtx = new AudioContextClass();
         const analyser = audioCtx.createAnalyser();
         analyser.fftSize = 256;

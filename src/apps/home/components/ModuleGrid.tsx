@@ -19,8 +19,7 @@ export const ModuleGrid: React.FC<ModuleGridProps> = ({ modules }) => {
     green: { bg: '#dcfce7', text: '#16a34a', decor: '#22c55e' },
   };
 
-  const handleCardClick = (e: React.MouseEvent, module: ILearningModule) => {
-    e.preventDefault();
+  const handleCardClick = (module: ILearningModule) => {
     if (module.id === 'reading') {
       navigate({ to: '/reading' });
     } else if (module.id === 'speaking') {
@@ -43,7 +42,7 @@ export const ModuleGrid: React.FC<ModuleGridProps> = ({ modules }) => {
             key={module.id}
             as="div"
             style={{ cursor: 'pointer' }}
-            onClick={(e) => handleCardClick(e as any, module)}
+            onClick={() => handleCardClick(module)}
           >
             <S.DecorCircle $color={colors.decor} />
             <div className="relative z-10 flex flex-col h-full">

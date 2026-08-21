@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input } from 'antd';
+import { Form, Input, type FormItemProps } from 'antd';
 import { TextAreaProps } from 'antd/es/input';
 
 const { TextArea } = Input;
@@ -9,7 +9,7 @@ interface FormTextAreaProps extends TextAreaProps {
   label?: string;
   required?: boolean;
   message?: string;
-  rules?: any[];
+  rules?: FormItemProps['rules'];
 }
 
 export const FormTextArea: React.FC<FormTextAreaProps> = ({ 

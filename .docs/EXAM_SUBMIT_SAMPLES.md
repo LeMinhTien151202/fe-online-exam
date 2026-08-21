@@ -1,7 +1,7 @@
 # Kịch bản học viên làm bài & nộp — Phase 5
 
 > Body mẫu cho `GET /exams/:id/take` và `POST /exams/:id/submit`.
-> **Trước khi chạy:** login tài khoản **STUDENT** → Authorize; đề phải `isActive = true` và đã gán câu hỏi (xem [EXAM_SAMPLES.md](EXAM_SAMPLES.md)).
+> **Trước khi chạy:** login tài khoản **STUDENT** → Authorize; đề phải `isActive = true` và đã gán câu hỏi. Mẫu tạo đề đầy đủ nằm trong `.docs/EXAM_SAMPLES.md` của backend Java.
 > `questionId` trong body submit = id câu hỏi lấy từ `GET /exams/:id/take`.
 
 ---

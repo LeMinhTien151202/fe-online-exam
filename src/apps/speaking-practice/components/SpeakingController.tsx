@@ -32,6 +32,7 @@ interface SpeakingControllerProps {
 }
 
 type UploadState = 'idle' | 'uploading' | 'done' | 'error';
+type SafariAudioWindow = Window & { webkitAudioContext?: typeof AudioContext };
 
 export const SpeakingController: React.FC<SpeakingControllerProps> = ({
   prepTime,
@@ -67,7 +68,8 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
   // Play electronic beep using Web Audio API
   const playBeep = () => {
     try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContextClass = window.AudioContext || (window as SafariAudioWindow).webkitAudioContext;
+      if (!AudioContextClass) return;
       const ctx = new AudioContextClass();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -85,6 +87,7 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
     }
   };
 
+  /* eslint-disable react-hooks/immutability, react-hooks/exhaustive-deps -- Countdown effects intentionally invoke the latest recorder handlers while reacting only to timer state. */
   // Reset all state when prepTime or recordingTime changes (e.g. changing question)
   useEffect(() => {
     resetAll();
@@ -123,6 +126,7 @@ export const SpeakingController: React.FC<SpeakingControllerProps> = ({
       if (recTimerRef.current) clearTimeout(recTimerRef.current);
     };
   }, [step, recCountdown]);
+  /* eslint-enable react-hooks/immutability, react-hooks/exhaustive-deps */
 
   const resetAll = () => {
     stopPlayback();

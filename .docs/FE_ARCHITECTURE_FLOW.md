@@ -2,7 +2,7 @@
 
 > Repo: `D:\react-exam-online`. Mọi đường dẫn tính từ gốc repo.
 > Tài liệu này mô tả **luồng chạy của code từ UI xuống API**. Sơ đồ thư mục tổng quát xem `.docs/ARCHITECTURE.md`; quy ước code xem `.docs/STYLEGUIDE.md`.
-> Phía backend xem `.docs/BE_ARCHITECTURE_FLOW.md`.
+> Phía backend xem bộ tài liệu nguồn chuẩn tại `D:\be-exam-online\java-exam-online\.docs`, bắt đầu từ `README.md` và `flows/README.md`.
 
 ---
 

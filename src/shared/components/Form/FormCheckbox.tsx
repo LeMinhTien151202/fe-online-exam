@@ -1,10 +1,10 @@
 import React from 'react';
-import { Form, Checkbox, CheckboxProps } from 'antd';
+import { Form, Checkbox, CheckboxProps, type FormItemProps } from 'antd';
 
 interface FormCheckboxProps extends CheckboxProps {
   name: string;
   label?: string;
-  rules?: any[];
+  rules?: FormItemProps['rules'];
 }
 
 export const FormCheckbox: React.FC<FormCheckboxProps> = ({ 

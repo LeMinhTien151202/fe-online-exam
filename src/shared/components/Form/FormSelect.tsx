@@ -1,12 +1,12 @@
 import React from 'react';
-import { Form, Select, SelectProps } from 'antd';
+import { Form, Select, SelectProps, type FormItemProps } from 'antd';
 
 interface FormSelectProps extends SelectProps {
   name: string;
   label?: string;
   required?: boolean;
   message?: string;
-  rules?: any[];
+  rules?: FormItemProps['rules'];
 }
 
 export const FormSelect: React.FC<FormSelectProps> = ({ 

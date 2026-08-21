@@ -1,12 +1,12 @@
 import React from 'react';
-import { Form, DatePicker, DatePickerProps } from 'antd';
+import { Form, DatePicker, DatePickerProps, type FormItemProps } from 'antd';
 
 interface FormDatePickerProps extends DatePickerProps {
   name: string;
   label?: string;
   required?: boolean;
   message?: string;
-  rules?: any[];
+  rules?: FormItemProps['rules'];
 }
 
 export const FormDatePicker: React.FC<FormDatePickerProps> = ({ 

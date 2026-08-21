@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Button, Input, Select, DatePicker, Space, Card, TableProps } from 'antd';
-import { SearchOutlined, DownloadOutlined } from '@ant-design/icons';
+import { SearchOutlined } from '@ant-design/icons';
 import { ADMIN_COLORS } from '../../../constants';
 import * as S from '../styles/styled';
 import { AppPagination } from '@shared/components/Pagination/Index';

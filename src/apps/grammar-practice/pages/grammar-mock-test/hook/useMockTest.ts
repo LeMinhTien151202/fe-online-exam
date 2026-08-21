@@ -1,7 +1,5 @@
 import { toast } from '../../../../../configs/toast';
-import {
-  useState,
-  useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 export const useMockTest = (
   onSubmit: (finalAnswers: Record<number, string>) => void,
@@ -37,8 +35,9 @@ export const useMockTest = (
   // Sync answers to localStorage
   useEffect(() => {
     localStorage.setItem(EXAM_ANSWERS_KEY, JSON.stringify(answers));
-  }, [answers]);
+  }, [answers, EXAM_ANSWERS_KEY]);
 
+  /* eslint-disable react-hooks/immutability, react-hooks/exhaustive-deps -- The timer intentionally submits the latest answers only when its countdown reaches zero. */
   // Countdown timer logic
   useEffect(() => {
     if (timeLeft <= 0 || isFinished) {
@@ -58,6 +57,7 @@ export const useMockTest = (
 
     return () => clearInterval(timer);
   }, [timeLeft, isFinished]);
+  /* eslint-enable react-hooks/immutability, react-hooks/exhaustive-deps */
 
   const handleAutoSubmit = () => {
     setIsFinished(true);

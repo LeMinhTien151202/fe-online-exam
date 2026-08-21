@@ -445,3 +445,5 @@ export const mapQuestionToRow = (q: IQuestion) => ({
   updatedAt: q.createdAt ? new Date(q.createdAt).toLocaleDateString('vi-VN') : '',
   raw: q,
 });
+
+export type QuestionRow = ReturnType<typeof mapQuestionToRow>;

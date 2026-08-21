@@ -1,10 +1,10 @@
 import React from 'react';
-import { Form, Switch, SwitchProps } from 'antd';
+import { Form, Switch, SwitchProps, type FormItemProps } from 'antd';
 
 interface FormSwitchProps extends SwitchProps {
   name: string;
   label?: string;
-  rules?: any[];
+  rules?: FormItemProps['rules'];
 }
 
 export const FormSwitch: React.FC<FormSwitchProps> = ({ 
